@@ -36,13 +36,20 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-      }),
-      api.post_process(LogContains, 'isolated_tests', 'details', [
-          "isolated_tests: {'base_unittests': "
-          "'ffffffffffffffffffffffffffffffffffffffff'}",
-      ]),
-      api.post_process(DropExpectation),
+    'basic',
+    api.properties(
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      }
+    ),
+    api.post_process(
+      LogContains,
+      'isolated_tests',
+      'details',
+      [
+        "isolated_tests: {'base_unittests': "
+        "'ffffffffffffffffffffffffffffffffffffffff'}",
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

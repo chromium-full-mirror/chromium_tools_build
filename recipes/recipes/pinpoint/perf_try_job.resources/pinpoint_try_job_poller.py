@@ -55,22 +55,23 @@ def _get_cabe_analysis(args):
 
 def parse_args():
   parser = argparse.ArgumentParser(
-      description='Parameters to poll Pinpoint try job analysis results.')
+    description='Parameters to poll Pinpoint try job analysis results.'
+  )
 
   parser.add_argument(
-      '--job_id',
-      type=str,
-      required=True,
-      help='Id of the try job.',
+    '--job_id',
+    type=str,
+    required=True,
+    help='Id of the try job.',
   )
   parser.add_argument(
-      '--token',
-      help='Raw IO with oauth token string used for send request.',
+    '--token',
+    help='Raw IO with oauth token string used for send request.',
   )
   parser.add_argument(
-      '--use_staging',
-      action='store_true',
-      help='Use staging environment if True.',
+    '--use_staging',
+    action='store_true',
+    help='Use staging environment if True.',
   )
 
   return parser.parse_args()
@@ -106,9 +107,9 @@ def main():
     time.sleep(_POLL_INTERVAL)
 
   data = {
-      'job_id': args.job_id,
-      'status': job_status,
-      'error': error_msg,
+    'job_id': args.job_id,
+    'status': job_status,
+    'error': error_msg,
   }
   print(json.dumps(data))
   # If Pinpoint does not finish as expected (timeout or error out), return 1.

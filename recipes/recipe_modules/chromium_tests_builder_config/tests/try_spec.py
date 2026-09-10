@@ -7,8 +7,9 @@ from __future__ import annotations
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_types
-from RECIPE_MODULES.build.chromium_tests_builder_config import (try_spec as
-                                                                try_spec_module)
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+  try_spec as try_spec_module,
+)
 
 from dataclasses import dataclass
 
@@ -31,37 +32,47 @@ def RunSteps(api: DEPS):
   # Creation of a TryMirror without tester
   mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder')
   api.assertions.assertEqual(
-      mirror.builder_id,
-      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
+    mirror.builder_id,
+    chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'),
+  )
   api.assertions.assertIsNone(mirror.tester_id)
 
   # Creation of a TryMirror with tester
-  mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder',
-                                            'fake-tester', 'fake-tester-group')
+  mirror = try_spec_module.TryMirror.create(
+    'fake-group', 'fake-builder', 'fake-tester', 'fake-tester-group'
+  )
   api.assertions.assertEqual(
-      mirror.builder_id,
-      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
+    mirror.builder_id,
+    chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'),
+  )
   api.assertions.assertEqual(
-      mirror.tester_id,
-      chromium_types.BuilderId.create_for_group('fake-tester-group',
-                                                'fake-tester'))
+    mirror.tester_id,
+    chromium_types.BuilderId.create_for_group(
+      'fake-tester-group', 'fake-tester'
+    ),
+  )
 
   # Creation of a TryMirror with tester without tester group
-  mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder',
-                                            'fake-tester')
+  mirror = try_spec_module.TryMirror.create(
+    'fake-group', 'fake-builder', 'fake-tester'
+  )
   api.assertions.assertEqual(
-      mirror.builder_id,
-      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
+    mirror.builder_id,
+    chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'),
+  )
   api.assertions.assertEqual(
-      mirror.tester_id,
-      chromium_types.BuilderId.create_for_group('fake-group', 'fake-tester'))
+    mirror.tester_id,
+    chromium_types.BuilderId.create_for_group('fake-group', 'fake-tester'),
+  )
 
   # Creation of a TryMirror with builder for tester
-  mirror = try_spec_module.TryMirror.create('fake-group', 'fake-builder',
-                                            'fake-builder')
+  mirror = try_spec_module.TryMirror.create(
+    'fake-group', 'fake-builder', 'fake-builder'
+  )
   api.assertions.assertEqual(
-      mirror.builder_id,
-      chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'))
+    mirror.builder_id,
+    chromium_types.BuilderId.create_for_group('fake-group', 'fake-builder'),
+  )
   api.assertions.assertIsNone(mirror.tester_id)
 
   # TryMirror normalization ****************************************************
@@ -73,51 +84,65 @@ def RunSteps(api: DEPS):
 
   # Normalization of a BuilderId
   builder_id = chromium_types.BuilderId.create_for_group(
-      'fake-group', 'fake-builder')
+    'fake-group', 'fake-builder'
+  )
   mirror = try_spec_module.TryMirror.normalize(builder_id)
   api.assertions.assertEqual(
-      mirror, try_spec_module.TryMirror.create('fake-group', 'fake-builder'))
+    mirror, try_spec_module.TryMirror.create('fake-group', 'fake-builder')
+  )
 
   # TryDatabase mapping interface **********************************************
-  db = try_spec_module.TryDatabase.create({
+  db = try_spec_module.TryDatabase.create(
+    {
       'fake-try-group-1': {
-          'fake-try-builder-1':
-              try_spec_module.TrySpec.create(mirrors=[
-                  chromium_types.BuilderId.create_for_group(
-                      'group-1', 'builder-1'),
-              ]),
+        'fake-try-builder-1': try_spec_module.TrySpec.create(
+          mirrors=[
+            chromium_types.BuilderId.create_for_group('group-1', 'builder-1'),
+          ]
+        ),
       },
       'fake-try-group-2': {
-          'fake-try-builder-2':
-              try_spec_module.TrySpec.create(mirrors=[
-                  chromium_types.BuilderId.create_for_group(
-                      'group-2', 'builder-2'),
-              ]),
+        'fake-try-builder-2': try_spec_module.TrySpec.create(
+          mirrors=[
+            chromium_types.BuilderId.create_for_group('group-2', 'builder-2'),
+          ]
+        ),
       },
-  })
+    }
+  )
 
-  try_key_1 = chromium_types.BuilderId.create_for_group('fake-try-group-1',
-                                                        'fake-try-builder-1')
-  try_key_2 = chromium_types.BuilderId.create_for_group('fake-try-group-2',
-                                                        'fake-try-builder-2')
+  try_key_1 = chromium_types.BuilderId.create_for_group(
+    'fake-try-group-1', 'fake-try-builder-1'
+  )
+  try_key_2 = chromium_types.BuilderId.create_for_group(
+    'fake-try-group-2', 'fake-try-builder-2'
+  )
 
   api.assertions.assertEqual(set(db.keys()), {try_key_1, try_key_2})
   api.assertions.assertEqual(
-      db[try_key_1],
-      try_spec_module.TrySpec.create(mirrors=[
-          try_spec_module.TryMirror.create(
-              builder_group='group-1', buildername='builder-1')
-      ]))
+    db[try_key_1],
+    try_spec_module.TrySpec.create(
+      mirrors=[
+        try_spec_module.TryMirror.create(
+          builder_group='group-1', buildername='builder-1'
+        )
+      ]
+    ),
+  )
   api.assertions.assertEqual(
-      db[try_key_2],
-      try_spec_module.TrySpec.create(mirrors=[
-          try_spec_module.TryMirror.create(
-              builder_group='group-2', buildername='builder-2')
-      ]))
+    db[try_key_2],
+    try_spec_module.TrySpec.create(
+      mirrors=[
+        try_spec_module.TryMirror.create(
+          builder_group='group-2', buildername='builder-2'
+        )
+      ]
+    ),
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

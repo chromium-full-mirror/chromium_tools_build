@@ -14,7 +14,12 @@ from xml.dom import minidom
 # Conforms to JaCoCo coverage counter types:
 # https://www.jacoco.org/jacoco/trunk/doc/counters.html
 JAVA_COVERAGE_METRICS = [
-    'instruction', 'branch', 'line', 'complexity', 'method', 'class'
+  'instruction',
+  'branch',
+  'line',
+  'complexity',
+  'method',
+  'class',
 ]
 
 
@@ -40,7 +45,7 @@ def _create_counter_map(counter_list):
     A map of counter types to counter nodes.
   """
   counter_map = {
-      counter.getAttribute('type').lower(): counter for counter in counter_list
+    counter.getAttribute('type').lower(): counter for counter in counter_list
   }
 
   return counter_map
@@ -59,15 +64,18 @@ def _get_covered_and_missed_from_counter(counter):
   return (counter.getAttribute('covered'), counter.getAttribute('missed'))
 
 
-def _get_dict_for_each_element(main_node, auxiliary_node, children_tag,
-                               attribute_tag):
+def _get_dict_for_each_element(
+  main_node, auxiliary_node, children_tag, attribute_tag
+):
   # Returns dictionaries mapping the attribute tag to the node's children.
   main_children = main_node.getElementsByTagName(children_tag)
   auxiliary_children = auxiliary_node.getElementsByTagName(children_tag)
-  main_mapping_dict = _create_attribute_to_object_dict(main_children,
-                                                       attribute_tag)
+  main_mapping_dict = _create_attribute_to_object_dict(
+    main_children, attribute_tag
+  )
   auxiliary_mapping_dict = _create_attribute_to_object_dict(
-      auxiliary_children, attribute_tag)
+    auxiliary_children, attribute_tag
+  )
   return (main_mapping_dict, auxiliary_mapping_dict)
 
 
@@ -84,7 +92,8 @@ def _get_counter_totals_for_tag_name(root_node, tag_name):
   for node in nodes:
     for counter in _get_counters_list(node):
       covered_lines, missed_lines = _get_covered_and_missed_from_counter(
-          counter)
+        counter
+      )
       counter_type = counter.getAttribute('type').lower()
       total_dicts[counter_type]['covered'] += int(covered_lines)
       total_dicts[counter_type]['missed'] += int(missed_lines)
@@ -96,7 +105,8 @@ def _set_higher_counter_in_main(main_counter, auxiliary_counter):
   # Ideally would use min/max on covered and missed, but want to make sure
   # to use the variables from the same counter.
   if int(main_counter.getAttribute('covered')) >= int(
-      auxiliary_counter.getAttribute('covered')):
+    auxiliary_counter.getAttribute('covered')
+  ):
     chosen_counter = main_counter
   else:
     chosen_counter = auxiliary_counter
@@ -106,25 +116,30 @@ def _set_higher_counter_in_main(main_counter, auxiliary_counter):
   main_counter.setAttribute('missed', missed)
 
 
-def _set_higher_method_coverage_in_main(main_method_dict,
-                                        auxiliary_method_dict):
+def _set_higher_method_coverage_in_main(
+  main_method_dict, auxiliary_method_dict
+):
   for method_key in main_method_dict:
     main_method = main_method_dict[method_key]
     if method_key not in auxiliary_method_dict:
       continue
 
     main_counter_map = _create_counter_map(
-        main_method.getElementsByTagName('counter'))
+      main_method.getElementsByTagName('counter')
+    )
     auxiliary_counter_map = _create_counter_map(
-        auxiliary_method_dict[method_key].getElementsByTagName('counter'))
+      auxiliary_method_dict[method_key].getElementsByTagName('counter')
+    )
     for metric in main_counter_map:
       if metric in auxiliary_counter_map:
-        _set_higher_counter_in_main(main_counter_map[metric],
-                                    auxiliary_counter_map[metric])
+        _set_higher_counter_in_main(
+          main_counter_map[metric], auxiliary_counter_map[metric]
+        )
 
 
-def _update_all_nodes_in_main_to_higher_coverage(main_package_dict,
-                                                 auxiliary_package_dict):
+def _update_all_nodes_in_main_to_higher_coverage(
+  main_package_dict, auxiliary_package_dict
+):
   # Go to every (package, class, method) in main_package_dict,
   # compare it against corresponding entity in auxiliary_package_dict
   # and in place update the matching entity in main_package_dict with the
@@ -135,22 +150,27 @@ def _update_all_nodes_in_main_to_higher_coverage(main_package_dict,
       continue
     auxiliary_package = auxiliary_package_dict[key]
     main_class_dict, auxiliary_class_dict = _get_dict_for_each_element(
-        main_package, auxiliary_package, 'class', 'name')
-    _add_missing_nodes_to_main(main_class_dict, auxiliary_class_dict,
-                               main_package, 'name')
+      main_package, auxiliary_package, 'class', 'name'
+    )
+    _add_missing_nodes_to_main(
+      main_class_dict, auxiliary_class_dict, main_package, 'name'
+    )
     for class_key in main_class_dict:
       main_class = main_class_dict[class_key]
       if class_key not in auxiliary_class_dict:
         continue
       auxiliary_class = auxiliary_class_dict[class_key]
       main_method_dict, auxiliary_method_dict = _get_dict_for_each_element(
-          main_class, auxiliary_class, 'method', 'line')
-      _add_missing_nodes_to_main(main_method_dict, auxiliary_method_dict,
-                                 main_class, 'line')
+        main_class, auxiliary_class, 'method', 'line'
+      )
+      _add_missing_nodes_to_main(
+        main_method_dict, auxiliary_method_dict, main_class, 'line'
+      )
       # Rewrite the values in method coverage based on which is higher.
       # Then update the counter at the class level.
-      _set_higher_method_coverage_in_main(main_method_dict,
-                                          auxiliary_method_dict)
+      _set_higher_method_coverage_in_main(
+        main_method_dict, auxiliary_method_dict
+      )
       _update_children_counters(main_class, 'method')
 
     _update_package_source_files_in_main(main_package, auxiliary_package)
@@ -173,9 +193,9 @@ def _update_counters_from_total(counter_nodes, total_dicts):
     counter.setAttribute('missed', str(total_dicts[counter_type]['missed']))
 
 
-def _update_line_code_coverage_nodes_in_main(main_dict, auxiliary_dict,
-                                             main_source_node,
-                                             auxiliary_source_node):
+def _update_line_code_coverage_nodes_in_main(
+  main_dict, auxiliary_dict, main_source_node, auxiliary_source_node
+):
   # Gets the nodes that are in the auxiliary_tree and not in the main_tree.
   # If the node exists in both trees, choose the one that higher
   # covered instructions (ci).
@@ -208,8 +228,9 @@ def _update_line_code_coverage_nodes_in_main(main_dict, auxiliary_dict,
     for inst in instruction_list:
       total_dict[inst] += int(main_line.getAttribute(inst))
 
-  _update_source_file_counters_in_main(main_source_node, auxiliary_source_node,
-                                       total_dict)
+  _update_source_file_counters_in_main(
+    main_source_node, auxiliary_source_node, total_dict
+  )
 
 
 def _update_package_source_files_in_main(main_package, auxiliary_package):
@@ -220,38 +241,50 @@ def _update_package_source_files_in_main(main_package, auxiliary_package):
   auxiliary_sources = auxiliary_package.getElementsByTagName('sourcefile')
 
   main_name_to_sources_dict = _create_attribute_to_object_dict(
-      main_sources, 'name')
+    main_sources, 'name'
+  )
   auxiliary_name_to_sources_dict = _create_attribute_to_object_dict(
-      auxiliary_sources, 'name')
+    auxiliary_sources, 'name'
+  )
 
   # Adds any source files that are in the auxiliary package that
   # are not in the main package.
-  _add_missing_nodes_to_main(main_name_to_sources_dict,
-                             auxiliary_name_to_sources_dict, main_package,
-                             'name')
+  _add_missing_nodes_to_main(
+    main_name_to_sources_dict,
+    auxiliary_name_to_sources_dict,
+    main_package,
+    'name',
+  )
 
   for key in main_name_to_sources_dict:
     main_source_node = main_name_to_sources_dict[key]
     auxiliary_source_node = auxiliary_name_to_sources_dict[key]
     main_line_dict = _create_attribute_to_object_dict(
-        main_source_node.getElementsByTagName('line'), 'nr')
+      main_source_node.getElementsByTagName('line'), 'nr'
+    )
     auxiliary_line_dict = _create_attribute_to_object_dict(
-        auxiliary_source_node.getElementsByTagName('line'), 'nr')
+      auxiliary_source_node.getElementsByTagName('line'), 'nr'
+    )
     # Takes all the "lines" in the source file, then compares them and chooses
     # the "line" that has higher coverage.
-    _update_line_code_coverage_nodes_in_main(main_line_dict,
-                                             auxiliary_line_dict,
-                                             main_source_node,
-                                             auxiliary_source_node)
+    _update_line_code_coverage_nodes_in_main(
+      main_line_dict,
+      auxiliary_line_dict,
+      main_source_node,
+      auxiliary_source_node,
+    )
 
 
-def _update_source_file_counters_in_main(main_source_node,
-                                         auxiliary_source_node, total_dict):
+def _update_source_file_counters_in_main(
+  main_source_node, auxiliary_source_node, total_dict
+):
   # Update the counter nodes of the source file.
   main_counter_dict = _create_attribute_to_object_dict(
-      main_source_node.getElementsByTagName('counter'), 'type')
+    main_source_node.getElementsByTagName('counter'), 'type'
+  )
   auxiliary_counter_dict = _create_attribute_to_object_dict(
-      auxiliary_source_node.getElementsByTagName('counter'), 'type')
+    auxiliary_source_node.getElementsByTagName('counter'), 'type'
+  )
   for inst in main_counter_dict:
     main_counter = main_counter_dict[inst]
     if inst == 'INSTRUCTION':
@@ -262,11 +295,13 @@ def _update_source_file_counters_in_main(main_source_node,
       main_counter.setAttribute('missed', str(total_dict['mb']))
     else:
       covered_val = max(
-          int(main_counter.getAttribute('covered')),
-          int(auxiliary_counter_dict[inst].getAttribute('covered')))
+        int(main_counter.getAttribute('covered')),
+        int(auxiliary_counter_dict[inst].getAttribute('covered')),
+      )
       missed_val = min(
-          int(main_counter.getAttribute('missed')),
-          int(auxiliary_counter_dict[inst].getAttribute('missed')))
+        int(main_counter.getAttribute('missed')),
+        int(auxiliary_counter_dict[inst].getAttribute('missed')),
+      )
       main_counter.setAttribute('covered', str(covered_val))
       main_counter.setAttribute('missed', str(missed_val))
 
@@ -323,14 +358,20 @@ def combine_xml_files(combined_file_path, main_file_path, auxiliary_file_path):
   main_packages = main_tree.getElementsByTagName('package')
   auxiliary_packages = auxiliary_tree.getElementsByTagName('package')
   main_name_to_package_dict = _create_attribute_to_object_dict(
-      main_packages, 'name')
+    main_packages, 'name'
+  )
   auxiliary_name_to_package_dict = _create_attribute_to_object_dict(
-      auxiliary_packages, 'name')
-  _update_all_nodes_in_main_to_higher_coverage(main_name_to_package_dict,
-                                               auxiliary_name_to_package_dict)
-  _add_missing_nodes_to_main(main_name_to_package_dict,
-                             auxiliary_name_to_package_dict, main_report_node,
-                             'name')
+    auxiliary_packages, 'name'
+  )
+  _update_all_nodes_in_main_to_higher_coverage(
+    main_name_to_package_dict, auxiliary_name_to_package_dict
+  )
+  _add_missing_nodes_to_main(
+    main_name_to_package_dict,
+    auxiliary_name_to_package_dict,
+    main_report_node,
+    'name',
+  )
 
   # Only updates one layer of counters, ie doesn't do grandchildren.
   _update_children_counters(main_report_node, 'package')
@@ -342,15 +383,18 @@ def combine_xml_files(combined_file_path, main_file_path, auxiliary_file_path):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--main-xml', required=True, help='Path to the main xml coverage report.')
+    '--main-xml', required=True, help='Path to the main xml coverage report.'
+  )
   parser.add_argument(
-      '--auxiliary-xml',
-      required=True,
-      help='Path to the auxiliary xml coverage report.')
+    '--auxiliary-xml',
+    required=True,
+    help='Path to the auxiliary xml coverage report.',
+  )
   parser.add_argument(
-      '--combined-xml',
-      required=True,
-      help='Destination path to write the combined xml coverage report.')
+    '--combined-xml',
+    required=True,
+    help='Destination path to write the combined xml coverage report.',
+  )
   args = parser.parse_args()
   combine_xml_files(args.combined_xml, args.device_xml, args.host_xml)
 

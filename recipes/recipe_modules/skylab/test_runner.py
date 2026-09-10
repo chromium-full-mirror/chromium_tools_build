@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import urllib
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum)
+from RECIPE_MODULES.build.attr_utils import attrib, attrs, enum
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 
 
@@ -14,22 +14,24 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 class TestRunner:
   """Wrapper of a Skylab test runner build for Chromium recipe's usage.
 
-    Attributes listed here are for infra usages. All test results should be
-    fetched from ResultDB.
+  Attributes listed here are for infra usages. All test results should be
+  fetched from ResultDB.
 
-    Attributes:
-    * url - Link of the test runner build.
-    * log_url - Link of the stainless(raw log) of the test. Unlike the log in
-      RDB, this also includes system log for troubleshooting infra related
-      issues.
-    * status - Build status.
-    * shard - Shard of this test run.
+  Attributes:
+  * url - Link of the test runner build.
+  * log_url - Link of the stainless(raw log) of the test. Unlike the log in
+    RDB, this also includes system log for troubleshooting infra related
+    issues.
+  * status - Build status.
+  * shard - Shard of this test run.
   """
+
   name = attrib(str, default='')
   url = attrib(str, default='')
   log_url = attrib(str, default='')
   status = attrib(
-      enum(common_pb2.Status.values()), default=common_pb2.STATUS_UNSPECIFIED)
+    enum(common_pb2.Status.values()), default=common_pb2.STATUS_UNSPECIFIED
+  )
   shard = attrib(int, default=-1)
   log_dir = attrib(str, default='')
 

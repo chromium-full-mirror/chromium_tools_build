@@ -28,16 +28,15 @@ class PrecommitDetails:
 
 
 class Generator:
-
   def __init__(
-      self,
-      chromium_tests_api,
-      got_revisions: Mapping[str, str],
-      checkout_path: Path,
-      remote_tests_only: bool = False,
-      precommit_details: PrecommitDetails | None = None,
-      scripts_compile_targets_fn: Callable[[], Iterable[str]] | None = None,
-      force_experimental_tests: bool = False,
+    self,
+    chromium_tests_api,
+    got_revisions: Mapping[str, str],
+    checkout_path: Path,
+    remote_tests_only: bool = False,
+    precommit_details: PrecommitDetails | None = None,
+    scripts_compile_targets_fn: Callable[[], Iterable[str]] | None = None,
+    force_experimental_tests: bool = False,
   ):
     """
     Args:
@@ -61,24 +60,25 @@ class Generator:
     self._checkout_path = checkout_path
     self._remote_tests_only = remote_tests_only
     self._precommit_details = precommit_details
-    self._scripts_compile_targets_fn = (
-        scripts_compile_targets_fn or (lambda: []))
+    self._scripts_compile_targets_fn = scripts_compile_targets_fn or (
+      lambda: []
+    )
     self._force_experimental_tests = force_experimental_tests
 
   def generate(
-      self,
-      builder_group: str,
-      builder: str,
-      targets_spec: TargetsSpec,
-      test_names_to_skip: Iterable[str] = (),
+    self,
+    builder_group: str,
+    builder: str,
+    targets_spec: TargetsSpec,
+    test_names_to_skip: Iterable[str] = (),
   ) -> Iterable[steps.AbstractTestSpec]:
 
     def generate_inner():
       for key, handler in (
-          ('gtest_tests', self._generate_gtest_test_spec),
-          ('isolated_scripts', self._generate_isolated_script_test_spec),
-          ('scripts', self._generate_script_test_spec),
-          ('skylab_tests', self._generate_skylab_test_spec),
+        ('gtest_tests', self._generate_gtest_test_spec),
+        ('isolated_scripts', self._generate_isolated_script_test_spec),
+        ('scripts', self._generate_script_test_spec),
+        ('skylab_tests', self._generate_skylab_test_spec),
       ):
         for raw_test_spec in targets_spec.get(key, []):
           test_spec = handler(raw_test_spec)
@@ -88,9 +88,10 @@ class Generator:
     test_names_to_skip = set(test_names_to_skip)
     for raw_test_spec, test_spec in generate_inner():
       test_spec = attr.evolve(
-          test_spec,
-          waterfall_builder_group=builder_group,
-          waterfall_buildername=builder)
+        test_spec,
+        waterfall_builder_group=builder_group,
+        waterfall_buildername=builder,
+      )
       if description := raw_test_spec.get('description'):
         test_spec = attr.evolve(test_spec, description=description)
       test_spec = self._handle_resultdb(raw_test_spec, test_spec)
@@ -100,9 +101,9 @@ class Generator:
       yield test_spec
 
   def _handle_resultdb(
-      self,
-      raw_test_spec: _RawTestSpec,
-      test_spec: steps.AbstractTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
+    test_spec: steps.AbstractTestSpec,
   ) -> steps.ResultDB:
     kwargs = dict(raw_test_spec.get('resultdb', {}))
     if 'result_format' not in kwargs:
@@ -115,8 +116,9 @@ class Generator:
       if isinstance(test_spec, steps.SwarmingIsolatedScriptTestSpec):
         if not kwargs:
           result_format = 'json'
-      elif isinstance(test_spec,
-                      (steps.SwarmingGTestTestSpec, steps.LocalGTestTestSpec)):
+      elif isinstance(
+        test_spec, (steps.SwarmingGTestTestSpec, steps.LocalGTestTestSpec)
+      ):
         result_format = 'gtest'
       if result_format:
         kwargs.setdefault('result_format', result_format)
@@ -128,20 +130,21 @@ class Generator:
     return attr.evolve(test_spec, resultdb=steps.ResultDB.create(**kwargs))
 
   def _handle_experimental(
-      self,
-      raw_test_spec: _RawTestSpec,
-      test_spec: steps.AbstractTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
+    test_spec: steps.AbstractTestSpec,
   ) -> steps.AbstractTestSpec:
     experiment_percentage = raw_test_spec.get('experiment_percentage')
     if experiment_percentage is None or self._force_experimental_tests:
       return test_spec
-    return steps.ExperimentalTestSpec.create(test_spec,
-                                             int(experiment_percentage))
+    return steps.ExperimentalTestSpec.create(
+      test_spec, int(experiment_percentage)
+    )
 
   def _handle_ci_only(
-      self,
-      raw_test_spec: _RawTestSpec,
-      test_spec: steps.AbstractTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
+    test_spec: steps.AbstractTestSpec,
   ) -> steps.AbstractTestSpec:
     """Handle the ci_only attribute of test specs.
 
@@ -165,9 +168,9 @@ class Generator:
     return steps.CiOnlyTestSpec.create(test_spec)
 
   def _handle_skip_test(
-      self,
-      test_spec: steps.AbstractTestSpec,
-      test_names_to_skip: Container[str],
+    self,
+    test_spec: steps.AbstractTestSpec,
+    test_names_to_skip: Container[str],
   ) -> steps.AbstractTestSpec:
     """Handle tests that are being skipped because of previous successs
 
@@ -235,46 +238,42 @@ class Generator:
     cl = (build.input.gerrit_changes or [None])[0]
     if self._precommit_details:
       footer_values = [
-          val.lower() for val in self._precommit_details.footers.get(
-              'Use-Permissive-Angle-Pixel-Comparison', [])
+        val.lower()
+        for val in self._precommit_details.footers.get(
+          'Use-Permissive-Angle-Pixel-Comparison', []
+        )
       ]
       use_permissive_angle_pixel_comparison = 'true' in footer_values
     else:
       use_permissive_angle_pixel_comparison = False
     substitutions = {
-        'buildbucket_project':
-            build.builder.project,
-        'buildbucket_build_id':
-            build.id,
-        'builder_group':
-            self._chromium_tests_api.m.builder_group.for_current,
-        'buildername':
-            build.builder.builder,
-        'buildnumber':
-            build.number,
-        # This is only set on Chromium when using ANGLE as a component. We
-        # use the parent revision when available.
-        'got_angle_revision':
-            (self._got_revisions.get('parent_got_angle_revision') or
-             self._got_revisions.get('got_angle_revision')),
-        # This is only ever set on builders where the primary repo is not
-        # Chromium, such as V8 or WebRTC.
-        'got_cr_revision':
-            self._got_revisions.get('got_cr_revision'),
-        'got_revision': (self._got_revisions.get('got_revision') or
-                         self._got_revisions.get('got_src_revision')),
-        # Similar to got_cr_revision, but for use in repos where the primary
-        # repo is not Chromium and got_cr_revision is not defined.
-        'got_src_revision':
-            self._got_revisions.get('got_src_revision'),
-        'patch_issue':
-            cl.change if cl else None,
-        'patch_set':
-            cl.patchset if cl else None,
-        'use_permissive_angle_pixel_comparison':
-            '1' if use_permissive_angle_pixel_comparison else '0',
-        'xcode_build_version':
-            self._chromium_tests_api.m.chromium.xcode_build_version
+      'buildbucket_project': build.builder.project,
+      'buildbucket_build_id': build.id,
+      'builder_group': self._chromium_tests_api.m.builder_group.for_current,
+      'buildername': build.builder.builder,
+      'buildnumber': build.number,
+      # This is only set on Chromium when using ANGLE as a component. We
+      # use the parent revision when available.
+      'got_angle_revision': (
+        self._got_revisions.get('parent_got_angle_revision')
+        or self._got_revisions.get('got_angle_revision')
+      ),
+      # This is only ever set on builders where the primary repo is not
+      # Chromium, such as V8 or WebRTC.
+      'got_cr_revision': self._got_revisions.get('got_cr_revision'),
+      'got_revision': (
+        self._got_revisions.get('got_revision')
+        or self._got_revisions.get('got_src_revision')
+      ),
+      # Similar to got_cr_revision, but for use in repos where the primary
+      # repo is not Chromium and got_cr_revision is not defined.
+      'got_src_revision': self._got_revisions.get('got_src_revision'),
+      'patch_issue': cl.change if cl else None,
+      'patch_set': cl.patchset if cl else None,
+      'use_permissive_angle_pixel_comparison': '1'
+      if use_permissive_angle_pixel_comparison
+      else '0',
+      'xcode_build_version': self._chromium_tests_api.m.chromium.xcode_build_version,
     }
 
     for conditional in raw_test_spec.get('conditional_args', []):
@@ -287,15 +286,18 @@ class Generator:
           if variable in substitutions:
             return substitutions[variable]
           error_message = "Unknown variable '{}'".format(
-              conditional['variable'])
+            conditional['variable']
+          )
         self._chromium_tests_api.m.step.empty(
-            'Invalid conditional',
-            status=self._chromium_tests_api.m.step.INFRA_FAILURE,
-            step_text='Test spec has invalid conditional: {}\n{}'.format(
-                error_message,
-                self._chromium_tests_api.m.json.dumps(
-                    engine_types.thaw(raw_test_spec), indent=2),
-            ))
+          'Invalid conditional',
+          status=self._chromium_tests_api.m.step.INFRA_FAILURE,
+          step_text='Test spec has invalid conditional: {}\n{}'.format(
+            error_message,
+            self._chromium_tests_api.m.json.dumps(
+              engine_types.thaw(raw_test_spec), indent=2
+            ),
+          ),
+        )
 
       variable = get_variable()
       value = conditional.get('value', '')
@@ -323,10 +325,10 @@ class Generator:
     return normalized
 
   def _generator_common(
-      self,
-      raw_test_spec: _RawTestSpec,
-      swarming_delegate: Callable[..., steps.TestSpec],
-      local_delegate: Callable[..., steps.TestSpec],
+    self,
+    raw_test_spec: _RawTestSpec,
+    swarming_delegate: Callable[..., steps.TestSpec],
+    local_delegate: Callable[..., steps.TestSpec],
   ) -> steps.TestSpec | None:
     """Common logic for generating tests from JSON specs.
 
@@ -351,11 +353,14 @@ class Generator:
     kwargs['full_test_target'] = raw_test_spec.get('test_target')
     kwargs['test_id_prefix'] = raw_test_spec.get('test_id_prefix')
     kwargs['retry_only_failed_tests'] = raw_test_spec.get(
-        'retry_only_failed_tests', True)
+      'retry_only_failed_tests', True
+    )
     kwargs['check_flakiness_for_new_tests'] = raw_test_spec.get(
-        'check_flakiness_for_new_tests', True)
-    kwargs['enable_rts_filtering'] = raw_test_spec.get('enable_rts_filtering',
-                                                       False)
+      'check_flakiness_for_new_tests', True
+    )
+    kwargs['enable_rts_filtering'] = raw_test_spec.get(
+      'enable_rts_filtering', False
+    )
     kwargs['name'] = name
 
     swarming_spec = raw_test_spec.get('swarming', None)
@@ -367,7 +372,8 @@ class Generator:
     kwargs['server'] = swarming_spec.get('server')
     kwargs['dimensions'] = swarming_spec.get('dimensions', {})
     kwargs['optional_dimensions'] = self._normalize_optional_dimensions(
-        swarming_spec.get('optional_dimensions'))
+      swarming_spec.get('optional_dimensions')
+    )
     kwargs['expiration'] = swarming_spec.get('expiration')
     kwargs['containment_type'] = swarming_spec.get('containment_type')
     kwargs['hard_timeout'] = swarming_spec.get('hard_timeout')
@@ -388,11 +394,12 @@ class Generator:
     packages = swarming_spec.get('cipd_packages')
     if packages:
       kwargs['cipd_packages'] = [
-          chromium_swarming.CipdPackage.create(
-              name=p['cipd_package'],
-              version=p['revision'],
-              root=p['location'],
-          ) for p in packages
+        chromium_swarming.CipdPackage.create(
+          name=p['cipd_package'],
+          version=p['revision'],
+          root=p['location'],
+        )
+        for p in packages
       ]
 
     service_account = swarming_spec.get('service_account')
@@ -409,21 +416,26 @@ class Generator:
       if merge_script:
         if merge_script.startswith('//'):
           merge['script'] = self._checkout_path.joinpath(
-              merge_script[2:].replace('/',
-                                       self._chromium_tests_api.m.path.sep))
+            merge_script[2:].replace('/', self._chromium_tests_api.m.path.sep)
+          )
         else:
           self._chromium_tests_api.m.step.empty(
-              'test spec format error',
-              status=self._chromium_tests_api.m.step.FAILURE,
-              log_name='details',
-              log_text=textwrap.wrap(
-                  textwrap.dedent("""\
+            'test spec format error',
+            status=self._chromium_tests_api.m.step.FAILURE,
+            log_name='details',
+            log_text=textwrap.wrap(
+              textwrap.dedent(
+                """\
                       The test target "%s" contains a custom merge_script "%s"
                       that doesn't match the expected format. Custom
                       merge_script entries should be a path relative to the
                       top-level chromium src directory and should start with
                       "//".
-                      """ % (name, merge_script))))
+                      """
+                % (name, merge_script)
+              )
+            ),
+          )
       kwargs['merge'] = chromium_swarming.MergeScript.create(**merge)
 
     trigger_script = dict(raw_test_spec.get('trigger_script', {}))
@@ -432,28 +444,36 @@ class Generator:
       if trigger_script_path:
         if trigger_script_path.startswith('//'):
           trigger_script['script'] = self._checkout_path.joinpath(
-              trigger_script_path[2:].replace(
-                  '/', self._chromium_tests_api.m.path.sep))
+            trigger_script_path[2:].replace(
+              '/', self._chromium_tests_api.m.path.sep
+            )
+          )
         else:
           self._chromium_tests_api.m.step.empty(
-              'test spec format error',
-              status=self._chromium_tests_api.m.step.FAILURE,
-              log_name='details',
-              log_text=textwrap.wrap(
-                  textwrap.dedent("""\
+            'test spec format error',
+            status=self._chromium_tests_api.m.step.FAILURE,
+            log_name='details',
+            log_text=textwrap.wrap(
+              textwrap.dedent(
+                """\
                   The test target "%s" contains a custom trigger_script "%s"
                   that doesn't match the expected format. Custom trigger_script
                   entries should be a path relative to the top-level chromium
                   src directory and should start with "//".
-                  """ % (name, trigger_script_path))))
+                  """
+                % (name, trigger_script_path)
+              )
+            ),
+          )
       kwargs['trigger_script'] = chromium_swarming.TriggerScript.create(
-          **trigger_script)
+        **trigger_script
+      )
 
     return swarming_delegate(raw_test_spec, **kwargs)
 
   def _generate_gtest_test_spec(
-      self,
-      raw_test_spec: _RawTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
   ) -> steps.TestSpec | None:
     if raw_test_spec.get('use_isolated_scripts_api'):
       return self._generate_isolated_script_test_spec(raw_test_spec)
@@ -464,10 +484,12 @@ class Generator:
       shard_index = raw_test_spec.get('shard_index', 0)
       total_shards = raw_test_spec.get('total_shards', 1)
       if shard_index != 0 or total_shards != 1:
-        args.extend([
+        args.extend(
+          [
             f'--test-launcher-shard-index={shard_index}',
             f'--test-launcher-total-shards={total_shards}',
-        ])
+          ]
+        )
       common_gtest_kwargs['args'] = args
       return common_gtest_kwargs
 
@@ -481,12 +503,13 @@ class Generator:
       kwargs['use_xvfb'] = raw_test_spec.get('use_xvfb', True)
       return steps.LocalGTestTestSpec.create(**kwargs)
 
-    return self._generator_common(raw_test_spec, gtest_swarming_delegate,
-                                  gtest_local_delegate)
+    return self._generator_common(
+      raw_test_spec, gtest_swarming_delegate, gtest_local_delegate
+    )
 
   def _generate_script_test_spec(
-      self,
-      raw_test_spec: _RawTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
   ) -> steps.TestSpec | None:
     if self._remote_tests_only:
       return None
@@ -505,18 +528,18 @@ class Generator:
       script_args.extend(raw_test_spec.get('non_precommit_args', []))
 
     return steps.ScriptTestSpec.create(
-        name,
-        script=script,
-        compile_targets=[
-            string.Template(s).safe_substitute(substitutions)
-            for s in all_compile_targets.get(script, [])
-        ],
-        script_args=script_args,
+      name,
+      script=script,
+      compile_targets=[
+        string.Template(s).safe_substitute(substitutions)
+        for s in all_compile_targets.get(script, [])
+      ],
+      script_args=script_args,
     )
 
   def _generate_isolated_script_test_spec(
-      self,
-      raw_test_spec: _RawTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
   ) -> steps.TestSpec | None:
 
     def isolated_script_delegate_common(raw_test_spec, name=None, **kwargs):
@@ -533,21 +556,27 @@ class Generator:
       # TODO(nednguyen, kbr): Remove this once all the GYP builds are converted
       # to GN.
       common_kwargs['isolate_profile_data'] = raw_test_spec.get(
-          'isolate_profile_data')
+        'isolate_profile_data'
+      )
 
       # TODO(tansell): Remove this once custom handling of results is no longer
       # needed.
       results_handler_name = raw_test_spec.get('results_handler', 'default')
       if results_handler_name not in steps.ALLOWED_RESULT_HANDLER_NAMES:
         self._chromium_tests_api.m.step.empty(
-            'isolated_scripts spec format error',
-            status=self._chromium_tests_api.m.step.FAILURE,
-            log_name='details',
-            log_text=textwrap.wrap(
-                textwrap.dedent("""\
+          'isolated_scripts spec format error',
+          status=self._chromium_tests_api.m.step.FAILURE,
+          log_name='details',
+          log_text=textwrap.wrap(
+            textwrap.dedent(
+              """\
                     The isolated_scripts target "%s" contains a custom
                     results_handler "%s" but that result handler was not found.
-                    """ % (name, results_handler_name))))
+                    """
+              % (name, results_handler_name)
+            )
+          ),
+        )
       common_kwargs['results_handler_name'] = results_handler_name
 
       return common_kwargs
@@ -560,41 +589,53 @@ class Generator:
       kwargs.update(isolated_script_delegate_common(raw_test_spec, **kwargs))
       return steps.LocalIsolatedScriptTestSpec.create(**kwargs)
 
-    return self._generator_common(raw_test_spec,
-                                  isolated_script_swarming_delegate,
-                                  isolated_script_local_delegate)
+    return self._generator_common(
+      raw_test_spec,
+      isolated_script_swarming_delegate,
+      isolated_script_local_delegate,
+    )
 
   def _generate_skylab_test_spec(
-      self,
-      raw_test_spec: _RawTestSpec,
+    self,
+    raw_test_spec: _RawTestSpec,
   ) -> steps.TestSpec | None:
     kwargs_to_forward = set(
-        k for k in attr.fields_dict(steps.SkylabTestSpec)
-        if not k in ['test_args', 'resultdb'])
+      k
+      for k in attr.fields_dict(steps.SkylabTestSpec)
+      if not k in ['test_args', 'resultdb']
+    )
     common_skylab_kwargs = {
-        k: v for k, v in raw_test_spec.items() if k in kwargs_to_forward
+      k: v for k, v in raw_test_spec.items() if k in kwargs_to_forward
     }
     common_skylab_kwargs['test_args'] = self._get_args_for_test(raw_test_spec)
     common_skylab_kwargs['target_name'] = raw_test_spec.get('test')
-    has_tag_criteria = any(key in common_skylab_kwargs for key in [
+    has_tag_criteria = any(
+      key in common_skylab_kwargs
+      for key in [
         'cros_test_tags',
         'cros_test_tags_exclude',
         'cros_test_names',
         'cros_test_names_exclude',
         'cros_test_names_from_file',
         'cros_test_names_exclude_from_file',
-    ])
+      ]
+    )
     assert common_skylab_kwargs.get('autotest_name') or has_tag_criteria, (
-        f'{raw_test_spec} must have either autotest_name or tag-based criteria'
-        'Autotest name candidates can be: chromium, chromium_Telemetry, '
-        'chromium_Graphics, and etc, or legacy tast.chrome-from-gcs if '
-        'tag-based criteria does not fit the need.')
+      f'{raw_test_spec} must have either autotest_name or tag-based criteria'
+      'Autotest name candidates can be: chromium, chromium_Telemetry, '
+      'chromium_Graphics, and etc, or legacy tast.chrome-from-gcs if '
+      'tag-based criteria does not fit the need.'
+    )
     # Default test exeuction timeout to half of the total timeout to allow for
     # DUT provisioning and other overhead.
-    if not common_skylab_kwargs.get('max_run_sec') and common_skylab_kwargs.get(
-        'timeout_sec', 0) > 0:
+    if (
+      not common_skylab_kwargs.get('max_run_sec')
+      and common_skylab_kwargs.get('timeout_sec', 0) > 0
+    ):
       common_skylab_kwargs['max_run_sec'] = int(
-          common_skylab_kwargs.get('timeout_sec') / 2)
+        common_skylab_kwargs.get('timeout_sec') / 2
+      )
 
     return steps.SkylabTestSpec.create(
-        raw_test_spec.get('name'), **common_skylab_kwargs)
+      raw_test_spec.get('name'), **common_skylab_kwargs
+    )

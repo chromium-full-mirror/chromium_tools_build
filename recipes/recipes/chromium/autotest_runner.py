@@ -4,9 +4,9 @@
 """Triggers building and running tests for the Autotest script"""
 
 from PB.recipes.build.chromium.autotest_runner import (
-    InputProperties,
-    EnvProperties,
-    AutotestInvocation,
+  InputProperties,
+  EnvProperties,
+  AutotestInvocation,
 )
 from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -23,12 +23,12 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_checkout, gn
 from RECIPE_MODULES.depot_tools import depot_tools, gclient, osx_sdk
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    platform,
-    properties,
-    step,
+  context,
+  file,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -55,13 +55,14 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
   step: step.TEST_API
 
+
 PROPERTIES = InputProperties
 
 
 def run_autotest(
-    api: DEPS,
-    base_cmd: list[str],
-    test: AutotestInvocation,
+  api: DEPS,
+  base_cmd: list[str],
+  test: AutotestInvocation,
 ):
   cmd = base_cmd + list(test.args)
   step_name = test.step_name or f"autotest: {' '.join(test.args)}"
@@ -69,21 +70,23 @@ def run_autotest(
 
 
 def run_tests(api: DEPS, properties: InputProperties, src_dir, build_dir):
-  with api.depot_tools.on_path(), api.context(
-      cwd=src_dir, env={
-          'LANG': 'en_US.UTF-8',
-          'PYTHONIOENCODING': 'utf-8'
-      }):
+  with (
+    api.depot_tools.on_path(),
+    api.context(
+      cwd=src_dir, env={'LANG': 'en_US.UTF-8', 'PYTHONIOENCODING': 'utf-8'}
+    ),
+  ):
     autotest_path = src_dir / "tools" / "autotest.py"
     base_cmd = [autotest_path, "-C", build_dir, "--run-all"]
     for test in properties.tests:
       run_autotest(api, base_cmd, test)
 
+
 def RunSteps(api: RecipeApi, properties: InputProperties):
   if not properties.tests:
     return result_pb.RawResult(
-        status=common_pb.SUCCESS,
-        summary_markdown="No tests provided in InputProperties. Exiting early.",
+      status=common_pb.SUCCESS,
+      summary_markdown="No tests provided in InputProperties. Exiting early.",
     )
 
   ctx = api.osx_sdk('mac') if api.platform.is_mac else api.context()
@@ -104,79 +107,88 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      "happy_path",
-      api.properties(
-          InputProperties(tests=[
-              AutotestInvocation(
-                  step_name="run base/strings",
-                  args=["base/strings"],
-              ),
-              AutotestInvocation(
-                  step_name="run pickle_unittest",
-                  args=["base/pickle_unittest.cc"],
-              ),
-          ])),
-      api.post_process(
-          StepCommandRE,
-          "run base/strings",
-          [
-              ".*tools/autotest.py",
-              "-C",
-              ".*",
-              "--run-all",
-              "base/strings",
-          ],
-      ),
-      api.post_process(
-          StepCommandRE,
-          "run pickle_unittest",
-          [
-              ".*tools/autotest.py",
-              "-C",
-              ".*",
-              "--run-all",
-              "base/pickle_unittest.cc",
-          ],
-      ),
-      api.post_process(DropExpectation),
+    "happy_path",
+    api.properties(
+      InputProperties(
+        tests=[
+          AutotestInvocation(
+            step_name="run base/strings",
+            args=["base/strings"],
+          ),
+          AutotestInvocation(
+            step_name="run pickle_unittest",
+            args=["base/pickle_unittest.cc"],
+          ),
+        ]
+      )
+    ),
+    api.post_process(
+      StepCommandRE,
+      "run base/strings",
+      [
+        ".*tools/autotest.py",
+        "-C",
+        ".*",
+        "--run-all",
+        "base/strings",
+      ],
+    ),
+    api.post_process(
+      StepCommandRE,
+      "run pickle_unittest",
+      [
+        ".*tools/autotest.py",
+        "-C",
+        ".*",
+        "--run-all",
+        "base/pickle_unittest.cc",
+      ],
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      "mac_happy_path",
-      api.platform('mac', 64),
-      api.properties(
-          InputProperties(tests=[
-              AutotestInvocation(
-                  step_name="run base/strings",
-                  args=["base/strings"],
-              ),
-          ])),
-      api.post_process(DropExpectation),
+    "mac_happy_path",
+    api.platform('mac', 64),
+    api.properties(
+      InputProperties(
+        tests=[
+          AutotestInvocation(
+            step_name="run base/strings",
+            args=["base/strings"],
+          ),
+        ]
+      )
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      "empty_inputs",
-      api.properties(InputProperties(tests=[])),
-      api.expect_status("SUCCESS"),
-      api.post_process(DropExpectation),
+    "empty_inputs",
+    api.properties(InputProperties(tests=[])),
+    api.expect_status("SUCCESS"),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      "implicit_step_name",
-      api.properties(
-          InputProperties(tests=[
-              AutotestInvocation(args=["StringUtilTest.IsStringUTF8"]),
-          ])),
-      api.post_process(
-          StepCommandRE,
-          "autotest: StringUtilTest.IsStringUTF8",
-          [
-              ".*tools/autotest.py",
-              "-C",
-              ".*",
-              "--run-all",
-              "StringUtilTest.IsStringUTF8",
-          ],
-      ),
-      api.post_process(DropExpectation),
+    "implicit_step_name",
+    api.properties(
+      InputProperties(
+        tests=[
+          AutotestInvocation(args=["StringUtilTest.IsStringUTF8"]),
+        ]
+      )
+    ),
+    api.post_process(
+      StepCommandRE,
+      "autotest: StringUtilTest.IsStringUTF8",
+      [
+        ".*tools/autotest.py",
+        "-C",
+        ".*",
+        "--run-all",
+        "StringUtilTest.IsStringUTF8",
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

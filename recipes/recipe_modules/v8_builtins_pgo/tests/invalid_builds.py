@@ -32,8 +32,8 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'unsupported-bucket',
-      api.buildbucket.ci_build(bucket='unsupported-bucket', revision=None),
-      api.expect_exception('AssertionError'),
-      api.post_process(DropExpectation),
+    'unsupported-bucket',
+    api.buildbucket.ci_build(bucket='unsupported-bucket', revision=None),
+    api.expect_exception('AssertionError'),
+    api.post_process(DropExpectation),
   )

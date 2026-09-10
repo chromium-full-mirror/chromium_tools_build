@@ -24,8 +24,9 @@ def avg_duration(running_history):
   return sum(durations) * 1.0 / len(durations)
 
 
-def calc_repeat_times_based_on_failing_rate(target_reproducing_rate,
-                                            failure_rate):
+def calc_repeat_times_based_on_failing_rate(
+  target_reproducing_rate, failure_rate
+):
   """Based on the [failure_rate] for an individual run, returns the number of
   repeat times that would result a [target_reproducing_rate]."""
   if failure_rate <= 0:
@@ -33,4 +34,5 @@ def calc_repeat_times_based_on_failing_rate(target_reproducing_rate,
   if failure_rate >= 1:
     return 1
   return math.ceil(
-      math.log(1 - target_reproducing_rate) / math.log(1 - failure_rate))
+    math.log(1 - target_reproducing_rate) / math.log(1 - failure_rate)
+  )

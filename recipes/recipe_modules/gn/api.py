@@ -10,8 +10,8 @@ from recipe_engine import recipe_api
 
 from . import constants
 
-class GnApi(recipe_api.RecipeApi):
 
+class GnApi(recipe_api.RecipeApi):
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self._desc_cache = {}
@@ -84,8 +84,9 @@ class GnApi(recipe_api.RecipeApi):
         step_text when using the default behavior for displaying GN args.
     """
     location = location or self.DEFAULT
-    assert location in (self.DEFAULT, self.TEXT, self.LOGS), \
-        "location must be one of gn.DEFAULT, gn.TEXT or gn.LOGS"
+    assert location in (self.DEFAULT, self.TEXT, self.LOGS), (
+      "location must be one of gn.DEFAULT, gn.TEXT or gn.LOGS"
+    )
 
     lines = args.splitlines()
 
@@ -94,8 +95,9 @@ class GnApi(recipe_api.RecipeApi):
         max_text_lines = self._DEFAULT_MAX_TEXT_LINES
       if len(lines) > max_text_lines:
         result.presentation.step_text += (
-            '<br/>Count of GN args (%d) exceeds limit (%d),'
-            ' presented in logs instead') % (len(lines), max_text_lines)
+          '<br/>Count of GN args (%d) exceeds limit (%d),'
+          ' presented in logs instead'
+        ) % (len(lines), max_text_lines)
         location = self.LOGS
 
     if location == self.LOGS:
@@ -103,8 +105,9 @@ class GnApi(recipe_api.RecipeApi):
     else:
       result.presentation.step_text += '<br/>'.join([''] + lines)
 
-  def get_args(self, build_dir, location=None, max_text_lines=None,
-               step_name=None):
+  def get_args(
+    self, build_dir, location=None, max_text_lines=None, step_name=None
+  ):
     """Get the GN args for the build.
 
     A step will be executed that fetches the args.gn file and adds the contents
@@ -128,21 +131,31 @@ class GnApi(recipe_api.RecipeApi):
     """
     args, result = self.read_args(build_dir, step_name=step_name)
     reformatted_args = self.reformat_args(args)
-    self.present_args(result, reformatted_args,
-                      location=location, max_text_lines=max_text_lines)
+    self.present_args(
+      result, reformatted_args, location=location, max_text_lines=max_text_lines
+    )
     return args
 
   def _gn_cmd(self, name, cmd, gn_path=None, log_name='gn output', **kwargs):
     if not gn_path:
       gn_path = self.m.depot_tools.gn_py_path
     return self.m.step(
-        name,
-        cmd=['python3', gn_path] + list(cmd),
-        stdout=self.m.raw_io.output_text(name=log_name, add_output_log=True),
-        **kwargs)
+      name,
+      cmd=['python3', gn_path] + list(cmd),
+      stdout=self.m.raw_io.output_text(name=log_name, add_output_log=True),
+      **kwargs,
+    )
 
-  def refs(self, build_dir, inputs, all_deps=True, output_type=None,
-           output_format='label', step_name='calculate gn refs', **kwargs):
+  def refs(
+    self,
+    build_dir,
+    inputs,
+    all_deps=True,
+    output_type=None,
+    output_format='label',
+    step_name='calculate gn refs',
+    **kwargs,
+  ):
     """Find reverse dependencies for a given set of inputs.
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_refs for
@@ -162,12 +175,13 @@ class GnApi(recipe_api.RecipeApi):
     Returns:
       The set of dependencies found.
     """
-    assert isinstance(inputs, list), \
-        'Inputs to GN-refs must be a list of files or labels.'
+    assert isinstance(inputs, list), (
+      'Inputs to GN-refs must be a list of files or labels.'
+    )
     cmd = [
-        'refs',
-        '-q',  # Don't print a warning when no refs are found.
-        '--as=%s' % output_format,
+      'refs',
+      '-q',  # Don't print a warning when no refs are found.
+      '--as=%s' % output_format,
     ]
     if all_deps:
       cmd += ['--all']
@@ -179,14 +193,16 @@ class GnApi(recipe_api.RecipeApi):
     output = step_result.stdout
     return set(output.splitlines())
 
-  def desc(self,
-           build_dir,
-           label_or_pattern,
-           what_to_show,
-           *flags,
-           step_name='Run gn desc',
-           use_cache=False,
-           **kwargs):
+  def desc(
+    self,
+    build_dir,
+    label_or_pattern,
+    what_to_show,
+    *flags,
+    step_name='Run gn desc',
+    use_cache=False,
+    **kwargs,
+  ):
     """Displays information about a given target or config.
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_desc for
@@ -204,8 +220,9 @@ class GnApi(recipe_api.RecipeApi):
     Returns:
       The list of dependencies found.
     """
-    is_cacheable = ((what_to_show == 'deps' and '--all' in flags) or
-                    (what_to_show == 'runtime_deps'))
+    is_cacheable = (what_to_show == 'deps' and '--all' in flags) or (
+      what_to_show == 'runtime_deps'
+    )
     cache_key = (str(build_dir), label_or_pattern, what_to_show, flags)
 
     if use_cache and is_cacheable and cache_key in self._desc_cache:
@@ -221,8 +238,14 @@ class GnApi(recipe_api.RecipeApi):
 
     return output
 
-  def ls(self, build_dir, inputs, output_type=None, output_format='label',
-         step_name='list gn targets'):
+  def ls(
+    self,
+    build_dir,
+    inputs,
+    output_type=None,
+    output_format='label',
+    step_name='list gn targets',
+  ):
     """List targets for a given set of inputs.
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_ls for
@@ -239,11 +262,12 @@ class GnApi(recipe_api.RecipeApi):
     Returns:
       The set of targets found.
     """
-    assert isinstance(inputs, list), \
-        'Inputs to GN-ls must be a list of file or label patterns.'
+    assert isinstance(inputs, list), (
+      'Inputs to GN-ls must be a list of file or label patterns.'
+    )
     cmd = [
-        'ls',
-        '--as=%s' % output_format,
+      'ls',
+      '--as=%s' % output_format,
     ]
     if output_type:
       cmd += ['--type=%s' % output_type]
@@ -253,11 +277,9 @@ class GnApi(recipe_api.RecipeApi):
     output = step_result.stdout
     return set(output.splitlines())
 
-  def gen(self,
-          build_dir,
-          step_name='gn gen',
-          args=None,
-          write_ide_json_filename=None):
+  def gen(
+    self, build_dir, step_name='gn gen', args=None, write_ide_json_filename=None
+  ):
     """Runs gn gen to generate build files with existing or new gn args
 
     See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_gen for

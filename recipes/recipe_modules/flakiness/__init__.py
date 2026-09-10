@@ -12,32 +12,32 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    isolate,
-    tar,
+  chromium,
+  chromium_checkout,
+  isolate,
+  tar,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gerrit,
-    gsutil,
-    tryserver,
+  bot_update,
+  gerrit,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    commit_position,
-    file,
-    futures,
-    json,
-    led,
-    luci_analysis,
-    path,
-    platform,
-    properties,
-    resultdb,
-    runtime,
-    step,
-    time,
+  buildbucket,
+  commit_position,
+  file,
+  futures,
+  json,
+  led,
+  luci_analysis,
+  path,
+  platform,
+  properties,
+  resultdb,
+  runtime,
+  step,
+  time,
 )
 
 
@@ -65,7 +65,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   time: time.API
   tar: tar.API
-
 
 
 from .api import FlakinessApi as API

@@ -1,8 +1,7 @@
 # Copyright 2024 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Buildbot recipe to build and test Dawn standalone using CMake.
-"""
+"""Buildbot recipe to build and test Dawn standalone using CMake."""
 
 from dataclasses import dataclass
 
@@ -11,24 +10,24 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import dawn
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    gsutil,
-    osx_sdk,
+  bot_update,
+  depot_tools,
+  gclient,
+  gsutil,
+  osx_sdk,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-    time,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
+  time,
 )
 
 
@@ -67,6 +66,7 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
   step: step.TEST_API
 
+
 from contextlib import contextmanager
 from dataclasses import dataclass
 
@@ -81,7 +81,8 @@ DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 def _new_ensure_file(api: DEPS):
   return api.cipd.EnsureFile().with_paranoid_mode(
-      api.cipd.ParanoidMode.CHECK_INTEGRITY)
+    api.cipd.ParanoidMode.CHECK_INTEGRITY
+  )
 
 
 def _checkout_steps(api: DEPS):
@@ -106,9 +107,9 @@ def _checkout_steps(api: DEPS):
     # hooks relative to the variable "root" which is set to . by default and
     # then to 'dawn' on bots here:
     api.gclient.c.solutions[0].custom_vars = {
-        'dawn_root': 'dawn',
-        'fetch_cmake': 'True',  # Fetch cmake
-        'dawn_node': 'True',  # Fetch deps for dawn.node
+      'dawn_root': 'dawn',
+      'fetch_cmake': 'True',  # Fetch cmake
+      'dawn_node': 'True',  # Fetch deps for dawn.node
     }
     update_result = api.bot_update.ensure_checkout()
     api.gclient.runhooks()
@@ -124,8 +125,9 @@ def _install_android_deps(api: DEPS):
   # Install Java 17
   java_ensure_path = _new_ensure_file(api)
   java_install_path = api.path.cache_dir / 'java'
-  java_ensure_path.add_package("chromium/third_party/jdk",
-                               "BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C")
+  java_ensure_path.add_package(
+    "chromium/third_party/jdk", "BXZwbslDFpYhPRuG8hBh2z7ApP36ZG-ZfkBWrkpnPl4C"
+  )
 
   api.cipd.ensure(java_install_path, java_ensure_path, "Install JDK 17")
   env_paths.append(java_install_path / 'bin')
@@ -134,27 +136,32 @@ def _install_android_deps(api: DEPS):
   android_sdk_ensure_path = _new_ensure_file(api)
   android_sdk_install_path = api.path.cache_dir / 'android_sdk'
   android_sdk_packages = {
-      'chromium/third_party/android_sdk/public/build-tools/34.0.0': 'latest',
-      'chromium/third_party/android_sdk/public/platform-tools': 'latest',
-      'chromium/third_party/android_sdk/public/platforms/android-34': 'latest',
-      'chromium/third_party/android_sdk/public/cmdline-tools': 'latest'
+    'chromium/third_party/android_sdk/public/build-tools/34.0.0': 'latest',
+    'chromium/third_party/android_sdk/public/platform-tools': 'latest',
+    'chromium/third_party/android_sdk/public/platforms/android-34': 'latest',
+    'chromium/third_party/android_sdk/public/cmdline-tools': 'latest',
   }
   for pkg, version in android_sdk_packages.items():
     android_sdk_ensure_path.add_package(pkg, version)
 
-  api.cipd.ensure(android_sdk_install_path, android_sdk_ensure_path,
-                  "Install Android SDK")
+  api.cipd.ensure(
+    android_sdk_install_path, android_sdk_ensure_path, "Install Android SDK"
+  )
 
   # Accept SDK licenses
-  android_sdkmanager_path = android_sdk_install_path / 'cmdline-tools' / 'latest' / 'bin' / 'sdkmanager'
+  android_sdkmanager_path = (
+    android_sdk_install_path / 'cmdline-tools' / 'latest' / 'bin' / 'sdkmanager'
+  )
   api.step(
-      'Accept Android SDK Licenses', [android_sdkmanager_path, '--licenses'],
-      stdin=api.raw_io.input_text('y\n' * 100))
+    'Accept Android SDK Licenses',
+    [android_sdkmanager_path, '--licenses'],
+    stdin=api.raw_io.input_text('y\n' * 100),
+  )
 
   # Install Gradle
   gradle_ensure_path = _new_ensure_file(api)
   gradle_install_path = api.path.cache_dir / 'gradle'
-  #TODO(b/347893657): Replace flutter/gradle with a custom gradle package for dawn
+  # TODO(b/347893657): Replace flutter/gradle with a custom gradle package for dawn
   gradle_ensure_path.add_package("flutter/gradle", "version:8.9")
   api.cipd.ensure(gradle_install_path, gradle_ensure_path, "Install Gradle 8")
   env_paths.append(gradle_install_path / 'bin')
@@ -187,8 +194,9 @@ def _install_clang(api: DEPS):
   # elif api.platform.is_mac:
   #   package_name = 'mac-amd64'
   #   package_hash = 'fDkN9wRoOjxDSowpeqX2rRdHF3sgPEbM9ulbizq9kCQC'
-  ensure_file.add_package(f'fuchsia/third_party/clang/{package_name}',
-                          package_hash, 'clang')
+  ensure_file.add_package(
+    f'fuchsia/third_party/clang/{package_name}', package_hash, 'clang'
+  )
   api.cipd.ensure(install_path, ensure_file, "Install Clang")
   env_paths.append(install_path / 'clang/bin')
   return env_paths
@@ -204,50 +212,51 @@ def windows_sdk(api: DEPS, source_dir):
   try:
     with api.step.nest('Read Windows SDK environment'):
       toolchain_data = api.file.read_json(
-          'read build/win_toolchain.json',
-          source_dir.joinpath('build', 'win_toolchain.json'),
-          test_data={
-              'win_sdk':
-                  'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
-              'path':
-                  'win_toolchain\\vs_files\\version_hash',
-              'runtime_dirs': [
-                  'win_toolchain\\vs_files\\version_hash\\sys64',
-                  'win_toolchain\\vs_files\\version_hash\\sys32',
-                  'win_toolchain\\vs_files\\version_hash\\sysarm64',
-              ],
-              'wdk':
-                  'win_toolchain\\vs_files\\version_hash\\wdk',
-          })
+        'read build/win_toolchain.json',
+        source_dir.joinpath('build', 'win_toolchain.json'),
+        test_data={
+          'win_sdk': 'win_toolchain\\vs_files\\version_hash\\Windows Kits\\10',
+          'path': 'win_toolchain\\vs_files\\version_hash',
+          'runtime_dirs': [
+            'win_toolchain\\vs_files\\version_hash\\sys64',
+            'win_toolchain\\vs_files\\version_hash\\sys32',
+            'win_toolchain\\vs_files\\version_hash\\sysarm64',
+          ],
+          'wdk': 'win_toolchain\\vs_files\\version_hash\\wdk',
+        },
+      )
 
       arch_data = api.file.read_json(
-          'read SetEnv.x64.json',
-          api.path.join(toolchain_data['win_sdk'], 'bin', 'SetEnv.x64.json'),
-          test_data={
-              'env': {
-                  'PATH': [['Windows Kits', '10', 'bin', 'version', 'x64']],
-              },
-          })
+        'read SetEnv.x64.json',
+        api.path.join(toolchain_data['win_sdk'], 'bin', 'SetEnv.x64.json'),
+        test_data={
+          'env': {
+            'PATH': [['Windows Kits', '10', 'bin', 'version', 'x64']],
+          },
+        },
+      )
 
       env_prefixes = {}
       for k in arch_data['env']:
         env_prefixes[k] = [
-            api.path.join(*([toolchain_data['path']] + e))
-            for e in arch_data['env'][k]
+          api.path.join(*([toolchain_data['path']] + e))
+          for e in arch_data['env'][k]
         ]
 
       env = {
-          'WINDOWSSDKDIR': toolchain_data['win_sdk'],
-          'WDK_DIR': toolchain_data['wdk']
+        'WINDOWSSDKDIR': toolchain_data['win_sdk'],
+        'WDK_DIR': toolchain_data['wdk'],
       }
       env_prefixes['PATH'] += toolchain_data['runtime_dirs'] + [
-          toolchain_data['path']
+        toolchain_data['path']
       ]
       # Echo what we've parsed
-      log_text = 'env:\n' + '\n'.join([
-          f'{k}={v}' for (k, v) in env.items()
-      ]) + '\n\nenv_prefixes:\n' + '\n'.join(
-          [f'{k}={",".join(v)}' for (k, v) in env_prefixes.items()])
+      log_text = (
+        'env:\n'
+        + '\n'.join([f'{k}={v}' for (k, v) in env.items()])
+        + '\n\nenv_prefixes:\n'
+        + '\n'.join([f'{k}={",".join(v)}' for (k, v) in env_prefixes.items()])
+      )
       api.step.empty('Display env and env_prefixes', log_text=log_text)
 
     with api.context(env=env, env_prefixes=env_prefixes):
@@ -256,15 +265,17 @@ def windows_sdk(api: DEPS, source_dir):
     # cl.exe automatically starts background mspdbsrv.exe daemon which
     # needs to be manually stopped so Swarming can tidy up after itself.
     api.step(
-        'Kill mspdbsrv (if running)',
-        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
-        raise_on_failure=False,
-        ok_ret='any')
+      'Kill mspdbsrv (if running)',
+      ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+      raise_on_failure=False,
+      ok_ret='any',
+    )
 
 
 @dataclass
 class CMakeFixedArgs:
   '''Args to CMake that shouldn't change for a given build'''
+
   target_cpu: str
   debug: bool
   clang: bool
@@ -276,27 +287,44 @@ class CMakeFixedArgs:
 
 # Make a CMake build for Dawn. Returns the build_path, which is unique based
 # on cmake args.
-def _cmake_build(flavor,
-                 api: DEPS,
-                 source_dir,
-                 fixed_args: CMakeFixedArgs,
-                 dawn_node=False,
-                 build_as_other=False,
-                 enable_readers_and_writers=True,
-                 build_fuzzers=False,
-                 targets=None):
+def _cmake_build(
+  flavor,
+  api: DEPS,
+  source_dir,
+  fixed_args: CMakeFixedArgs,
+  dawn_node=False,
+  build_as_other=False,
+  enable_readers_and_writers=True,
+  build_fuzzers=False,
+  targets=None,
+):
   if targets is None:
     targets = ['all']
   with api.step.nest(f'CMake build {flavor}'):
-    return _do_cmake_build(flavor, api, source_dir, fixed_args, dawn_node,
-                           build_as_other, enable_readers_and_writers,
-                           build_fuzzers, targets)
+    return _do_cmake_build(
+      flavor,
+      api,
+      source_dir,
+      fixed_args,
+      dawn_node,
+      build_as_other,
+      enable_readers_and_writers,
+      build_fuzzers,
+      targets,
+    )
 
 
-def _do_cmake_build(flavor, api: DEPS, source_dir, fixed_args: CMakeFixedArgs,
-                    dawn_node: bool, build_as_other: bool,
-                    enable_readers_and_writers: bool, build_fuzzers: bool,
-                    targets: list):
+def _do_cmake_build(
+  flavor,
+  api: DEPS,
+  source_dir,
+  fixed_args: CMakeFixedArgs,
+  dawn_node: bool,
+  build_as_other: bool,
+  enable_readers_and_writers: bool,
+  build_fuzzers: bool,
+  targets: list,
+):
   build_env_vars = {}
 
   # Cross-compilation with CMake is painful, requiring toolchain files
@@ -310,48 +338,53 @@ def _do_cmake_build(flavor, api: DEPS, source_dir, fixed_args: CMakeFixedArgs,
     return "1" if v else "0"
 
   cmake_args = [
-      '-GNinja',
-      f'-DCMAKE_BUILD_TYPE={"DEBUG" if fixed_args.debug else "RELEASE"}',
-      f'-DTINT_BUILD_BENCHMARKS={cmake_bool_arg(fixed_args.build_benchmarks)}',
-      '-DTINT_RANDOMIZE_HASHES=1',
-      '-DDAWN_WERROR=1',
-      '-DDAWN_BUILD_TESTS=1',
-      f'-DDAWN_USE_BUILT_DXC={cmake_bool_arg(fixed_args.build_dxc)}',
-      f'-DTINT_BUILD_SPV_READER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_WGSL_READER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_GLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_HLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_MSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_SPV_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DTINT_BUILD_WGSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
-      f'-DDAWN_ENABLE_ASAN={cmake_bool_arg(fixed_args.asan)}',
-      f'-DDAWN_ENABLE_UBSAN={cmake_bool_arg(fixed_args.ubsan)}',
-      f'-DDAWN_BUILD_NODE_BINDINGS={cmake_bool_arg(dawn_node)}',
-      f'-DTINT_BUILD_AS_OTHER_OS={cmake_bool_arg(build_as_other)}',
-
-      # Debian Bullseye Wayland headers conflict with GLFW's Wayland protocol
-      # codegen. TODO(https://crbug.com/517575882): Reenable once the sysroot
-      # is updated to a newer Debian version.
-      '-DDAWN_USE_WAYLAND=0',
+    '-GNinja',
+    f'-DCMAKE_BUILD_TYPE={"DEBUG" if fixed_args.debug else "RELEASE"}',
+    f'-DTINT_BUILD_BENCHMARKS={cmake_bool_arg(fixed_args.build_benchmarks)}',
+    '-DTINT_RANDOMIZE_HASHES=1',
+    '-DDAWN_WERROR=1',
+    '-DDAWN_BUILD_TESTS=1',
+    f'-DDAWN_USE_BUILT_DXC={cmake_bool_arg(fixed_args.build_dxc)}',
+    f'-DTINT_BUILD_SPV_READER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_WGSL_READER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_GLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_HLSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_MSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_SPV_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DTINT_BUILD_WGSL_WRITER={cmake_bool_arg(enable_readers_and_writers)}',
+    f'-DDAWN_ENABLE_ASAN={cmake_bool_arg(fixed_args.asan)}',
+    f'-DDAWN_ENABLE_UBSAN={cmake_bool_arg(fixed_args.ubsan)}',
+    f'-DDAWN_BUILD_NODE_BINDINGS={cmake_bool_arg(dawn_node)}',
+    f'-DTINT_BUILD_AS_OTHER_OS={cmake_bool_arg(build_as_other)}',
+    # Debian Bullseye Wayland headers conflict with GLFW's Wayland protocol
+    # codegen. TODO(https://crbug.com/517575882): Reenable once the sysroot
+    # is updated to a newer Debian version.
+    '-DDAWN_USE_WAYLAND=0',
   ]
   if fixed_args.clang:
-    cmake_args.extend([
+    cmake_args.extend(
+      [
         f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(build_fuzzers)}',
-    ])
+      ]
+    )
     if api.platform.is_linux:
-      cmake_args.extend([
+      cmake_args.extend(
+        [
           '-DCMAKE_C_COMPILER=clang',
           '-DCMAKE_CXX_COMPILER=clang++',
-      ])
+        ]
+      )
       # On Linux, use the x64 sysroot specified in DEPS
       sysroot = source_dir.joinpath('build/linux/debian_bullseye_amd64-sysroot')
       cmake_args.extend([f'-DCMAKE_SYSROOT={sysroot}'])
 
   # Use the hermetic toolchain on Mac so that the OS version used does not matter.
   if api.platform.is_mac:
-    cmake_args.extend([
+    cmake_args.extend(
+      [
         '-DCMAKE_TOOLCHAIN_FILE=../src/cmake/HermeticXcode/HermeticXcode.cmake',
-    ])
+      ]
+    )
 
   # Always use the same build directory so that incremental builds are faster.
   # Note that this directory is not cached.
@@ -363,8 +396,9 @@ def _do_cmake_build(flavor, api: DEPS, source_dir, fixed_args: CMakeFixedArgs,
 
   with api.context(cwd=source_dir, env_prefixes={'PATH': [ninja_path]}):
     api.step(
-        f'CMake generate step for {flavor}',
-        [cmake_path, '-S', str(source_dir), '-B', build_path] + cmake_args)
+      f'CMake generate step for {flavor}',
+      [cmake_path, '-S', str(source_dir), '-B', build_path] + cmake_args,
+    )
 
   step_desc = f'Compile {flavor}'
 
@@ -374,7 +408,8 @@ def _do_cmake_build(flavor, api: DEPS, source_dir, fixed_args: CMakeFixedArgs,
       yield t
 
   cmake_build_cmd = [cmake_path, '--build', build_path, '--parallel'] + list(
-      gen_targets())
+    gen_targets()
+  )
   with api.context(env=build_env_vars):
     api.step(step_desc, cmake_build_cmd)
   return build_path
@@ -410,11 +445,10 @@ def RunSteps(api: DEPS, properties):
     if api.platform.is_linux:
       env_paths.extend(_install_android_deps(api))
     with (
-        api.context(env_prefixes={'PATH': env_paths}),
-        api.osx_sdk('mac'),
-        windows_sdk(api, source_dir),
+      api.context(env_prefixes={'PATH': env_paths}),
+      api.osx_sdk('mac'),
+      windows_sdk(api, source_dir),
     ):
-
       # Run shell scripts with bash on Windows
       shell_wrapper = ('bash', '--') if api.platform.is_win else ()
 
@@ -422,47 +456,56 @@ def RunSteps(api: DEPS, properties):
         # Run these checks only on Linux, no need to check on Win/Mac
         if api.platform.is_linux:
           api.step(
-              'Check for no CRLF', ['./tools/check-no-crlf'],
-              wrapper=shell_wrapper)
+            'Check for no CRLF',
+            ['./tools/check-no-crlf'],
+            wrapper=shell_wrapper,
+          )
           api.step('Run cpplint', ['./tools/lint'], wrapper=shell_wrapper)
           api.step(
-              'Run go tool unittests', ['go', 'test', './...'],
-              wrapper=shell_wrapper)
+            'Run go tool unittests',
+            ['go', 'test', './...'],
+            wrapper=shell_wrapper,
+          )
           with api.context(cwd=source_dir.joinpath('tools', 'android')):
-            api.step('Run Kotlin unit tests',
-                     ['gradle', ':webgpu:testDebugUnitTest'])
+            api.step(
+              'Run Kotlin unit tests', ['gradle', ':webgpu:testDebugUnitTest']
+            )
 
       cmake_fixed_args = CMakeFixedArgs(
-          target_cpu,
-          debug,
-          clang,
-          asan,
-          ubsan,
-          # Skip benchmarks on Mac to speed up the build
-          build_benchmarks=not api.platform.is_mac,
-          # Skip dxc on Mac to speed up the build
-          build_dxc=not api.platform.is_mac)
+        target_cpu,
+        debug,
+        clang,
+        asan,
+        ubsan,
+        # Skip benchmarks on Mac to speed up the build
+        build_benchmarks=not api.platform.is_mac,
+        # Skip dxc on Mac to speed up the build
+        build_dxc=not api.platform.is_mac,
+      )
 
       # Only build and test fuzzers on Linux
       build_fuzzers = api.platform.is_linux
 
       build_path = _cmake_build(
-          'default targets',
-          api,
-          source_dir,
-          cmake_fixed_args,
-          build_fuzzers=build_fuzzers)
-      rel_build_path = str(api.path.relpath(build_path,
-                                            source_dir)).replace('\\', '/')
+        'default targets',
+        api,
+        source_dir,
+        cmake_fixed_args,
+        build_fuzzers=build_fuzzers,
+      )
+      rel_build_path = str(api.path.relpath(build_path, source_dir)).replace(
+        '\\', '/'
+      )
 
       _cmake_build(
-          'default targets with dawn.node enabled',
-          api,
-          source_dir,
-          cmake_fixed_args,
-          dawn_node=True,
-          build_fuzzers=build_fuzzers,
-          targets=['dawn.node'])
+        'default targets with dawn.node enabled',
+        api,
+        source_dir,
+        cmake_fixed_args,
+        dawn_node=True,
+        build_fuzzers=build_fuzzers,
+        targets=['dawn.node'],
+      )
 
       tint_unittests_cmd = [build_path / 'tint_unittests']
       if api.platform.is_win and debug:
@@ -474,23 +517,38 @@ def RunSteps(api: DEPS, properties):
       if build_fuzzers:
         with api.context(cwd=source_dir):
           api.step(
-              'Check WGSL fuzzer',
-              ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
-              wrapper=shell_wrapper)
+            'Check WGSL fuzzer',
+            ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
+            wrapper=shell_wrapper,
+          )
           api.step(
-              'Check IR fuzzer', [
-                  './tools/run', 'fuzz', '--check', '--ir', '--build',
-                  rel_build_path
-              ],
-              wrapper=shell_wrapper)
+            'Check IR fuzzer',
+            [
+              './tools/run',
+              'fuzz',
+              '--check',
+              '--ir',
+              '--build',
+              rel_build_path,
+            ],
+            wrapper=shell_wrapper,
+          )
 
       with api.context(cwd=source_dir):
-        tint_exe = f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
+        tint_exe = (
+          f'{rel_build_path}/tint{".exe" if api.platform.is_win else ""}'
+        )
 
-        api.step('Check generated benchmark inputs header', [
-            'python3', './src/tint/cmd/bench/generate_benchmark_inputs.py',
-            'wgsl', tint_exe, '--check-stale'
-        ])
+        api.step(
+          'Check generated benchmark inputs header',
+          [
+            'python3',
+            './src/tint/cmd/bench/generate_benchmark_inputs.py',
+            'wgsl',
+            tint_exe,
+            '--check-stale',
+          ],
+        )
 
         if (api.platform.is_win or api.platform.is_mac) and debug:
           # TODO(crbug.com/42251089): GLSL is ~7x slower on Windows debug builds
@@ -498,92 +556,100 @@ def RunSteps(api: DEPS, properties):
         else:
           e2e_test_formats = 'wgsl,spvasm,msl,hlsl,glsl'
         api.step(
-            'Run Tint end-to-end tests', [
-                './tools/run', 'tests', '--tint', tint_exe, '--verbose',
-                '--format', e2e_test_formats
-            ],
-            wrapper=shell_wrapper)
+          'Run Tint end-to-end tests',
+          [
+            './tools/run',
+            'tests',
+            '--tint',
+            tint_exe,
+            '--verbose',
+            '--format',
+            e2e_test_formats,
+          ],
+          wrapper=shell_wrapper,
+        )
 
       # Skip building 'other' on Windows as we hit _CRT_SECURE_NO_WARNINGS related to
       # std::getenv, and it's not worth fixing.
       if not api.platform.is_win:
         _cmake_build(
-            '_other.cc files',
-            api,
-            source_dir,
-            cmake_fixed_args,
-            build_as_other=True,
-            build_fuzzers=build_fuzzers,
-            targets=['tint_cmd_tint_cmd'])
-
-      _cmake_build(
-          'disabled readers and writers',
+          '_other.cc files',
           api,
           source_dir,
           cmake_fixed_args,
-          enable_readers_and_writers=False,
-          build_fuzzers=False,  # Cannot build fuzzers without readers/writers enabled
-          targets=['tint_api'])
+          build_as_other=True,
+          build_fuzzers=build_fuzzers,
+          targets=['tint_cmd_tint_cmd'],
+        )
+
+      _cmake_build(
+        'disabled readers and writers',
+        api,
+        source_dir,
+        cmake_fixed_args,
+        enable_readers_and_writers=False,
+        build_fuzzers=False,  # Cannot build fuzzers without readers/writers enabled
+        targets=['tint_api'],
+      )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'linux',
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='linux', git_repo=DAWN_REPO),
+    'linux',
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn', builder='linux', git_repo=DAWN_REPO
+    ),
   )
   yield api.test(
-      'linux_clang',
-      api.properties(clang=True),
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='linux', git_repo=DAWN_REPO),
+    'linux_clang',
+    api.properties(clang=True),
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn', builder='linux', git_repo=DAWN_REPO
+    ),
   )
   yield api.test(
-      'linux_asan',
-      api.properties(asan=True),
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='linux', git_repo=DAWN_REPO),
+    'linux_asan',
+    api.properties(asan=True),
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn', builder='linux', git_repo=DAWN_REPO
+    ),
   )
   yield api.test(
-      'linux_ubsan',
-      api.properties(ubsan=True),
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='linux', git_repo=DAWN_REPO),
+    'linux_ubsan',
+    api.properties(ubsan=True),
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn', builder='linux', git_repo=DAWN_REPO
+    ),
   )
   yield api.test(
-      'mac',
-      api.platform('mac', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='mac', git_repo=DAWN_REPO),
+    'mac',
+    api.platform('mac', 64),
+    api.buildbucket.ci_build(project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'mac_debug',
-      api.platform('mac', 64),
-      api.properties(debug=True),
-      api.buildbucket.ci_build(
-          project='dawn', builder='mac', git_repo=DAWN_REPO),
+    'mac_debug',
+    api.platform('mac', 64),
+    api.properties(debug=True),
+    api.buildbucket.ci_build(project='dawn', builder='mac', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'win',
-      api.platform('win', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='win', git_repo=DAWN_REPO),
+    'win',
+    api.platform('win', 64),
+    api.buildbucket.ci_build(project='dawn', builder='win', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'win_debug',
-      api.platform('win', 64),
-      api.properties(debug=True),
-      api.buildbucket.ci_build(
-          project='dawn', builder='win', git_repo=DAWN_REPO),
+    'win_debug',
+    api.platform('win', 64),
+    api.properties(debug=True),
+    api.buildbucket.ci_build(project='dawn', builder='win', git_repo=DAWN_REPO),
   )
   yield api.test(
-      'win_clang',
-      api.platform('win', 64),
-      api.properties(clang=True),
-      api.buildbucket.ci_build(
-          project='dawn', builder='win', git_repo=DAWN_REPO),
+    'win_clang',
+    api.platform('win', 64),
+    api.properties(clang=True),
+    api.buildbucket.ci_build(project='dawn', builder='win', git_repo=DAWN_REPO),
   )

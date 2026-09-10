@@ -19,13 +19,13 @@ from RECIPE_MODULES.build import v8, v8_auto_roller
 from RECIPE_MODULES.depot_tools import gclient
 from RECIPE_MODULES.infra import cloudkms
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    properties,
-    scheduler,
-    service_account,
-    step,
+  context,
+  file,
+  path,
+  properties,
+  scheduler,
+  service_account,
+  step,
 )
 
 
@@ -50,10 +50,13 @@ class TEST_DEPS(RecipeTestApi):
   gclient: gclient.TEST_API
   properties: properties.TEST_API
 
+
 EXPORTER_CREDS_NAME = 'test262-import-export'
 APPROVER_CREDS_NAME = 'test262-approve'
-KMS_CRYPTO_KEY = ('projects/v8-infra/locations/global/keyRings/'
-                  'test262-import-export/cryptoKeys/default')
+KMS_CRYPTO_KEY = (
+  'projects/v8-infra/locations/global/keyRings/'
+  'test262-import-export/cryptoKeys/default'
+)
 
 
 def RunSteps(api: DEPS):
@@ -65,9 +68,9 @@ def RunSteps(api: DEPS):
   is_approver = api.properties.get('approver', False)
   creds_name = APPROVER_CREDS_NAME if is_approver else EXPORTER_CREDS_NAME
   api.cloudkms.decrypt(
-      KMS_CRYPTO_KEY,
-      api.repo_resource('recipes', 'recipes', 'v8', 'assets', creds_name),
-      creds_file,
+    KMS_CRYPTO_KEY,
+    api.repo_resource('recipes', 'recipes', 'v8', 'assets', creds_name),
+    creds_file,
   )
   patch_gerrit_credentials(api, creds_file)
 
@@ -81,16 +84,17 @@ def RunSteps(api: DEPS):
 
   with api.context(cwd=v8_path):
     args = [
-        '--credentials-json',
-        creds_file,
-        '--surface-failures-to-gerrit',
-        '--blink-tools-path',
-        blink_tools_path,
+      '--credentials-json',
+      creds_file,
+      '--surface-failures-to-gerrit',
+      '--blink-tools-path',
+      blink_tools_path,
     ]
 
     if is_approver:
-      api.v8.vpython('Approve exported PRs in Test262', script,
-                     args + ['--approver'])
+      api.v8.vpython(
+        'Approve exported PRs in Test262', script, args + ['--approver']
+      )
     else:
       api.v8.vpython('Export V8 commits to Test262', script, args)
 
@@ -99,13 +103,14 @@ def configure(api: DEPS):
   api.gclient.set_config('chromium')
   api.gclient.apply_config('v8_bare')
   # TODO: Remove this in finalized version. This is just for testing.
-  #api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
+  # api.gclient.c.revisions['v8'] = "49cd7d838c98245268b12d2c75538faa3e402ac0"
 
 
 def patch_gerrit_credentials(api: DEPS, creds_file):
   # read the file as json
-  creds = api.file.read_json("read credetials", creds_file,
-                             test_data={}, include_log=False)
+  creds = api.file.read_json(
+    "read credetials", creds_file, test_data={}, include_log=False
+  )
   creds['GERRIT_USER'] = api.v8_auto_roller.service_account
   creds['GERRIT_TOKEN'] = api.service_account.default().get_access_token(
     scopes=['https://www.googleapis.com/auth/gerritcodereview'],

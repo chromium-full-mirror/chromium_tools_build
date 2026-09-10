@@ -20,18 +20,20 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   step: step.API
 
-from recipe_engine.post_process import (DropExpectation)
+
+from recipe_engine.post_process import DropExpectation
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
 def RunSteps(api: DEPS):
   test_spec = steps.MockTestSpec.create(
-      name=api.properties.get('test_name', 'MockTest'))
+    name=api.properties.get('test_name', 'MockTest')
+  )
   test_spec.get_test(api.chromium_tests)
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(DropExpectation),
+    'basic',
+    api.post_process(DropExpectation),
   )

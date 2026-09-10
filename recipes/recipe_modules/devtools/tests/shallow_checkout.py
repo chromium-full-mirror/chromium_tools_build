@@ -34,25 +34,27 @@ def GenTests(api: TEST_DEPS):
   git_repo = 'https://chromium.googlesource.com/devtools/devtools-frontend'
 
   yield api.test(
-      'try_build',
-      api.buildbucket.try_build(
-          project='devtools',
-          builder='try_builder',
-          git_repo=git_repo,
-          change_number=91827,
-          patch_set=1),
-      api.post_process(post_process.MustRun, 'git fetch'),
-      api.post_process(post_process.MustRun, 'git checkout'),
-      api.post_process(post_process.MustRun, 'git reset'),
-      api.post_process(post_process.DropExpectation),
+    'try_build',
+    api.buildbucket.try_build(
+      project='devtools',
+      builder='try_builder',
+      git_repo=git_repo,
+      change_number=91827,
+      patch_set=1,
+    ),
+    api.post_process(post_process.MustRun, 'git fetch'),
+    api.post_process(post_process.MustRun, 'git checkout'),
+    api.post_process(post_process.MustRun, 'git reset'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'ci_build',
-      api.buildbucket.ci_build(
-          project='devtools', builder='ci_builder', git_repo=git_repo),
-      api.post_process(post_process.MustRun, 'git fetch'),
-      api.post_process(post_process.MustRun, 'git checkout'),
-      api.post_process(post_process.DoesNotRun, 'git reset'),
-      api.post_process(post_process.DropExpectation),
+    'ci_build',
+    api.buildbucket.ci_build(
+      project='devtools', builder='ci_builder', git_repo=git_repo
+    ),
+    api.post_process(post_process.MustRun, 'git fetch'),
+    api.post_process(post_process.MustRun, 'git checkout'),
+    api.post_process(post_process.DoesNotRun, 'git reset'),
+    api.post_process(post_process.DropExpectation),
   )

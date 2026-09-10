@@ -8,9 +8,10 @@ from collections import defaultdict
 
 from recipe_engine import post_process
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       test_result_pb2)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as test_result_pb2,
+)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb2
 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
@@ -24,10 +25,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_tests, test_utils
 from RECIPE_MODULES.depot_tools import gerrit
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    json,
-    properties,
-    resultdb,
+  assertions,
+  json,
+  properties,
+  resultdb,
 )
 
 
@@ -61,21 +62,24 @@ def RunSteps(api: DEPS):
     var_def = getattr(var, 'def')
     var_def['test_suite'] = suite.name
     invocation_dict = {
-        suite.name + '_inv_id':
-            api.resultdb.Invocation(test_results=[
-                test_result_pb2.TestResult(
-                    test_id=suite.name + '_test_case',
-                    status=test_result_pb2.FAIL,
-                    expected=False,
-                    variant=var)
-            ])
+      suite.name + '_inv_id': api.resultdb.Invocation(
+        test_results=[
+          test_result_pb2.TestResult(
+            test_id=suite.name + '_test_case',
+            status=test_result_pb2.FAIL,
+            expected=False,
+            variant=var,
+          )
+        ]
+      )
     }
-    per_suite_results = util.RDBPerSuiteResults.create(invocation_dict,
-                                                       suite.name, suite.name,
-                                                       1)
+    per_suite_results = util.RDBPerSuiteResults.create(
+      invocation_dict, suite.name, suite.name, 1
+    )
     suite.update_rdb_results('', per_suite_results)
-  should_abort = api.test_utils._should_abort_retry(test_suites, '',
-                                                    {'fake_suite0'})
+  should_abort = api.test_utils._should_abort_retry(
+    test_suites, '', {'fake_suite0'}
+  )
 
   expected_should_abort = api.properties.get('expected_should_abort', False)
   api.assertions.assertEqual(should_abort, expected_should_abort)
@@ -83,56 +87,65 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'disable-retries-footer', api.chromium.try_build(),
-      api.properties(expected_should_abort=True),
-      api.step_data(
-          'parse description',
-          api.json.output({tryserver.constants.SKIP_RETRY_FOOTER: 'true'})),
-      api.post_check(post_process.MustRun, 'retries disabled'),
-      api.post_process(post_process.DropExpectation))
-
-  yield api.test(
-      'disable-retries-footer-failure',
-      api.chromium.try_build(),
-      api.step_data('gerrit changes', retcode=1),
-      api.post_check(post_process.DoesNotRun, 'retries disabled'),
-      api.post_check(post_process.MustRun, 'failure getting footers'),
-      api.post_process(post_process.DropExpectation),
+    'disable-retries-footer',
+    api.chromium.try_build(),
+    api.properties(expected_should_abort=True),
+    api.step_data(
+      'parse description',
+      api.json.output({tryserver.constants.SKIP_RETRY_FOOTER: 'true'}),
+    ),
+    api.post_check(post_process.MustRun, 'retries disabled'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'resultdb-retry-abort',
-      api.chromium.try_build(),
-      api.properties(
-          num_failed_suites=11,
-          expected_should_abort=True,
-          **{
-              '$build/test_utils': {
-                  'min_failed_suites_to_skip_retry': 10,
-              },
-          }),
-      api.post_check(post_process.MustRun, 'abort retry'),
-      # fake_suite0 should not be here as it is allowed.
-      api.post_check(
-          post_process.StepTextEquals, 'abort retry',
-          ('<br/>skip retrying because there are >= 10 test suites '
-           'with test failures and it most likely indicates a '
-           'problem with the CL. These suites being:<br/>'
-           f'{"<br/>".join("fake_suite"+str(i) for i in range(1, 11))}')),
-      api.post_process(post_process.DropExpectation),
+    'disable-retries-footer-failure',
+    api.chromium.try_build(),
+    api.step_data('gerrit changes', retcode=1),
+    api.post_check(post_process.DoesNotRun, 'retries disabled'),
+    api.post_check(post_process.MustRun, 'failure getting footers'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'resultdb-retry-continue',
-      api.chromium.try_build(),
-      api.properties(
-          num_failed_suites=10,
-          expected_should_abort=False,
-          **{
-              '$build/test_utils': {
-                  'min_failed_suites_to_skip_retry': 11,
-              },
-          }),
-      api.post_check(post_process.MustRun, 'proceed with retry'),
-      api.post_process(post_process.DropExpectation),
+    'resultdb-retry-abort',
+    api.chromium.try_build(),
+    api.properties(
+      num_failed_suites=11,
+      expected_should_abort=True,
+      **{
+        '$build/test_utils': {
+          'min_failed_suites_to_skip_retry': 10,
+        },
+      },
+    ),
+    api.post_check(post_process.MustRun, 'abort retry'),
+    # fake_suite0 should not be here as it is allowed.
+    api.post_check(
+      post_process.StepTextEquals,
+      'abort retry',
+      (
+        '<br/>skip retrying because there are >= 10 test suites '
+        'with test failures and it most likely indicates a '
+        'problem with the CL. These suites being:<br/>'
+        f'{"<br/>".join("fake_suite" + str(i) for i in range(1, 11))}'
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'resultdb-retry-continue',
+    api.chromium.try_build(),
+    api.properties(
+      num_failed_suites=10,
+      expected_should_abort=False,
+      **{
+        '$build/test_utils': {
+          'min_failed_suites_to_skip_retry': 11,
+        },
+      },
+    ),
+    api.post_check(post_process.MustRun, 'proceed with retry'),
+    api.post_process(post_process.DropExpectation),
   )

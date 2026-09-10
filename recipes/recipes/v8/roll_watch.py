@@ -17,12 +17,9 @@ from RECIPE_MODULES.build import v8_roll_watcher
 class DEPS(RecipeScriptApi):
   v8_roll_watcher: v8_roll_watcher.API
 
+
 PROPERTIES = {
-    'watched_rollers': Property(
-            help='Roller descriptors',
-            default=[],
-            kind=list
-    )
+  'watched_rollers': Property(help='Roller descriptors', default=[], kind=list)
 }
 
 

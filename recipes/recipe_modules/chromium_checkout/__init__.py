@@ -12,27 +12,27 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_bootstrap,
-    repro_instructions,
-    siso,
+  chromium,
+  chromium_bootstrap,
+  repro_instructions,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    tryserver,
+  bot_update,
+  gclient,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    resultdb,
-    runtime,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  resultdb,
+  runtime,
+  step,
 )
 
 
@@ -55,7 +55,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   repro_instructions: repro_instructions.API
   siso: siso.API
-
 
 
 from .api import ChromiumCheckoutApi as API

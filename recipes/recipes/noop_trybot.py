@@ -24,6 +24,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
 
+
 from recipe_engine import post_process
 
 
@@ -37,7 +38,9 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium.try_build(
-          builder_group='fake-try-group', builder='fake-try-builder'),
-      api.post_process(post_process.DropExpectation))
+    'basic',
+    api.chromium.try_build(
+      builder_group='fake-try-group', builder='fake-try-builder'
+    ),
+    api.post_process(post_process.DropExpectation),
+  )

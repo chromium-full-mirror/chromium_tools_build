@@ -28,16 +28,16 @@ def start_cloudtail(args):
     kwargs['creationflags'] = subprocess.CREATE_NEW_PROCESS_GROUP
 
   cloudtail_cmd = [
-      args.cloudtail_path,
-      'tail',
-      '--project-id',
-      args.cloudtail_project_id,
-      '--log-id',
-      args.cloudtail_log_id,
-      '--path',
-      args.cloudtail_log_path,
-      '--service-account-json',
-      ':gce',
+    args.cloudtail_path,
+    'tail',
+    '--project-id',
+    args.cloudtail_project_id,
+    '--log-id',
+    args.cloudtail_log_id,
+    '--path',
+    args.cloudtail_log_path,
+    '--service-account-json',
+    ':gce',
   ]
 
   proc = subprocess.Popen(cloudtail_cmd, **kwargs)
@@ -72,7 +72,6 @@ def is_running_posix(pid):
 
 
 class NotDiedError(Exception):
-
   def __str__(self):
     return "NotDiedError"
 
@@ -98,16 +97,17 @@ def wait_termination_win(pid):
   import win32event
   import winerror
   import pywintypes
+
   handle = None
   try:
     handle = win32api.OpenProcess(
-        win32con.PROCESS_QUERY_INFORMATION | win32con.SYNCHRONIZE, False, pid
+      win32con.PROCESS_QUERY_INFORMATION | win32con.SYNCHRONIZE, False, pid
     )
     try:
       os.kill(pid, signal.CTRL_C_EVENT)  # pylint: disable=no-member
       print(
-          'CTRL_C_EVENT has been sent to process %d. '
-          'Going to wait for the process finishes.' % pid
+        'CTRL_C_EVENT has been sent to process %d. '
+        'Going to wait for the process finishes.' % pid
       )
     except WindowsError as e:  # pylint: disable=E0602
       # If a target process does not share terminal, we cannot send Ctrl-C.
@@ -129,8 +129,8 @@ def wait_termination_win(pid):
   except OSError as e:
     if e.errno in (errno.ECHILD, errno.EPERM, errno.ESRCH):
       print(
-          'Can\'t send SIGINT to process %d. Already dead? Errno %d.' %
-          (pid, e.errno)
+        'Can\'t send SIGINT to process %d. Already dead? Errno %d.'
+        % (pid, e.errno)
       )
       return
     raise
@@ -158,8 +158,8 @@ def wait_termination(pid):
     except OSError as e:
       if e.errno in (errno.ECHILD, errno.EPERM, errno.ESRCH):
         print(
-            'Can\'t send SIGINT to process %d. Already dead? Errno %d.' %
-            (pid, e.errno)
+          'Can\'t send SIGINT to process %d. Already dead? Errno %d.'
+          % (pid, e.errno)
         )
         return
       raise

@@ -15,10 +15,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import gn
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    path,
-    properties,
-    raw_io,
+  assertions,
+  path,
+  properties,
+  raw_io,
 )
 
 
@@ -36,36 +36,40 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
 
+
 PROPERTIES = {
-    'targets': Property(kind=List(str), default=[]),
-    'output_type': Property(kind=str, default=None),
+  'targets': Property(kind=List(str), default=[]),
+  'output_type': Property(kind=str, default=None),
 }
 
 
 def RunSteps(api: DEPS, targets, output_type):
   targets = api.gn.ls(
-      api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
-      targets,
-      output_type=output_type)
+    api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
+    targets,
+    output_type=output_type,
+  )
   api.assertions.assertEqual(targets, set(['target3', 'target4']))
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(targets=['target1', 'target2']),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target3\ntarget4')),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.properties(targets=['target1', 'target2']),
+    api.step_data(
+      'list gn targets', stdout=api.raw_io.output_text('target3\ntarget4')
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'basic_with_type',
-      api.properties(
-          targets=['target1', 'target2'],
-          output_type='executable',
-      ),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target3\ntarget4')),
-      api.post_process(post_process.DropExpectation),
+    'basic_with_type',
+    api.properties(
+      targets=['target1', 'target2'],
+      output_type='executable',
+    ),
+    api.step_data(
+      'list gn targets', stdout=api.raw_io.output_text('target3\ntarget4')
+    ),
+    api.post_process(post_process.DropExpectation),
   )

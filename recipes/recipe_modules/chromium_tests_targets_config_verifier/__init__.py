@@ -8,21 +8,21 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_tests,
+  chromium,
+  chromium_tests,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    tryserver,
+  bot_update,
+  gclient,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    json,
-    path,
-    properties,
-    step,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  step,
 )
 
 
@@ -39,5 +39,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   step: step.API
   properties: properties.API
+
 
 from .api import ChromiumTestsTargetsConfigVerifierApi as API

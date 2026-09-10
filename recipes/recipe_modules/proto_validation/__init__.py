@@ -35,8 +35,7 @@ from google.protobuf.message import Message
 
 
 class Registry:
-  """A type for registering validators and validating protobuf messages.
-  """
+  """A type for registering validators and validating protobuf messages."""
 
   def __init__(self):
     self._validators_by_proto_type = {}
@@ -67,13 +66,17 @@ class Registry:
       validator for `proto_type`.
     """
     assert issubclass(proto_type, Message), (
-        'validators can only be registered for proto message types, got {!r}'
-        .format(proto_type))
+      'validators can only be registered for proto message types, got {!r}'.format(
+        proto_type
+      )
+    )
 
     def inner(f):
       assert proto_type not in self._validators_by_proto_type, (
-          '{!r} is already registered as validator for {!r}'.format(
-              self._validators_by_proto_type[proto_type], proto_type))
+        '{!r} is already registered as validator for {!r}'.format(
+          self._validators_by_proto_type[proto_type], proto_type
+        )
+      )
       self._validators_by_proto_type[proto_type] = f
       return f
 
@@ -91,7 +94,8 @@ class Registry:
       A list of validation errors for the message.
     """
     assert isinstance(message, Message), (
-        'only proto message objects can be validated, got {!r}'.format(message))
+      'only proto message objects can be validated, got {!r}'.format(message)
+    )
     validator = self._validators_by_proto_type.get(type(message))
     if not validator:
       return []
@@ -136,8 +140,11 @@ class Context:
     Returns:
       A string with the absolute location of the field.
     """
-    location = ('{}.{}'.format(self._location, field)
-                if self._location is not None else field)
+    location = (
+      '{}.{}'.format(self._location, field)
+      if self._location is not None
+      else field
+    )
     if index is not None:
       location = '{}[{!r}]'.format(location, index)
     return location
@@ -171,12 +178,14 @@ class Context:
     if not has_field and not optional:
       self.error('{} is not set'.format(self.get_field_location(field)))
 
-  def validate_repeated_field(self,
-                              message,
-                              field,
-                              optional=False,
-                              allow_default_primitives=False,
-                              callback=None):
+  def validate_repeated_field(
+    self,
+    message,
+    field,
+    optional=False,
+    allow_default_primitives=False,
+    callback=None,
+  ):
     """Validate a repeated field.
 
     Args:

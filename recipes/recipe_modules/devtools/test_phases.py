@@ -9,8 +9,10 @@ import fnmatch
 import gevent
 
 from .commons import Results
-from .test_runner_base import (FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
-                               FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
+from .test_runner_base import (
+  FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
+  FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER,
+)
 
 
 class TaskCoordinator:
@@ -60,8 +62,10 @@ class TaskCoordinator:
       if self._pending:
         task_sets = [task_ids for task_ids, _ in self._pending.values()]
         finished_sets, self._attempts = (
-            self._api.chromium_swarming.wait_for_finished_task_set(
-                task_sets, attempts=self._attempts))
+          self._api.chromium_swarming.wait_for_finished_task_set(
+            task_sets, attempts=self._attempts
+          )
+        )
         for task_set in finished_sets:
           key = frozenset(task_set)
           item = self._pending.pop(key, None)
@@ -89,38 +93,44 @@ def run_test_pipelines(api, runners, affected_files=None):
     if affected_files is None:
       affected_files = api.devtools.get_affected_files()
     touched_tests = [
-        file for file in affected_files
-        if file.endswith('test.ts') or file.endswith('test.api.ts')
+      file
+      for file in affected_files
+      if file.endswith('test.ts') or file.endswith('test.api.ts')
     ]
     presentation.logs['tests'] = touched_tests
     if api.tryserver.is_tryserver:
       skip_tests = api.tryserver.get_footer(
-          FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
+        FLAKE_DETECTION_SKIPPED_TESTS_FOOTER
+      )
       skip_patterns = api.tryserver.get_footer(
-          FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER)
+        FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER
+      )
       touched_tests = [t for t in touched_tests if t not in skip_tests]
       for pattern in skip_patterns:
         touched_tests = [
-            t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
+          t for t in touched_tests if not fnmatch.fnmatch(t, pattern)
         ]
     unowned_tests = [
-        t for t in touched_tests
-        if not any(r.owns_test(t) for r in runners if hasattr(r, 'owns_test'))
+      t
+      for t in touched_tests
+      if not any(r.owns_test(t) for r in runners if hasattr(r, 'owns_test'))
     ]
     if unowned_tests:
       presentation.logs['unowned tests'] = unowned_tests
       presentation.status = api.step.WARNING
       presentation.step_text = (
-          'The following touched tests are not owned by any runner: ' +
-          ', '.join(unowned_tests))
+        'The following touched tests are not owned by any runner: '
+        + ', '.join(unowned_tests)
+      )
 
   def _get_failed_tests_for_runner(test_type_tag):
     inv_id = api.resultdb.current_invocation.replace('invocations/', '')
     response = api.resultdb.query(
-        inv_ids=[inv_id],
-        tr_fields=['testId', 'tags', 'expected'],
-        limit=0,
-        step_name=f'rdb query for {test_type_tag}')
+      inv_ids=[inv_id],
+      tr_fields=['testId', 'tags', 'expected'],
+      limit=0,
+      step_name=f'rdb query for {test_type_tag}',
+    )
     proto_results = [r for res in response.values() for r in res.test_results]
 
     passing_tests = set()
@@ -159,7 +169,8 @@ def run_test_pipelines(api, runners, affected_files=None):
               runner.process_exoneration_results(test_names, coordinator)
               if runner.results.task_failures:
                 presentation.step_text = (
-                    'Failed to exonerate some of the failing tests')
+                  'Failed to exonerate some of the failing tests'
+                )
 
         return runner.results
 
@@ -173,8 +184,9 @@ def run_test_pipelines(api, runners, affected_files=None):
         flake_runner.coverage = False
         with api.step.nest('Detect flakes in new tests'):
           flake_runner.trigger_flake_detection(touched_tests)
-          flake_runner.process_flake_detection_results(touched_tests,
-                                                       coordinator)
+          flake_runner.process_flake_detection_results(
+            touched_tests, coordinator
+          )
         return flake_runner.results
 
       test_future = api.futures.spawn(_run_tests)

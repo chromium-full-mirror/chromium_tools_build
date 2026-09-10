@@ -18,13 +18,12 @@ from RECIPE_MODULES.build import gn
 class DEPS(RecipeScriptApi):
   gn: gn.API
 
-_INPUT_ARGS = ('# some comments\n'
-               'target_cpu = "x86"\n'
-               'use_remoteexec = true\n')
+
+_INPUT_ARGS = '# some comments\ntarget_cpu = "x86"\nuse_remoteexec = true\n'
 
 _EXPECTED_RESULT = {
-    'target_cpu': '"x86"',
-    'use_remoteexec': 'true',
+  'target_cpu': '"x86"',
+  'use_remoteexec': 'true',
 }
 
 
@@ -35,6 +34,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

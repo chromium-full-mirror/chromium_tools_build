@@ -100,8 +100,10 @@ class BotUpdateResultAdapter(CheckoutResult):
     self._real = real_result
     self._source_root = BotUpdateSourceRootAdapter(real_result.source_root)
     self._patch_root = (
-        BotUpdateSourceRootAdapter(real_result.patch_root)
-        if real_result.patch_root else None)
+      BotUpdateSourceRootAdapter(real_result.patch_root)
+      if real_result.patch_root
+      else None
+    )
 
   @property
   def checkout_dir(self) -> Path:
@@ -152,18 +154,19 @@ class CasCheckoutResult(CheckoutResult):
   """Checkout result for test trigger CAS builds."""
 
   def __init__(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      raw_properties: Mapping[str, Any],
-      source_root_name: str,
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    raw_properties: Mapping[str, Any],
+    source_root_name: str,
   ):
     self._checkout_dir = checkout_dir
     self._source_root = CasSourceRoot(source_dir, source_root_name)
     self._properties = self._map_properties(raw_properties)
 
-  def _map_properties(self, raw_properties: Mapping[str,
-                                                    Any]) -> dict[str, Any]:
+  def _map_properties(
+    self, raw_properties: Mapping[str, Any]
+  ) -> dict[str, Any]:
     # Map parent properties to standard got_ properties since they are normally
     # set when getting a full checkout.
     properties = {}

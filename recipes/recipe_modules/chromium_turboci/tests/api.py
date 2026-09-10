@@ -38,28 +38,32 @@ def RunSteps(api: DEPS):
 
   # create nodes to satisfy dependencies
   turboci.write_nodes(
-      turboci.reason('setup'),
-      turboci.check(
-          'source', kind='CHECK_KIND_SOURCE', state='CHECK_STATE_FINAL'))
+    turboci.reason('setup'),
+    turboci.check(
+      'source', kind='CHECK_KIND_SOURCE', state='CHECK_STATE_FINAL'
+    ),
+  )
 
   # exercise create_build_check
   api.chromium_turboci.create_build_check('build', 'source')
   api.chromium_turboci.create_build_check(
-      'build2', 'source', create_analyze_check=True)
+    'build2', 'source', create_analyze_check=True
+  )
 
   # exercise prepare_analyze_check
   callback = api.chromium_turboci.prepare_analyze_check(
-      'analyze',
-      test_targets=['test'],
-      additional_compile_targets=['compile'],
-      analyze_config_names=['config'],
-      additional_exclusions={'file': 'reason'},
+    'analyze',
+    test_targets=['test'],
+    additional_compile_targets=['compile'],
+    analyze_config_names=['config'],
+    additional_exclusions={'file': 'reason'},
   )
   callback('reason', ['compile'], ['test'])
 
   # exercise update_build_check_compile_targets
   api.chromium_turboci.update_build_check_compile_targets(
-      'build', ['target'], 'reason')
+    'build', ['target'], 'reason'
+  )
 
   # exercise set_build_check_planned
   api.chromium_turboci.set_build_check_planned('build', 'reason')
@@ -70,10 +74,12 @@ def RunSteps(api: DEPS):
   api.chromium_turboci.create_build_check('build_final', 'source')
   api.chromium_turboci.set_build_check_planned('build_final', 'reason')
   api.chromium_turboci.finalize_build_check(
-      'build_final',
-      'reason',
-      raw_result=result_pb2.RawResult(
-          status=common_pb.SUCCESS, summary_markdown='markdown'))
+    'build_final',
+    'reason',
+    raw_result=result_pb2.RawResult(
+      status=common_pb.SUCCESS, summary_markdown='markdown'
+    ),
+  )
 
   # exercise get_test_check_id
   api.chromium_turboci.get_test_check_id('test')
@@ -90,12 +96,12 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.ci_build(
-          project='chromium',
-          bucket='ci',
-          builder='builder',
-      ),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.buildbucket.ci_build(
+      project='chromium',
+      bucket='ci',
+      builder='builder',
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )

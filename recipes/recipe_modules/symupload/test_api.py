@@ -8,8 +8,9 @@ from recipe_engine import recipe_test_api
 
 
 class SymuploadTestApi(recipe_test_api.RecipeTestApi):
-
   def __call__(self, symupload_datas):
-    return self.m.properties(**{
+    return self.m.properties(
+      **{
         '$build/symupload': symupload_datas,
-    })
+      }
+    )

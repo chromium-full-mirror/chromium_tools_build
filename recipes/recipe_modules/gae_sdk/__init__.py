@@ -9,8 +9,8 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    platform,
+  cipd,
+  platform,
 )
 
 
@@ -18,5 +18,6 @@ from RECIPE_MODULES.recipe_engine import (
 class DEPS(RecipeScriptApi):
   cipd: cipd.API
   platform: platform.API
+
 
 from .api import GaeSdkApi as API

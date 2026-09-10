@@ -27,9 +27,10 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'tool': Property(kind=str, default='ytdevinfra_android'),
-    'tool_target': Property(kind=str, default=None),
+  'tool': Property(kind=str, default='ytdevinfra_android'),
+  'tool_target': Property(kind=str, default=None),
 }
 
 
@@ -43,56 +44,68 @@ def RunSteps(api: recipe_api.RecipeApi, tool: str, tool_target: str | None):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'droid',
-      api.properties(ytdevinfra_recipe_version=0.2),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
+    'droid',
+    api.properties(ytdevinfra_recipe_version=0.2),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
   )
   yield api.test(
-      'droid-0.1',
-      api.properties(ytdevinfra_recipe_version=0.1, tool='ytdevinfra_android'),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'linux-tv',
-      api.properties(
-          ytdevinfra_recipe_version=0.2,
-          tool='ytdevinfra_tv',
-          tool_target='linux'),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
-  )
-  yield api.test(
-      'linux-tv-0.1',
-      api.properties(
-          ytdevinfra_recipe_version=0.1,
-          tool='ytdevinfra_tv',
-          tool_target='linux'),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
+    'droid-0.1',
+    api.properties(ytdevinfra_recipe_version=0.1, tool='ytdevinfra_android'),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'tv',
-      api.expect_exception('BadConf'),
-      api.properties(
-          ytdevinfra_recipe_version=0.2,
-          tool='ytdevinfra_tv',
-          tool_target='AndroidAPK'),
-      api.post_process(DropExpectation),
+    'linux-tv',
+    api.properties(
+      ytdevinfra_recipe_version=0.2, tool='ytdevinfra_tv', tool_target='linux'
+    ),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
   )
   yield api.test(
-      'tv-0.1',
-      api.expect_exception('BadConf'),
-      api.properties(
-          ytdevinfra_recipe_version=0.1,
-          tool='ytdevinfra_tv',
-          tool_target='AndroidAPK'),
-      api.post_process(DropExpectation),
+    'linux-tv-0.1',
+    api.properties(
+      ytdevinfra_recipe_version=0.1, tool='ytdevinfra_tv', tool_target='linux'
+    ),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'tv',
+    api.expect_exception('BadConf'),
+    api.properties(
+      ytdevinfra_recipe_version=0.2,
+      tool='ytdevinfra_tv',
+      tool_target='AndroidAPK',
+    ),
+    api.post_process(DropExpectation),
+  )
+  yield api.test(
+    'tv-0.1',
+    api.expect_exception('BadConf'),
+    api.properties(
+      ytdevinfra_recipe_version=0.1,
+      tool='ytdevinfra_tv',
+      tool_target='AndroidAPK',
+    ),
+    api.post_process(DropExpectation),
   )

@@ -28,19 +28,19 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    v8,
-    v8_tests,
+  builder_group,
+  chromium,
+  v8,
+  v8_tests,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    json as json_module,
-    path,
-    platform,
-    runtime,
-    step,
+  buildbucket,
+  file,
+  json as json_module,
+  path,
+  platform,
+  runtime,
+  step,
 )
 
 
@@ -70,25 +70,27 @@ class TEST_DEPS(RecipeTestApi):
   v8: v8.TEST_API
   v8_tests: v8_tests.TEST_API
 
+
 PROPERTIES = {
-    # Mapping of custom dependencies to sync (dependency name as in DEPS
-    # file -> deps url).
-    'custom_deps': Property(default=None, kind=dict),
-    # Optional list of default targets. If not specified the implicit "all"
-    # target will be built.
-    'default_targets': Property(default=None, kind=list),
-    # Mapping of additional gclient variables to set (map name -> value).
-    'gclient_vars': Property(default=None, kind=dict),
-    # One of intel|arm|mips.
-    'target_arch': Property(default=None, kind=str),
-    # One of android|fuchsia|linux|mac|win.
-    'target_platform': Property(default=None, kind=str),
-    # Revision to compile
-    'revision': Property(default=None, kind=str),
+  # Mapping of custom dependencies to sync (dependency name as in DEPS
+  # file -> deps url).
+  'custom_deps': Property(default=None, kind=dict),
+  # Optional list of default targets. If not specified the implicit "all"
+  # target will be built.
+  'default_targets': Property(default=None, kind=list),
+  # Mapping of additional gclient variables to set (map name -> value).
+  'gclient_vars': Property(default=None, kind=dict),
+  # One of intel|arm|mips.
+  'target_arch': Property(default=None, kind=str),
+  # One of android|fuchsia|linux|mac|win.
+  'target_platform': Property(default=None, kind=str),
+  # Revision to compile
+  'revision': Property(default=None, kind=str),
 }
 
 CANCELLATION_MESSAGE = (
-    'Parent orchestrator build ended, causing this build to be canceled.')
+  'Parent orchestrator build ended, causing this build to be canceled.'
+)
 
 
 def orchestrator_name(api: DEPS):
@@ -102,8 +104,9 @@ def orchestrator_name(api: DEPS):
   if api.buildbucket.build.builder.bucket.startswith('try'):
     allowed_suffixes = ('_compile_rel', '_compile_dbg', '_compile_perf_try')
     assert name.endswith(allowed_suffixes), (
-        f'Compilator name doesn\'t follow the naming convention. Must end '
-        f'in {", ".join(allowed_suffixes)}, but was {name}.')
+      f'Compilator name doesn\'t follow the naming convention. Must end '
+      f'in {", ".join(allowed_suffixes)}, but was {name}.'
+    )
     prefix, suffix = name.rsplit('_compile_', 1)
     return f'{prefix}_{suffix}'
 
@@ -126,23 +129,31 @@ def emit_compilator_properties(api: DEPS, test_spec):
   properties_step = api.step('compilator properties', [])
   properties_step.presentation.properties['compilator_properties'] = properties
   properties_step.presentation.logs['compilator_properties'] = api.json.dumps(
-      properties, indent=2)
+    properties, indent=2
+  )
 
 
-def compilator_steps(api: DEPS, custom_deps, default_targets, gclient_vars,
-                     target_arch, target_platform, revision):
+def compilator_steps(
+  api: DEPS,
+  custom_deps,
+  default_targets,
+  gclient_vars,
+  target_arch,
+  target_platform,
+  revision,
+):
   v8 = api.v8
   api.v8_tests.load_static_test_configs()
   bot_config = v8.get_bot_config(
-      binary_size_tracking=None,
-      clusterfuzz_archive=None,
-      coverage=None,
-      enable_swarming=True,
-      target_arch=target_arch,
-      target_platform=target_platform,
-      track_build_dependencies=None,
-      triggers=None,
-      triggers_proxy=None,
+    binary_size_tracking=None,
+    clusterfuzz_archive=None,
+    coverage=None,
+    enable_swarming=True,
+    target_arch=target_arch,
+    target_platform=target_platform,
+    track_build_dependencies=None,
+    triggers=None,
+    triggers_proxy=None,
   )
   v8.apply_bot_config(bot_config, revision=revision)
   v8.set_gclient_custom_vars(gclient_vars)
@@ -166,76 +177,96 @@ def compilator_steps(api: DEPS, custom_deps, default_targets, gclient_vars,
   emit_compilator_properties(api, test_spec)
 
 
-def RunSteps(api: DEPS, custom_deps, default_targets, gclient_vars, target_arch,
-             target_platform, revision):
+def RunSteps(
+  api: DEPS,
+  custom_deps,
+  default_targets,
+  gclient_vars,
+  target_arch,
+  target_platform,
+  revision,
+):
   try:
     return compilator_steps(
-        api, custom_deps, default_targets, gclient_vars, target_arch,
-        target_platform, revision)
+      api,
+      custom_deps,
+      default_targets,
+      gclient_vars,
+      target_arch,
+      target_platform,
+      revision,
+    )
   finally:
     if api.runtime.in_global_shutdown:
       # pylint: disable=lost-exception
       # Cancellation can cause all sorts of spurious exceptions.
       return result_pb2.RawResult(
-          status=common_pb.CANCELED,
-          summary_markdown=CANCELLATION_MESSAGE)
+        status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE
+      )
 
 
 def GenTests(api: TEST_DEPS):
   def test(name, builder_name='v8_foobar_compile_rel', status='SUCCESS'):
     build_msg = api.buildbucket.try_build_message(
-        project='v8',
-        revision='deadbeef' * 5,
-        builder=builder_name,
-        git_repo='https://chromium.googlesource.com/v8/v8',
-        change_number=456789,
-        patch_set=12,
-        tags=api.buildbucket.tags(
-            user_agent='cq',
-            buildset='patch/gerrit/chromium-review.googlesource.com/456789/12'),
+      project='v8',
+      revision='deadbeef' * 5,
+      builder=builder_name,
+      git_repo='https://chromium.googlesource.com/v8/v8',
+      change_number=456789,
+      patch_set=12,
+      tags=api.buildbucket.tags(
+        user_agent='cq',
+        buildset='patch/gerrit/chromium-review.googlesource.com/456789/12',
+      ),
     )
     api.buildbucket.update_backend_service_account(
-        build_msg,
-        'v8-try-builder@chops-service-accounts.iam.gserviceaccount.com')
-    return (api.test(name, status=status) +
-            api.builder_group.for_current('tryserver.v8') +
-            api.platform('linux', 64) + api.buildbucket.build(build_msg) +
-            api.v8.example_test_roots('test_checkout') +
-            api.v8.hide_infra_steps())
+      build_msg, 'v8-try-builder@chops-service-accounts.iam.gserviceaccount.com'
+    )
+    return (
+      api.test(name, status=status)
+      + api.builder_group.for_current('tryserver.v8')
+      + api.platform('linux', 64)
+      + api.buildbucket.build(build_msg)
+      + api.v8.example_test_roots('test_checkout')
+      + api.v8.hide_infra_steps()
+    )
 
   test_spec = json.dumps({'tests': [{'name': 'v8testing'}]}, indent=2)
 
   yield (
-      test('basic') +
-      api.v8.test_spec_in_checkout('v8_foobar_rel', test_spec)
+    test('basic') + api.v8.test_spec_in_checkout('v8_foobar_rel', test_spec)
   )
 
   yield (
-      api.test('basic_ci', status='SUCCESS') +
-      api.builder_group.for_current('client.v8') +
-      api.buildbucket.ci_build(
-          project='v8',
-          revision='deadbeef'*5,
-          builder='Random CI builder',
-          git_repo='https://chromium.googlesource.com/v8/v8',
-      ) +
-      api.v8.example_test_roots('test_checkout') +
-      api.v8.hide_infra_steps() +
-      api.v8.test_spec_in_checkout('Random CI builder', test_spec)
+    api.test('basic_ci', status='SUCCESS')
+    + api.builder_group.for_current('client.v8')
+    + api.buildbucket.ci_build(
+      project='v8',
+      revision='deadbeef' * 5,
+      builder='Random CI builder',
+      git_repo='https://chromium.googlesource.com/v8/v8',
+    )
+    + api.v8.example_test_roots('test_checkout')
+    + api.v8.hide_infra_steps()
+    + api.v8.test_spec_in_checkout('Random CI builder', test_spec)
   )
 
   yield (
-      test('windows', 'v8_foobar_compile_dbg') +
-      api.v8.test_spec_in_checkout('v8_foobar_dbg', test_spec) +
-      api.platform('win', 64) +
-      api.post_process(DropExpectation)
+    test('windows', 'v8_foobar_compile_dbg')
+    + api.v8.test_spec_in_checkout('v8_foobar_dbg', test_spec)
+    + api.platform('win', 64)
+    + api.post_process(DropExpectation)
   )
 
-  yield (test('compile_failure', status='FAILURE') +
-         api.step_data('build.compile', retcode=1) +
-         api.post_process(DropExpectation))
+  yield (
+    test('compile_failure', status='FAILURE')
+    + api.step_data('build.compile', retcode=1)
+    + api.post_process(DropExpectation)
+  )
 
-  yield (test('cancellation', status='CANCELED') +
-         api.runtime.global_shutdown_on_step('build.compile') +
-         api.post_process(SummaryMarkdown, CANCELLATION_MESSAGE) +
-         api.post_process(DropExpectation))
+  yield (
+    test('cancellation', status='CANCELED')
+    + api.runtime.global_shutdown_on_step('build.compile')
+    + api.post_process(SummaryMarkdown, CANCELLATION_MESSAGE)
+    + api.post_process(DropExpectation)
+  )

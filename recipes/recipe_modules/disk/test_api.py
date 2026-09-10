@@ -11,6 +11,6 @@ class DiskApi(recipe_test_api.RecipeTestApi):
   def space_usage_result(self):
     GiB = 1 << 30
     return {
-        'capacity': 100 * GiB,
-        'used': 50 * GiB,
+      'capacity': 100 * GiB,
+      'used': 50 * GiB,
     }

@@ -13,9 +13,9 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import gclient
 from RECIPE_MODULES.recipe_engine import (
-    json,
-    properties,
-    step,
+  json,
+  properties,
+  step,
 )
 
 
@@ -25,6 +25,7 @@ class DEPS(RecipeScriptApi):
   json: json.API
   properties: properties.API
   step: step.API
+
 
 from .api import ChromiumBootstrapApi as API
 from .test_api import ChromiumBootstrapApi as TEST_API

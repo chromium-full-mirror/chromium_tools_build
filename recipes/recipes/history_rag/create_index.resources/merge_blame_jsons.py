@@ -19,17 +19,17 @@ def merge_directories(dir_a: str, dir_b: str):
   """
   if not os.path.isdir(dir_a):
     print(
-        f"Error: Destination directory A ('{dir_a}') does not exist or is not a directory."
+      f"Error: Destination directory A ('{dir_a}') does not exist or is not a directory."
     )
     return
   if not os.path.isdir(dir_b):
     print(
-        f"Error: Source directory B ('{dir_b}') does not exist or is not a directory."
+      f"Error: Source directory B ('{dir_b}') does not exist or is not a directory."
     )
     return
 
   print(
-      f"Starting merge: Source '{dir_b}' will be merged into destination '{dir_a}'."
+    f"Starting merge: Source '{dir_b}' will be merged into destination '{dir_a}'."
   )
 
   # Walk through the source directory (dir_b)
@@ -77,16 +77,17 @@ def merge_directories(dir_a: str, dir_b: str):
 
 if __name__ == "__main__":
   parser = argparse.ArgumentParser(
-      description="Merge the contents of one directory (source) into another (destination), overwriting existing files in the destination."
+    description="Merge the contents of one directory (source) into another (destination), overwriting existing files in the destination."
   )
   parser.add_argument(
-      "dir_a",
-      type=str,
-      help="The destination directory (Dir A) that will be updated.")
+    "dir_a",
+    type=str,
+    help="The destination directory (Dir A) that will be updated.",
+  )
   parser.add_argument(
-      "dir_b",
-      type=str,
-      help="The source directory (Dir B) whose contents will be copied over and will take precedence."
+    "dir_b",
+    type=str,
+    help="The source directory (Dir B) whose contents will be copied over and will take precedence.",
   )
 
   args = parser.parse_args()

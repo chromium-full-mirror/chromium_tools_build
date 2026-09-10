@@ -8,8 +8,8 @@ from recipe_engine import recipe_test_api
 
 from . import constants
 
-class GnTestApi(recipe_test_api.RecipeTestApi):
 
+class GnTestApi(recipe_test_api.RecipeTestApi):
   DEFAULT = constants.DEFAULT
   TEXT = constants.TEXT
   LOGS = constants.LOGS

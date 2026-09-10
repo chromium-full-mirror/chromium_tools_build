@@ -26,16 +26,19 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
 
   version = api.chromium.get_version(source_dir)
-  api.assertions.assertEqual(version, {
+  api.assertions.assertEqual(
+    version,
+    {
       'MAJOR': '51',
       'MINOR': '0',
       'BUILD': '2704',
       'PATCH': '0',
-  })
+    },
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

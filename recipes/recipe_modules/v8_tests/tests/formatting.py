@@ -27,13 +27,14 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'class_name': Property(kind=str),
-    'test_name': Property(kind=str),
+  'class_name': Property(kind=str),
+  'test_name': Property(kind=str),
 }
 
-class FormattingTest:
 
+class FormattingTest:
   def __init__(self, api: DEPS):
     self.api = api
 
@@ -66,15 +67,15 @@ class FormattingTest:
       'variant': 'default',
     }
     self.assertEqual(
-        formatting.test_details(test, 'max_rss', '1.2 kB'),
-        [
-          'Test: foo',
-          'Flags: -a -b',
-          'Command: run -a -b foo',
-          'Variant: default',
-          'max_rss: 1.2 kB',
-          '',
-        ]
+      formatting.test_details(test, 'max_rss', '1.2 kB'),
+      [
+        'Test: foo',
+        'Flags: -a -b',
+        'Command: run -a -b foo',
+        'Variant: default',
+        'max_rss: 1.2 kB',
+        '',
+      ],
     )
 
   def test_top_tests(self):
@@ -97,27 +98,28 @@ class FormattingTest:
       },
     ]
     self.assertEqual(
-        formatting.top_tests(
-            test_list, formatting.rss, 'Maximum RSS', 'marked_heavy'),
-        [
-          '1.2 kB foo *',
-          '1.1 kB bar',
-          '',
-          'Details:',
-          '',
-          'Test: foo',
-          'Flags: -a -b',
-          'Command: run -a -b foo',
-          'Variant: default',
-          'Maximum RSS: 1.2 kB',
-          '',
-          'Test: bar',
-          'Flags: -a -b',
-          'Command: run -a -b bar',
-          'Variant: stress',
-          'Maximum RSS: 1.1 kB',
-          '',
-        ]
+      formatting.top_tests(
+        test_list, formatting.rss, 'Maximum RSS', 'marked_heavy'
+      ),
+      [
+        '1.2 kB foo *',
+        '1.1 kB bar',
+        '',
+        'Details:',
+        '',
+        'Test: foo',
+        'Flags: -a -b',
+        'Command: run -a -b foo',
+        'Variant: default',
+        'Maximum RSS: 1.2 kB',
+        '',
+        'Test: bar',
+        'Flags: -a -b',
+        'Command: run -a -b bar',
+        'Variant: stress',
+        'Maximum RSS: 1.1 kB',
+        '',
+      ],
     )
 
 
@@ -137,6 +139,8 @@ def GenTests(api: TEST_DEPS):
       if not method_name.startswith('test_'):
         continue
 
-      yield (api.test(f'{class_name}.{method_name}') +
-             api.properties(class_name=class_name, test_name=method_name) +
-             api.post_process(DropExpectation))
+      yield (
+        api.test(f'{class_name}.{method_name}')
+        + api.properties(class_name=class_name, test_name=method_name)
+        + api.post_process(DropExpectation)
+      )

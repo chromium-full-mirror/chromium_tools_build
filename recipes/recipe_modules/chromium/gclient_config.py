@@ -7,10 +7,14 @@ from __future__ import annotations
 from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 from RECIPE_MODULES.depot_tools.gclient import api as gclient_api
 from RECIPE_MODULES.depot_tools.gclient.config import (
-  ChromiumGitURL, ChromeInternalGitURL)
+  ChromiumGitURL,
+  ChromeInternalGitURL,
+)
+
 
 def mirror_only(c, obj, default=None):
   return obj if c.USE_MIRROR else (default or obj.__class__())
+
 
 @CONFIG_CTX()
 def chromium_bare(c):
@@ -39,39 +43,58 @@ def chromium_bare(c):
   p = c.repo_path_map
   p['https://chromium.googlesource.com/chromium/src'] = ('src', None)
   p['https://chromium.googlesource.com/angle/angle'] = (
-      'src/third_party/angle', None)
-  p['https://dawn.googlesource.com/dawn'] = (
-      'src/third_party/dawn', None)
+    'src/third_party/angle',
+    None,
+  )
+  p['https://dawn.googlesource.com/dawn'] = ('src/third_party/dawn', None)
   p['https://chromium.googlesource.com/chromium/buildtools'] = (
-      'src/buildtools', 'HEAD')
+    'src/buildtools',
+    'HEAD',
+  )
   p['https://chromium.googlesource.com/catapult'] = (
-      'src/third_party/catapult', 'HEAD')
+    'src/third_party/catapult',
+    'HEAD',
+  )
   p['https://chromium.googlesource.com/chromium/deps/flac'] = (
-      'src/third_party/flac', 'HEAD')
+    'src/third_party/flac',
+    'HEAD',
+  )
   p['https://chromium.googlesource.com/chromium/deps/icu'] = (
-      'src/third_party/icu', 'HEAD')
+    'src/third_party/icu',
+    'HEAD',
+  )
   p['https://chromium.googlesource.com/devtools/devtools-frontend'] = (
-      'src/third_party/devtools-frontend/src', 'HEAD')
+    'src/third_party/devtools-frontend/src',
+    'HEAD',
+  )
   p['https://pdfium.googlesource.com/pdfium'] = (
-      'src/third_party/pdfium', 'HEAD')
+    'src/third_party/pdfium',
+    'HEAD',
+  )
   p['https://skia.googlesource.com/skia'] = ('src/third_party/skia', 'HEAD')
   p['https://chromium.googlesource.com/v8/v8'] = ('src/v8', 'HEAD')
   p['https://webrtc.googlesource.com/src'] = ('src/third_party/webrtc', 'HEAD')
   # TODO(https://crbug.com/swiftshader/164): Change to main once created.
   p['https://swiftshader.googlesource.com/SwiftShader/'] = (
-      'src/third_party/swiftshader', 'refs/heads/master')
+    'src/third_party/swiftshader',
+    'refs/heads/master',
+  )
   p['https://boringssl.googlesource.com/boringssl'] = (
-      'src/third_party/boringssl/src', 'HEAD')
+    'src/third_party/boringssl/src',
+    'HEAD',
+  )
 
 
 @CONFIG_CTX(includes=['chromium_bare'])
 def chromium_empty(c):
   c.solutions[0].deps_file = ''  # pragma: no cover
 
+
 @CONFIG_CTX(includes=['chromium_bare'])
 def chromium(c):
   s = c.solutions[0]
   s.custom_deps = mirror_only(c, {})
+
 
 @CONFIG_CTX(includes=['chromium'])
 def blink(c):
@@ -79,15 +102,21 @@ def blink(c):
   del c.solutions[0].custom_deps
   c.revisions['src/third_party/WebKit'] = 'HEAD'
 
+
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 @CONFIG_CTX(includes=['chromium'])
 def blink_merged(c):  # pragma: no cover
-  c.solutions[0].url = \
-      'https://chromium.googlesource.com/playground/chromium-blink-merge.git'
+  c.solutions[
+    0
+  ].url = (
+    'https://chromium.googlesource.com/playground/chromium-blink-merge.git'
+  )
+
 
 @CONFIG_CTX(includes=['chromium'])
 def ios(c):
   c.target_os.add('ios')
+
 
 @CONFIG_CTX(includes=['chromium'])
 def show_v8_revision(c):
@@ -99,27 +128,33 @@ def show_v8_revision(c):
   # Needed to get the testers to properly sync the right revision.
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
 
+
 @CONFIG_CTX(includes=['chromium'])
 def v8_canary(c):
   c.revisions['src/v8'] = 'origin/canary'
+
 
 @CONFIG_CTX(includes=['chromium'])
 def v8_tot(c):
   c.revisions['src/v8'] = 'HEAD'
 
+
 @CONFIG_CTX()
 def chromeos(c):
   c.target_os.add('chromeos')
 
+
 @CONFIG_CTX()
 def fuchsia(c):
   c.target_os.add('fuchsia')
+
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_arm64(c):
   """Downloads terminal boot images for running ARM64 binaries on QEMU."""
 
   c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = 'qemu.arm64'
+
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_x64(c):
@@ -133,8 +168,10 @@ def fuchsia_netstack2_x64(c):
   """Downloads terminal with Netstack2 boot images for running x64 binaries on
   QEMU."""
 
-  c.solutions[0].custom_vars[
-      'checkout_fuchsia_boot_images'] = 'terminal_with_netstack2.x64'
+  c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
+    'terminal_with_netstack2.x64'
+  )
+
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_no_hooks(c):
@@ -149,6 +186,7 @@ def fuchsia_arm64_host(c):
 
   c.solutions[0].custom_vars['checkout_fuchsia_for_arm64_host'] = 'True'
 
+
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_internal(c):
   c.solutions[0].custom_vars['checkout_fuchsia_internal'] = 'True'
@@ -157,42 +195,47 @@ def fuchsia_internal(c):
 @CONFIG_CTX(includes=['fuchsia_internal'])
 def fuchsia_astro_image(c):
   c.solutions[0].custom_vars['checkout_fuchsia_internal_images'] = (
-      'smart_display_eng_arrested.astro-release')
+    'smart_display_eng_arrested.astro-release'
+  )
 
 
 @CONFIG_CTX(includes=['fuchsia_internal'])
 def fuchsia_sd_images(c):
   c.solutions[0].custom_vars['checkout_fuchsia_internal_images'] = (
-      'smart_display_eng_arrested.astro-release,'
-      'smart_display_max_eng_arrested.sherlock-release,'
-      'smart_display_m3_eng_paused.nelson-release')
+    'smart_display_eng_arrested.astro-release,'
+    'smart_display_max_eng_arrested.sherlock-release,'
+    'smart_display_m3_eng_paused.nelson-release'
+  )
 
 
 @CONFIG_CTX(includes=['fuchsia_internal'])
 def fuchsia_sherlock_image(c):
   c.solutions[0].custom_vars['checkout_fuchsia_internal_images'] = (
-      'smart_display_max_eng_arrested.sherlock-release')
+    'smart_display_max_eng_arrested.sherlock-release'
+  )
 
 
 @CONFIG_CTX(includes=['fuchsia_x64'])
 def fuchsia_workstation(c):
   """Downloads workstation boot images for running x64 binaries on QEMU."""
 
-  c.solutions[0].custom_vars[
-      'checkout_fuchsia_boot_images'] = 'workstation_eng.qemu-x64-release'
+  c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
+    'workstation_eng.qemu-x64-release'
+  )
 
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_atlas(c):
   c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
-      'workstation_eng.chromebook-x64-release')
+    'workstation_eng.chromebook-x64-release'
+  )
 
 
 @CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_workstation_perf_images(c):
   c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
-      'workstation_eng.chromebook-x64,'
-      'workstation_eng.x64')
+    'workstation_eng.chromebook-x64,workstation_eng.x64'
+  )
 
 
 @CONFIG_CTX()
@@ -204,6 +247,7 @@ def mac(c):
 def win(c):
   c.target_os.add('win')
 
+
 @CONFIG_CTX(includes=['chrome_internal'])
 def perf(c):
   s = c.solutions[0]
@@ -214,24 +258,29 @@ def perf(c):
   for key in needed_components_internal:
     s.custom_deps.pop(key, None)
 
+
 @CONFIG_CTX(includes=['chrome_internal'])
 def chromium_perf(c):
   c.solutions[0].custom_vars['checkout_mobile_internal'] = 'True'
+
 
 @CONFIG_CTX(includes=['chromium'])
 def chromium_skia(c):
   c.solutions[0].revision = 'HEAD'
   del c.solutions[0].custom_deps
-  c.revisions['src/third_party/skia'] = (
-      gclient_api.RevisionFallbackChain('origin/main'))
+  c.revisions['src/third_party/skia'] = gclient_api.RevisionFallbackChain(
+    'origin/main'
+  )
   c.got_revision_reverse_mapping['got_chromium_revision'] = 'src'
   c.got_revision_reverse_mapping['got_revision'] = 'src/third_party/skia'
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
 
+
 @CONFIG_CTX(includes=['chromium'])
 def chromium_webrtc(c):
   c.got_revision_reverse_mapping['got_libvpx_revision'] = (
-      'src/third_party/libvpx/source')
+    'src/third_party/libvpx/source'
+  )
 
 
 @CONFIG_CTX(includes=['chromium'])
@@ -246,7 +295,8 @@ def chromium_webrtc_tot(c):
   c.revisions['src/third_party/webrtc'] = 'HEAD'
 
   c.got_revision_reverse_mapping['got_libvpx_revision'] = (
-      'src/third_party/libvpx/source')
+    'src/third_party/libvpx/source'
+  )
 
   # Have the WebRTC revision appear in the web UI instead of Chromium's.
   c.got_revision_reverse_mapping['got_cr_revision'] = 'src'
@@ -257,7 +307,9 @@ def chromium_webrtc_tot(c):
   # Needed to get the testers to properly sync the right revision.
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
   c.parent_got_revision_mapping['parent_got_webrtc_revision'] = (
-      'got_webrtc_revision')
+    'got_webrtc_revision'
+  )
+
 
 @CONFIG_CTX()
 def webrtc_test_resources(c):
@@ -271,12 +323,14 @@ def webrtc_test_resources(c):
   s.url = 'https://webrtc.googlesource.com/webrtc.DEPS'
   s.deps_file = 'DEPS'
 
+
 @CONFIG_CTX(includes=['chromium'])
 def chromedriver(c):
   """Add Selenium Java tests to the gclient solution."""
   c.solutions[0].custom_deps[
-      'src/chrome/test/chromedriver/third_party/java_tests'] = (
-          ChromiumGitURL(c, 'chromium', 'deps', 'webdriver'))
+    'src/chrome/test/chromedriver/third_party/java_tests'
+  ] = ChromiumGitURL(c, 'chromium', 'deps', 'webdriver')
+
 
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 @CONFIG_CTX()
@@ -290,7 +344,6 @@ def angle_top_of_tree(c):  # pragma: no cover
 
 
 class DawnRevisionResolver(gclient_api.RevisionResolver):
-
   def resolve(self, properties):  # pragma: no cover
     return properties.get('dawn_ref', 'HEAD')
 
@@ -313,16 +366,20 @@ def swiftshader_top_of_tree(c):  # pragma: no cover
   # TODO(https://crbug.com/swiftshader/164): Change to main once created.
   c.revisions['src/third_party/swiftshader'] = 'refs/heads/master'
 
+
 # TODO(phajdan.jr): Move to proper repo and add coverage.
 @CONFIG_CTX()
 def valgrind(c):  # pragma: no cover
   """Add Valgrind binaries to the gclient solution."""
-  c.solutions[0].custom_deps['src/third_party/valgrind'] = \
-    ChromiumGitURL(c, 'chromium', 'deps', 'valgrind', 'binaries')
+  c.solutions[0].custom_deps['src/third_party/valgrind'] = ChromiumGitURL(
+    c, 'chromium', 'deps', 'valgrind', 'binaries'
+  )
+
 
 @CONFIG_CTX()
 def ndk_next(c):
   c.revisions['src/third_party/android_ndk'] = 'origin/next'
+
 
 @CONFIG_CTX()
 def angle_internal(c):  # pragma: no cover
@@ -330,32 +387,33 @@ def angle_internal(c):  # pragma: no cover
   # GLES 1.0 conformance, and third party captures
   c.solutions[0].custom_vars['checkout_angle_internal'] = 'True'
 
+
 @CONFIG_CTX(includes=['chromium'])
 def chrome_internal(c):
   c.solutions[0].custom_vars['checkout_src_internal'] = 'True'
   # Remove some things which are generally not needed
   c.solutions[0].custom_deps = {
-      "src/data/autodiscovery": None,
-      "src/data/page_cycler": None,
-      "src/tools/grit/grit/test/data": None,
-      "src/chrome/test/data/perf/frame_rate/private": None,
-      "src/data/mozilla_js_tests": None,
-      "src/chrome/test/data/firefox2_profile/searchplugins": None,
-      "src/chrome/test/data/firefox2_searchplugins": None,
-      "src/chrome/test/data/firefox3_profile/searchplugins": None,
-      "src/chrome/test/data/firefox3_searchplugins": None,
-      "src/chrome/test/data/ssl/certs": None,
-      "src/data/mach_ports": None,
-      "src/data/esctf": None,
-      "src/data/selenium_core": None,
-      "src/chrome/test/data/plugin": None,
-      "src/data/memory_test": None,
-      "src/data/tab_switching": None,
-      "src/chrome/test/data/osdd": None,
-      "src/webkit/data/bmp_decoder": None,
-      "src/webkit/data/ico_decoder": None,
-      "src/webkit/data/test_shell/plugins": None,
-      "src/webkit/data/xbm_decoder": None,
+    "src/data/autodiscovery": None,
+    "src/data/page_cycler": None,
+    "src/tools/grit/grit/test/data": None,
+    "src/chrome/test/data/perf/frame_rate/private": None,
+    "src/data/mozilla_js_tests": None,
+    "src/chrome/test/data/firefox2_profile/searchplugins": None,
+    "src/chrome/test/data/firefox2_searchplugins": None,
+    "src/chrome/test/data/firefox3_profile/searchplugins": None,
+    "src/chrome/test/data/firefox3_searchplugins": None,
+    "src/chrome/test/data/ssl/certs": None,
+    "src/data/mach_ports": None,
+    "src/data/esctf": None,
+    "src/data/selenium_core": None,
+    "src/chrome/test/data/plugin": None,
+    "src/data/memory_test": None,
+    "src/data/tab_switching": None,
+    "src/chrome/test/data/osdd": None,
+    "src/webkit/data/bmp_decoder": None,
+    "src/webkit/data/ico_decoder": None,
+    "src/webkit/data/test_shell/plugins": None,
+    "src/webkit/data/xbm_decoder": None,
   }
 
   m = c.got_revision_reverse_mapping
@@ -363,7 +421,9 @@ def chrome_internal(c):
 
   p = c.repo_path_map
   p['https://chrome-internal.googlesource.com/chrome/src-internal'] = (
-      'src/internal', 'HEAD')
+    'src/internal',
+    'HEAD',
+  )
 
 
 @CONFIG_CTX()
@@ -385,13 +445,16 @@ def chromium_skip_wpr_archives_download(c):
 def android_prebuilts_build_tools(c):
   c.solutions[0].custom_vars['checkout_android_prebuilts_build_tools'] = 'True'
 
+
 @CONFIG_CTX()
 def arm(c):
   c.target_cpu.add('arm')
 
+
 @CONFIG_CTX()
 def arm64(c):
   c.target_cpu.add('arm64')
+
 
 @CONFIG_CTX()
 def use_clang_coverage(c):
@@ -430,12 +493,15 @@ def checkout_src_internal_infra(c):
 
   p = c.repo_path_map
   p['https://chrome-internal.googlesource.com/chrome/src-internal'] = (
-      'src/internal', 'HEAD')
+    'src/internal',
+    'HEAD',
+  )
 
 
 @CONFIG_CTX()
 def use_clang_tidy(c):
   c.solutions[0].custom_vars['checkout_clang_tidy'] = 'True'
+
 
 @CONFIG_CTX()
 def clang_tot(c):
@@ -446,9 +512,11 @@ def clang_tot(c):
 def rust_tot(c):
   c.solutions[0].custom_vars['rust_force_head_revision'] = 'True'
 
+
 @CONFIG_CTX(includes=['chromium'])
 def openscreen_tot(c):
   c.revisions['src/third_party/openscreen/src'] = 'HEAD'
+
 
 @CONFIG_CTX()
 def ninja_staging(c):

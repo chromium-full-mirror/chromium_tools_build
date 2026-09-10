@@ -13,6 +13,7 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 def libyuv(c):
   _libyuv_common(c)
 
+
 @CONFIG_CTX(includes=['chromium_clang'])
 def libyuv_clang(c):
   _libyuv_common(c)
@@ -28,6 +29,7 @@ def libyuv_android(c):
   _libyuv_common(c)
   c.gn_args.append('android_static_analysis="off"')
 
+
 @CONFIG_CTX(includes=['ninja'])
 def libyuv_msvc(c):
   _libyuv_common(c)
@@ -36,20 +38,25 @@ def libyuv_msvc(c):
   c.gn_args.append('use_custom_libcxx=false')
   c.gn_args.append('use_llvm_libatomic=false')
 
+
 @CONFIG_CTX(includes=['chromium'])
 def libyuv_ios(c):
   if c.HOST_PLATFORM != 'mac':
-    raise BadConf('Only "mac" host platform is supported for iOS (got: "%s")' %
-                  c.HOST_PLATFORM)  # pragma: no cover
+    raise BadConf(
+      'Only "mac" host platform is supported for iOS (got: "%s")'
+      % c.HOST_PLATFORM
+    )  # pragma: no cover
   if c.TARGET_PLATFORM != 'ios':
-    raise BadConf('Only "ios" target platform is supported (got: "%s")' %
-                  c.TARGET_PLATFORM)  # pragma: no cover
+    raise BadConf(
+      'Only "ios" target platform is supported (got: "%s")' % c.TARGET_PLATFORM
+    )  # pragma: no cover
   c.build_config_fs = c.BUILD_CONFIG + '-iphoneos'
 
   c.gn_args.append('ios_enable_code_signing=false')
   c.gn_args.append('target_environment="simulator"')
   c.gn_args.append('target_os="%s"' % c.TARGET_PLATFORM)
   _libyuv_common(c)
+
 
 def _libyuv_common(c):
   c.compile_py.default_targets = []

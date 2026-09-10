@@ -15,13 +15,17 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import chromium_tests, chromium_tests_builder_config, chromium_tests_targets_config_verifier
+from RECIPE_MODULES.build import (
+  chromium_tests,
+  chromium_tests_builder_config,
+  chromium_tests_targets_config_verifier,
+)
 from RECIPE_MODULES.depot_tools import gclient, tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    path,
-    properties,
+  buildbucket,
+  file,
+  path,
+  properties,
 )
 
 
@@ -30,7 +34,9 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   chromium_tests: chromium_tests.API
   chromium_tests_builder_config: chromium_tests_builder_config.API
-  chromium_tests_targets_config_verifier: chromium_tests_targets_config_verifier.API
+  chromium_tests_targets_config_verifier: (
+    chromium_tests_targets_config_verifier.API
+  )
   file: file.API
   gclient: gclient.API
   path: path.API
@@ -51,10 +57,11 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   gclient_config = api.gclient.make_config('chromium')
-  if (apply_gclient_config := api.properties.get('gclient_apply_config', None)):
+  if apply_gclient_config := api.properties.get('gclient_apply_config', None):
     api.gclient.apply_config(apply_gclient_config, gclient_config)
   return api.chromium_tests_targets_config_verifier.verify_target_configs(
-      gclient_config, 'fake-builder-config-dir', ['fake-try-bucket'])
+    gclient_config, 'fake-builder-config-dir', ['fake-try-bucket']
+  )
 
 
 _CTBC_PROPERTY = '$build/chromium_tests_builder_config'
@@ -65,24 +72,24 @@ def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   def test_data(
-      *,
-      bucket: str,
-      builder: str,
-      builder_group: str,
-      non_existent_tester: str | None = None,
-      non_existent_tester_group: str | None = None,
-      try_bucket: str | None = None,
-      try_builder: str | None = None,
-      builder_spec: ctbc.BuilderSpec | None = None,
-      with_properties_file: bool = True,
-      with_ctbc_property: bool = True,
-      with_targets_spec_directory: bool = True,
-      with_bootstrapped_builder_config_without_patch: bool = True,
-      with_targets_spec_directory_without_patch: bool = False,
-      starlark_targets_spec: dict | None = None,
-      testing_buildbot_targets_spec: dict | None = None,
-      patch_dep: bool = False,
-      testing_buildbot_targets_specs_in_patch_repo: bool = True,
+    *,
+    bucket: str,
+    builder: str,
+    builder_group: str,
+    non_existent_tester: str | None = None,
+    non_existent_tester_group: str | None = None,
+    try_bucket: str | None = None,
+    try_builder: str | None = None,
+    builder_spec: ctbc.BuilderSpec | None = None,
+    with_properties_file: bool = True,
+    with_ctbc_property: bool = True,
+    with_targets_spec_directory: bool = True,
+    with_bootstrapped_builder_config_without_patch: bool = True,
+    with_targets_spec_directory_without_patch: bool = False,
+    starlark_targets_spec: dict | None = None,
+    testing_buildbot_targets_spec: dict | None = None,
+    patch_dep: bool = False,
+    testing_buildbot_targets_specs_in_patch_repo: bool = True,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 
@@ -122,24 +129,34 @@ def GenTests(api: TEST_DEPS):
         patch is for. If False, the specs will be present in the
         top-level repo.
     """
+
     def assert_set_together(name1, val1, name2, val2):
       assert (val1 is None) == (val2 is None), (
-          f'{name1} and {name2} must both be set or both be unset')
+        f'{name1} and {name2} must both be set or both be unset'
+      )
 
     assert_set_together('try_bucket', try_bucket, 'try_builder', try_builder)
 
-    assert_set_together('non_existent_tester', non_existent_tester,
-                        'non_existent_tester_group', non_existent_tester_group)
+    assert_set_together(
+      'non_existent_tester',
+      non_existent_tester,
+      'non_existent_tester_group',
+      non_existent_tester_group,
+    )
     if non_existent_tester is not None:
       assert non_existent_tester_group is not None, (
-          'non_existent_tester_group must be set if tester is set')
+        'non_existent_tester_group must be set if tester is set'
+      )
       assert non_existent_tester_group != builder_group, (
-          'non_existent_tester_group must not be equal to builder_group')
+        'non_existent_tester_group must not be equal to builder_group'
+      )
       assert try_bucket is None, (
-          "non_existent_tester and try_bucket can't both be set")
+        "non_existent_tester and try_bucket can't both be set"
+      )
       assert testing_buildbot_targets_spec is None, (
-          'non_existent_tester and testing_buildbot_targets_spec'
-          " can't both be set")
+        'non_existent_tester and testing_buildbot_targets_spec'
+        " can't both be set"
+      )
 
     t = api.empty_test_data()
 
@@ -153,11 +170,15 @@ def GenTests(api: TEST_DEPS):
 
     t += api.buildbucket.try_build(git_repo=git_repo)
 
-    builder_dir = f'fake-builder-config-dir/{try_bucket or bucket}/{try_builder or builder}'
+    builder_dir = (
+      f'fake-builder-config-dir/{try_bucket or bucket}/{try_builder or builder}'
+    )
     t += api.tryserver.get_files_affected_by_patch(
-        [f'{builder_dir}/targets/{builder_group}.json'],
-        step_name=(
-            'determine affected targets spec files.git diff to analyze patch'))
+      [f'{builder_dir}/targets/{builder_group}.json'],
+      step_name=(
+        'determine affected targets spec files.git diff to analyze patch'
+      ),
+    )
 
     get_targets_config_step = f'get patched targets configs.{builder_dir}'
     verify_step = f'verify {builder_dir}'
@@ -166,84 +187,99 @@ def GenTests(api: TEST_DEPS):
 
     if with_properties_file:
       existing_paths.append(
-          api.path.cache_dir /
-          f'builder/src/{repo_rel_path}{builder_dir}/properties.json')
+        api.path.cache_dir
+        / f'builder/src/{repo_rel_path}{builder_dir}/properties.json'
+      )
       if with_ctbc_property:
         if not builder_spec:
           chromium_apply_config = ['mb']
           if patch_dep and testing_buildbot_targets_specs_in_patch_repo:
             chromium_apply_config.append('internal_targets_specs')
           builder_spec = ctbc.BuilderSpec.create(
-              gclient_config='chromium',
-              chromium_config='chromium',
-              chromium_apply_config=chromium_apply_config,
+            gclient_config='chromium',
+            chromium_config='chromium',
+            chromium_apply_config=chromium_apply_config,
           )
         if try_bucket:
-          ctbc_prop = ctbc_api.properties_assembler_for_try_builder(
-          ).with_mirrored_builder(
-              bucket=bucket,
-              builder=builder,
-              builder_group=builder_group,
-              builder_spec=builder_spec,
+          ctbc_prop = ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
+            bucket=bucket,
+            builder=builder,
+            builder_group=builder_group,
+            builder_spec=builder_spec,
           )
         else:
           ctbc_prop = ctbc_api.properties_assembler_for_ci_builder(
-              bucket=bucket,
-              builder=builder,
-              builder_group=builder_group,
-              builder_spec=builder_spec,
+            bucket=bucket,
+            builder=builder,
+            builder_group=builder_group,
+            builder_spec=builder_spec,
           )
           if non_existent_tester_group:
             ctbc_prop.with_tester(
-                bucket=bucket,
-                builder=non_existent_tester,
-                builder_group=non_existent_tester_group,
+              bucket=bucket,
+              builder=non_existent_tester,
+              builder_group=non_existent_tester_group,
             )
         if with_targets_spec_directory:
           if with_bootstrapped_builder_config_without_patch:
             if with_targets_spec_directory_without_patch:
               ctbc_prop = ctbc_prop.with_targets_spec_directory(
-                  f'{builder_dir}/targets')
+                f'{builder_dir}/targets'
+              )
             t += api.step_data(
-                f'{verify_step}.read properties file',
-                api.file.read_json({
-                    '$build/chromium_tests_builder_config':
-                        json_format.MessageToDict(ctbc_prop.assemble()),
-                }))
+              f'{verify_step}.read properties file',
+              api.file.read_json(
+                {
+                  '$build/chromium_tests_builder_config': json_format.MessageToDict(
+                    ctbc_prop.assemble()
+                  ),
+                }
+              ),
+            )
           ctbc_prop = ctbc_prop.with_targets_spec_directory(
-              f'{builder_dir}/targets')
+            f'{builder_dir}/targets'
+          )
         t += api.step_data(
-            f'{get_targets_config_step}.read properties file',
-            api.file.read_json({
-                '$build/chromium_tests_builder_config':
-                    json_format.MessageToDict(ctbc_prop.assemble()),
-            }))
+          f'{get_targets_config_step}.read properties file',
+          api.file.read_json(
+            {
+              '$build/chromium_tests_builder_config': json_format.MessageToDict(
+                ctbc_prop.assemble()
+              ),
+            }
+          ),
+        )
 
     def read_targets_spec(targets_spec, step_prefix):
       return api.chromium_tests.read_targets_spec(
-          builder_group, {builder: targets_spec}, step_prefix=step_prefix)
+        builder_group, {builder: targets_spec}, step_prefix=step_prefix
+      )
 
     if starlark_targets_spec is not None:
       t += read_targets_spec(
-          starlark_targets_spec,
-          step_prefix=f'{get_targets_config_step}.get starlark targets config.')
+        starlark_targets_spec,
+        step_prefix=f'{get_targets_config_step}.get starlark targets config.',
+      )
     if testing_buildbot_targets_spec is not None:
       if testing_buildbot_targets_specs_in_patch_repo:
         rel_path = repo_rel_path
       else:
         rel_path = ''
       existing_paths.append(
-          api.path.cache_dir /
-          f'builder/src/{rel_path}testing/buildbot/{builder_group}.json')
+        api.path.cache_dir
+        / f'builder/src/{rel_path}testing/buildbot/{builder_group}.json'
+      )
       t += read_targets_spec(
-          testing_buildbot_targets_spec,
-          step_prefix=f'{verify_step}.get pyl targets config.')
+        testing_buildbot_targets_spec,
+        step_prefix=f'{verify_step}.get pyl targets config.',
+      )
     # In the case where there isn't the targets spec file for the tester, we
     # need to indicate that the targets spec file for the builder exists
     if non_existent_tester:
       existing_paths.append(
-          api.path.cache_dir /
-          f'builder/src/{repo_rel_path}testing/buildbot/{builder_group}.json')
+        api.path.cache_dir
+        / f'builder/src/{repo_rel_path}testing/buildbot/{builder_group}.json'
+      )
 
     if existing_paths:
       t += api.path.exists(*existing_paths)
@@ -251,391 +287,470 @@ def GenTests(api: TEST_DEPS):
     return t
 
   yield api.test(
-      'basic',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-      ),
-      api.post_check(post_process.StepTextContains,
-                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
-                     ['starlark config matches pyl config']),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      'verify fake-builder-config-dir/fake-bucket/fake-builder',
+      ['starlark config matches pyl config'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'mismatch-compile-targets',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'additional_compile_targets': ['foo'],
-          },
-          testing_buildbot_targets_spec={
-              'additional_compile_targets': ['bar'],
-          },
-      ),
-      api.expect_status('FAILURE'),
-      # Keep just the verify step so that we can see when the diff changes
-      api.post_process(
-          post_process.Filter(
-              'verify fake-builder-config-dir/fake-bucket/fake-builder')),
+    'mismatch-compile-targets',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'additional_compile_targets': ['foo'],
+      },
+      testing_buildbot_targets_spec={
+        'additional_compile_targets': ['bar'],
+      },
+    ),
+    api.expect_status('FAILURE'),
+    # Keep just the verify step so that we can see when the diff changes
+    api.post_process(
+      post_process.Filter(
+        'verify fake-builder-config-dir/fake-bucket/fake-builder'
+      )
+    ),
   )
 
   yield api.test(
-      'mismatch-tests',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'gtest_tests': [{
-                  'test': 'bar-test',
-              }],
-          },
-      ),
-      api.expect_status('FAILURE'),
-      # Keep just the verify step so that we can see when the diff changes
-      api.post_process(
-          post_process.Filter(
-              'verify fake-builder-config-dir/fake-bucket/fake-builder')),
+    'mismatch-tests',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'bar-test',
+          }
+        ],
+      },
+    ),
+    api.expect_status('FAILURE'),
+    # Keep just the verify step so that we can see when the diff changes
+    api.post_process(
+      post_process.Filter(
+        'verify fake-builder-config-dir/fake-bucket/fake-builder'
+      )
+    ),
   )
 
   yield api.test(
-      'mismatch-tests-wrapping',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'experiment_percentage': '50',
-                  'ci_only': True,
-              }],
-          },
-      ),
-      api.expect_status('FAILURE'),
-      # Keep just the verify step so that we can see when the diff changes
-      api.post_process(
-          post_process.Filter(
-              'verify fake-builder-config-dir/fake-bucket/fake-builder')),
+    'mismatch-tests-wrapping',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'experiment_percentage': '50',
+            'ci_only': True,
+          }
+        ],
+      },
+    ),
+    api.expect_status('FAILURE'),
+    # Keep just the verify step so that we can see when the diff changes
+    api.post_process(
+      post_process.Filter(
+        'verify fake-builder-config-dir/fake-bucket/fake-builder'
+      )
+    ),
   )
 
   yield api.test(
-      'mismatch-tests-non-precommit',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'non_precommit_args': ['foo'],
-              }],
-          },
-      ),
-      api.expect_status('FAILURE'),
-      # Keep just the verify step so that we can see when the diff changes
-      api.post_process(
-          post_process.Filter(
-              'verify fake-builder-config-dir/fake-bucket/fake-builder')),
+    'mismatch-tests-non-precommit',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'non_precommit_args': ['foo'],
+          }
+        ],
+      },
+    ),
+    api.expect_status('FAILURE'),
+    # Keep just the verify step so that we can see when the diff changes
+    api.post_process(
+      post_process.Filter(
+        'verify fake-builder-config-dir/fake-bucket/fake-builder'
+      )
+    ),
   )
 
   yield api.test(
-      'mismatch-tests-precommit',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          try_bucket='fake-try-bucket',
-          try_builder='fake-try-builder',
-          starlark_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'precommit_args': ['foo'],
-              }],
-          },
-      ),
-      api.expect_status('FAILURE'),
-      # Keep just the verify step so that we can see when the diff changes
-      api.post_process(
-          post_process.Filter(
-              'verify fake-builder-config-dir/fake-try-bucket/fake-try-builder')
-      ),
+    'mismatch-tests-precommit',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      try_bucket='fake-try-bucket',
+      try_builder='fake-try-builder',
+      starlark_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'precommit_args': ['foo'],
+          }
+        ],
+      },
+    ),
+    api.expect_status('FAILURE'),
+    # Keep just the verify step so that we can see when the diff changes
+    api.post_process(
+      post_process.Filter(
+        'verify fake-builder-config-dir/fake-try-bucket/fake-try-builder'
+      )
+    ),
   )
 
   yield api.test(
-      'not-bootstrapped',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          with_properties_file=False,
+    'not-bootstrapped',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      with_properties_file=False,
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      (
+        'get patched targets configs.'
+        'fake-builder-config-dir/fake-bucket/fake-builder'
       ),
-      api.post_check(
-          post_process.StepTextContains,
-          ('get patched targets configs.'
-           'fake-builder-config-dir/fake-bucket/fake-builder'),
-          ["builder doesn't have bootstrapped builder config, can't verify"]),
-      api.post_process(post_process.DropExpectation),
+      ["builder doesn't have bootstrapped builder config, can't verify"],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no-ctbc-property',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          with_ctbc_property=False,
+    'no-ctbc-property',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      with_ctbc_property=False,
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      (
+        'get patched targets configs.'
+        'fake-builder-config-dir/fake-bucket/fake-builder'
       ),
-      api.post_check(
-          post_process.StepTextContains,
-          ('get patched targets configs.'
-           'fake-builder-config-dir/fake-bucket/fake-builder'),
-          ["builder doesn't have bootstrapped builder config, can't verify"]),
-      api.post_process(post_process.DropExpectation),
+      ["builder doesn't have bootstrapped builder config, can't verify"],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no-targets-spec-directory',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          with_targets_spec_directory=False,
+    'no-targets-spec-directory',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      with_targets_spec_directory=False,
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      (
+        'get patched targets configs.'
+        'fake-builder-config-dir/fake-bucket/fake-builder'
       ),
-      api.post_check(post_process.StepTextContains,
-                     ('get patched targets configs.'
-                      'fake-builder-config-dir/fake-bucket/fake-builder'),
-                     [(f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
-                       ' nothing to verify')]),
-      api.post_process(post_process.DropExpectation),
+      [
+        (
+          f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
+          ' nothing to verify'
+        )
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no-bootstrapped-builder-config-without-patch',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          with_bootstrapped_builder_config_without_patch=False,
-      ),
-      api.post_check(
-          post_process.StepTextContains,
-          'verify fake-builder-config-dir/fake-bucket/fake-builder',
-          [("builder didn't have bootstrapped builder config without patch,"
-            " can't verify")]),
-      api.post_process(post_process.DropExpectation),
+    'no-bootstrapped-builder-config-without-patch',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      with_bootstrapped_builder_config_without_patch=False,
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      'verify fake-builder-config-dir/fake-bucket/fake-builder',
+      [
+        (
+          "builder didn't have bootstrapped builder config without patch,"
+          " can't verify"
+        )
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'already-using-starlark-tests',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          with_targets_spec_directory_without_patch=True,
-      ),
-      api.post_process(post_process.DropExpectation),
+    'already-using-starlark-tests',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      with_targets_spec_directory_without_patch=True,
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no-tests-specified-previously',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-          testing_buildbot_targets_spec={},
-      ),
-      api.post_process(post_process.DropExpectation),
+    'no-tests-specified-previously',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no-targets-spec-files',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'no-targets-spec-files',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'some-targets-spec-files',
-      test_data(
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-builder-group',
-          non_existent_tester='fake-tester',
-          non_existent_tester_group='fake-tester-group',
-      ),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'some-targets-spec-files',
+    test_data(
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-builder-group',
+      non_existent_tester='fake-tester',
+      non_existent_tester_group='fake-tester-group',
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   builder_dir = 'fake-builder-config-dir/fake-bucket/fake-builder'
   yield api.test(
-      'deleted-builder',
-      api.buildbucket.try_build(),
-      api.tryserver.get_files_affected_by_patch(
-          [
-              f'{builder_dir}/properties.json',
-              f'{builder_dir}/targets/fake-builder-group.json',
-          ],
-          step_name=(
-              'determine affected targets spec files.git diff to analyze patch'
-          ),
+    'deleted-builder',
+    api.buildbucket.try_build(),
+    api.tryserver.get_files_affected_by_patch(
+      [
+        f'{builder_dir}/properties.json',
+        f'{builder_dir}/targets/fake-builder-group.json',
+      ],
+      step_name=(
+        'determine affected targets spec files.git diff to analyze patch'
       ),
-      api.post_check(post_process.MustRun,
-                     'all affected builders are being deleted'),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_check(
+      post_process.MustRun, 'all affected builders are being deleted'
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'patch-dir-is-not-source-dir',
-      test_data(
-          patch_dep=True,
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-      ),
-      api.post_check(post_process.StepTextContains,
-                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
-                     ['starlark config matches pyl config']),
-      api.post_process(post_process.DropExpectation),
+    'patch-dir-is-not-source-dir',
+    test_data(
+      patch_dep=True,
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      'verify fake-builder-config-dir/fake-bucket/fake-builder',
+      ['starlark config matches pyl config'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'patch-dir-is-not-source-dir-without-patch-specs-in-source-dir',
-      test_data(
-          patch_dep=True,
-          testing_buildbot_targets_specs_in_patch_repo=False,
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-          starlark_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-          testing_buildbot_targets_spec={
-              'additional_compile_targets': ['foo'],
-              'gtest_tests': [{
-                  'test': 'foo-test',
-                  'swarming': {},
-                  'merge': {
-                      'script': '//merge-script',
-                  },
-              }],
-              'scripts': [{
-                  'name': 'bar',
-                  'script': 'bar.py',
-              }],
-          },
-      ),
-      api.post_check(post_process.StepTextContains,
-                     'verify fake-builder-config-dir/fake-bucket/fake-builder',
-                     ['starlark config matches pyl config']),
-      api.post_process(post_process.DropExpectation),
+    'patch-dir-is-not-source-dir-without-patch-specs-in-source-dir',
+    test_data(
+      patch_dep=True,
+      testing_buildbot_targets_specs_in_patch_repo=False,
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+      starlark_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+      testing_buildbot_targets_spec={
+        'additional_compile_targets': ['foo'],
+        'gtest_tests': [
+          {
+            'test': 'foo-test',
+            'swarming': {},
+            'merge': {
+              'script': '//merge-script',
+            },
+          }
+        ],
+        'scripts': [
+          {
+            'name': 'bar',
+            'script': 'bar.py',
+          }
+        ],
+      },
+    ),
+    api.post_check(
+      post_process.StepTextContains,
+      'verify fake-builder-config-dir/fake-bucket/fake-builder',
+      ['starlark config matches pyl config'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )

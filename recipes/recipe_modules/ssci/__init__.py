@@ -13,22 +13,22 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gsutil,
+  depot_tools,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    futures,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-    uuid,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  futures,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
+  uuid,
 )
 
 
@@ -49,7 +49,6 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   step: step.API
   uuid: uuid.API
-
 
 
 from .api import SsciAPI as API

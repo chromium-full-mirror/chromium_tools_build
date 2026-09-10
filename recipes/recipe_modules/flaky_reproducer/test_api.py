@@ -11,7 +11,6 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
 
 class FlakyReproducerTestApi(recipe_test_api.RecipeTestApi):
-
   @staticmethod
   def get_test_path(filename):
     """Return test data filepath"""

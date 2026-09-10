@@ -13,29 +13,29 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    ninjalog,
-    siso,
+  ninjalog,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    gsutil,
+  gclient,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    archive,
-    buildbucket,
-    cipd,
-    context,
-    file,
-    json,
-    led,
-    path,
-    platform,
-    properties,
-    raw_io,
-    runtime,
-    step,
-    time,
-    uuid,
+  archive,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  json,
+  led,
+  path,
+  platform,
+  properties,
+  raw_io,
+  runtime,
+  step,
+  time,
+  uuid,
 )
 
 
@@ -60,7 +60,6 @@ class DEPS(RecipeScriptApi):
   time: time.API
   uuid: uuid.API
   siso: siso.API
-
 
 
 from .api import ReclientApi as API

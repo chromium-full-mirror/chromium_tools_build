@@ -12,6 +12,7 @@ def size(test, key):
     if value < 1024 or units[0] == 'PB':
       return f'{value:.{1}f} {units[0]}'
     return rec(value / 1024, units[1:])
+
   return rec(float(test.get(key, 0)), ['B', 'kB', 'MB', 'GB', 'TB', 'PB'])
 
 

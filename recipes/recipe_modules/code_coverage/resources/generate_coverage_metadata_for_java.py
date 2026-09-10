@@ -90,8 +90,8 @@ def get_coverage_metric_summaries(tree_root):
   """
   summaries = []
   counter_map = {
-      counter.attrib['type'].lower(): counter
-      for counter in tree_root.findall('counter')
+    counter.attrib['type'].lower(): counter
+    for counter in tree_root.findall('counter')
   }
 
   for metric in combine_jacoco_reports.JAVA_COVERAGE_METRICS:
@@ -164,22 +164,25 @@ def _compress_line_data_for_java(lines):
   last_index = 0
   for i in range(1, len(line_data) + 1):
     is_continous_line = (
-        i < len(line_data) and
-        line_data[i]['first'] == line_data[i - 1]['last'] + 1)
+      i < len(line_data)
+      and line_data[i]['first'] == line_data[i - 1]['last'] + 1
+    )
     has_same_count = (
-        i < len(line_data) and
-        line_data[i]['count'] == line_data[i - 1]['count'])
+      i < len(line_data) and line_data[i]['count'] == line_data[i - 1]['count']
+    )
 
     # Merge two lines iff they have continous line number and exactly the same
     # count.
-    if (is_continous_line and has_same_count):
+    if is_continous_line and has_same_count:
       continue
 
-    compressed_lines.append({
+    compressed_lines.append(
+      {
         'first': line_data[last_index]['first'],
         'last': line_data[i - 1]['last'],
         'count': line_data[last_index]['count'],
-    })
+      }
+    )
     last_index = i
   return compressed_lines
 
@@ -218,17 +221,17 @@ def _get_file_coverage_data(file_path, source_file, diff_mapping):
     covered_branches = int(line.attrib['cb'])
 
     line_coverage = {
-        'first': line_number,
-        'last': line_number,
-        'count': covered_instructions,
+      'first': line_number,
+      'last': line_number,
+      'count': covered_instructions,
     }
     file_coverage['lines'].append(line_coverage)
 
     if missed_branches > 0 or covered_branches > 0:
       branch_coverage = {
-          'line': line_number,
-          'covered': covered_branches,
-          'total': covered_branches + missed_branches,
+        'line': line_number,
+        'covered': covered_branches,
+        'total': covered_branches + missed_branches,
       }
       file_coverage['branches'].append(branch_coverage)
 
@@ -239,12 +242,14 @@ def _get_file_coverage_data(file_path, source_file, diff_mapping):
   return file_coverage
 
 
-def _get_files_coverage_data(src_path,
-                             root,
-                             diff_mapping,
-                             source_files,
-                             exclusion_pattern=None,
-                             third_party_inclusion_subdirs=None):
+def _get_files_coverage_data(
+  src_path,
+  root,
+  diff_mapping,
+  source_files,
+  exclusion_pattern=None,
+  third_party_inclusion_subdirs=None,
+):
   """Gets the files coverage data based on Jacoco XML report.
 
   Args:
@@ -279,13 +284,17 @@ def _get_files_coverage_data(src_path,
         continue
 
       # exclude third_party/ code
-      if ('third_party/' in file_path and third_party_inclusion_subdirs and
-          not any(x in file_path for x in third_party_inclusion_subdirs)):
+      if (
+        'third_party/' in file_path
+        and third_party_inclusion_subdirs
+        and not any(x in file_path for x in third_party_inclusion_subdirs)
+      ):
         continue
 
       logging.info('Processing file %s', '//' + file_path)
-      file_coverage = _get_file_coverage_data(file_path, source_file,
-                                              diff_mapping)
+      file_coverage = _get_file_coverage_data(
+        file_path, source_file, diff_mapping
+      )
       if not file_coverage['lines']:
         logging.info('Skip file %s as no line instrumented', file_path)
         continue
@@ -294,19 +303,22 @@ def _get_files_coverage_data(src_path,
   # Add git revision and timestamp per source file.
   if files_coverage_data and not diff_mapping:
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
-        files_coverage_data, src_path, 'DEPS')
+      files_coverage_data, src_path, 'DEPS'
+    )
 
   return files_coverage_data
 
 
-def generate_json_coverage_metadata(src_path,
-                                    root,
-                                    component_mapping,
-                                    diff_mapping,
-                                    source_files,
-                                    exclusion_pattern=None,
-                                    third_party_inclusion_subdirs=None,
-                                    generate_blame_list=False):
+def generate_json_coverage_metadata(
+  src_path,
+  root,
+  component_mapping,
+  diff_mapping,
+  source_files,
+  exclusion_pattern=None,
+  third_party_inclusion_subdirs=None,
+  generate_blame_list=False,
+):
   """Generates a JSON representation based on Jacoco XML report.
 
   JSON format conforms to the proto:
@@ -329,9 +341,14 @@ def generate_json_coverage_metadata(src_path,
     JSON format coverage metadata.
   """
   data = {}
-  data['files'] = _get_files_coverage_data(src_path, root, diff_mapping,
-                                           source_files, exclusion_pattern,
-                                           third_party_inclusion_subdirs)
+  data['files'] = _get_files_coverage_data(
+    src_path,
+    root,
+    diff_mapping,
+    source_files,
+    exclusion_pattern,
+    third_party_inclusion_subdirs,
+  )
   filenames = [x['path'] for x in data['files']]
   blame_list = {}
   if generate_blame_list:
@@ -342,8 +359,10 @@ def generate_json_coverage_metadata(src_path,
     logging.info('Adding directories and components coverage data ...')
 
     per_directory_coverage_data, per_component_coverage_data = (
-        aggregation_util.get_aggregated_coverage_data_from_files(
-            data['files'], component_mapping))
+      aggregation_util.get_aggregated_coverage_data_from_files(
+        data['files'], component_mapping
+      )
+    )
 
     data['components'] = None
     data['dirs'] = None
@@ -366,61 +385,73 @@ def _parse_args(args):
     The parsed arguments as parameters.
   """
   parser = argparse.ArgumentParser(
-      description='Generate the Java coverage metadata')
+    description='Generate the Java coverage metadata'
+  )
   parser.add_argument(
-      '--src-path',
-      required=True,
-      type=str,
-      help='absolute path to the code checkout')
+    '--src-path',
+    required=True,
+    type=str,
+    help='absolute path to the code checkout',
+  )
   parser.add_argument(
-      '--output-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to write the metadata, must exist')
+    '--output-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to write the metadata, must exist',
+  )
   parser.add_argument(
-      '--coverage-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to traverse JaCoCo .exec files')
+    '--coverage-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to traverse JaCoCo .exec files',
+  )
   parser.add_argument(
-      '--sources-json-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to traverse'
-      '*__jacoco_sources.json files')
+    '--sources-json-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to traverse'
+    '*__jacoco_sources.json files',
+  )
   parser.add_argument(
-      '--dir-metadata-path',
-      type=str,
-      help='absolute path to json file mapping dirs to metadata')
+    '--dir-metadata-path',
+    type=str,
+    help='absolute path to json file mapping dirs to metadata',
+  )
   parser.add_argument(
-      '--source-files',
-      nargs='*',
-      type=str,
-      help='a list of source files to generate coverage data for.'
-      'path should be relative to the root of the code checkout.')
+    '--source-files',
+    nargs='*',
+    type=str,
+    help='a list of source files to generate coverage data for.'
+    'path should be relative to the root of the code checkout.',
+  )
   parser.add_argument(
-      '--diff-mapping-path',
-      type=str,
-      help='absolute path to the file that stores the diff mapping')
+    '--diff-mapping-path',
+    type=str,
+    help='absolute path to the file that stores the diff mapping',
+  )
   parser.add_argument(
-      '--exec-filename-pattern',
-      required=True,
-      type=str,
-      help='Regex pattern for .exec filenames to be considered '
-      'for generating metadata.')
+    '--exec-filename-pattern',
+    required=True,
+    type=str,
+    help='Regex pattern for .exec filenames to be considered '
+    'for generating metadata.',
+  )
   parser.add_argument(
-      '--exclusion-pattern',
-      type=str,
-      help='regex pattern for sources to exclude from aggregation')
+    '--exclusion-pattern',
+    type=str,
+    help='regex pattern for sources to exclude from aggregation',
+  )
   parser.add_argument(
-      '--third-party-inclusion-subdirs',
-      nargs='*',
-      type=str,
-      help='third_party sub directories to include in aggregation')
+    '--third-party-inclusion-subdirs',
+    nargs='*',
+    type=str,
+    help='third_party sub directories to include in aggregation',
+  )
   parser.add_argument(
-      '--generate-blame-list',
-      action='store_true',
-      help='generate blame list data for files whose coverage is known')
+    '--generate-blame-list',
+    action='store_true',
+    help='generate blame list data for files whose coverage is known',
+  )
   params = parser.parse_args(args=args)
 
   if params.dir_metadata_path and not os.path.isfile(params.dir_metadata_path):
@@ -488,8 +519,9 @@ def fix_package_paths(xml_root, src_path, source_dirs):
         package_source_dirs.append(source_dir)
     # TODO(crbug/966918): Skip auto-generated Java files/packages for now.
     if not package_source_dirs:
-      logging.info('Cannot find package %s directory according to src root',
-                   package_path)
+      logging.info(
+        'Cannot find package %s directory according to src root', package_path
+      )
       continue
 
     # Find the directory in which a source file exists
@@ -503,8 +535,9 @@ def fix_package_paths(xml_root, src_path, source_dirs):
           new_package_inner_xml[candidate].append(source_file)
           break
       if not source_dir_found:
-        logging.warning('Cannot find source file %s in code checkout',
-                        source_file_name)
+        logging.warning(
+          'Cannot find source file %s in code checkout', source_file_name
+        )
 
   # Create new 'fixed' xml tree
   new_root = ElementTree.Element(xml_root.tag, attrib=xml_root.attrib)
@@ -523,9 +556,9 @@ def main():
   if params.dir_metadata_path:
     with open(params.dir_metadata_path) as f:
       component_mapping = {
-          d: md['monorail']['component']
-          for d, md in json.load(f)['dirs'].items()
-          if 'monorail' in md and 'component' in md['monorail']
+        d: md['monorail']['component']
+        for d, md in json.load(f)['dirs'].items()
+        if 'monorail' in md and 'component' in md['monorail']
       }
 
   diff_mapping = None
@@ -534,13 +567,15 @@ def main():
       diff_mapping = json.load(f)
 
   assert (component_mapping is None) != (diff_mapping is None), (
-      'Either component_mapping (for full-repo coverage) or diff_mapping '
-      '(for per-cl coverage) must be specified.')
+    'Either component_mapping (for full-repo coverage) or diff_mapping '
+    '(for per-cl coverage) must be specified.'
+  )
 
   class_files = []
   source_dirs = []
-  sources_json_files = get_files_with_suffix(params.sources_json_dir,
-                                             SOURCES_JSON_FILES_SUFFIX)
+  sources_json_files = get_files_with_suffix(
+    params.sources_json_dir, SOURCES_JSON_FILES_SUFFIX
+  )
   for f in sources_json_files:
     logging.info("json file = %s", f)
     with open(f) as json_file:
@@ -557,7 +592,8 @@ def main():
       for input_path in input_paths:
         rel_input_path = os.path.relpath(input_path, output_dir)
         corrected_input_paths.append(
-            os.path.join(params.sources_json_dir, rel_input_path))
+          os.path.join(params.sources_json_dir, rel_input_path)
+        )
       class_files.extend(corrected_input_paths)
       source_dirs.extend(json_file_data['source_dirs'])
 
@@ -571,31 +607,43 @@ def main():
   logging.info('Found coverage files: %s', str(coverage_files))
 
   try:
-    jacococli_jar = os.path.join(params.src_path, 'third_party', 'jacoco',
-                                 'cipd', 'lib', 'jacococli.jar')
+    jacococli_jar = os.path.join(
+      params.src_path, 'third_party', 'jacoco', 'cipd', 'lib', 'jacococli.jar'
+    )
     # TODO: Remove the fallback once no builders are building old versions of chromium/src.
     if not os.path.exists(jacococli_jar):
-      jacococli_jar = os.path.join(params.src_path, 'third_party', 'jacoco',
-                                   'lib', 'jacococli.jar')
-    java_path = os.path.join(params.src_path, 'third_party', 'jdk', 'current',
-                             'bin', 'java')
+      jacococli_jar = os.path.join(
+        params.src_path, 'third_party', 'jacoco', 'lib', 'jacococli.jar'
+      )
+    java_path = os.path.join(
+      params.src_path, 'third_party', 'jdk', 'current', 'bin', 'java'
+    )
     if not os.path.exists(java_path):
       java_path = 'java'
     cmd = [java_path, '-jar', jacococli_jar, 'report']
     host_coverage_files = [
-        f for f in coverage_files if f.endswith('junit_tests.exec') and
-        re.match(params.exec_filename_pattern, f)
+      f
+      for f in coverage_files
+      if f.endswith('junit_tests.exec')
+      and re.match(params.exec_filename_pattern, f)
     ]
     device_coverage_files = [
-        f for f in coverage_files if not f.endswith('junit_tests.exec') and
-        re.match(params.exec_filename_pattern, f)
+      f
+      for f in coverage_files
+      if not f.endswith('junit_tests.exec')
+      and re.match(params.exec_filename_pattern, f)
     ]
 
     device_cmd = (
-        cmd + device_coverage_files +
-        _create_classfile_args(class_files, DEVICE_CLASS_EXCLUDE_SUFFIX))
-    host_cmd = cmd + host_coverage_files + _create_classfile_args(
-        class_files, HOST_CLASS_EXCLUDE_SUFFIX)
+      cmd
+      + device_coverage_files
+      + _create_classfile_args(class_files, DEVICE_CLASS_EXCLUDE_SUFFIX)
+    )
+    host_cmd = (
+      cmd
+      + host_coverage_files
+      + _create_classfile_args(class_files, HOST_CLASS_EXCLUDE_SUFFIX)
+    )
 
     # JaCoCo XML report will be generated temporarily
     # then parsed to json metadata to --output-file.
@@ -612,17 +660,26 @@ def main():
     logging.info('JaCoCo host XML report generated: %r', cmd_output)
 
     temp_overall_xml = os.path.join(temp_dir, 'temp_overall.xml')
-    combine_jacoco_reports.combine_xml_files(temp_overall_xml, temp_device_xml,
-                                             temp_host_xml)
+    combine_jacoco_reports.combine_xml_files(
+      temp_overall_xml, temp_device_xml, temp_host_xml
+    )
     xml_root = fix_package_paths(
-        _read_and_prune_xml(temp_overall_xml), params.src_path, source_dirs)
+      _read_and_prune_xml(temp_overall_xml), params.src_path, source_dirs
+    )
 
     data, blame_list = generate_json_coverage_metadata(
-        params.src_path, xml_root, component_mapping, diff_mapping,
-        params.source_files, params.exclusion_pattern,
-        params.third_party_inclusion_subdirs, params.generate_blame_list)
-    logging.info('Writing fulfilled Java coverage metadata to %s',
-                 params.output_dir)
+      params.src_path,
+      xml_root,
+      component_mapping,
+      diff_mapping,
+      params.source_files,
+      params.exclusion_pattern,
+      params.third_party_inclusion_subdirs,
+      params.generate_blame_list,
+    )
+    logging.info(
+      'Writing fulfilled Java coverage metadata to %s', params.output_dir
+    )
     with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
       serialized_metadata = json.dumps(data, separators=_JSON_SEPARATORS)
       f.write(zlib.compress(serialized_metadata.encode('utf-8')))
@@ -634,14 +691,15 @@ def main():
 
     # Write xml tree to disk so that it can be exported to zoss
     ElementTree.ElementTree(xml_root).write(
-        os.path.join(params.output_dir, 'coverage.xml'))
+      os.path.join(params.output_dir, 'coverage.xml')
+    )
 
   finally:
     shutil.rmtree(temp_dir)
 
 
-
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

@@ -25,6 +25,7 @@ TEST_WARNING_LABEL = 'WARNING'
 FULL_RESULTS_FILENAME = 'full_results.json'
 TIMES_MS_FILENAME = 'times_ms.json'
 
+
 def CompressList(lines, max_length, middle_replacement):
   """Ensures that |lines| is no longer than |max_length|. If |lines| need to
   be compressed then the middle items are replaced by |middle_replacement|.
@@ -32,9 +33,11 @@ def CompressList(lines, max_length, middle_replacement):
   if len(lines) <= max_length:
     return lines
   remove_from_start = max_length // 2
-  return (lines[:remove_from_start] +
-          [middle_replacement] +
-          lines[len(lines) - (max_length - remove_from_start):])
+  return (
+    lines[:remove_from_start]
+    + [middle_replacement]
+    + lines[len(lines) - (max_length - remove_from_start) :]
+  )
 
 
 class GTestLogParser:
@@ -88,16 +91,20 @@ class GTestLogParser:
     self._test_passed = re.compile(r'\[\s+PASSED\s+\] \d+ tests?.')
     self._test_skipped = re.compile(r'\[\s+SKIPPED\s+\] ' + test_name_regexp)
     self._run_test_cases_line = re.compile(
-        r'\[\s*\d+\/\d+\]\s+[0-9\.]+s ' + test_name_regexp + ' .+')
+      r'\[\s*\d+\/\d+\]\s+[0-9\.]+s ' + test_name_regexp + ' .+'
+    )
     self._test_timeout = re.compile(
-        r'Test timeout \([0-9]+ ms\) exceeded for ' + test_name_regexp)
+      r'Test timeout \([0-9]+ ms\) exceeded for ' + test_name_regexp
+    )
     self._disabled = re.compile(r'\s*YOU HAVE (\d+) DISABLED TEST')
     self._flaky = re.compile(r'\s*YOU HAVE (\d+) FLAKY TEST')
 
     self._report_start = re.compile(
-        r'### BEGIN MEMORY TOOL REPORT \(error hash=#([0-9A-F]+)#\)')
+      r'### BEGIN MEMORY TOOL REPORT \(error hash=#([0-9A-F]+)#\)'
+    )
     self._report_end = re.compile(
-        r'### END MEMORY TOOL REPORT \(error hash=#([0-9A-F]+)#\)')
+      r'### END MEMORY TOOL REPORT \(error hash=#([0-9A-F]+)#\)'
+    )
 
     self._retry_message = re.compile('RETRYING FAILED TESTS:')
     self.retrying_failed = False
@@ -107,7 +114,7 @@ class GTestLogParser:
       'failed': TEST_FAILURE_LABEL,
       'skipped': TEST_SKIPPED_LABEL,
       'timeout': TEST_TIMEOUT_LABEL,
-      'warning': TEST_WARNING_LABEL
+      'warning': TEST_WARNING_LABEL,
     }
 
   def GetCurrentTest(self):
@@ -127,8 +134,11 @@ class GTestLogParser:
       include_flaky: If False, tests containing 'FLAKY_' anywhere in their
           names will be excluded from the list.
     """
-    test_list = [x[0] for x in self._test_status.items()
-                 if self._StatusOfTest(x[0]) == status]
+    test_list = [
+      x[0]
+      for x in self._test_status.items()
+      if self._StatusOfTest(x[0]) == status
+    ]
 
     if not include_fails:
       test_list = [x for x in test_list if x.find('FAILS_') == -1]
@@ -144,8 +154,9 @@ class GTestLogParser:
       line: text of the line at which the error occurred
       reason: a string describing the error
     """
-    self._internal_error_lines.append('%s: %s [%s]' %
-                                      (self._line_number, line.strip(), reason))
+    self._internal_error_lines.append(
+      '%s: %s [%s]' % (self._line_number, line.strip(), reason)
+    )
 
   def RunningTests(self):
     """Returns list of tests that appear to be currently running."""
@@ -179,10 +190,12 @@ class GTestLogParser:
           timed out.
 
     """
-    return (self._TestsByStatus('failed', include_fails, include_flaky) +
-            self._TestsByStatus('timeout', True, True) +
-            self._TestsByStatus('warning', include_fails, include_flaky) +
-            self.RunningTests())
+    return (
+      self._TestsByStatus('failed', include_fails, include_flaky)
+      + self._TestsByStatus('timeout', True, True)
+      + self._TestsByStatus('warning', include_fails, include_flaky)
+      + self.RunningTests()
+    )
 
   def SkippedTests(self, include_fails=False, include_flaky=False):
     """Returns list of tests that were skipped"""
@@ -191,8 +204,9 @@ class GTestLogParser:
   def TriesForTest(self, test):
     """Returns a list containing the state for all tries of the given test.
     This parser doesn't support retries so a single result is returned."""
-    return [self.TEST_STATUS_MAP.get(self._StatusOfTest(test),
-                                    TEST_UNKNOWN_LABEL)]
+    return [
+      self.TEST_STATUS_MAP.get(self._StatusOfTest(test), TEST_UNKNOWN_LABEL)
+    ]
 
   def DisabledTests(self):
     """Returns the name of the disabled test (if there is only 1) or the number
@@ -259,8 +273,8 @@ class GTestLogParser:
     if not match or match.start() == 0:
       self._ProcessLine(line)
     else:
-      self._ProcessLine(line[:match.start()])
-      self._ProcessLine(line[match.start():])
+      self._ProcessLine(line[: match.start()])
+      self._ProcessLine(line[match.start() :])
 
   def _ProcessLine(self, line):
     """Parses the line and changes the state of parsed tests accordingly.
@@ -284,7 +298,9 @@ class GTestLogParser:
       if self._current_test:
         if self._test_status[self._current_test][0] == 'started':
           self._test_status[self._current_test] = (
-              'timeout', self._failure_description)
+            'timeout',
+            self._failure_description,
+          )
       self._current_test = ''
       self._failure_description = []
       return
@@ -332,7 +348,9 @@ class GTestLogParser:
       if self._current_test:
         if self._test_status[self._current_test][0] == 'started':
           self._test_status[self._current_test] = (
-              'timeout', self._failure_description)
+            'timeout',
+            self._failure_description,
+          )
       test_name = results.group(1)
       self._test_status[test_name] = ('started', ['Did not complete.'])
       self._current_test = test_name
@@ -395,7 +413,9 @@ class GTestLogParser:
       if status not in ('started', 'failed'):
         self._RecordError(line, 'timeout while in status %s' % status)
       self._test_status[test_name] = (
-          'timeout', self._failure_description + ['Killed (timed out).'])
+        'timeout',
+        self._failure_description + ['Killed (timed out).'],
+      )
       self._failure_description = []
       self._current_test = ''
       return
@@ -418,11 +438,13 @@ class GTestLogParser:
       if not self._current_report_hash:
         self._RecordError(line, 'no BEGIN matches this END')
       elif report_hash != self._current_report_hash:
-        self._RecordError(line, 'expected (error hash=#%s#)' %
-            self._current_report_hash)
+        self._RecordError(
+          line, 'expected (error hash=#%s#)' % self._current_report_hash
+        )
       else:
         self._memory_tool_reports[self._current_report_hash] = (
-            self._current_report)
+          self._current_report
+        )
       self._current_report_hash = ''
       self._current_report = []
       return
@@ -456,7 +478,9 @@ class GTestLogParser:
         status = self._StatusOfTest(test_name)
         if status in ('not known', 'OK'):
           self._test_status[test_name] = (
-              'failed', ['Unknown error, see stdio log.'])
+            'failed',
+            ['Unknown error, see stdio log.'],
+          )
       else:
         self._parsing_failures = False
     elif line.startswith('Failing tests:'):
@@ -485,14 +509,16 @@ class GTestJSONParser:
     self.master_name = mastername
 
     # List our labels that match the ones output by gtest JSON.
-    self.SUPPORTED_LABELS = (TEST_UNKNOWN_LABEL,
-                             TEST_SUCCESS_LABEL,
-                             TEST_FAILURE_LABEL,
-                             TEST_FAILURE_ON_EXIT_LABEL,
-                             TEST_EXCESSIVE_OUTPUT_LABEL,
-                             TEST_CRASH_LABEL,
-                             TEST_TIMEOUT_LABEL,
-                             TEST_SKIPPED_LABEL)
+    self.SUPPORTED_LABELS = (
+      TEST_UNKNOWN_LABEL,
+      TEST_SUCCESS_LABEL,
+      TEST_FAILURE_LABEL,
+      TEST_FAILURE_ON_EXIT_LABEL,
+      TEST_EXCESSIVE_OUTPUT_LABEL,
+      TEST_CRASH_LABEL,
+      TEST_TIMEOUT_LABEL,
+      TEST_SKIPPED_LABEL,
+    )
 
   def ProcessLine(self, line):
     # Deliberately do nothing - we parse out-of-band JSON summary
@@ -587,8 +613,11 @@ class GTestJSONParser:
 
     try:
       ignored_failed_tests_path = chromium_utils.FindUpward(
-          os.path.abspath(dir_in_chrome), 'tools', 'ignorer_bot',
-          'ignored_failed_tests.txt')
+        os.path.abspath(dir_in_chrome),
+        'tools',
+        'ignorer_bot',
+        'ignored_failed_tests.txt',
+      )
     except chromium_utils.PathNotFound:
       return
 
@@ -605,16 +634,18 @@ class GTestJSONParser:
       platform_spec_regexp = r'[A-Za-z0-9_\s]*'
 
       match = re.match(
-          r'^crbug.com/\d+'           # Issue URL.
-          r'\s+'                      # Some whitespace.
-          r'\[(' +                    # Opening square bracket '['.
-            platform_spec_regexp +    # At least one platform, and...
-            r'(?:,' +                 # ...separated by commas...
-              platform_spec_regexp +  # ...any number of additional...
-            r')*'                     # ...platforms.
-          r')\]'                      # Closing square bracket ']'.
-          r'\s+'                      # Some whitespace.
-          r'(\S+)$', spec_line)       # Test name.
+        r'^crbug.com/\d+'  # Issue URL.
+        r'\s+'  # Some whitespace.
+        r'\[('  # Opening square bracket '['.
+        + platform_spec_regexp  # At least one platform, and...
+        + r'(?:,'  # ...separated by commas...
+        + platform_spec_regexp  # ...any number of additional...
+        + r')*'  # ...platforms.
+        r')\]'  # Closing square bracket ']'.
+        r'\s+'  # Some whitespace.
+        r'(\S+)$',
+        spec_line,
+      )  # Test name.
 
       if not match:
         continue
@@ -622,13 +653,13 @@ class GTestJSONParser:
       platform_specs = match.group(1).strip()
       test_name = match.group(2).strip()
 
-      platforms = [set(platform.split())
-                   for platform in platform_specs.split(',')]
+      platforms = [
+        set(platform.split()) for platform in platform_specs.split(',')
+      ]
 
       parsed_spec.append((test_name, platforms))
 
     return parsed_spec
-
 
   def _RetrieveIgnoredFailuresForPlatform(self, build_dir, platform_flags):
     """Parses the ignored failed tests spec into self.ignored_failed_tests."""
@@ -650,7 +681,8 @@ class GTestJSONParser:
   def ProcessJSONData(self, json_data, build_dir=None):
     self.disabled_tests.update(json_data['disabled_tests'])
     self._RetrieveIgnoredFailuresForPlatform(
-        build_dir, json_data['global_tags'])
+      build_dir, json_data['global_tags']
+    )
 
     for iteration_data in json_data['per_iteration_data']:
       for test_name, test_runs in iteration_data.items():
@@ -673,13 +705,15 @@ class GTestJSONParser:
           # Make sure the annotations are ASCII to avoid character set related
           # errors. They are mostly informational anyway, and more detailed
           # info can be obtained from the original JSON output.
-          ascii_lines = run_data['output_snippet'].encode(
-              'ascii', errors='replace'
-          ).decode()
+          ascii_lines = (
+            run_data['output_snippet']
+            .encode('ascii', errors='replace')
+            .decode()
+          )
           decoded_lines = CompressList(
-              ascii_lines.split('\n'),
-              self.OUTPUT_SNIPPET_LINES_LIMIT,
-              '<truncated, full output is in gzipped JSON '
-              'output at end of step>')
+            ascii_lines.split('\n'),
+            self.OUTPUT_SNIPPET_LINES_LIMIT,
+            '<truncated, full output is in gzipped JSON output at end of step>',
+          )
           run_lines.extend(decoded_lines)
           self.test_logs[test_name].extend(run_lines)

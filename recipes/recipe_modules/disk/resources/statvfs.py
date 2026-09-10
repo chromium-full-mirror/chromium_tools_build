@@ -20,8 +20,8 @@ import sys
 
 stats = os.statvfs(sys.argv[1])
 data = {
-    'capacity': stats.f_blocks * stats.f_frsize,
-    'used': (stats.f_blocks - stats.f_bavail) * stats.f_frsize,
+  'capacity': stats.f_blocks * stats.f_frsize,
+  'used': (stats.f_blocks - stats.f_bavail) * stats.f_frsize,
 }
 json.dump(data, sys.stdout)
 print()  # put \n

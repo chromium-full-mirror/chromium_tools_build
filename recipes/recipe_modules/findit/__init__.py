@@ -8,28 +8,28 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_swarming,
-    chromium_tests,
-    chromium_tests_builder_config,
-    filter as filter_module,
-    test_utils,
+  chromium,
+  chromium_checkout,
+  chromium_swarming,
+  chromium_tests,
+  chromium_tests_builder_config,
+  filter as filter_module,
+  test_utils,
 )
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    git,
+  depot_tools,
+  gclient,
+  git,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  context,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -53,5 +53,6 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   step: step.API
   test_utils: test_utils.API
+
 
 from .api import FinditApi as API

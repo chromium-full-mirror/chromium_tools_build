@@ -8,8 +8,13 @@ import collections.abc
 
 from . import builder_spec as builder_spec_module
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             mapping, set_)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  cached_property,
+  mapping,
+  set_,
+)
 from RECIPE_MODULES.build.chromium_types import BuilderId
 
 
@@ -26,7 +31,8 @@ class BuilderDatabase(collections.abc.Mapping):
 
   _db = attrib(mapping[BuilderId, builder_spec_module.BuilderSpec])
   builders_by_group = attrib(
-      mapping[str, mapping[str, builder_spec_module.BuilderSpec]])
+    mapping[str, mapping[str, builder_spec_module.BuilderSpec]]
+  )
 
   @classmethod
   def create(cls, builder_dict):
@@ -89,8 +95,9 @@ class BuilderGraph(collections.abc.Mapping):
         continue
 
       parent_id = BuilderId.create_for_group(
-          builder_spec.parent_builder_group or builder_id.group,
-          builder_spec.parent_buildername)
+        builder_spec.parent_builder_group or builder_id.group,
+        builder_spec.parent_buildername,
+      )
       graph[parent_id].add(builder_id)
 
     return cls(graph)

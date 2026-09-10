@@ -35,11 +35,12 @@ import collections
 from RECIPE_MODULES.build.chromium_types import BuilderId
 from RECIPE_MODULES.build import proto_validation
 
-from PB.go.chromium.org.luci.buildbucket.proto \
-  import builder_common as builder_common_pb
-from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
-                                                                   properties_pb
-                                                                  )
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builder_common as builder_common_pb,
+)
+from PB.recipe_modules.build.chromium_tests_builder_config import (
+  properties as properties_pb,
+)
 
 from .builder_config import BuildbucketBuilderId, BuilderConfig
 from .builder_db import BuilderDatabase
@@ -97,29 +98,30 @@ def _validate_builder_spec(obj, ctx):
 
 
 _EXECUTION_MODE_MAP = {
-    properties_pb.BuilderSpec.ExecutionMode.COMPILE_AND_TEST: COMPILE_AND_TEST,
-    properties_pb.BuilderSpec.ExecutionMode.TEST: TEST,
+  properties_pb.BuilderSpec.ExecutionMode.COMPILE_AND_TEST: COMPILE_AND_TEST,
+  properties_pb.BuilderSpec.ExecutionMode.TEST: TEST,
 }
 
 
 def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
   parent_id = builder_id_by_bb_builder_id.get(
-      BuildbucketBuilderId.from_proto(obj.parent))
+    BuildbucketBuilderId.from_proto(obj.parent)
+  )
 
   legacy_chromium_config = obj.legacy_chromium_config
   chromium_config_kwargs = {}
   for a in (
-      'build_config',
-      'host_platform',
-      'target_arch',
-      'target_bits',
-      'target_platform',
+    'build_config',
+    'host_platform',
+    'target_arch',
+    'target_bits',
+    'target_platform',
   ):
     if legacy_chromium_config.HasField(a):
       chromium_config_kwargs[a.upper()] = getattr(legacy_chromium_config, a)
   for a in (
-      'target_cros_boards',
-      'cros_boards_with_qemu_images',
+    'target_cros_boards',
+    'cros_boards_with_qemu_images',
   ):
     val = getattr(legacy_chromium_config, a)
     if val:
@@ -128,42 +130,42 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
   kwargs = {}
   if obj.HasField('clusterfuzz_archive'):
     kwargs.update(
-        dict(
-            cf_archive_build=True,
-            cf_gs_bucket=obj.clusterfuzz_archive.gs_bucket or None,
-            cf_gs_acl=obj.clusterfuzz_archive.gs_acl or None,
-            cf_archive_name=obj.clusterfuzz_archive.archive_name_prefix or None,
-            cf_archive_path=obj.clusterfuzz_archive.archive_path or None,
-            cf_use_archive_path=obj.clusterfuzz_archive.use_archive_path,
-            cf_archive_subdir_suffix=obj.clusterfuzz_archive.archive_subdir or
-            None,
-            cf_archive_schema_version=obj.clusterfuzz_archive
-            .archive_schema_version,
-        ))
+      dict(
+        cf_archive_build=True,
+        cf_gs_bucket=obj.clusterfuzz_archive.gs_bucket or None,
+        cf_gs_acl=obj.clusterfuzz_archive.gs_acl or None,
+        cf_archive_name=obj.clusterfuzz_archive.archive_name_prefix or None,
+        cf_archive_path=obj.clusterfuzz_archive.archive_path or None,
+        cf_use_archive_path=obj.clusterfuzz_archive.use_archive_path,
+        cf_archive_subdir_suffix=obj.clusterfuzz_archive.archive_subdir or None,
+        cf_archive_schema_version=obj.clusterfuzz_archive.archive_schema_version,
+      )
+    )
 
   return BuilderSpec.create(
-      execution_mode=_EXECUTION_MODE_MAP[obj.execution_mode],
-      parent_builder_group=parent_id.group if parent_id else None,
-      parent_buildername=parent_id.builder if parent_id else None,
-      gclient_config=obj.legacy_gclient_config.config,
-      gclient_apply_config=obj.legacy_gclient_config.apply_configs,
-      chromium_config=legacy_chromium_config.config,
-      chromium_apply_config=legacy_chromium_config.apply_configs,
-      chromium_config_kwargs=chromium_config_kwargs,
-      android_config=obj.legacy_android_config.config or None,
-      android_apply_config=obj.legacy_android_config.apply_configs,
-      android_version=obj.android_version_file or None,
-      clobber=obj.clobber,
-      no_history=obj.no_history,
-      shallow=obj.shallow,
-      mb_phase_for_tests=obj.mb_phase_for_tests or None,
-      serialize_tests=obj.run_tests_serially,
-      perf_isolate_upload=obj.perf_isolate_upload,
-      expose_trigger_properties=obj.expose_trigger_properties,
-      skylab_gs_bucket=obj.skylab_upload_location.gs_bucket or None,
-      skylab_gs_extra=obj.skylab_upload_location.gs_extra or None,
-      use_test_trigger_cas=obj.use_test_trigger_cas,
-      **kwargs)
+    execution_mode=_EXECUTION_MODE_MAP[obj.execution_mode],
+    parent_builder_group=parent_id.group if parent_id else None,
+    parent_buildername=parent_id.builder if parent_id else None,
+    gclient_config=obj.legacy_gclient_config.config,
+    gclient_apply_config=obj.legacy_gclient_config.apply_configs,
+    chromium_config=legacy_chromium_config.config,
+    chromium_apply_config=legacy_chromium_config.apply_configs,
+    chromium_config_kwargs=chromium_config_kwargs,
+    android_config=obj.legacy_android_config.config or None,
+    android_apply_config=obj.legacy_android_config.apply_configs,
+    android_version=obj.android_version_file or None,
+    clobber=obj.clobber,
+    no_history=obj.no_history,
+    shallow=obj.shallow,
+    mb_phase_for_tests=obj.mb_phase_for_tests or None,
+    serialize_tests=obj.run_tests_serially,
+    perf_isolate_upload=obj.perf_isolate_upload,
+    expose_trigger_properties=obj.expose_trigger_properties,
+    skylab_gs_bucket=obj.skylab_upload_location.gs_bucket or None,
+    skylab_gs_extra=obj.skylab_upload_location.gs_extra or None,
+    use_test_trigger_cas=obj.use_test_trigger_cas,
+    **kwargs,
+  )
 
 
 @VALIDATORS.register(properties_pb.BuilderDatabase.Entry)
@@ -179,8 +181,11 @@ def _validate_builder_database(obj, ctx):
   def check_builder_id_unique(entry, sub_ctx):
     builder_key = BuildbucketBuilderId.from_proto(entry.builder_id)
     if builder_key in location_by_builder_key:
-      sub_ctx.error('{}.builder_id is the same as {}.builder_id'.format(
-          sub_ctx.location, location_by_builder_key[builder_key]))
+      sub_ctx.error(
+        '{}.builder_id is the same as {}.builder_id'.format(
+          sub_ctx.location, location_by_builder_key[builder_key]
+        )
+      )
     else:
       location_by_builder_key[builder_key] = sub_ctx.location
 
@@ -193,8 +198,8 @@ def _convert_builder_database(obj, builder_id_by_bb_builder_id):
     bb_builder_id = BuildbucketBuilderId.from_proto(entry.builder_id)
     builder_id = builder_id_by_bb_builder_id[bb_builder_id]
     builders[builder_id.group][builder_id.builder] = _convert_builder_spec(
-        entry.builder_spec,
-        builder_id_by_bb_builder_id=builder_id_by_bb_builder_id,
+      entry.builder_spec,
+      builder_id_by_bb_builder_id=builder_id_by_bb_builder_id,
     )
   return BuilderDatabase.create(builders)
 
@@ -208,29 +213,36 @@ def _validate_builder_group_and_name(obj, ctx):
 @VALIDATORS.register(properties_pb.BuilderConfig)
 def _validate_builder_config(obj, ctx):
   builders = set(
-      BuildbucketBuilderId.from_proto(e.builder_id)
-      for e in obj.builder_db.entries)
+    BuildbucketBuilderId.from_proto(e.builder_id)
+    for e in obj.builder_db.entries
+  )
 
   def check_builder_id_in_db(builder_id, sub_ctx):
     if BuildbucketBuilderId.from_proto(builder_id) not in builders:
-      sub_ctx.error('there is no entry in {}.builder_db for {}'.format(
-          ctx.location, sub_ctx.location))
+      sub_ctx.error(
+        'there is no entry in {}.builder_db for {}'.format(
+          ctx.location, sub_ctx.location
+        )
+      )
 
   ctx.validate_field(obj, 'builder_db')
   ctx.validate_repeated_field(
-      obj, 'builder_ids', callback=check_builder_id_in_db)
+    obj, 'builder_ids', callback=check_builder_id_in_db
+  )
   ctx.validate_repeated_field(
-      obj,
-      'builder_ids_in_scope_for_testing',
-      optional=True,
-      callback=check_builder_id_in_db)
+    obj,
+    'builder_ids_in_scope_for_testing',
+    optional=True,
+    callback=check_builder_id_in_db,
+  )
   ctx.validate_repeated_field(
-      obj, 'mirroring_builder_group_and_names', optional=True)
+    obj, 'mirroring_builder_group_and_names', optional=True
+  )
 
 
 _RTS_CONDITION_MAP = {
-    properties_pb.BuilderConfig.RtsConfig.Condition.NEVER: NEVER,
-    properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS: ALWAYS,
+  properties_pb.BuilderConfig.RtsConfig.Condition.NEVER: NEVER,
+  properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS: ALWAYS,
 }
 
 
@@ -239,50 +251,59 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
   # one in the recipes is (group, builder), so we need to map between them
   # until such time as the recipes version uses project and bucket
   builder_id_by_bb_builder_id = {
-      BuildbucketBuilderId.from_proto(entry.builder_id):
-      BuilderId.create_for_group(entry.builder_spec.builder_group,
-                                 entry.builder_id.builder)
-      for entry in obj.builder_db.entries
+    BuildbucketBuilderId.from_proto(
+      entry.builder_id
+    ): BuilderId.create_for_group(
+      entry.builder_spec.builder_group, entry.builder_id.builder
+    )
+    for entry in obj.builder_db.entries
   }
 
   rts_condition = obj.rts_config and obj.rts_config.condition
   # coerce an unspecified condition to None
   rts_condition = rts_condition or None
   regression_test_selection = (
-      _RTS_CONDITION_MAP[rts_condition] if rts_condition is not None else None)
+    _RTS_CONDITION_MAP[rts_condition] if rts_condition is not None else None
+  )
 
   return BuilderConfig.create(
-      builder_db=_convert_builder_database(
-          obj.builder_db,
-          builder_id_by_bb_builder_id=builder_id_by_bb_builder_id),
-      builder_ids=[
-          builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
-          for b in obj.builder_ids
-      ],
-      builder_ids_in_scope_for_testing=[
-          builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
-          for b in obj.builder_ids_in_scope_for_testing
-      ],
-      bb_builder_id_by_builder_id={
-          v: k for k, v in builder_id_by_bb_builder_id.items()
-      },
-      mirroring_try_builders=[
-          BuilderId.create_for_group(x.group, x.builder)
-          for x in obj.mirroring_builder_group_and_names
-      ],
-      targets_spec_directory=obj.targets_spec_directory or None,
-      include_all_triggered_testers=False,
-      is_compile_only=obj.is_compile_only,
-      analyze_names=obj.analyze_names,
-      additional_exclusions=obj.additional_exclusions or None,
-      retry_failed_shards=(obj.retry_failed_shards
-                           if obj.HasField('retry_failed_shards') else
-                           default_retry_failed_shards),
-      retry_invalid_shards=(obj.retry_invalid_shards
-                            if obj.HasField('retry_invalid_shards') else False),
-      retry_without_patch=(obj.retry_without_patch
-                           if obj.HasField('retry_without_patch') else True),
-      regression_test_selection=regression_test_selection,
+    builder_db=_convert_builder_database(
+      obj.builder_db, builder_id_by_bb_builder_id=builder_id_by_bb_builder_id
+    ),
+    builder_ids=[
+      builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
+      for b in obj.builder_ids
+    ],
+    builder_ids_in_scope_for_testing=[
+      builder_id_by_bb_builder_id[BuildbucketBuilderId.from_proto(b)]
+      for b in obj.builder_ids_in_scope_for_testing
+    ],
+    bb_builder_id_by_builder_id={
+      v: k for k, v in builder_id_by_bb_builder_id.items()
+    },
+    mirroring_try_builders=[
+      BuilderId.create_for_group(x.group, x.builder)
+      for x in obj.mirroring_builder_group_and_names
+    ],
+    targets_spec_directory=obj.targets_spec_directory or None,
+    include_all_triggered_testers=False,
+    is_compile_only=obj.is_compile_only,
+    analyze_names=obj.analyze_names,
+    additional_exclusions=obj.additional_exclusions or None,
+    retry_failed_shards=(
+      obj.retry_failed_shards
+      if obj.HasField('retry_failed_shards')
+      else default_retry_failed_shards
+    ),
+    retry_invalid_shards=(
+      obj.retry_invalid_shards
+      if obj.HasField('retry_invalid_shards')
+      else False
+    ),
+    retry_without_patch=(
+      obj.retry_without_patch if obj.HasField('retry_without_patch') else True
+    ),
+    regression_test_selection=regression_test_selection,
   )
 
 

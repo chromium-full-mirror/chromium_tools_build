@@ -32,27 +32,35 @@ class TEST_DEPS(RecipeTestApi):
 
 
 def RunSteps(api: DEPS):
-  api.step('fake_test',
-           ['fake', '--gtest-results', api.test_utils.gtest_results()])
+  api.step(
+    'fake_test', ['fake', '--gtest-results', api.test_utils.gtest_results()]
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'many-log-lines',
-      api.override_step_data(
-          'fake_test',
-          api.test_utils.gtest_results(
-              api.json.dumps({
-                  'per_iteration_data': [{
-                      'SpammyTest': [{
-                          'elapsed_time_ms':
-                              1000,
-                          'output_snippet':
-                              '\n'.join(itertools.repeat('line', 10000)),
-                          'status':
-                              'SUCCESS',
-                      }],
-                  }],
-              }))),
-      api.post_process(post_process.DropExpectation),
+    'many-log-lines',
+    api.override_step_data(
+      'fake_test',
+      api.test_utils.gtest_results(
+        api.json.dumps(
+          {
+            'per_iteration_data': [
+              {
+                'SpammyTest': [
+                  {
+                    'elapsed_time_ms': 1000,
+                    'output_snippet': '\n'.join(
+                      itertools.repeat('line', 10000)
+                    ),
+                    'status': 'SUCCESS',
+                  }
+                ],
+              }
+            ],
+          }
+        )
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
   )

@@ -13,12 +13,12 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import ytdevinfra
 from RECIPE_MODULES.depot_tools import bot_update, gclient
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    platform,
-    properties,
-    step,
+  context,
+  file,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -73,46 +73,65 @@ def RunSteps(api: DEPS):
     if api.platform.is_linux:
       with api.context(cwd=source_dir.joinpath('chromium', 'src')):
         api.step(
-            'Generate build files (1)',
-            ['cobalt/build/gn.py', '-p', 'linux-x64x11', '-c', 'devel'],
-            wrapper=shell_wrapper)
+          'Generate build files (1)',
+          ['cobalt/build/gn.py', '-p', 'linux-x64x11', '-c', 'devel'],
+          wrapper=shell_wrapper,
+        )
 
         api.step(
-            'Generate build files (2)', [
-                'gn', 'args', './out/linux-x64x11_devel',
-                '--list=is_component_build'
-            ],
-            wrapper=shell_wrapper)
+          'Generate build files (2)',
+          [
+            'gn',
+            'args',
+            './out/linux-x64x11_devel',
+            '--list=is_component_build',
+          ],
+          wrapper=shell_wrapper,
+        )
 
         api.step(
-            'Enable pre-commit (1)', ['pre-commit', 'clean'],
-            wrapper=shell_wrapper)
+          'Enable pre-commit (1)',
+          ['pre-commit', 'clean'],
+          wrapper=shell_wrapper,
+        )
 
         api.step(
-            'Enable pre-commit (2)',
-            ['pre-commit', 'install', '-t', 'pre-commit', '-t', 'pre-push'],
-            wrapper=shell_wrapper)
+          'Enable pre-commit (2)',
+          ['pre-commit', 'install', '-t', 'pre-commit', '-t', 'pre-push'],
+          wrapper=shell_wrapper,
+        )
 
         api.step(
-            'Build', [
-                'time', 'autoninja', '-C', 'out/linux-x64x11_devel',
-                'cobalt:gn_all content_shell'
-            ],
-            wrapper=shell_wrapper)
+          'Build',
+          [
+            'time',
+            'autoninja',
+            '-C',
+            'out/linux-x64x11_devel',
+            'cobalt:gn_all content_shell',
+          ],
+          wrapper=shell_wrapper,
+        )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(ytdevinfra_recipe_version=0.2),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
+    'basic',
+    api.properties(ytdevinfra_recipe_version=0.2),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
   ) + api.platform('linux', 64)
   yield api.test(
-      'basic-0.1',
-      api.properties(ytdevinfra_recipe_version=0.1),
-      api.post_process(StepCommandRE, 'Print title from API module',
-                       ['echo', 'Recipe for building']),
-      api.post_process(DropExpectation),
+    'basic-0.1',
+    api.properties(ytdevinfra_recipe_version=0.1),
+    api.post_process(
+      StepCommandRE,
+      'Print title from API module',
+      ['echo', 'Recipe for building'],
+    ),
+    api.post_process(DropExpectation),
   ) + api.platform('linux', 64)

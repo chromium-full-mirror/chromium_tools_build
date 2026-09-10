@@ -28,13 +28,16 @@ The canonical format is a dict of the form:
   }
 """
 
-
 from __future__ import annotations
 
 
 def result_format(
-    valid=False, failures=None, total_tests_ran=0,
-    pass_fail_counts=None, findit_notrun=None):
+  valid=False,
+  failures=None,
+  total_tests_ran=0,
+  pass_fail_counts=None,
+  findit_notrun=None,
+):
   """Returns a dict in the canonical format with all required keys.
 
   All of the arguments below will be present in the returned dict, whether
@@ -54,11 +57,11 @@ def result_format(
       test run had result NOTRUN or UNKNOWN.
   """
   return {
-      'valid': valid,
-      'failures': failures or [],
-      'total_tests_ran': total_tests_ran,
-      'pass_fail_counts': pass_fail_counts or {},
-      'findit_notrun': findit_notrun or set(),
+    'valid': valid,
+    'failures': failures or [],
+    'total_tests_ran': total_tests_ran,
+    'pass_fail_counts': pass_fail_counts or {},
+    'findit_notrun': findit_notrun or set(),
   }
 
 

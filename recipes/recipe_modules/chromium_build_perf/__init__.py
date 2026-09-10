@@ -9,22 +9,22 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    reclient,
-    siso,
+  builder_group,
+  chromium,
+  reclient,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import gclient
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    raw_io,
-    step,
-    time,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  raw_io,
+  step,
+  time,
 )
 
 
@@ -44,5 +44,6 @@ class DEPS(RecipeScriptApi):
   time: time.API
   reclient: reclient.API
   siso: siso.API
+
 
 from .api import ChromiumBuildPerfApi as API

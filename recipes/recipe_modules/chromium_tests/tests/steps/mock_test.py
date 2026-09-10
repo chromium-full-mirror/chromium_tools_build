@@ -12,10 +12,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_tests
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    path,
-    properties,
-    step,
+  assertions,
+  path,
+  properties,
+  step,
 )
 
 
@@ -33,6 +33,7 @@ class TEST_DEPS(RecipeTestApi):
   chromium_tests: chromium_tests.TEST_API
   properties: properties.TEST_API
 
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import steps
@@ -40,9 +41,10 @@ from RECIPE_MODULES.build.chromium_tests import steps
 
 def RunSteps(api: DEPS):
   test_spec = steps.MockTestSpec.create(
-      name=api.properties.get('test_name', 'MockTest'),
-      runs_on_swarming=api.properties.get('runs_on_swarming', True),
-      shards=4)
+    name=api.properties.get('test_name', 'MockTest'),
+    runs_on_swarming=api.properties.get('runs_on_swarming', True),
+    shards=4,
+  )
   test = test_spec.get_test(api.chromium_tests)
 
   test.pre_run('', is_ci_only=api.properties.get('is_ci_only', False))
@@ -77,42 +79,42 @@ def GenTests(api: TEST_DEPS):
   infra_code = steps.MockTest.ExitCodes.INFRA_FAILURE
 
   yield api.test(
-      'basic',
-      api.post_process(post_process.MustRun, 'pre_run MockTest'),
-      api.post_process(post_process.MustRun, 'MockTest'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.MustRun, 'pre_run MockTest'),
+    api.post_process(post_process.MustRun, 'MockTest'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'is_ci_only',
-      api.properties(is_ci_only=True),
-      api.post_process(post_process.MustRun, 'pre_run MockTest'),
-      api.post_process(post_process.MustRun, 'MockTest'),
-      api.post_process(post_process.DropExpectation),
+    'is_ci_only',
+    api.properties(is_ci_only=True),
+    api.post_process(post_process.MustRun, 'pre_run MockTest'),
+    api.post_process(post_process.MustRun, 'MockTest'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'failure',
-      api.properties(test_name='base_unittests'),
-      api.chromium_tests.override_step_data(
-          'base_unittests', retcode=failure_code),
-      api.post_process(post_process.MustRun, 'step failure in base_unittests'),
-      api.post_process(post_process.DropExpectation),
+    'failure',
+    api.properties(test_name='base_unittests'),
+    api.chromium_tests.override_step_data(
+      'base_unittests', retcode=failure_code
+    ),
+    api.post_process(post_process.MustRun, 'step failure in base_unittests'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'infra_failure',
-      api.properties(test_name='base_unittests'),
-      api.chromium_tests.override_step_data(
-          'base_unittests', retcode=infra_code),
-      api.post_process(post_process.MustRun, 'infra failure in base_unittests'),
-      api.post_process(post_process.DropExpectation),
+    'infra_failure',
+    api.properties(test_name='base_unittests'),
+    api.chromium_tests.override_step_data('base_unittests', retcode=infra_code),
+    api.post_process(post_process.MustRun, 'infra failure in base_unittests'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'local',
-      api.properties(runs_on_swarming=False),
-      api.post_process(post_process.MustRun, 'pre_run MockTest'),
-      api.post_process(post_process.MustRun, 'MockTest'),
-      api.post_process(post_process.DropExpectation),
+    'local',
+    api.properties(runs_on_swarming=False),
+    api.post_process(post_process.MustRun, 'pre_run MockTest'),
+    api.post_process(post_process.MustRun, 'MockTest'),
+    api.post_process(post_process.DropExpectation),
   )

@@ -30,6 +30,7 @@ class BaseTestBinary:
     cas_input_root (str): digest of an uploaded directory tree on the default
       cas server.
   """
+
   # Result Summary Class for `run`, should be set in sub-classes.
   RESULT_SUMMARY_CLS = None
   TEST_FILTER_LIMIT = 20
@@ -68,27 +69,27 @@ class BaseTestBinary:
         builder = tag.split(':', 1)[1]
 
     ret = cls(
-        request_slice.command,
-        cwd=request_slice.relative_cwd,
-        builder=builder,
-        env_vars=request_slice.env_vars,
-        dimensions=request_slice.dimensions,
-        cas_input_root=request_slice.cas_input_root,
+      request_slice.command,
+      cwd=request_slice.relative_cwd,
+      builder=builder,
+      env_vars=request_slice.env_vars,
+      dimensions=request_slice.dimensions,
+      cas_input_root=request_slice.cas_input_root,
     )
     return ret
 
   def to_jsonish(self):
     """Return a JSON-serializable dict."""
     return dict(
-        class_name=self.__class__.__name__,
-        command=self.command,
-        cwd=self.cwd,
-        builder=self.builder,
-        env_vars=self.env_vars,
-        dimensions=self.dimensions,
-        cas_input_root=self.cas_input_root,
-        tests=self.tests,
-        repeat=self.repeat,
+      class_name=self.__class__.__name__,
+      command=self.command,
+      cwd=self.cwd,
+      builder=self.builder,
+      env_vars=self.env_vars,
+      dimensions=self.dimensions,
+      cas_input_root=self.cas_input_root,
+      tests=self.tests,
+      repeat=self.repeat,
     )
 
   @classmethod
@@ -109,9 +110,9 @@ class BaseTestBinary:
     ret = copy.deepcopy(self)
 
     command_wrappers = (
-        'rdb',
-        'result_adapter',
-        'luci-auth',
+      'rdb',
+      'result_adapter',
+      'luci-auth',
     )
     ret.command = utils.strip_command_wrappers(ret.command, command_wrappers)
     ret.env_vars = utils.strip_env_vars(ret.env_vars, ('LLVM_PROFILE_FILE',))
@@ -175,7 +176,8 @@ class BaseTestBinary:
     """
     if not self.RESULT_SUMMARY_CLS:
       raise NotImplementedError(
-          'RESULT_SUMMARY_CLS should be set in sub-classes')
+        'RESULT_SUMMARY_CLS should be set in sub-classes'
+      )
 
     tmp_files = []
     filter_file = None
@@ -183,7 +185,8 @@ class BaseTestBinary:
     try:
       if self.tests and len(self.tests) >= 10:
         with tempfile.NamedTemporaryFile(
-                mode='w', suffix='.filter', delete=False, encoding='utf8') as fp:
+          mode='w', suffix='.filter', delete=False, encoding='utf8'
+        ) as fp:
           tmp_files.append(fp.name)
           filter_file = fp.name
           fp.write('\n'.join(self.tests))
@@ -196,7 +199,8 @@ class BaseTestBinary:
       utils.run_cmd(cmd, cwd=self.cwd)
 
       return self.RESULT_SUMMARY_CLS.from_output_json(
-          json.load(open(output_json, encoding='utf-8')))
+        json.load(open(output_json, encoding='utf-8'))
+      )
     finally:
       for f in tmp_files:
         os.unlink(f)
@@ -214,12 +218,13 @@ class BaseTestBinary:
       tests_content = '\n'.join(self.tests)
       if delimiter in tests_content:
         raise Exception(
-            f'Tests list contains delimiter {delimiter}, cannot safely '
-            'generate readable command')
+          f'Tests list contains delimiter {delimiter}, cannot safely '
+          'generate readable command'
+        )
       filter_file = 'tests.filter'
-      filter_message = (f"cat <<'{delimiter}' > {filter_file}\n"
-                        f"{tests_content}\n"
-                        f"{delimiter}\n")
+      filter_message = (
+        f"cat <<'{delimiter}' > {filter_file}\n{tests_content}\n{delimiter}\n"
+      )
     cmd = self._get_command(filter_file)
     return filter_message + ' '.join(map(shlex.quote, cmd))
 

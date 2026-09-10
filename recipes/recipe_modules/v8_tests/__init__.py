@@ -9,27 +9,27 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium_swarming,
-    isolate,
+  builder_group,
+  chromium_swarming,
+  isolate,
 )
 from RECIPE_MODULES.depot_tools import (
-    gsutil,
-    tryserver,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
-    swarming,
-    time,
+  buildbucket,
+  cas,
+  context,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
+  swarming,
+  time,
 )
 
 
@@ -52,6 +52,7 @@ class DEPS(RecipeScriptApi):
   step: step.API
   swarming: swarming.API
   time: time.API
+
 
 # TODO(http://crbug.com/693058): provide coverage.
 DISABLE_STRICT_COVERAGE = True

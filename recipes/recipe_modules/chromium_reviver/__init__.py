@@ -9,11 +9,11 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_polymorphic,
-    chromium_swarming,
-    chromium_tests,
-    code_coverage,
+  chromium,
+  chromium_polymorphic,
+  chromium_swarming,
+  chromium_tests,
+  code_coverage,
 )
 from RECIPE_MODULES.recipe_engine import buildbucket
 
@@ -26,5 +26,6 @@ class DEPS(RecipeScriptApi):
   chromium_tests: chromium_tests.API
   code_coverage: code_coverage.API
   buildbucket: buildbucket.API
+
 
 from .api import ChromiumReviverApi as API

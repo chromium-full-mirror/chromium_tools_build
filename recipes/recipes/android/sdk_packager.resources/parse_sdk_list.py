@@ -35,7 +35,7 @@ import re
 import sys
 
 PACKAGE_LINE_RE = re.compile(
-    r'^\s*(\S+)\s+(\S+)(?:\s*\(\+\d+\))?(?:\s*->\s*(\S+)(?:\s*\(\+\d+\))?)?(?:\s+(.*))?$'
+  r'^\s*(\S+)\s+(\S+)(?:\s*\(\+\d+\))?(?:\s*->\s*(\S+)(?:\s*\(\+\d+\))?)?(?:\s+(.*))?$'
 )
 PACKAGES_HEADER_RE = re.compile(r'^([a-z]+) packages:\s*$', flags=re.IGNORECASE)
 SEPARATOR_RE = re.compile(r'^[\s-]+$')
@@ -78,33 +78,36 @@ def ParseSdkList(raw):
         name = m.group(1)
         installed_ver = m.group(2)
         desc = (m.group(4) or '').strip() or None
-        current_section.append({
+        current_section.append(
+          {
             'name': name,
             'description': desc,
             'version': installed_ver,
-        })
+          }
+        )
       else:
         print('Unrecognized package line: "%s"' % line)
 
   return {
-      'available': available_packages,
-      'installed': installed_packages,
+    'available': available_packages,
+    'installed': installed_packages,
   }
 
 
 def main(raw_args):
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--raw-input',
-      required=True,
-      type=os.path.realpath,
-      help='Path from which raw output from `android sdk list` '
-      'will be read.')
+    '--raw-input',
+    required=True,
+    type=os.path.realpath,
+    help='Path from which raw output from `android sdk list` will be read.',
+  )
   parser.add_argument(
-      '--json-output',
-      required=True,
-      type=os.path.realpath,
-      help='Path to which the output JSON will be written.')
+    '--json-output',
+    required=True,
+    type=os.path.realpath,
+    help='Path to which the output JSON will be written.',
+  )
   args = parser.parse_args(raw_args)
 
   with open(args.raw_input) as raw_input_file:

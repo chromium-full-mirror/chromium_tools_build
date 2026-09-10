@@ -25,7 +25,6 @@ def _format_package_line(name, version, description=None, update_version=None):
 
 
 class PackageLineReTest(unittest.TestCase):
-
   def testValid(self):
     line = _format_package_line('emulator', '37.1.11', 'Android Emulator')
     m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
@@ -37,7 +36,8 @@ class PackageLineReTest(unittest.TestCase):
 
   def testValidWithArrow(self):
     line = _format_package_line(
-        'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11')
+      'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11'
+    )
     m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('emulator', m.group(1))
@@ -63,8 +63,9 @@ class PackageLineReTest(unittest.TestCase):
     self.assertEqual('Android Emulator', m.group(4).strip())
 
   def testValidWithVersionPlusCount(self):
-    line = _format_package_line('platforms/android-34', '3.0.0 (+1)',
-                                'Android SDK Platform 34')
+    line = _format_package_line(
+      'platforms/android-34', '3.0.0 (+1)', 'Android SDK Platform 34'
+    )
     m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
     self.assertTrue(m)
     self.assertEqual('platforms/android-34', m.group(1))
@@ -90,161 +91,190 @@ class PackageLineReTest(unittest.TestCase):
 
 
 class ParseSdkListTest(unittest.TestCase):
-
   def testSingleAvailablePackage(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Available packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '37.1.11',
-        },],
-        'installed': [],
+      'available': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
+      'installed': [],
     }
     self.assertEqual(expected, result)
 
   def testMultipleAvailablePackages(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Available packages:',
-        _format_package_line('build-tools/36.0.0', '36.0.0',
-                             'Android SDK Build-Tools 36'),
+        _format_package_line(
+          'build-tools/36.0.0', '36.0.0', 'Android SDK Build-Tools 36'
+        ),
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [
-            {
-                'name': 'build-tools/36.0.0',
-                'description': 'Android SDK Build-Tools 36',
-                'version': '36.0.0',
-            },
-            {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '37.1.11',
-            },
-        ],
-        'installed': [],
+      'available': [
+        {
+          'name': 'build-tools/36.0.0',
+          'description': 'Android SDK Build-Tools 36',
+          'version': '36.0.0',
+        },
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
+      'installed': [],
     }
     self.assertEqual(expected, result)
 
   def testSingleInstalledPackage(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Installed packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [],
-        'installed': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '37.1.11',
-        },],
+      'available': [],
+      'installed': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 
   def testInstalledPackageWithUpdate(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Installed packages:',
         _format_package_line(
-            'emulator', '31.2.10', 'Android Emulator',
-            update_version='37.1.11'),
-    ])
+          'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11'
+        ),
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [],
-        'installed': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '31.2.10',
-        },],
+      'available': [],
+      'installed': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '31.2.10',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 
   def testMultipleInstalledPackages(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Installed packages:',
-        _format_package_line('build-tools/36.0.0', '36.0.0',
-                             'Android SDK Build-Tools 36'),
         _format_package_line(
-            'emulator', '31.2.10', 'Android Emulator',
-            update_version='37.1.11'),
-    ])
+          'build-tools/36.0.0', '36.0.0', 'Android SDK Build-Tools 36'
+        ),
+        _format_package_line(
+          'emulator', '31.2.10', 'Android Emulator', update_version='37.1.11'
+        ),
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [],
-        'installed': [
-            {
-                'name': 'build-tools/36.0.0',
-                'description': 'Android SDK Build-Tools 36',
-                'version': '36.0.0',
-            },
-            {
-                'name': 'emulator',
-                'description': 'Android Emulator',
-                'version': '31.2.10',
-            },
-        ],
+      'available': [],
+      'installed': [
+        {
+          'name': 'build-tools/36.0.0',
+          'description': 'Android SDK Build-Tools 36',
+          'version': '36.0.0',
+        },
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '31.2.10',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 
   def testAvailableAndInstalledPackages(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Installed packages:',
-        _format_package_line('build-tools/36.0.0', '36.0.0',
-                             'Android SDK Build-Tools 36'),
+        _format_package_line(
+          'build-tools/36.0.0', '36.0.0', 'Android SDK Build-Tools 36'
+        ),
         '',
         'Available packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '37.1.11',
-        },],
-        'installed': [{
-            'name': 'build-tools/36.0.0',
-            'description': 'Android SDK Build-Tools 36',
-            'version': '36.0.0',
-        },],
+      'available': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
+      'installed': [
+        {
+          'name': 'build-tools/36.0.0',
+          'description': 'Android SDK Build-Tools 36',
+          'version': '36.0.0',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 
   def testPackageWithVersionPlusCount(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Available packages:',
-        _format_package_line('extras/google/Android_Emulator_Hypervisor_Driver',
-                             '2.2.0 (+1)',
-                             'Android Emulator hypervisor driver (installer)'),
+        _format_package_line(
+          'extras/google/Android_Emulator_Hypervisor_Driver',
+          '2.2.0 (+1)',
+          'Android Emulator hypervisor driver (installer)',
+        ),
         _format_package_line('ndk-bundle', '22.1.7171670 (+13)', 'NDK'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [
-            {
-                'name': 'extras/google/Android_Emulator_Hypervisor_Driver',
-                'description': 'Android Emulator hypervisor driver (installer)',
-                'version': '2.2.0',
-            },
-            {
-                'name': 'ndk-bundle',
-                'description': 'NDK',
-                'version': '22.1.7171670',
-            },
-        ],
-        'installed': [],
+      'available': [
+        {
+          'name': 'extras/google/Android_Emulator_Hypervisor_Driver',
+          'description': 'Android Emulator hypervisor driver (installer)',
+          'version': '2.2.0',
+        },
+        {
+          'name': 'ndk-bundle',
+          'description': 'NDK',
+          'version': '22.1.7171670',
+        },
+      ],
+      'installed': [],
     }
     self.assertEqual(expected, result)
 
   def testUpdatesIgnored(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Installed packages:',
         _format_package_line('emulator', '31.2.10', 'Android Emulator'),
         '',
@@ -253,36 +283,45 @@ class ParseSdkListTest(unittest.TestCase):
         '',
         'Available updates:',
         _format_package_line('emulator', '31.2.10', update_version='37.1.11'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '37.1.11',
-        },],
-        'installed': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '31.2.10',
-        },],
+      'available': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
+      'installed': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '31.2.10',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 
   def testUnrecognizedLinesIgnored(self):
-    raw = '\n'.join([
+    raw = '\n'.join(
+      [
         'Some banner text',
         'Installed packages:',
         _format_package_line('emulator', '37.1.11', 'Android Emulator'),
-    ])
+      ]
+    )
     result = parse_sdk_list.ParseSdkList(raw)
     expected = {
-        'available': [],
-        'installed': [{
-            'name': 'emulator',
-            'description': 'Android Emulator',
-            'version': '37.1.11',
-        },],
+      'available': [],
+      'installed': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.1.11',
+        },
+      ],
     }
     self.assertEqual(expected, result)
 

@@ -44,8 +44,7 @@ class TriggerScript:
 
   @classmethod
   def create(cls, **kwargs):
-    """Create a TriggerScript with attributes set according to kwargs.
-    """
+    """Create a TriggerScript with attributes set according to kwargs."""
     return cls(**kwargs)
 
 

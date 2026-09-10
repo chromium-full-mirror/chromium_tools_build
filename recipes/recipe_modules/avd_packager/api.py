@@ -9,7 +9,6 @@ from recipe_engine import recipe_api
 
 
 class AvdPackagerApi(recipe_api.RecipeApi):
-
   def __init__(self, properties, **kwargs):
     super().__init__(**kwargs)
 
@@ -34,8 +33,9 @@ class AvdPackagerApi(recipe_api.RecipeApi):
     self.m.chromium_checkout.ensure_checkout()
     self._checkout_path = self.m.chromium_checkout.checkout_dir
     self._chromium_src = self._checkout_path.joinpath('src')
-    self._avd_script_path = self._chromium_src.joinpath('tools', 'android',
-                                                        'avd', 'avd.py')
+    self._avd_script_path = self._chromium_src.joinpath(
+      'tools', 'android', 'avd', 'avd.py'
+    )
 
   def execute(self):
     """Run the avd packager steps.
@@ -60,18 +60,26 @@ class AvdPackagerApi(recipe_api.RecipeApi):
   def _list_avd(self, avd_config, deferred):
     step_name = 'List AVD'
     step_cmds = [
-        self._avd_script_path, 'list', '-v', '--avd-config', avd_config,
-        '--json-output',
-        self.m.json.output()
+      self._avd_script_path,
+      'list',
+      '-v',
+      '--avd-config',
+      avd_config,
+      '--json-output',
+      self.m.json.output(),
     ]
     deferred_result = self.m.defer(
-        self.m.step,
-        step_name,
-        ['vpython3', '-u'] + step_cmds,
-        step_test_data=lambda: self.m.json.test_api.output([{
+      self.m.step,
+      step_name,
+      ['vpython3', '-u'] + step_cmds,
+      step_test_data=lambda: self.m.json.test_api.output(
+        [
+          {
             'avd_proto_path': 'some/proto/foo.textpb',
             'is_available': False,
-        }]),
+          }
+        ]
+      ),
     )
     deferred.append(deferred_result)
 
@@ -83,16 +91,23 @@ class AvdPackagerApi(recipe_api.RecipeApi):
   def _create_avd(self, avd_config, deferred, avd_variant=None):
     step_name = 'Create AVD'
     step_cmds = [
-        self._avd_script_path, 'create', '-v', '--avd-config', avd_config,
-        '--force', '--snapshot', '--cipd-json-output',
-        self.m.json.output()
+      self._avd_script_path,
+      'create',
+      '-v',
+      '--avd-config',
+      avd_config,
+      '--force',
+      '--snapshot',
+      '--cipd-json-output',
+      self.m.json.output(),
     ]
     if avd_variant is not None:
       step_name += ' with variant %r' % avd_variant
       step_cmds += ['--avd-variant', avd_variant]
 
-    deferred_result = self.m.defer(self.m.step, step_name,
-                                   ['vpython3', '-u'] + step_cmds)
+    deferred_result = self.m.defer(
+      self.m.step, step_name, ['vpython3', '-u'] + step_cmds
+    )
     deferred.append(deferred_result)
     if deferred_result.is_ok():
       create_result = deferred_result.result()
@@ -102,14 +117,23 @@ class AvdPackagerApi(recipe_api.RecipeApi):
           self.m.cipd.add_instance_link(create_result)
           # Add buildbucket id to the CIPD instance.
           tags = {'buildbucket_id': str(self.m.buildbucket.build.id)}
-          self.m.defer(self.m.cipd.set_tag, cipd_result['package'],
-                       cipd_result['instance_id'], tags)
+          self.m.defer(
+            self.m.cipd.set_tag,
+            cipd_result['package'],
+            cipd_result['instance_id'],
+            tags,
+          )
 
   def _uninstall_avd(self, avd_config, deferred):
     step_name = 'Uninstall AVD'
     step_cmds = [
-        self._avd_script_path, 'uninstall', '-v', '--avd-config', avd_config
+      self._avd_script_path,
+      'uninstall',
+      '-v',
+      '--avd-config',
+      avd_config,
     ]
-    deferred_result = self.m.defer(self.m.step, step_name,
-                                   ['vpython3', '-u'] + step_cmds)
+    deferred_result = self.m.defer(
+      self.m.step, step_name, ['vpython3', '-u'] + step_cmds
+    )
     deferred.append(deferred_result)

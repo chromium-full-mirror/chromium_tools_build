@@ -25,9 +25,13 @@ def v8(c):
 
   p = c.repo_path_map
   p['https://chromium.googlesource.com/chromium/deps/icu'] = (
-      'v8/third_party/icu', 'HEAD')
+    'v8/third_party/icu',
+    'HEAD',
+  )
   p['https://chromium.googlesource.com/catapult'] = (
-      'v8/third_party/catapult', 'HEAD')
+    'v8/third_party/catapult',
+    'HEAD',
+  )
 
 
 @CONFIG_CTX(includes=['v8'])
@@ -49,7 +53,9 @@ def node_ci(c):
   c.got_revision_reverse_mapping['got_v8_revision'] = 'node-ci/v8'
   c.got_revision_reverse_mapping['got_node_ci_revision'] = 'node-ci'
   c.repo_path_map['https://chromium.googlesource.com/v8/v8'] = (
-      'node-ci/v8', 'HEAD')
+    'node-ci/v8',
+    'HEAD',
+  )
 
   # Default to node-ci-centric revisions in UI.
   c.got_revision_reverse_mapping['got_revision'] = 'node-ci'

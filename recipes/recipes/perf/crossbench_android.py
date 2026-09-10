@@ -16,23 +16,23 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import adb
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    gsutil,
+  bot_update,
+  depot_tools,
+  gclient,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  cas,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -63,6 +63,7 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = InputProperties
 _AVD_CIPD_VERSION = 'latest'
 # A list of available AVDs: docs/android_emulator.md
@@ -74,7 +75,6 @@ _DEFAULT_RUNNER = 'crossbench/tests/end2end/android/runner.py'
 
 
 class AndroidEmulator:
-
   def __init__(self, api: DEPS, android_sdk, avd_suffix=''):
     self.api = api
     self.android_sdk = android_sdk
@@ -103,8 +103,10 @@ class AndroidEmulator:
     self.avd_root = self.api.path.cache_dir / 'avd'
     avd_path = self.avd_root / 'src/tools/android/avd'
     self.avd_script = avd_path / 'avd.py'
-    self.avd_config_version = _AVD_CONFIG_VERSION % (self.android_sdk,
-                                                     self.avd_suffix)
+    self.avd_config_version = _AVD_CONFIG_VERSION % (
+      self.android_sdk,
+      self.avd_suffix,
+    )
     self.avd_config = avd_path / 'proto' / self.avd_config_version
     self._download()
     self._initialized = True
@@ -113,24 +115,33 @@ class AndroidEmulator:
     with self.api.step.nest('Download avd package'):
       with self.api.context(), self.api.depot_tools.on_path():
         self.api.cipd.ensure(
-            self.avd_root,
-            self.api.cipd.EnsureFile().add_package(
-                'chromium/tools/android/avd/linux-amd64', _AVD_CIPD_VERSION))
+          self.avd_root,
+          self.api.cipd.EnsureFile().add_package(
+            'chromium/tools/android/avd/linux-amd64', _AVD_CIPD_VERSION
+          ),
+        )
       adb_root = (
-          self.avd_root / 'src/third_party/android_sdk/public/platform-tools')
+        self.avd_root / 'src/third_party/android_sdk/public/platform-tools'
+      )
       self.adb_path = adb_root / 'adb'
-      assert self.api.path.exists(
-          self.adb_path), (f'{self.adb_path} doesn\'t exist!')
+      assert self.api.path.exists(self.adb_path), (
+        f'{self.adb_path} doesn\'t exist!'
+      )
 
   def _install_and_start(self):
     with self.api.context(cwd=self.avd_root):
       with self.api.step.nest('Install %s' % self.avd_config_version):
         self.api.step(
-            'Install Android emulator', [
-                'vpython3', self.avd_script, 'install', '--avd-config',
-                self.avd_config
-            ],
-            stdout=self.api.raw_io.output_text(add_output_log=True))
+          'Install Android emulator',
+          [
+            'vpython3',
+            self.avd_script,
+            'install',
+            '--avd-config',
+            self.avd_config,
+          ],
+          stdout=self.api.raw_io.output_text(add_output_log=True),
+        )
         self._start()
 
   def _start(self, max_attempts=3):
@@ -140,15 +151,23 @@ class AndroidEmulator:
       if count_attempt > 0:
         self._kill()
       result = self.api.step(
-          'Start Android emulator: %s' % count_attempt,
-          [
-              'xvfb-run', 'vpython3', self.avd_script, 'start', '--debug-tags',
-              'all', '--gpu-mode', 'off', '--avd-config', self.avd_config,
-              '--enable-network'
-          ],
-          stdout=self.api.raw_io.output_text(add_output_log=True),
-          infra_step=True,
-          raise_on_failure=False,
+        'Start Android emulator: %s' % count_attempt,
+        [
+          'xvfb-run',
+          'vpython3',
+          self.avd_script,
+          'start',
+          '--debug-tags',
+          'all',
+          '--gpu-mode',
+          'off',
+          '--avd-config',
+          self.avd_config,
+          '--enable-network',
+        ],
+        stdout=self.api.raw_io.output_text(add_output_log=True),
+        infra_step=True,
+        raise_on_failure=False,
       )
       if result.retcode != 0:
         log_lines.append('Unable to start emulator!')
@@ -156,7 +175,8 @@ class AndroidEmulator:
       devices = self.api.adb.list_devices(self.adb_path)
       if len(devices) != 1:
         log_lines.append(
-            f'There must be exactly one active ADB device: {devices}')
+          f'There must be exactly one active ADB device: {devices}'
+        )
         continue
       self.adb_device_id = devices[0]
       if self._setup() == 0:
@@ -169,17 +189,17 @@ class AndroidEmulator:
       with self.api.context(cwd=self.avd_root):
         resource_name = self.api.resource('avd_setup.sh')
         result = self.api.step(
-            'Set execute permission',
-            ['chmod', '755', resource_name],
-            infra_step=True,
-            raise_on_failure=False,
+          'Set execute permission',
+          ['chmod', '755', resource_name],
+          infra_step=True,
+          raise_on_failure=False,
         )
         if result.retcode == 0:
           result = self.api.step(
-              'avd_setup.sh',
-              [resource_name, str(self.adb_path)],
-              infra_step=True,
-              raise_on_failure=False,
+            'avd_setup.sh',
+            [resource_name, str(self.adb_path)],
+            infra_step=True,
+            raise_on_failure=False,
           )
     return result.retcode
 
@@ -189,19 +209,26 @@ class AndroidEmulator:
       # Accepting any return code because when the emulator dies the pid is no longer
       # available causing an exception.
       self.api.step(
-          'Kill emulator cleanup', ['pkill', '-9', '-e', '-f', 'emulator'],
-          ok_ret='any')
+        'Kill emulator cleanup',
+        ['pkill', '-9', '-e', '-f', 'emulator'],
+        ok_ret='any',
+      )
       self.api.step('List processes after cleaning up', ['ps', 'aux'])
 
   def _uninstall(self):
     with self.api.context(cwd=self.avd_root):
       with self.api.step.nest('Uninstall %s' % self.avd_config):
         self.api.step(
-            'Uninstall Android emulator', [
-                'vpython3', self.avd_script, 'uninstall', '--avd-config',
-                self.avd_config
-            ],
-            stdout=self.api.raw_io.output_text(add_output_log=True))
+          'Uninstall Android emulator',
+          [
+            'vpython3',
+            self.avd_script,
+            'uninstall',
+            '--avd-config',
+            self.avd_config,
+          ],
+          stdout=self.api.raw_io.output_text(add_output_log=True),
+        )
 
 
 def RunSteps(api: DEPS, properties):
@@ -218,27 +245,29 @@ def RunSteps(api: DEPS, properties):
 
   for config in configs:
     android_emulator = AndroidEmulator(
-        api, config.sdk_version, avd_suffix=config.avd_suffix)
+      api, config.sdk_version, avd_suffix=config.avd_suffix
+    )
     with android_emulator.start():
       env = {}
       with api.context(env=env):
         cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
         try:
           api.step(
-              'Run Android End2End Tests',
-              [
-                  'vpython3',
-                  test_driver,
-                  f'--adb-device-id={android_emulator.adb_device_id}',
-                  f'--adb-path={android_emulator.adb_path}',
-                  f'--cas-archive={cas_archive}',
-                  f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-                  *(config.extra_flags or []),
-              ],
+            'Run Android End2End Tests',
+            [
+              'vpython3',
+              test_driver,
+              f'--adb-device-id={android_emulator.adb_device_id}',
+              f'--adb-path={android_emulator.adb_path}',
+              f'--cas-archive={cas_archive}',
+              f'--log-file={cas_archive}/pytest.tests.android.out.txt',
+              *(config.extra_flags or []),
+            ],
           )
         finally:
-          api.cas.archive('Copy End2End test logs to CAS', cas_archive,
-                          cas_archive)
+          api.cas.archive(
+            'Copy End2End test logs to CAS', cas_archive, cas_archive
+          )
 
 
 def GenTests(api: TEST_DEPS):
@@ -251,43 +280,55 @@ def GenTests(api: TEST_DEPS):
     data = api.empty_test_data()
     for count_attempt in range(max_attempts):
       data += api.step_data(
-          f'{_INSTALL_STEP}.{start_step}: {count_attempt}', retcode=1)
+        f'{_INSTALL_STEP}.{start_step}: {count_attempt}', retcode=1
+      )
     return data
 
   def gen_adb_path():
-    return api.path.cache_dir.joinpath('avd', 'src', 'third_party',
-                                       'android_sdk', 'public',
-                                       'platform-tools', 'adb')
+    return api.path.cache_dir.joinpath(
+      'avd',
+      'src',
+      'third_party',
+      'android_sdk',
+      'public',
+      'platform-tools',
+      'adb',
+    )
 
   yield api.test(
-      'basic-android-test',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.properties(android_sdk=37),
-      api.path.exists(gen_adb_path()),
+    'basic-android-test',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.properties(android_sdk=37),
+    api.path.exists(gen_adb_path()),
   )
 
   yield api.test(
-      'retry-android-test',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.properties(android_sdk=37),
-      api.path.exists(gen_adb_path()),
-      gen_test_data_retry_start(),
-      api.step_data(
-          f'{_INSTALL_STEP}.Set up the emulator.avd_setup.sh', retcode=1),
-      api.expect_status('FAILURE'),
+    'retry-android-test',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.properties(android_sdk=37),
+    api.path.exists(gen_adb_path()),
+    gen_test_data_retry_start(),
+    api.step_data(
+      f'{_INSTALL_STEP}.Set up the emulator.avd_setup.sh', retcode=1
+    ),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'no-emulator-test', api.platform('linux', 64), api.platform.arch('intel'),
-      api.properties(android_sdk=37), api.path.exists(gen_adb_path()),
-      api.step_data(f'{_INSTALL_STEP}.List adb devices', api.json.output([])))
+    'no-emulator-test',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.properties(android_sdk=37),
+    api.path.exists(gen_adb_path()),
+    api.step_data(f'{_INSTALL_STEP}.List adb devices', api.json.output([])),
+  )
 
   yield api.test(
-      'test-run-config-prop-test',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.properties(InputProperties(test_run_config=[run_config])),
-      api.path.exists(gen_adb_path()),
+    'test-run-config-prop-test',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.properties(InputProperties(test_run_config=[run_config])),
+    api.path.exists(gen_adb_path()),
   )

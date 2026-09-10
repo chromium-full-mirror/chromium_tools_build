@@ -34,67 +34,65 @@ def generate_request_url(params, use_staging=False):
 
 def parse_args():
   parser = argparse.ArgumentParser(
-      description='Parameters to triger Pinpoint pairwise try job.')
+    description='Parameters to triger Pinpoint pairwise try job.'
+  )
 
   parser.add_argument(
-      '--name',
-      type=str,
-      help='Name of the try job. If empty, default name will apply: '
-      'CQ Perf on {benchmark}/{story}',
+    '--name',
+    type=str,
+    help='Name of the try job. If empty, default name will apply: '
+    'CQ Perf on {benchmark}/{story}',
   )
   parser.add_argument(
-      '--base_git_hash',
-      type=str,
-      required=True,
-      help='Base Chromium/src Git hash for comparison.',
+    '--base_git_hash',
+    type=str,
+    required=True,
+    help='Base Chromium/src Git hash for comparison.',
   )
   parser.add_argument(
-      '--patch',
-      type=str,
-      required=True,
-      help='Patch (Gerrit URL) for the try job. E.g.: '
-      'https://chromium-review.googlesource.com/c/chromium/src/+/12345/6',
+    '--patch',
+    type=str,
+    required=True,
+    help='Patch (Gerrit URL) for the try job. E.g.: '
+    'https://chromium-review.googlesource.com/c/chromium/src/+/12345/6',
   )
   parser.add_argument(
-      '--configuration',
-      type=str,
-      required=True,
-      help='Bot configuration for the try job. E.g., win-10-perf',
+    '--configuration',
+    type=str,
+    required=True,
+    help='Bot configuration for the try job. E.g., win-10-perf',
   )
   parser.add_argument(
-      '--benchmark',
-      type=str,
-      required=True,
-      help='Benchmark to run in the try job.',
+    '--benchmark',
+    type=str,
+    required=True,
+    help='Benchmark to run in the try job.',
   )
   parser.add_argument(
-      '--story',
-      type=str,
-      required=True,
-      help='Story to run within the benchmark.',
+    '--story',
+    type=str,
+    required=True,
+    help='Story to run within the benchmark.',
   )
   parser.add_argument(
-      '--attempts_count',
-      type=int,
-      help='Number of iterations on test runs from each branch.',
+    '--attempts_count',
+    type=int,
+    help='Number of iterations on test runs from each branch.',
   )
   parser.add_argument(
-      '--user',
-      type=str,
-      help='User initiating the try job. The default is "Perf On CQ"',
+    '--user',
+    type=str,
+    help='User initiating the try job. The default is "Perf On CQ"',
+  )
+  parser.add_argument('--tags', help='JSON string of tags for the try job. ')
+  parser.add_argument(
+    '--token',
+    help='Raw IO with oauth token string used for send request.',
   )
   parser.add_argument(
-      '--tags',
-      help='JSON string of tags for the try job. '
-  )
-  parser.add_argument(
-      '--token',
-      help='Raw IO with oauth token string used for send request.',
-  )
-  parser.add_argument(
-      '--use_staging',
-      action='store_true',
-      help='Use staging environment if True.',
+    '--use_staging',
+    action='store_true',
+    help='Use staging environment if True.',
   )
 
   return parser.parse_args()
@@ -127,9 +125,9 @@ def main():
   request_url = generate_request_url(params=params, use_staging=use_staging)
   resp = invoke_pinpoint_try_job(url=request_url, token=token)
   data = {
-      'request_url': request_url,
-      'params': params,
-      'response': resp.json(),
+    'request_url': request_url,
+    'params': params,
+    'response': resp.json(),
   }
   print(json.dumps(data))
   if resp.status_code == 200:

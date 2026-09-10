@@ -32,14 +32,21 @@ class CIPDPkg:
 
 
 class SsciAPI(recipe_api.RecipeApi):
-
   def __init__(self, props, **kwargs):
     super().__init__(**kwargs)
 
-    self.bq_art_table = props.bq_artifact_table or "projects/ssci-dev/datasets/depbot/tables/artifacts"
-    self.bq_lib_table = props.bq_library_table or "projects/ssci-dev/datasets/depbot/tables/libraries"
+    self.bq_art_table = (
+      props.bq_artifact_table
+      or "projects/ssci-dev/datasets/depbot/tables/artifacts"
+    )
+    self.bq_lib_table = (
+      props.bq_library_table
+      or "projects/ssci-dev/datasets/depbot/tables/libraries"
+    )
     self.targets = props.targets
-    self.bq_thirdparty_table = props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
+    self.bq_thirdparty_table = (
+      props.bq_thirdparty_table or "ssci-dev.depbot.third_party"
+    )
     self.generated_sbom_artifacts = {}
     self.execution_id = ""
     self.build_platform = None
@@ -48,23 +55,31 @@ class SsciAPI(recipe_api.RecipeApi):
 
     # Used to store CIPD package information for each of the tools used
     self.bqupload = CIPDPkg(
-        ensure_version="latest", pkg_path="infra/tools/bqupload/${platform}")
+      ensure_version="latest", pkg_path="infra/tools/bqupload/${platform}"
+    )
     self.depbot = CIPDPkg(
-        ensure_version=props.depbot_version or "prod",
-        pkg_path="infra_internal/tools/security/depbot/${platform}")
+      ensure_version=props.depbot_version or "prod",
+      pkg_path="infra_internal/tools/security/depbot/${platform}",
+    )
     self.partybot = CIPDPkg(
-        ensure_version=props.partybot_version or "prod",
-        pkg_path="infra_internal/tools/partybot")
+      ensure_version=props.partybot_version or "prod",
+      pkg_path="infra_internal/tools/partybot",
+    )
     self.ssci_sbom = CIPDPkg(
-        ensure_version=props.ssci_sbom_version or "prod",
-        pkg_path="infra_internal/tools/security/ssci_sbom/${platform}")
+      ensure_version=props.ssci_sbom_version or "prod",
+      pkg_path="infra_internal/tools/security/ssci_sbom/${platform}",
+    )
     self.ssci_uploader = CIPDPkg(
-        ensure_version=props.ssci_uploader_version or "latest",
-        pkg_path="infra_internal/tools/security/ssci_uploader/${platform}")
+      ensure_version=props.ssci_uploader_version or "latest",
+      pkg_path="infra_internal/tools/security/ssci_uploader/${platform}",
+    )
 
     self.ssci_tools = [
-        self.depbot, self.bqupload, self.partybot, self.ssci_sbom,
-        self.ssci_uploader
+      self.depbot,
+      self.bqupload,
+      self.partybot,
+      self.ssci_sbom,
+      self.ssci_uploader,
     ]
 
   @contextlib.contextmanager
@@ -107,16 +122,17 @@ class SsciAPI(recipe_api.RecipeApi):
     return self.m.buildbucket.gitiles_commit.id[:6]
 
   def _upload_collected_data(
-      self,
-      data_name,
-      bq_args,
-      file_to_upload,
-      gcs_file_name,
-      sbom_folder,
-      sbom_bucket="chrome-sbom",
-      # TODO: b/326007424 - Deprecate and move all calls
-      # to the new more performant API.
-      use_bq_write_api=False):
+    self,
+    data_name,
+    bq_args,
+    file_to_upload,
+    gcs_file_name,
+    sbom_folder,
+    sbom_bucket="chrome-sbom",
+    # TODO: b/326007424 - Deprecate and move all calls
+    # to the new more performant API.
+    use_bq_write_api=False,
+  ):
     """
     Uploads collected data to both BigQuery and GCS. The BigQuery upload can be flaky
     so a failure in this step should not cause the SBOM generation to fail. The data
@@ -150,21 +166,24 @@ class SsciAPI(recipe_api.RecipeApi):
         bq_tool = [self.ssci_uploader.tool_path, "-json_array=true"]
 
       self.m.step(
-          step_name,
-          bq_tool + bq_args + [file_to_upload],
-          infra_step=True,
-          timeout=bq_step_timeout)
+        step_name,
+        bq_tool + bq_args + [file_to_upload],
+        infra_step=True,
+        timeout=bq_step_timeout,
+      )
     except self.m.step.StepFailure:
       pass
 
     if sbom_bucket and sbom_folder:
-      cloud_file_path = pathlib.Path(sbom_folder, self.execution_id,
-                                     gcs_file_name).as_posix()
+      cloud_file_path = pathlib.Path(
+        sbom_folder, self.execution_id, gcs_file_name
+      ).as_posix()
       self.m.gsutil.upload(
-          file_to_upload,
-          sbom_bucket,
-          cloud_file_path,
-          name=f"upload {data_name} to GCS")
+        file_to_upload,
+        sbom_bucket,
+        cloud_file_path,
+        name=f"upload {data_name} to GCS",
+      )
 
   def _handle_renaming(self, entry_point, to_rename):
     """
@@ -185,10 +204,9 @@ class SsciAPI(recipe_api.RecipeApi):
       artifact_name = artifact_name.replace(filename, to_rename[filename])
     return artifact_name
 
-  def _make_filename_from_target(self,
-                                 artifact_name,
-                                 artifact_postfix,
-                                 file_extension="json"):
+  def _make_filename_from_target(
+    self, artifact_name, artifact_postfix, file_extension="json"
+  ):
     """
     Creates a filename which makes sense for artifacts and files by combining
     the target entry point name with the build channel and file name suffix.
@@ -214,8 +232,9 @@ class SsciAPI(recipe_api.RecipeApi):
     the package version.
     """
     for cipd_tool in tools:
-      cipd_tool.tool_path = self.m.cipd.ensure_tool(cipd_tool.pkg_path,
-                                                    cipd_tool.ensure_version)
+      cipd_tool.tool_path = self.m.cipd.ensure_tool(
+        cipd_tool.pkg_path, cipd_tool.ensure_version
+      )
 
       # This becomes a no-op after the tag is resolved the first time.
       if cipd_tool.resolved_version:
@@ -229,17 +248,26 @@ class SsciAPI(recipe_api.RecipeApi):
       # flag.
       if len(res) != 1:
         raise recipe_api.StepFailure(
-            f'expected only 1 resolved pin but got {len(res)}')
+          f'expected only 1 resolved pin but got {len(res)}'
+        )
       cipd_tool.resolved_version = f"v{res[0].instance_id}"
 
   def _batch_targets(self, targets, batch_size=15):
     """Some recipes have many targets, and processing them all at once can cause builders to run out of memory and crash."""
     for i in range(0, len(targets), batch_size):
-      yield targets[i:i + batch_size]
+      yield targets[i : i + batch_size]
 
-  def _target_specific_steps(self, target, src_dir, sbom_bucket, sbom_folder,
-                             filename_postfix, chrome_version, third_party_out,
-                             to_rename):
+  def _target_specific_steps(
+    self,
+    target,
+    src_dir,
+    sbom_bucket,
+    sbom_folder,
+    filename_postfix,
+    chrome_version,
+    third_party_out,
+    to_rename,
+  ):
 
     library_file = target.get("libraries_file_path")
     artifact_file = target.get("artifacts_file_path")
@@ -249,10 +277,14 @@ class SsciAPI(recipe_api.RecipeApi):
     # These columns are added to collected depbot data before the data is
     # uploaded to BigQuery
     extra_depbot_columns = [
-        "-column", f'builder="{self.m.buildbucket.builder_full_name}"',
-        "-column", f'execution_id="{self.execution_id}"', "-column",
-        f'entry_point="{entry_point}"', "-column",
-        'target="{}"'.format(target.get("target"))
+      "-column",
+      f'builder="{self.m.buildbucket.builder_full_name}"',
+      "-column",
+      f'execution_id="{self.execution_id}"',
+      "-column",
+      f'entry_point="{entry_point}"',
+      "-column",
+      'target="{}"'.format(target.get("target")),
     ]
 
     # If the original entry point name was modified by the renaming step,
@@ -263,28 +295,34 @@ class SsciAPI(recipe_api.RecipeApi):
       display_name = f"{entry_point_name} ({entry_point})"
 
     with self.m.step.nest('target specific steps for %s' % display_name):
-
       if sbom_bucket and sbom_folder:
         for data_name, bq_table, proto_name, data_file in [
-            ("artifacts", self.bq_art_table, "ArtifactBigQueryRow",
-             artifact_file),
-            ("libraries", self.bq_lib_table, "LibraryBigQueryRow", library_file)
+          (
+            "artifacts",
+            self.bq_art_table,
+            "ArtifactBigQueryRow",
+            artifact_file,
+          ),
+          ("libraries", self.bq_lib_table, "LibraryBigQueryRow", library_file),
         ]:
           # Renames the files so they align with their generated SBOMs.
           # eg. SystemWebViewStable.apk.libraries.json
           filename = self._make_filename_from_target(
-              entry_point_name, f"{filename_postfix or ''}.{data_name}")
+            entry_point_name, f"{filename_postfix or ''}.{data_name}"
+          )
           self._upload_collected_data(
-              data_name,
-              extra_depbot_columns + [bq_table, proto_name],
-              data_file,
-              filename,
-              sbom_folder,
-              use_bq_write_api=True)
+            data_name,
+            extra_depbot_columns + [bq_table, proto_name],
+            data_file,
+            filename,
+            sbom_folder,
+            use_bq_write_api=True,
+          )
 
       # Combines the recipe name with the DepBot target as the product name.
       final_artifact_name = self._make_filename_from_target(
-          entry_point_name, filename_postfix, file_extension="")
+        entry_point_name, filename_postfix, file_extension=""
+      )
       recipe_name = self.m.properties["recipe"].split("/")[-1]
       product = f'{recipe_name}.{self.execution_id}.{final_artifact_name}'
       p_version = self._get_product_version(chrome_version)
@@ -295,80 +333,87 @@ class SsciAPI(recipe_api.RecipeApi):
       # Generate the SBOM using the SSCI SBOM Generator.
       spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
       command = [
-          self.ssci_sbom.tool_path,
-          "-output-file",
-          spdx_file,
-          "-sbom-generator-version",
-          self.ssci_sbom.resolved_version,
-          "-product",
-          product,
-          "-product-version",
-          p_version,
-          "-platform",
-          self.build_platform,
-          "-partybot-version",
-          self.partybot.resolved_version,
-          "-third-party-file",
-          third_party_out,
-          "-chromium-path",
-          parent_dir,
-          "-depbot-version",
-          self.depbot.resolved_version,
-          "-artifacts-file",
-          artifact_file,
-          "-libraries-file",
-          library_file,
+        self.ssci_sbom.tool_path,
+        "-output-file",
+        spdx_file,
+        "-sbom-generator-version",
+        self.ssci_sbom.resolved_version,
+        "-product",
+        product,
+        "-product-version",
+        p_version,
+        "-platform",
+        self.build_platform,
+        "-partybot-version",
+        self.partybot.resolved_version,
+        "-third-party-file",
+        third_party_out,
+        "-chromium-path",
+        parent_dir,
+        "-depbot-version",
+        self.depbot.resolved_version,
+        "-artifacts-file",
+        artifact_file,
+        "-libraries-file",
+        library_file,
       ]
       if self.include_licenses:
         command.append("-add-licenses")
       self.m.step(
-          f'run SSCI SBOM Generator for {display_name} SBOM',
-          command,
-          infra_step=True,
-          step_test_data=(lambda: self.m.json.test_api.output(
-              data=[{
-                  "spdx": "yes"
-              }], name="ssci_sbom_spdx")))
+        f'run SSCI SBOM Generator for {display_name} SBOM',
+        command,
+        infra_step=True,
+        step_test_data=(
+          lambda: self.m.json.test_api.output(
+            data=[{"spdx": "yes"}], name="ssci_sbom_spdx"
+          )
+        ),
+      )
 
       spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
       filename = self._make_filename_from_target(
-          entry_point_name, filename_postfix, file_extension="spdx.json")
+        entry_point_name, filename_postfix, file_extension="spdx.json"
+      )
 
       generated_sbom = GeneratedSBOM(
-          digest=spdx_digest,
-          filename=final_artifact_name,
-          sbom_name=filename,
-          sbom_path=f'{spdx_file}',
-          target=entry_point,
+        digest=spdx_digest,
+        filename=final_artifact_name,
+        sbom_name=filename,
+        sbom_path=f'{spdx_file}',
+        target=entry_point,
       )
 
       self.generated_sbom_artifacts.update(
-          {final_artifact_name: generated_sbom})
+        {final_artifact_name: generated_sbom}
+      )
 
       if sbom_bucket and sbom_folder:
-        full_path = pathlib.Path(sbom_folder, self.execution_id,
-                                 filename).as_posix()
+        full_path = pathlib.Path(
+          sbom_folder, self.execution_id, filename
+        ).as_posix()
         self.m.gsutil.upload(
-            spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM")
+          spdx_file, sbom_bucket, full_path, name=f"upload {filename} SBOM"
+        )
 
         self.generated_sbom_artifacts[
-            final_artifact_name].file = f'gs://{sbom_bucket}/{full_path}'
+          final_artifact_name
+        ].file = f'gs://{sbom_bucket}/{full_path}'
 
       return final_artifact_name
 
   def run(
-      self,
-      src_dir,
-      build_dir,
-      sbom_bucket=None,
-      sbom_folder=None,
-      sbom_filename_postfix=None,
-      targets=None,
-      chrome_version=None,
-      platform=None,
-      to_rename=None,
-      archive_names=None,
-      skip_targets=False,
+    self,
+    src_dir,
+    build_dir,
+    sbom_bucket=None,
+    sbom_folder=None,
+    sbom_filename_postfix=None,
+    targets=None,
+    chrome_version=None,
+    platform=None,
+    to_rename=None,
+    archive_names=None,
+    skip_targets=False,
   ):
 
     # ensure this dict is reset between calls to the module
@@ -380,7 +425,9 @@ class SsciAPI(recipe_api.RecipeApi):
     targets = self.targets or targets
 
     if platform is None:
-      platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+      platform = (
+        f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+      )
     self.build_platform = platform
 
     with self.m.step.nest('SSCI collection'):
@@ -392,10 +439,12 @@ class SsciAPI(recipe_api.RecipeApi):
       depbot_json_summary_file = self.m.json.output(name="summary")
 
       partybot_output_dir = self.m.path.cleanup_dir / 'partybot'
-      self.m.file.ensure_directory('ensure Partybot output directory',
-                                   partybot_output_dir)
+      self.m.file.ensure_directory(
+        'ensure Partybot output directory', partybot_output_dir
+      )
       third_party_out = partybot_output_dir.joinpath(
-          f'third_party_{self.execution_id}.json')
+        f'third_party_{self.execution_id}.json'
+      )
 
       targetFlags = []
 
@@ -407,27 +456,44 @@ class SsciAPI(recipe_api.RecipeApi):
         extra_flags.extend(["--archive-name", GENERIC_ARCHIVE])
 
       depbot_result = self.m.step(
-          'run depbot',
-          [
-              self.depbot.tool_path, '--chromium-src-dir', src_dir,
-              '--log-level', 'debug', '--gn-path',
-              self.m.depot_tools.gn_py_path, '--build-dir', build_dir,
-              '--json-output-dir', depbot_json_output_dir,
-              '--json-summary-file', depbot_json_summary_file
-          ] + targetFlags + extra_flags,
-          infra_step=True,
-          cost=self.m.step.ResourceCost(
-              cpu=2 * self.m.step.CPU_CORE, memory=4000),
-          step_test_data=(lambda: self.m.json.test_api.output(
-              name="summary",
-              data={
-                  "targets": [{
-                      "entry_point": "Example.apk",
-                      "target": "//example:example",
-                      "artifacts_file_path": "out/Release/artifacts.json",
-                      "libraries_file_path": "out/Release/libs.json"
-                  }],
-              })))
+        'run depbot',
+        [
+          self.depbot.tool_path,
+          '--chromium-src-dir',
+          src_dir,
+          '--log-level',
+          'debug',
+          '--gn-path',
+          self.m.depot_tools.gn_py_path,
+          '--build-dir',
+          build_dir,
+          '--json-output-dir',
+          depbot_json_output_dir,
+          '--json-summary-file',
+          depbot_json_summary_file,
+        ]
+        + targetFlags
+        + extra_flags,
+        infra_step=True,
+        cost=self.m.step.ResourceCost(
+          cpu=2 * self.m.step.CPU_CORE, memory=4000
+        ),
+        step_test_data=(
+          lambda: self.m.json.test_api.output(
+            name="summary",
+            data={
+              "targets": [
+                {
+                  "entry_point": "Example.apk",
+                  "target": "//example:example",
+                  "artifacts_file_path": "out/Release/artifacts.json",
+                  "libraries_file_path": "out/Release/libs.json",
+                }
+              ],
+            },
+          )
+        ),
+      )
 
       depbot_execution_summary = depbot_result.json.outputs.get("summary")
 
@@ -438,30 +504,41 @@ class SsciAPI(recipe_api.RecipeApi):
           # The vPython metadata files are found in the parent directory.
           with self.m.context(cwd=self.m.path.dirname(self.partybot.tool_path)):
             self.m.step(
-                "run partybot to collect 3P deps", [
-                    "vpython3",
-                    "--vpython-spec=.vpython3",
-                    "-m",
-                    "partybot",
-                    self.m.path.dirname(src_dir),
-                    "--file",
-                    third_party_out,
-                    "--os",
-                    self.m.buildbucket.build.builder.builder,
-                    "--readme-licenses-only",
-                ],
-                infra_step=True)
+              "run partybot to collect 3P deps",
+              [
+                "vpython3",
+                "--vpython-spec=.vpython3",
+                "-m",
+                "partybot",
+                self.m.path.dirname(src_dir),
+                "--file",
+                third_party_out,
+                "--os",
+                self.m.buildbucket.build.builder.builder,
+                "--readme-licenses-only",
+              ],
+              infra_step=True,
+            )
 
-        filename = self._make_filename_from_target("ThirdPartyData",
-                                                   sbom_filename_postfix)
-        self._upload_collected_data('third party dependencies', [
-            "-column", f'execution_id="{self.execution_id}"',
-            self.bq_thirdparty_table
-        ], third_party_out, filename, sbom_folder)
+        filename = self._make_filename_from_target(
+          "ThirdPartyData", sbom_filename_postfix
+        )
+        self._upload_collected_data(
+          'third party dependencies',
+          [
+            "-column",
+            f'execution_id="{self.execution_id}"',
+            self.bq_thirdparty_table,
+          ],
+          third_party_out,
+          filename,
+          sbom_folder,
+        )
       else:
         skip_partybot = self.m.step.empty('using existing Partybot results')
-        skip_partybot.presentation.step_text = \
+        skip_partybot.presentation.step_text = (
           f'Partybot output: {self.m.path.basename(third_party_out)}'
+        )
 
       futures = []
       targets_from_depbot = depbot_execution_summary.get("targets")
@@ -472,38 +549,54 @@ class SsciAPI(recipe_api.RecipeApi):
           # Handle target specific steps.
           for target in batch:
             futures.append(
-                self.m.futures.spawn(self._target_specific_steps, target,
-                                     src_dir, sbom_bucket, sbom_folder,
-                                     sbom_filename_postfix, chrome_version,
-                                     third_party_out, to_rename))
+              self.m.futures.spawn(
+                self._target_specific_steps,
+                target,
+                src_dir,
+                sbom_bucket,
+                sbom_folder,
+                sbom_filename_postfix,
+                chrome_version,
+                third_party_out,
+                to_rename,
+              )
+            )
           for fut in self.m.futures.iwait(futures):
             fut.result()
 
       # If an archive summary is present build an SBOM for each of the
       # given artifacts.
       archive_summary = depbot_execution_summary.get("archive")
-      if archive_summary is not None and archive_summary.get(
-          "name") == GENERIC_ARCHIVE:
+      if (
+        archive_summary is not None
+        and archive_summary.get("name") == GENERIC_ARCHIVE
+      ):
         for a in archive_names:
           target = {
-              "entry_point": a,
-              "target": ",".join(archive_summary.get("targets")),
-              "artifacts_file_path": archive_summary.get("artifacts_file_path"),
-              "libraries_file_path": archive_summary.get("libraries_file_path")
+            "entry_point": a,
+            "target": ",".join(archive_summary.get("targets")),
+            "artifacts_file_path": archive_summary.get("artifacts_file_path"),
+            "libraries_file_path": archive_summary.get("libraries_file_path"),
           }
-          final = self._target_specific_steps(target, src_dir, sbom_bucket,
-                                              sbom_folder,
-                                              sbom_filename_postfix,
-                                              chrome_version, third_party_out,
-                                              to_rename)
+          final = self._target_specific_steps(
+            target,
+            src_dir,
+            sbom_bucket,
+            sbom_folder,
+            sbom_filename_postfix,
+            chrome_version,
+            third_party_out,
+            to_rename,
+          )
 
           self.generated_sbom_artifacts[final].ClearField("target")
           self.generated_sbom_artifacts[final].targets.extend(
-              archive_summary.get("targets"))
+            archive_summary.get("targets")
+          )
 
       generated_sbom_artifacts_json = {
-          k: jsonpb.MessageToDict(a, preserving_proto_field_name=True)
-          for k, a in self.generated_sbom_artifacts.items()
+        k: jsonpb.MessageToDict(a, preserving_proto_field_name=True)
+        for k, a in self.generated_sbom_artifacts.items()
       }
 
       info_step = self.m.step.empty("SBOM's generated")
@@ -512,25 +605,26 @@ class SsciAPI(recipe_api.RecipeApi):
         info_step.presentation.step_text = 'no targets found'
         return generated_sbom_artifacts_json
 
-
       # set generated in output properties
       info_step.presentation.logs['ssci_generated_artifacts'] = [
-          f"{k}:{v}" for k, v in generated_sbom_artifacts_json.items()
+        f"{k}:{v}" for k, v in generated_sbom_artifacts_json.items()
       ]
       return generated_sbom_artifacts_json
 
   def merge_sboms(
-      self,
-      name,
-      chrome_version=None,
-      sbom_paths=None,
-      platform=None,
+    self,
+    name,
+    chrome_version=None,
+    sbom_paths=None,
+    platform=None,
   ):
 
     self._setup_ssci_tools(tools=[self.ssci_sbom])
 
     if platform is None:
-      platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+      platform = (
+        f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+      )
 
     recipe_name = self.m.properties["recipe"].split("/")[-1]
     product = f'{recipe_name}.{self.execution_id}.{name}'
@@ -544,36 +638,40 @@ class SsciAPI(recipe_api.RecipeApi):
 
     # Merge SBOMs using the SSCI SBOM Generator.
     self.m.step(
-        'run SSCI SBOM Generator to merge SBOMs',
-        [
-            self.ssci_sbom.tool_path,
-            "-output-file",
-            spdx_file,
-            "-sbom-generator-version",
-            self.ssci_sbom.resolved_version,
-            "-product",
-            product,
-            "-product-version",
-            p_version,
-            "-platform",
-            platform,
-        ] + document_path_args,
-        infra_step=True,
-        step_test_data=(lambda: self.m.json.test_api.output(
-            data=[{
-                "spdx": "yes"
-            }], name="ssci_sbom_spdx")))
+      'run SSCI SBOM Generator to merge SBOMs',
+      [
+        self.ssci_sbom.tool_path,
+        "-output-file",
+        spdx_file,
+        "-sbom-generator-version",
+        self.ssci_sbom.resolved_version,
+        "-product",
+        product,
+        "-product-version",
+        p_version,
+        "-platform",
+        platform,
+      ]
+      + document_path_args,
+      infra_step=True,
+      step_test_data=(
+        lambda: self.m.json.test_api.output(
+          data=[{"spdx": "yes"}], name="ssci_sbom_spdx"
+        )
+      ),
+    )
 
     spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
     generated_sbom_json = jsonpb.MessageToDict(
-        GeneratedSBOM(
-            digest=spdx_digest,
-            filename=name,
-            sbom_name=f"{name}{SBOM_EXTENSION}",
-            sbom_path=f'{spdx_file}',
-        ),
-        preserving_proto_field_name=True)
+      GeneratedSBOM(
+        digest=spdx_digest,
+        filename=name,
+        sbom_name=f"{name}{SBOM_EXTENSION}",
+        sbom_path=f'{spdx_file}',
+      ),
+      preserving_proto_field_name=True,
+    )
 
     info_step = self.m.step.empty("SBOM's generated")
     info_step.presentation.logs[name] = self.m.json.dumps(generated_sbom_json)
@@ -581,13 +679,13 @@ class SsciAPI(recipe_api.RecipeApi):
     return generated_sbom_json
 
   def generate_sbom_for_artifacts(
-      self,
-      artifacts,
-      source_dir: Path,
-      build_dir: Path,
-      gn_targets,
-      platform=None,
-      run_comparison=False,
+    self,
+    artifacts,
+    source_dir: Path,
+    build_dir: Path,
+    gn_targets,
+    platform=None,
+    run_comparison=False,
   ):
     """Generates an SBOM for the given artifact based on the supplied GN targets.
 
@@ -612,13 +710,14 @@ class SsciAPI(recipe_api.RecipeApi):
 
     with self.m.context(env=self.m.chromium.get_env(source_dir)):
       results = self.run(
-          src_dir=source_dir,
-          build_dir=build_dir,
-          chrome_version=chrome_version,
-          targets=gn_targets,
-          archive_names=artifacts.keys(),
-          skip_targets=True,  # only create SBOMs for the archive artifacts
-          platform=platform)
+        src_dir=source_dir,
+        build_dir=build_dir,
+        chrome_version=chrome_version,
+        targets=gn_targets,
+        archive_names=artifacts.keys(),
+        skip_targets=True,  # only create SBOMs for the archive artifacts
+        platform=platform,
+      )
 
       sboms = {}
 
@@ -627,18 +726,23 @@ class SsciAPI(recipe_api.RecipeApi):
 
         for v in results.values():
           sbom = jsonpb.ParseDict(
-              v, GeneratedSBOM(), ignore_unknown_fields=True)
+            v, GeneratedSBOM(), ignore_unknown_fields=True
+          )
           if sbom.sbom_name == sbom_expected:
             renamed_sbom_path = self.m.path.join(
-                self.m.path.dirname(artifact_path), sbom.sbom_name)
-            self.m.file.move("move and rename SBOM to match artifact",
-                             sbom.sbom_path, renamed_sbom_path)
+              self.m.path.dirname(artifact_path), sbom.sbom_name
+            )
+            self.m.file.move(
+              "move and rename SBOM to match artifact",
+              sbom.sbom_path,
+              renamed_sbom_path,
+            )
             sbom.sbom_path = renamed_sbom_path
             sboms[sbom.sbom_name] = sbom
             break
         if sbom_expected not in sboms:
           raise recipe_api.StepFailure(
-              f'SBOM {sbom_expected} not found in generated SBOMs dict: {results}'
+            f'SBOM {sbom_expected} not found in generated SBOMs dict: {results}'
           )
 
       return sboms
@@ -658,7 +762,9 @@ class SsciAPI(recipe_api.RecipeApi):
 
     self._setup_ssci_tools(tools=[self.ssci_sbom])
 
-    platform = f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+    platform = (
+      f"{self.m.platform.name}_{self.m.platform.arch}{self.m.platform.bits}"
+    )
 
     recipe_name = self.m.properties["recipe"].split("/")[-1]
     product = f'{recipe_name}.{self.execution_id}.{name}'
@@ -666,28 +772,39 @@ class SsciAPI(recipe_api.RecipeApi):
     spdx_file = self.m.path.mkdtemp().joinpath("spdx-out.json")
 
     self.m.step(
-        'run SSCI SBOM Generator to modify the provided SBOM', [
-            self.ssci_sbom.tool_path, "-output-file", spdx_file,
-            "-sbom-generator-version", self.ssci_sbom.resolved_version,
-            "-product", product, "-platform", platform, "-document-path",
-            sbom_path
-        ],
-        infra_step=True,
-        step_test_data=(lambda: self.m.json.test_api.output(
-            data=[{
-                "spdx": "yes"
-            }], name="ssci_sbom_spdx")))
+      'run SSCI SBOM Generator to modify the provided SBOM',
+      [
+        self.ssci_sbom.tool_path,
+        "-output-file",
+        spdx_file,
+        "-sbom-generator-version",
+        self.ssci_sbom.resolved_version,
+        "-product",
+        product,
+        "-platform",
+        platform,
+        "-document-path",
+        sbom_path,
+      ],
+      infra_step=True,
+      step_test_data=(
+        lambda: self.m.json.test_api.output(
+          data=[{"spdx": "yes"}], name="ssci_sbom_spdx"
+        )
+      ),
+    )
 
     spdx_digest = self.m.file.file_hash(spdx_file, test_data='testhash')
 
     generated_sbom_json = jsonpb.MessageToDict(
-        GeneratedSBOM(
-            digest=spdx_digest,
-            filename=name,
-            sbom_name=f"{name}{SBOM_EXTENSION}",
-            sbom_path=f'{spdx_file}',
-        ),
-        preserving_proto_field_name=True)
+      GeneratedSBOM(
+        digest=spdx_digest,
+        filename=name,
+        sbom_name=f"{name}{SBOM_EXTENSION}",
+        sbom_path=f'{spdx_file}',
+      ),
+      preserving_proto_field_name=True,
+    )
 
     info_step = self.m.step.empty("SBOM's generated")
     info_step.presentation.logs[name] = self.m.json.dumps(generated_sbom_json)

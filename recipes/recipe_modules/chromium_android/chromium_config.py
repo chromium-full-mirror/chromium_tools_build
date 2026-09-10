@@ -11,7 +11,7 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 
 @CONFIG_CTX(includes=['android_common', 'ninja'])
 def base_config(c):
-  c.compile_py.default_targets=[]
+  c.compile_py.default_targets = []
 
   if c.HOST_PLATFORM != 'linux':  # pragma: no cover
     raise recipe_config.BadConf('Can only build android on linux.')
@@ -34,14 +34,15 @@ def cronet_builder(c):
   # that the default value for the arg is derived from the `is_cronet_build`
   # GN arg.
   c.gn_args.append('is_cronet_build=true')
-  c.compile_py.default_targets=[
-      'cronet_package',
-      'cronet_sample_test_apk',
-      'cronet_smoketests_missing_native_library_instrumentation_apk',
-      'cronet_smoketests_platform_only_instrumentation_apk',
-      'cronet_test_instrumentation_apk',
-      'cronet_unittests_android',
-      'net_unittests']
+  c.compile_py.default_targets = [
+    'cronet_package',
+    'cronet_sample_test_apk',
+    'cronet_smoketests_missing_native_library_instrumentation_apk',
+    'cronet_smoketests_platform_only_instrumentation_apk',
+    'cronet_test_instrumentation_apk',
+    'cronet_unittests_android',
+    'net_unittests',
+  ]
 
 
 @CONFIG_CTX(includes=['clobber'])

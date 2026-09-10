@@ -13,7 +13,6 @@ from RECIPE_MODULES.build.attr_utils import attrib, attrs
 
 
 class ChromiumTestsBuilderConfigVerifierApi(recipe_test_api.RecipeTestApi):
-
   @attrs()
   class Contents:
     """An object identifying the contents of a file.
@@ -22,15 +21,16 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_test_api.RecipeTestApi):
     contents with the patched applied and at the head of the repo. A
     None value indicates that the file does not exist in that revision.
     """
+
     patched = attrib(str, default=None)
     at_head = attrib(str, default=None)
 
   def test_case(
-      self,
-      *,
-      properties_files_directory: str | None = None,
-      properties_files: Mapping[str, Contents] | None = None,
-      affected_files: Sequence[str] | None = None,
+    self,
+    *,
+    properties_files_directory: str | None = None,
+    properties_files: Mapping[str, Contents] | None = None,
+    affected_files: Sequence[str] | None = None,
   ) -> recipe_test_api.StepTestData:
     """Set necessary step test data for calling verify_builder_configs.
 
@@ -61,37 +61,46 @@ class ChromiumTestsBuilderConfigVerifierApi(recipe_test_api.RecipeTestApi):
 
     if properties_files:
       properties_file_re = re.compile(
-          f'{properties_files_directory}/[^/]+/[^/]+/properties.json')
+        f'{properties_files_directory}/[^/]+/[^/]+/properties.json'
+      )
       for f, contents in properties_files.items():
         assert properties_file_re.fullmatch(f), (
-            f'{f} does not match properties file glob')
+          f'{f} does not match properties file glob'
+        )
         assert contents.patched is not None or contents.at_head is not None, (
-            f'contents for {f} cannot be None both patched and at head')
+          f'contents for {f} cannot be None both patched and at head'
+        )
         if contents.patched == contents.at_head:
           continue
         affected_files.add(f)
         if contents.patched is not None:
-          t += self.override_step_data(f'verify {f}.read file at CL',
-                                       self.m.file.read_text(contents.patched))
+          t += self.override_step_data(
+            f'verify {f}.read file at CL',
+            self.m.file.read_text(contents.patched),
+          )
         if contents.at_head is not None:
-          relative_f = f[len(properties_files_directory) + 1:]
+          relative_f = f[len(properties_files_directory) + 1 :]
           files_at_head.add(relative_f)
           t += self.override_step_data(
-              f'verify {f}.read file at HEAD',
-              self.m.raw_io.stream_output_text(contents.at_head))
+            f'verify {f}.read file at HEAD',
+            self.m.raw_io.stream_output_text(contents.at_head),
+          )
 
       t += self.override_step_data(
-          'determine affected properties files.find builder properties files',
-          self.m.file.glob_paths(sorted(properties_files.keys())))
+        'determine affected properties files.find builder properties files',
+        self.m.file.glob_paths(sorted(properties_files.keys())),
+      )
 
     t += self.m.tryserver.get_files_affected_by_patch(
-        sorted(affected_files),
-        step_name=(
-            'determine affected properties files.git diff to analyze patch'))
+      sorted(affected_files),
+      step_name=(
+        'determine affected properties files.git diff to analyze patch'
+      ),
+    )
 
     t += self.override_step_data(
-        'determine affected properties files.git ls-tree',
-        self.m.raw_io.stream_output_text(
-            '\n'.join(sorted(files_at_head) + [''])))
+      'determine affected properties files.git ls-tree',
+      self.m.raw_io.stream_output_text('\n'.join(sorted(files_at_head) + [''])),
+    )
 
     return t

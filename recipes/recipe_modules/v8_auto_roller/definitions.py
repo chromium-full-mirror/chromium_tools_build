@@ -14,18 +14,18 @@ from typing import List, Optional, TypedDict, Union
 # The following dependencies are trusted - if new deps are added, their projects
 # need to be BCID L3 (http://go/bcid-ladder#level-3) compliant.
 TRUSTED_ORIGIN_CIPD_DEPS = {
-    "https://chrome-infra-packages.appspot.com/fuchsia/third_party/aemu/linux-amd64",
-    "https://chrome-infra-packages.appspot.com/p/fuchsia/qemu/linux-amd64",
+  "https://chrome-infra-packages.appspot.com/fuchsia/third_party/aemu/linux-amd64",
+  "https://chrome-infra-packages.appspot.com/p/fuchsia/qemu/linux-amd64",
 }
 
 TRUSTED_ORIGIN_GIT_DEPS = {
-    "https://chromium.googlesource.com/deps/inspector_protocol",
-    "https://chromium.googlesource.com/devtools/devtools-frontend",
-    "https://chromium.googlesource.com/infra/luci/luci-py/client/libs/logdog",
+  "https://chromium.googlesource.com/deps/inspector_protocol",
+  "https://chromium.googlesource.com/devtools/devtools-frontend",
+  "https://chromium.googlesource.com/infra/luci/luci-py/client/libs/logdog",
 }
 
 TRUSTED_ORIGIN_PREFIXES = {
-    "https://chromium.googlesource.com/chromium/src/",
+  "https://chromium.googlesource.com/chromium/src/",
 }
 
 CIPD_DEP_URL_PREFIX = 'https://chrome-infra-packages.appspot.com/'
@@ -40,26 +40,33 @@ MAX_COMMIT_LOG_ENTRIES = 8
 # Specs: Mirror the structure of a deps entry in the DEPS file.
 GitSpec = TypedDict('GitSpec', {'url': str})
 
-CipdPackage = TypedDict('CipdPackage', {
+CipdPackage = TypedDict(
+  'CipdPackage',
+  {
     'package': str,
     'version': str,
-})
+  },
+)
 
 CipdSpec = TypedDict('CipdSpec', {'packages': List[CipdPackage]})
 
-GcsObject = TypedDict('GcsObject', {
+GcsObject = TypedDict(
+  'GcsObject',
+  {
     'object_name': str,
     'sha256sum': str,
     'size_bytes': int,
     'generation': int,
-})
+  },
+)
 
 GcsSpec = TypedDict('GcsSpec', {'bucket': str, 'objects': List[GcsObject]})
 
 
 def get_location_version(entry):
   assert '@' in entry, (
-      f'Invalid format: Expected location@version, found {entry}.')
+    f'Invalid format: Expected location@version, found {entry}.'
+  )
   return entry.split('@', 1)
 
 
@@ -72,32 +79,30 @@ def commit_messages_log_entries(api, repo, from_commit, to_commit):
     from_commit: Parent of first rolled commit.
     to_commit: Newest rolled commit.
   """
-  step_test_data = lambda: api.json.test_api.output({
+  step_test_data = lambda: api.json.test_api.output(
+    {
       'log': [
-          {
-              'commit': 'deadbeef',
-              'author': {
-                  'name': 'Tex'
-              },
-              'message': 'Commit 1\n\nsecond line',
-          },
-          {
-              'commit': 'beefdead',
-              'author': {
-                  'name': 'Mex'
-              },
-              'message': 'Commit 0\n\nsecond line',
-          },
+        {
+          'commit': 'deadbeef',
+          'author': {'name': 'Tex'},
+          'message': 'Commit 1\n\nsecond line',
+        },
+        {
+          'commit': 'beefdead',
+          'author': {'name': 'Mex'},
+          'message': 'Commit 0\n\nsecond line',
+        },
       ],
-  })
+    }
+  )
   commits, _ = api.gitiles.log(
-      url=repo,
-      ref=f'{from_commit}..{to_commit}',
-      step_test_data=step_test_data,
+    url=repo,
+    ref=f'{from_commit}..{to_commit}',
+    step_test_data=step_test_data,
   )
   ellipse = [] if len(commits) < MAX_COMMIT_LOG_ENTRIES else ['...']
   return [
-      get_commit_log(api, repo, c) for c in commits[:MAX_COMMIT_LOG_ENTRIES]
+    get_commit_log(api, repo, c) for c in commits[:MAX_COMMIT_LOG_ENTRIES]
   ] + ellipse
 
 
@@ -113,6 +118,7 @@ class BaseDep(abc.ABC):
   """Define a wrapper class for a deps entry. A dep is an entry in the DEPS.deps
   dictionary. It might include multiple artifacts (e.g. for cipd and gcs dep
   types)."""
+
   api: any
   path: str
 
@@ -143,11 +149,11 @@ class CipdDep(BaseDep):
   @cached_property
   def artifacts(self):
     return [
-        CipdArtifact(self, package)
-        for package in self.spec['packages']
-        # TODO(https://crbug.com/500339449): We don't yet support CIPD deps
-        # with a `version_file` entry.
-        if 'version' in package
+      CipdArtifact(self, package)
+      for package in self.spec['packages']
+      # TODO(https://crbug.com/500339449): We don't yet support CIPD deps
+      # with a `version_file` entry.
+      if 'version' in package
     ]
 
 
@@ -158,7 +164,7 @@ class GcsDep(BaseDep):
   @cached_property
   def artifacts(self):
     return [
-        GcsArtifact(self, o, idx) for idx, o in enumerate(self.spec['objects'])
+      GcsArtifact(self, o, idx) for idx, o in enumerate(self.spec['objects'])
     ]
 
 
@@ -166,6 +172,7 @@ class GcsDep(BaseDep):
 class BaseArtifact(abc.ABC):
   """Define a wrapper class for an artifact, which is the smallest rollable
   entity supported by the autoroller."""
+
   dep: BaseDep
   artifact: any
 
@@ -180,16 +187,16 @@ class BaseArtifact(abc.ABC):
 
   @property
   @abc.abstractmethod
-  def version(self) -> str:  #pragma: nocover
+  def version(self) -> str:  # pragma: nocover
     ...
 
   @version.setter
   @abc.abstractmethod
-  def version(self, version) -> None:  #pragma: nocover
+  def version(self, version) -> None:  # pragma: nocover
     ...
 
   @abc.abstractmethod
-  def get_commit_message(self, show_commit_log) -> List[str]:  #pragma: nocover
+  def get_commit_message(self, show_commit_log) -> List[str]:  # pragma: nocover
     ...
 
   @property
@@ -205,15 +212,14 @@ class BaseArtifact(abc.ABC):
 
 
 class RollToLatestArtifact(abc.ABC):
-
   @cached_property
   @abc.abstractmethod
-  def latest_version(self) -> str:  #pragma: nocover
+  def latest_version(self) -> str:  # pragma: nocover
     ...
 
   @property
   @abc.abstractmethod
-  def is_trusted(self) -> bool:  #pragma: nocover
+  def is_trusted(self) -> bool:  # pragma: nocover
     ...
 
 
@@ -223,8 +229,10 @@ class GitArtifact(BaseArtifact, RollToLatestArtifact):
   artifact: GitSpec
 
   def __repr__(self):
-    return (f"(git) {self.dep.path} · Source: {self.location} · "
-            f"Version: {self.version}")
+    return (
+      f"(git) {self.dep.path} · Source: {self.location} · "
+      f"Version: {self.version}"
+    )
 
   @property
   def identifier(self):
@@ -249,47 +257,54 @@ class GitArtifact(BaseArtifact, RollToLatestArtifact):
     # is no head for the main branch.
     api = self.dep.api
     for branch in ['main', RETSAM]:
-      head_revision = api.git(
+      head_revision = (
+        api.git(
           'ls-remote',
           self.location,
           f'refs/heads/{branch}',
           name=f'look up {self.dep.path.replace("/", "_")} ({branch})',
           stdout=api.raw_io.output_text(),
-      ).stdout.strip().split('\t')[0]
+        )
+        .stdout.strip()
+        .split('\t')[0]
+      )
 
       if head_revision:
         return head_revision
 
     assert False, (
-        f'Cannot determine revision for {self.dep.path} at {self.location}.')
+      f'Cannot determine revision for {self.dep.path} at {self.location}.'
+    )
 
   @property
   def is_trusted(self):
     trusted_origin = self.dep.canonical_location in TRUSTED_ORIGIN_GIT_DEPS
 
     trusted_prefix = any(
-        self.dep.canonical_location.startswith(prefix)
-        for prefix in TRUSTED_ORIGIN_PREFIXES)
+      self.dep.canonical_location.startswith(prefix)
+      for prefix in TRUSTED_ORIGIN_PREFIXES
+    )
 
     return trusted_origin or trusted_prefix
 
   def get_commit_message(self, show_commit_log):
     params = (
-        self.dep.path,
-        self.dep.canonical_location,
-        self.initial_version[:7],
-        self.version[:7],
+      self.dep.path,
+      self.dep.canonical_location,
+      self.initial_version[:7],
+      self.version[:7],
     )
     messages = [GIT_LOG_TEMPLATE % params]
 
     if show_commit_log:
       messages.extend(
-          commit_messages_log_entries(
-              self.dep.api,
-              self.dep.canonical_location,
-              self.initial_version,
-              self.version,
-          ))
+        commit_messages_log_entries(
+          self.dep.api,
+          self.dep.canonical_location,
+          self.initial_version,
+          self.version,
+        )
+      )
 
     return messages
 
@@ -304,8 +319,10 @@ class CipdArtifact(BaseArtifact, RollToLatestArtifact):
   artifact: CipdPackage
 
   def __repr__(self):
-    return (f"(cipd) {self.dep.path} · Source: {self.artifact['package']} · "
-            f"Version: {self.version}")
+    return (
+      f"(cipd) {self.dep.path} · Source: {self.artifact['package']} · "
+      f"Version: {self.version}"
+    )
 
   @property
   def identifier(self):
@@ -358,13 +375,14 @@ class GcsArtifact(BaseArtifact):
   VERSION_KEYS = ['object_name', 'sha256sum', 'size_bytes', 'generation']
 
   ID_MAPPINGS = {
-      'third_party/llvm-build/Release+Asserts':
-          CLANG_MAPPING,
+    'third_party/llvm-build/Release+Asserts': CLANG_MAPPING,
   }
 
   def __repr__(self):
-    return (f"(gcs) {self.dep.path} · Source: {self.dep.spec['bucket']} · "
-            f"Version: {self.version}")
+    return (
+      f"(gcs) {self.dep.path} · Source: {self.dep.spec['bucket']} · "
+      f"Version: {self.version}"
+    )
 
   @property
   def identifier(self):
@@ -373,7 +391,8 @@ class GcsArtifact(BaseArtifact):
       path = path[4:]
 
     id_mapping = self.ID_MAPPINGS.get(
-        path, lambda idx, name: f'{path.replace("/", "_")}-{idx}')
+      path, lambda idx, name: f'{path.replace("/", "_")}-{idx}'
+    )
     artifact_id = id_mapping(self.index, self.artifact['object_name'])
 
     return f'gcs:{self.dep.spec["bucket"]}/{artifact_id}'
@@ -386,8 +405,9 @@ class GcsArtifact(BaseArtifact):
   def version(self, version):
     version_parts = version.split(',')
     assert len(version_parts) == len(self.VERSION_KEYS), (
-        f'Require a GCS version with {len(self.VERSION_KEYS)} parts, but found '
-        f'{len(version_parts)}.')
+      f'Require a GCS version with {len(self.VERSION_KEYS)} parts, but found '
+      f'{len(version_parts)}.'
+    )
 
     for key, value in zip(self.VERSION_KEYS, version_parts):
       self.artifact[key] = value
@@ -395,13 +415,14 @@ class GcsArtifact(BaseArtifact):
   @cached_property
   def latest_version(self):
     raise NotImplementedError(
-        'GCS dependencies cannot roll to the latest version, but must be '
-        'retrieved from the upstream repository unless explicitly excluded.')
+      'GCS dependencies cannot roll to the latest version, but must be '
+      'retrieved from the upstream repository unless explicitly excluded.'
+    )
 
   def get_commit_message(self, show_commit_log):
     return [
-        SIMPLE_LOG_TEMPLATE %
-        (self.identifier, self.initial_version, self.version)
+      SIMPLE_LOG_TEMPLATE
+      % (self.identifier, self.initial_version, self.version)
     ]
 
   @property

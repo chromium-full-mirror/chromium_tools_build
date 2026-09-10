@@ -16,11 +16,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import flaky_reproducer
 from RECIPE_MODULES.recipe_engine import (
-    json,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  json,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -43,50 +43,53 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS, properties):
   api.flaky_reproducer.set_config(properties.config or 'auto')
   return api.flaky_reproducer.run(
-      task_id=properties.task_id,
-      build_id=properties.build_id,
-      test_name=properties.test_name,
-      test_id=properties.test_id,
-      verify_on_builders=properties.verify_on_builders,
-      monorail_issue=properties.monorail_issue)
+    task_id=properties.task_id,
+    build_id=properties.build_id,
+    test_name=properties.test_name,
+    test_id=properties.test_id,
+    verify_on_builders=properties.verify_on_builders,
+    monorail_issue=properties.monorail_issue,
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'cannot_retrieve_invocation',
-      api.properties(
-          build_id=2**63 - 1,
-          test_name="MockUnitTests.FailTest",
-          config="manual",
-      ),
-      api.resultdb.query_test_results(resultdb_pb2.QueryTestResultsResponse()),
-      api.post_check(post_process.SummaryMarkdown, 'Cannot find TestResult.'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'cannot_retrieve_invocation',
+    api.properties(
+      build_id=2**63 - 1,
+      test_name="MockUnitTests.FailTest",
+      config="manual",
+    ),
+    api.resultdb.query_test_results(resultdb_pb2.QueryTestResultsResponse()),
+    api.post_check(post_process.SummaryMarkdown, 'Cannot find TestResult.'),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'must_have_task_id_or_build_id',
-      api.properties(
-          task_id=None,
-          build_id=None,
-          test_id="not-exists",
-      ),
-      api.post_check(post_process.SummaryMarkdown,
-                     'Must specify task_id or build_id.'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'must_have_task_id_or_build_id',
+    api.properties(
+      task_id=None,
+      build_id=None,
+      test_id="not-exists",
+    ),
+    api.post_check(
+      post_process.SummaryMarkdown, 'Must specify task_id or build_id.'
+    ),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'must_have_test_id_or_test_name',
-      api.properties(
-          task_id='some-task',
-          test_id=None,
-          test_name=None,
-      ),
-      api.post_check(post_process.SummaryMarkdown,
-                     'Must specify test_name or test_id.'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'must_have_test_id_or_test_name',
+    api.properties(
+      task_id='some-task',
+      test_id=None,
+      test_name=None,
+    ),
+    api.post_check(
+      post_process.SummaryMarkdown, 'Must specify test_name or test_id.'
+    ),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )

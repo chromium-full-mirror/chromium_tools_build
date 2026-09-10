@@ -13,18 +13,18 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import repo
 from RECIPE_MODULES.depot_tools import git
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    defer,
-    file,
-    path,
-    properties,
-    raw_io,
-    runtime,
-    step,
-    time,
-    url,
+  buildbucket,
+  cipd,
+  context,
+  defer,
+  file,
+  path,
+  properties,
+  raw_io,
+  runtime,
+  step,
+  time,
+  url,
 )
 
 
@@ -75,36 +75,38 @@ def RunSteps(api: DEPS, props):
     cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
     with api.context(cwd=api.path.cache_dir / cache_name):
       setup_target(
-          api,
-          device=props.device,
-          bitness=props.bitness,
-          product=props.product,
-          debug=props.debug,
-          build_only=props.build_only,
-          concurrent_collector=props.concurrent_collector,
-          generational_cc=props.generational_cc,
-          heap_poisoning=props.heap_poisoning,
-          gcstress=props.gcstress,
-          continuousgc=props.continuousgc,
-          on_virtual_machine=props.on_virtual_machine,
-          repo_root=props.repo_root,
-          manifest_branch=manifest_branch or 'master-art',
-          test_steps=props.test_steps)
+        api,
+        device=props.device,
+        bitness=props.bitness,
+        product=props.product,
+        debug=props.debug,
+        build_only=props.build_only,
+        concurrent_collector=props.concurrent_collector,
+        generational_cc=props.generational_cc,
+        heap_poisoning=props.heap_poisoning,
+        gcstress=props.gcstress,
+        continuousgc=props.continuousgc,
+        on_virtual_machine=props.on_virtual_machine,
+        repo_root=props.repo_root,
+        manifest_branch=manifest_branch or 'master-art',
+        test_steps=props.test_steps,
+      )
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
       setup_host_x86(
-          api,
-          debug=props.debug,
-          bitness=props.bitness,
-          build_only=props.build_only,
-          concurrent_collector=props.concurrent_collector,
-          generational_cc=props.generational_cc,
-          heap_poisoning=props.heap_poisoning,
-          gcstress=props.gcstress,
-          continuousgc=props.continuousgc,
-          repo_root=props.repo_root,
-          manifest_branch=manifest_branch or 'master-art',
-          test_steps=props.test_steps)
+        api,
+        debug=props.debug,
+        bitness=props.bitness,
+        build_only=props.build_only,
+        concurrent_collector=props.concurrent_collector,
+        generational_cc=props.generational_cc,
+        heap_poisoning=props.heap_poisoning,
+        gcstress=props.gcstress,
+        continuousgc=props.continuousgc,
+        repo_root=props.repo_root,
+        manifest_branch=manifest_branch or 'master-art',
+        test_steps=props.test_steps,
+      )
 
 
 def checkout(api: DEPS, branch, repo_root):
@@ -139,10 +141,11 @@ def checkout_git(api: DEPS, branch, repo_root):
           api.time.sleep(delay * 60)
           api.git("fetch")
         cmd = api.git(
-            *args,
-            name="find super-project commit" +
-            (f" (retry {retry})" if retry else ""),
-            stdout=api.raw_io.output_text())
+          *args,
+          name="find super-project commit"
+          + (f" (retry {retry})" if retry else ""),
+          stdout=api.raw_io.output_text(),
+        )
         if cmd.stdout:
           break
       assert cmd.stdout, f"Commit {ref} was not found in the git superproject"
@@ -151,10 +154,20 @@ def checkout_git(api: DEPS, branch, repo_root):
     api.git("checkout", "--force", ref)
     api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
     api.git("show")
-    api.step("patch .gitmodules",
-             ["sed", "-i", "/submodule/ s:/:-:g", ".gitmodules"])
-    api.git("submodule", "update", "--init", "--force", "--depth", "1",
-            "--jobs", "32", "--checkout")
+    api.step(
+      "patch .gitmodules", ["sed", "-i", "/submodule/ s:/:-:g", ".gitmodules"]
+    )
+    api.git(
+      "submodule",
+      "update",
+      "--init",
+      "--force",
+      "--depth",
+      "1",
+      "--jobs",
+      "32",
+      "--checkout",
+    )
     api.git("status", "--ignore-submodules=none")
 
     for cl in api.buildbucket.build.input.gerrit_changes:
@@ -190,13 +203,16 @@ def clobber(api: DEPS):
   if 'clobber' in api.properties:
     api.file.rmtree('clobber', api.context.cwd.joinpath('out'))
 
+
 # Calls api.cipd.ensure_tool, then modifies the path returned by the call to
 # join the subdir.
 def ensure_tool(api: DEPS, package, version, subdir=""):
-  dirname = api.path.split(api.cipd.ensure_tool(
-    package=package,
-    version=version,
-  ))[0]
+  dirname = api.path.split(
+    api.cipd.ensure_tool(
+      package=package,
+      version=version,
+    )
+  )[0]
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
 
@@ -212,47 +228,56 @@ def verify_test_steps_context(api: DEPS, test_steps):
     cwd_prefix = f"{api.context.cwd}/"
 
     def verifying_defer(fn, *args, **kwargs):
-      if (fn == api.step and args and args[0].startswith('test ') and
-          ': ' not in args[0]):
+      if (
+        fn == api.step
+        and args
+        and args[0].startswith('test ')
+        and ': ' not in args[0]
+      ):
         name = args[0]
         cmd = args[1] if len(args) > 1 else []
         assert step_index[0] < len(test_steps), (
-            f"Extra test step '{name}' not in props.test_steps")
+          f"Extra test step '{name}' not in props.test_steps"
+        )
         expected = test_steps[step_index[0]]
         step_index[0] += 1
         assert name == expected.name, (
-            f"Step {step_index[0]} name mismatch: '{name}' != '{expected.name}'"
+          f"Step {step_index[0]} name mismatch: '{name}' != '{expected.name}'"
         )
         norm_cmd = [str(c).removeprefix(cwd_prefix) for c in cmd]
-        assert norm_cmd == list(
-            expected.cmd), (f"Step '{name}' cmd mismatch:\n"
-                            f"Actual:   {norm_cmd}\n"
-                            f"Expected: {list(expected.cmd)}")
+        assert norm_cmd == list(expected.cmd), (
+          f"Step '{name}' cmd mismatch:\n"
+          f"Actual:   {norm_cmd}\n"
+          f"Expected: {list(expected.cmd)}"
+        )
       defer(fn, *args, **kwargs)
 
     yield verifying_defer
 
     assert step_index[0] == len(test_steps), (
-        f"Missing test steps: expected {len(test_steps)}, "
-        f"but only {step_index[0]} deferred")
+      f"Missing test steps: expected {len(test_steps)}, "
+      f"but only {step_index[0]} deferred"
+    )
     api.step.empty(
-        'verify test_steps',
-        step_text=f'Verified {step_index[0]} test steps match props.test_steps',
+      'verify test_steps',
+      step_text=f'Verified {step_index[0]} test steps match props.test_steps',
     )
 
 
-def setup_host_x86(api: DEPS,
-                   debug,
-                   bitness,
-                   build_only,
-                   concurrent_collector=True,
-                   generational_cc=True,
-                   heap_poisoning=False,
-                   gcstress=False,
-                   continuousgc=False,
-                   repo_root=None,
-                   manifest_branch="master-art",
-                   test_steps=None):
+def setup_host_x86(
+  api: DEPS,
+  debug,
+  bitness,
+  build_only,
+  concurrent_collector=True,
+  generational_cc=True,
+  heap_poisoning=False,
+  gcstress=False,
+  continuousgc=False,
+  repo_root=None,
+  manifest_branch="master-art",
+  test_steps=None,
+):
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
@@ -260,58 +285,51 @@ def setup_host_x86(api: DEPS,
   art_tools = api.context.cwd.joinpath('art', 'tools')
   # For host, the TARGET_PRODUCT isn't relevant.
   env = {
-      'TARGET_PRODUCT':
-          'armv8',
-      'TARGET_BUILD_VARIANT':
-          'eng',
-      'TARGET_BUILD_TYPE':
-          'release',
-      'TARGET_RELEASE':
-          'trunk_staging',
-      'LANG':
-          'en_US.UTF-8',
-      'SOONG_ALLOW_MISSING_DEPENDENCIES':
-          'true',
-      'BUILD_BROKEN_DISABLE_BAZEL':
-          'true',
-      'TARGET_BUILD_UNBUNDLED':
-          'true',
-      'ANDROID_BUILD_TOP':
-          build_top_dir,
-      'PATH':
-          str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin')) +
-          api.path.pathsep + str(
-              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                     'bin')) + api.path.pathsep + '%(PATH)s',
-      'ART_TEST_RUN_TEST_2ND_ARCH':
-          'false',
-      'ART_TEST_KEEP_GOING':
-          'true'
+    'TARGET_PRODUCT': 'armv8',
+    'TARGET_BUILD_VARIANT': 'eng',
+    'TARGET_BUILD_TYPE': 'release',
+    'TARGET_RELEASE': 'trunk_staging',
+    'LANG': 'en_US.UTF-8',
+    'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
+    'BUILD_BROKEN_DISABLE_BAZEL': 'true',
+    'TARGET_BUILD_UNBUNDLED': 'true',
+    'ANDROID_BUILD_TOP': build_top_dir,
+    'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
+    + api.path.pathsep
+    + str(
+      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
+    )
+    + api.path.pathsep
+    + '%(PATH)s',
+    'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
+    'ART_TEST_KEEP_GOING': 'true',
   }
 
   if bitness == 32:
-    env.update({ 'HOST_PREFER_32_BIT' : 'true' })
+    env.update({'HOST_PREFER_32_BIT': 'true'})
 
   if concurrent_collector:
-    env.update({ 'ART_USE_READ_BARRIER' : 'true' })
+    env.update({'ART_USE_READ_BARRIER': 'true'})
   else:
-    env.update({ 'ART_USE_READ_BARRIER' : 'false' })
+    env.update({'ART_USE_READ_BARRIER': 'false'})
 
   # Note: Generational CC only makes sense when read barriers are used
   # (i.e. when the Concurrent Copying collector is used).
   if generational_cc:
-    env.update({ 'ART_USE_GENERATIONAL_CC' : 'true' })
+    env.update({'ART_USE_GENERATIONAL_CC': 'true'})
   else:
-    env.update({ 'ART_USE_GENERATIONAL_CC' : 'false' })
+    env.update({'ART_USE_GENERATIONAL_CC': 'false'})
 
   if heap_poisoning:
-    env.update({ 'ART_HEAP_POISONING' : 'true' })
+    env.update({'ART_HEAP_POISONING': 'true'})
   else:
-    env.update({ 'ART_HEAP_POISONING' : 'false' })
+    env.update({'ART_HEAP_POISONING': 'false'})
 
   # Common options passed to testrunner.py.
   testrunner_cmd = [
-      './art/test/testrunner/testrunner.py', '--verbose', '--host'
+    './art/test/testrunner/testrunner.py',
+    '--verbose',
+    '--host',
   ]
 
   if debug:
@@ -326,40 +344,51 @@ def setup_host_x86(api: DEPS,
     testrunner_cmd += ['--continuous-gc']
 
   with api.context(env=env):
-    api.step('build',
-             [art_tools / 'buildbot-build.sh', '--host', '--installclean'])
+    api.step(
+      'build', [art_tools / 'buildbot-build.sh', '--host', '--installclean']
+    )
 
     if build_only:
       return
 
     with verify_test_steps_context(api, test_steps) as defer:
-      defer(api.step, 'test gtest', [
-          'build/soong/soong_ui.bash', '--make-mode',
-          'test-art-host-gtest%d' % bitness
-      ])
+      defer(
+        api.step,
+        'test gtest',
+        [
+          'build/soong/soong_ui.bash',
+          '--make-mode',
+          'test-art-host-gtest%d' % bitness,
+        ],
+      )
 
       defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
 
-      defer(api.step, 'test debuggable',
-            testrunner_cmd + ['--jit', '--debuggable'])
+      defer(
+        api.step, 'test debuggable', testrunner_cmd + ['--jit', '--debuggable']
+      )
 
       # Use a lower `-j` number for interpreter, some tests take a long time
       # to run on it.
       defer(
-          api.step,
-          'test interpreter', testrunner_cmd +
-          ['-j%d' % (HOST_TEST_INTERPRETER_MAKE_JOBS), '--interpreter'])
+        api.step,
+        'test interpreter',
+        testrunner_cmd
+        + ['-j%d' % (HOST_TEST_INTERPRETER_MAKE_JOBS), '--interpreter'],
+      )
 
       defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
 
       defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
 
-      defer(api.step, 'test speed-profile',
-            testrunner_cmd + ['--speed-profile'])
+      defer(
+        api.step, 'test speed-profile', testrunner_cmd + ['--speed-profile']
+      )
 
       libcore_command = [
-          art_tools.joinpath('run-libcore-tests.sh'), '--mode=host',
-          '--variant=X%d' % bitness
+        art_tools.joinpath('run-libcore-tests.sh'),
+        '--mode=host',
+        '--variant=X%d' % bitness,
       ]
       if debug:
         libcore_command.append('--debug')
@@ -372,8 +401,9 @@ def setup_host_x86(api: DEPS,
 
       libjdwp_run = art_tools.joinpath('run-libjdwp-tests.sh')
       libjdwp_common_command = [
-          libjdwp_run, '--mode=host',
-          '--variant=X%d' % bitness
+        libjdwp_run,
+        '--mode=host',
+        '--variant=X%d' % bitness,
       ]
       if debug:
         libjdwp_common_command.append('--debug')
@@ -384,25 +414,30 @@ def setup_host_x86(api: DEPS,
 
       # Disable interpreter jdwp runs with gcstress, they time out.
       if not gcstress:
-        defer(api.step, 'test libjdwp interpreter',
-              libjdwp_common_command + ['--no-jit'])
+        defer(
+          api.step,
+          'test libjdwp interpreter',
+          libjdwp_common_command + ['--no-jit'],
+        )
 
 
-def setup_target(api: DEPS,
-                 device,
-                 bitness,
-                 product,
-                 debug,
-                 build_only=False,
-                 concurrent_collector=True,
-                 gcstress=False,
-                 continuousgc=False,
-                 generational_cc=True,
-                 heap_poisoning=False,
-                 on_virtual_machine=False,
-                 repo_root=None,
-                 manifest_branch="master-art",
-                 test_steps=None):
+def setup_target(
+  api: DEPS,
+  device,
+  bitness,
+  product,
+  debug,
+  build_only=False,
+  concurrent_collector=True,
+  gcstress=False,
+  continuousgc=False,
+  generational_cc=True,
+  heap_poisoning=False,
+  on_virtual_machine=False,
+  repo_root=None,
+  manifest_branch="master-art",
+  test_steps=None,
+):
 
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
@@ -438,126 +473,144 @@ def setup_target(api: DEPS,
   api.file.symlink(
     'symlink 7z to 7zz',
     api.path.join(sevenz_path, '7zz'),
-    api.path.join(sevenz_path, '7z')
+    api.path.join(sevenz_path, '7z'),
   )
 
   env = {
-      'TARGET_BUILD_VARIANT':
-          'eng',
-      'TARGET_BUILD_TYPE':
-          'release',
-      'TARGET_RELEASE':
-          'trunk_staging',
-      'LANG':
-          'en_US.UTF-8',
-      'SOONG_ALLOW_MISSING_DEPENDENCIES':
-          'true',
-      'TARGET_BUILD_UNBUNDLED':
-          'true',
-      'ANDROID_BUILD_TOP':
-          build_top_dir,
-      'ADB':
-          str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
-      'PATH':
-          str(
-              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                     'bin')) + api.path.pathsep +
-          # Add adb to the path.
-          str(build_top_dir.joinpath('prebuilts', 'runtime')) +
-          api.path.pathsep +
-          # Add 7z to the path.
-          str(sevenz_path) + api.path.pathsep +
-          # Add openssh-portable to the path.
-          str(openssh_path) + api.path.pathsep +
-          # Add qemu to the path.
-          str(qemu_path) + api.path.pathsep + '%(PATH)s',
-      'ART_TEST_RUN_TEST_2ND_ARCH':
-          'false',
-      'USE_DEX2OAT_DEBUG':
-          'false',
-      'ART_BUILD_HOST_DEBUG':
-          'false',
-      'ART_TEST_KEEP_GOING':
-          'true'
+    'TARGET_BUILD_VARIANT': 'eng',
+    'TARGET_BUILD_TYPE': 'release',
+    'TARGET_RELEASE': 'trunk_staging',
+    'LANG': 'en_US.UTF-8',
+    'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
+    'TARGET_BUILD_UNBUNDLED': 'true',
+    'ANDROID_BUILD_TOP': build_top_dir,
+    'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
+    'PATH': str(
+      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
+    )
+    + api.path.pathsep
+    +
+    # Add adb to the path.
+    str(build_top_dir.joinpath('prebuilts', 'runtime'))
+    + api.path.pathsep
+    +
+    # Add 7z to the path.
+    str(sevenz_path)
+    + api.path.pathsep
+    +
+    # Add openssh-portable to the path.
+    str(openssh_path)
+    + api.path.pathsep
+    +
+    # Add qemu to the path.
+    str(qemu_path)
+    + api.path.pathsep
+    + '%(PATH)s',
+    'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
+    'USE_DEX2OAT_DEBUG': 'false',
+    'ART_BUILD_HOST_DEBUG': 'false',
+    'ART_TEST_KEEP_GOING': 'true',
   }
 
   if concurrent_collector:
-    env.update({ 'ART_USE_READ_BARRIER' : 'true' })
+    env.update({'ART_USE_READ_BARRIER': 'true'})
   else:
-    env.update({ 'ART_USE_READ_BARRIER' : 'false' })  # pragma: no cover
+    env.update({'ART_USE_READ_BARRIER': 'false'})  # pragma: no cover
 
   # Note: Generational CC only makes sense when read barriers are used
   # (i.e. when the Concurrent Copying collector is used).
   if generational_cc:
-    env.update({ 'ART_USE_GENERATIONAL_CC' : 'true' })
+    env.update({'ART_USE_GENERATIONAL_CC': 'true'})
   else:
-    env.update({ 'ART_USE_GENERATIONAL_CC' : 'false' })
+    env.update({'ART_USE_GENERATIONAL_CC': 'false'})
 
   if heap_poisoning:
-    env.update({ 'ART_HEAP_POISONING' : 'true' })
+    env.update({'ART_HEAP_POISONING': 'true'})
   else:
-    env.update({ 'ART_HEAP_POISONING' : 'false' })
+    env.update({'ART_HEAP_POISONING': 'false'})
 
   if on_virtual_machine:
-    env.update({
-      'ART_TEST_SSH_USER': 'ubuntu',
-      'ART_TEST_SSH_HOST': 'localhost',
-      'ART_TEST_SSH_PORT': '10001',
-      'ART_TEST_ON_VM': 'true',
-    })
+    env.update(
+      {
+        'ART_TEST_SSH_USER': 'ubuntu',
+        'ART_TEST_SSH_HOST': 'localhost',
+        'ART_TEST_SSH_PORT': '10001',
+        'ART_TEST_ON_VM': 'true',
+      }
+    )
 
-  env.update({
-      'TARGET_PRODUCT':
-          product,
-      'ANDROID_PRODUCT_OUT':
-          build_top_dir.joinpath('out', 'target', 'product', product),
-  })
+  env.update(
+    {
+      'TARGET_PRODUCT': product,
+      'ANDROID_PRODUCT_OUT': build_top_dir.joinpath(
+        'out', 'target', 'product', product
+      ),
+    }
+  )
 
-  env.update({ 'ART_TEST_CHROOT' : chroot_dir })
+  env.update({'ART_TEST_CHROOT': chroot_dir})
 
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
   gtest_env = env.copy()
-  gtest_env.update({ 'ART_TEST_NO_SYNC': 'true' })
+  gtest_env.update({'ART_TEST_NO_SYNC': 'true'})
 
   test_env = gtest_env.copy()
-  test_env.update({
-      'PATH':
-          str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin')) +
-          api.path.pathsep + str(
-              build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86',
-                                     'bin')) + api.path.pathsep +
-          # Add adb in the path.
-          str(build_top_dir.joinpath('prebuilts', 'runtime')) +
-          api.path.pathsep + '%(PATH)s'
-  })
+  test_env.update(
+    {
+      'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
+      + api.path.pathsep
+      + str(
+        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
+      )
+      + api.path.pathsep
+      +
+      # Add adb in the path.
+      str(build_top_dir.joinpath('prebuilts', 'runtime'))
+      + api.path.pathsep
+      + '%(PATH)s'
+    }
+  )
   with api.context(env=env):
     api.step(
-        'build target',
-        [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'])
+      'build target',
+      [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'],
+    )
 
   if build_only:
     return
 
   if on_virtual_machine:
     with api.context(env=env):
-      api.step('create the virtual machine',
-               [art_tools.joinpath('buildbot-vm.sh'), 'create'])
+      api.step(
+        'create the virtual machine',
+        [art_tools.joinpath('buildbot-vm.sh'), 'create'],
+      )
 
-      api.step('enable key authentication on virtual machine',
-               [art_tools.joinpath('buildbot-vm.sh'), 'install-keys'])
+      api.step(
+        'enable key authentication on virtual machine',
+        [art_tools.joinpath('buildbot-vm.sh'), 'install-keys'],
+      )
 
-      api.step('boot the virtual machine',
-               [art_tools.joinpath('buildbot-vm.sh'), 'boot'])
+      api.step(
+        'boot the virtual machine',
+        [art_tools.joinpath('buildbot-vm.sh'), 'boot'],
+      )
 
   with verify_test_steps_context(api, test_steps) as defer:
     with api.context(env=test_env):
-      defer(api.step, 'device pre-run cleanup',
-            [art_tools.joinpath('buildbot-cleanup-device.sh')])
+      defer(
+        api.step,
+        'device pre-run cleanup',
+        [art_tools.joinpath('buildbot-cleanup-device.sh')],
+      )
 
-      defer(api.step, 'setup device',
-            [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'])
+      defer(
+        api.step,
+        'setup device',
+        [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'],
+      )
 
     with api.context(env=env):
       defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
@@ -567,12 +620,17 @@ def setup_target(api: DEPS,
       if on_virtual_machine:
         return
       with api.context(env=test_env):
-        defer(api.step, test_name + ': adb logcat',
-              ['adb', 'logcat', '-d', '-v', 'threadtime'])
-        defer(api.step, test_name + ': crashes',
-              [art_tools.joinpath('buildbot-symbolize-crashes.sh')])
+        defer(
+          api.step,
+          test_name + ': adb logcat',
+          ['adb', 'logcat', '-d', '-v', 'threadtime'],
+        )
+        defer(
+          api.step,
+          test_name + ': crashes',
+          [art_tools.joinpath('buildbot-symbolize-crashes.sh')],
+        )
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
-
 
     with api.context(env=gtest_env):
       defer(api.step, 'test gtest', [art_tools.joinpath('run-gtests.sh')])
@@ -580,7 +638,9 @@ def setup_target(api: DEPS,
 
     # Common options passed to testrunner.py.
     testrunner_cmd = [
-        './art/test/testrunner/testrunner.py', '--target', '--verbose'
+      './art/test/testrunner/testrunner.py',
+      '--target',
+      '--verbose',
     ]
 
     if debug:
@@ -601,31 +661,40 @@ def setup_target(api: DEPS,
     if product == 'armv8':
       with api.context(env=test_env):
         defer(
-            # All current test devices support "crc" and none needs Cortex-A53
-            # workarounds. Pass `--instruction-set-variant=cortex-a35` to
-            # disable Cortex-A53 workarounds and enable only the "crc". Pass
-            # `--instruction-set-features=runtime` (processed by `dex2oat`
-            # after the variant), to detect other features on the device.
-            api.step,
-            'test optimizing all-isa-features',
-            testrunner_cmd + [
-                '--optimizing', '--run-test-option=--Xcompiler-option=' +
-                '--instruction-set-variant=cortex-a35',
-                '--run-test-option=--Xcompiler-option=' +
-                '--instruction-set-features=runtime'
-            ])
+          # All current test devices support "crc" and none needs Cortex-A53
+          # workarounds. Pass `--instruction-set-variant=cortex-a35` to
+          # disable Cortex-A53 workarounds and enable only the "crc". Pass
+          # `--instruction-set-features=runtime` (processed by `dex2oat`
+          # after the variant), to detect other features on the device.
+          api.step,
+          'test optimizing all-isa-features',
+          testrunner_cmd
+          + [
+            '--optimizing',
+            '--run-test-option=--Xcompiler-option='
+            + '--instruction-set-variant=cortex-a35',
+            '--run-test-option=--Xcompiler-option='
+            + '--instruction-set-features=runtime',
+          ],
+        )
       test_logging(api, 'test optimizing all-isa-features')
 
     with api.context(env=test_env):
       # We pass --optimizing for interpreter debuggable to run AOT checker tests
       # compiled debuggable.
-      defer(api.step, 'test debuggable',
-            testrunner_cmd + ['--optimizing', '--debuggable'])
+      defer(
+        api.step,
+        'test debuggable',
+        testrunner_cmd + ['--optimizing', '--debuggable'],
+      )
     test_logging(api, 'test debuggable')
 
     with api.context(env=test_env):
-      defer(api.step, 'test jit debuggable',
-            testrunner_cmd + ['--jit', '--debuggable'])
+      defer(
+        api.step,
+        'test jit debuggable',
+        testrunner_cmd + ['--jit', '--debuggable'],
+      )
     test_logging(api, 'test jit debuggable')
 
     with api.context(env=test_env):
@@ -642,18 +711,23 @@ def setup_target(api: DEPS,
 
     if bitness == 64:
       with api.context(env=test_env):
-        defer(api.step, 'test jit-on-first-use',
-              testrunner_cmd + ['--jit-on-first-use'])
+        defer(
+          api.step,
+          'test jit-on-first-use',
+          testrunner_cmd + ['--jit-on-first-use'],
+        )
       test_logging(api, 'test jit-on-first-use')
 
     with api.context(env=test_env):
-      defer(api.step, 'test speed-profile',
-            testrunner_cmd + ['--speed-profile'])
+      defer(
+        api.step, 'test speed-profile', testrunner_cmd + ['--speed-profile']
+      )
     test_logging(api, 'test speed-profile')
 
     libcore_command = [
-        art_tools.joinpath('run-libcore-tests.sh'), '--mode=device',
-        '--variant=X%d' % bitness
+      art_tools.joinpath('run-libcore-tests.sh'),
+      '--mode=device',
+      '--variant=X%d' % bitness,
     ]
     if debug:
       libcore_command.append('--debug')
@@ -673,8 +747,9 @@ def setup_target(api: DEPS,
       test_logging(api, 'test libcore')
 
     libjdwp_command = [
-        art_tools.joinpath('run-libjdwp-tests.sh'), '--mode=device',
-        '--variant=X%d' % bitness
+      art_tools.joinpath('run-libjdwp-tests.sh'),
+      '--mode=device',
+      '--variant=X%d' % bitness,
     ]
     if debug:
       libjdwp_command.append('--debug')
@@ -690,394 +765,467 @@ def setup_target(api: DEPS,
     # Disable interpreter libjdwp runs with gcstress, they time out.
     if not gcstress and not on_virtual_machine:
       with api.context(env=test_env):
-        defer(api.step, 'test libjdwp interpreter',
-              libjdwp_command + ['--no-jit'])
+        defer(
+          api.step, 'test libjdwp interpreter', libjdwp_command + ['--no-jit']
+        )
       test_logging(api, 'test libjdwp interpreter')
 
     with api.context(env=test_env):
-      defer(api.step, 'tear down device',
-            [art_tools.joinpath('buildbot-teardown-device.sh')])
+      defer(
+        api.step,
+        'tear down device',
+        [art_tools.joinpath('buildbot-teardown-device.sh')],
+      )
 
-      defer(api.step, 'device post-run cleanup',
-            [art_tools.joinpath('buildbot-cleanup-device.sh')])
+      defer(
+        api.step,
+        'device post-run cleanup',
+        [art_tools.joinpath('buildbot-cleanup-device.sh')],
+      )
 
     if on_virtual_machine:
       with api.context(env=env):
-        defer(api.step, 'shut down virtual machine',
-              [art_tools.joinpath('buildbot-vm.sh'), 'quit'])
+        defer(
+          api.step,
+          'shut down virtual machine',
+          [art_tools.joinpath('buildbot-vm.sh'), 'quit'],
+        )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'host-x86_64-default_opts', api.buildbucket.ci_build(project='art',),
-      api.properties(
-          bitness=32,
-          debug=False,
-          concurrent_collector=True,
-          generational_cc=True,
-          test_steps=[
-              {
-                  'name':
-                      'test gtest',
-                  'cmd': [
-                      'build/soong/soong_ui.bash', '--make-mode',
-                      'test-art-host-gtest32'
-                  ]
-              },
-              {
-                  'name':
-                      'test optimizing',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '--optimizing'
-                  ]
-              },
-              {
-                  'name':
-                      'test debuggable',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '--jit', '--debuggable'
-                  ]
-              },
-              {
-                  'name':
-                      'test interpreter',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '-j5', '--interpreter'
-                  ]
-              },
-              {
-                  'name':
-                      'test baseline',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '--baseline'
-                  ]
-              },
-              {
-                  'name':
-                      'test jit',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '--jit'
-                  ]
-              },
-              {
-                  'name':
-                      'test speed-profile',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--verbose',
-                      '--host', '--ndebug', '--speed-profile'
-                  ]
-              },
-              {
-                  'name':
-                      'test libcore',
-                  'cmd': [
-                      'art/tools/run-libcore-tests.sh', '--mode=host',
-                      '--variant=X32'
-                  ]
-              },
-              {
-                  'name':
-                      'test libjdwp jit',
-                  'cmd': [
-                      'art/tools/run-libjdwp-tests.sh', '--mode=host',
-                      '--variant=X32'
-                  ]
-              },
-              {
-                  'name':
-                      'test libjdwp interpreter',
-                  'cmd': [
-                      'art/tools/run-libjdwp-tests.sh', '--mode=host',
-                      '--variant=X32', '--no-jit'
-                  ]
-              },
+    'host-x86_64-default_opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      bitness=32,
+      debug=False,
+      concurrent_collector=True,
+      generational_cc=True,
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': [
+            'build/soong/soong_ui.bash',
+            '--make-mode',
+            'test-art-host-gtest32',
           ],
-      ))
+        },
+        {
+          'name': 'test optimizing',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '--optimizing',
+          ],
+        },
+        {
+          'name': 'test debuggable',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '--jit',
+            '--debuggable',
+          ],
+        },
+        {
+          'name': 'test interpreter',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '-j5',
+            '--interpreter',
+          ],
+        },
+        {
+          'name': 'test baseline',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '--baseline',
+          ],
+        },
+        {
+          'name': 'test jit',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '--jit',
+          ],
+        },
+        {
+          'name': 'test speed-profile',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--verbose',
+            '--host',
+            '--ndebug',
+            '--speed-profile',
+          ],
+        },
+        {
+          'name': 'test libcore',
+          'cmd': [
+            'art/tools/run-libcore-tests.sh',
+            '--mode=host',
+            '--variant=X32',
+          ],
+        },
+        {
+          'name': 'test libjdwp jit',
+          'cmd': [
+            'art/tools/run-libjdwp-tests.sh',
+            '--mode=host',
+            '--variant=X32',
+          ],
+        },
+        {
+          'name': 'test libjdwp interpreter',
+          'cmd': [
+            'art/tools/run-libjdwp-tests.sh',
+            '--mode=host',
+            '--variant=X32',
+            '--no-jit',
+          ],
+        },
+      ],
+    ),
+  )
 
   yield api.test(
-      'host-x86_64-opts', api.buildbucket.ci_build(project='art',),
-      api.properties(
-          bitness=64,
-          debug=True,
-          generational_cc=False,
-          clobber='',
-          concurrent_collector=False,
-          heap_poisoning=True,
-          gcstress=True,
-          continuousgc=True,
-      ))
+    'host-x86_64-opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      bitness=64,
+      debug=True,
+      generational_cc=False,
+      clobber='',
+      concurrent_collector=False,
+      heap_poisoning=True,
+      gcstress=True,
+      continuousgc=True,
+    ),
+  )
 
   yield api.test(
     'target_angler_try',
     api.buildbucket.try_build(
       project='art',
       builder='angler-armv7-ndebug',
-    )
+    ),
   )
 
   yield api.test(
-      'target-default_opts',
-      api.buildbucket.ci_build(project='art',),
-      api.properties(
-          debug=False,
-          device="angler-armv7",
-          build_only=False,
-          concurrent_collector=True,
-          gcstress=False,
-          generational_cc=True,
-          heap_poisoning=False,
-          on_virtual_machine=False,
-          bitness=32,
-          product="arm_krait",
-      ),
+    'target-default_opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      debug=False,
+      device="angler-armv7",
+      build_only=False,
+      concurrent_collector=True,
+      gcstress=False,
+      generational_cc=True,
+      heap_poisoning=False,
+      on_virtual_machine=False,
+      bitness=32,
+      product="arm_krait",
+    ),
   )
 
   yield api.test(
-      'target.arm.64',
-      api.buildbucket.ci_build(project='art',),
-      api.properties(
-          bitness=64,
-          concurrent_collector=True,
-          debug=True,
-          device="target.arm.64",
-          generational_cc=True,
-          product="armv8",
-          test_steps=[
-              {
-                  'name': 'test gtest',
-                  'cmd': ['art/tools/run-gtests.sh']
-              },
-              {
-                  'name':
-                      'test optimizing',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--optimizing'
-                  ]
-              },
-              {
-                  'name':
-                      'test optimizing all-isa-features',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--optimizing',
-                      '--run-test-option=--Xcompiler-option='
-                      '--instruction-set-variant=cortex-a35',
-                      '--run-test-option=--Xcompiler-option='
-                      '--instruction-set-features=runtime'
-                  ]
-              },
-              {
-                  'name':
-                      'test debuggable',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--optimizing', '--debuggable'
-                  ]
-              },
-              {
-                  'name':
-                      'test jit debuggable',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--jit', '--debuggable'
-                  ]
-              },
-              {
-                  'name':
-                      'test interpreter',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--interpreter'
-                  ]
-              },
-              {
-                  'name':
-                      'test baseline',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--baseline'
-                  ]
-              },
-              {
-                  'name':
-                      'test jit',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--jit'
-                  ]
-              },
-              {
-                  'name':
-                      'test jit-on-first-use',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--jit-on-first-use'
-                  ]
-              },
-              {
-                  'name':
-                      'test speed-profile',
-                  'cmd': [
-                      './art/test/testrunner/testrunner.py', '--target',
-                      '--verbose', '--debug', '--speed-profile'
-                  ]
-              },
-              {
-                  'name':
-                      'test libcore',
-                  'cmd': [
-                      'art/tools/run-libcore-tests.sh', '--mode=device',
-                      '--variant=X64', '--debug'
-                  ]
-              },
-              {
-                  'name':
-                      'test libjdwp jit',
-                  'cmd': [
-                      'art/tools/run-libjdwp-tests.sh', '--mode=device',
-                      '--variant=X64', '--debug'
-                  ]
-              },
-              {
-                  'name':
-                      'test libjdwp interpreter',
-                  'cmd': [
-                      'art/tools/run-libjdwp-tests.sh', '--mode=device',
-                      '--variant=X64', '--debug', '--no-jit'
-                  ]
-              },
+    'target.arm.64',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      bitness=64,
+      concurrent_collector=True,
+      debug=True,
+      device="target.arm.64",
+      generational_cc=True,
+      product="armv8",
+      test_steps=[
+        {'name': 'test gtest', 'cmd': ['art/tools/run-gtests.sh']},
+        {
+          'name': 'test optimizing',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--optimizing',
           ],
-      ),
+        },
+        {
+          'name': 'test optimizing all-isa-features',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--optimizing',
+            '--run-test-option=--Xcompiler-option='
+            '--instruction-set-variant=cortex-a35',
+            '--run-test-option=--Xcompiler-option='
+            '--instruction-set-features=runtime',
+          ],
+        },
+        {
+          'name': 'test debuggable',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--optimizing',
+            '--debuggable',
+          ],
+        },
+        {
+          'name': 'test jit debuggable',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--jit',
+            '--debuggable',
+          ],
+        },
+        {
+          'name': 'test interpreter',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--interpreter',
+          ],
+        },
+        {
+          'name': 'test baseline',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--baseline',
+          ],
+        },
+        {
+          'name': 'test jit',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--jit',
+          ],
+        },
+        {
+          'name': 'test jit-on-first-use',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--jit-on-first-use',
+          ],
+        },
+        {
+          'name': 'test speed-profile',
+          'cmd': [
+            './art/test/testrunner/testrunner.py',
+            '--target',
+            '--verbose',
+            '--debug',
+            '--speed-profile',
+          ],
+        },
+        {
+          'name': 'test libcore',
+          'cmd': [
+            'art/tools/run-libcore-tests.sh',
+            '--mode=device',
+            '--variant=X64',
+            '--debug',
+          ],
+        },
+        {
+          'name': 'test libjdwp jit',
+          'cmd': [
+            'art/tools/run-libjdwp-tests.sh',
+            '--mode=device',
+            '--variant=X64',
+            '--debug',
+          ],
+        },
+        {
+          'name': 'test libjdwp interpreter',
+          'cmd': [
+            'art/tools/run-libjdwp-tests.sh',
+            '--mode=device',
+            '--variant=X64',
+            '--debug',
+            '--no-jit',
+          ],
+        },
+      ],
+    ),
   )
 
   yield api.test(
-      'target-opts',
-      api.buildbucket.ci_build(project='art',),
-      api.properties(
-          debug=True,
-          device="fugu",
-          concurrent_collector=False,
-          gcstress=True,
-          continuousgc=True,
-          generational_cc=False,
-          heap_poisoning=True,
-          on_virtual_machine=True,
-          bitness=32,
-          product="silvermont",
-      ),
+    'target-opts',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      debug=True,
+      device="fugu",
+      concurrent_collector=False,
+      gcstress=True,
+      continuousgc=True,
+      generational_cc=False,
+      heap_poisoning=True,
+      on_virtual_machine=True,
+      bitness=32,
+      product="silvermont",
+    ),
   )
 
   yield api.test(
-      'target-build_only',
-      api.buildbucket.ci_build(project='art',),
-      api.properties(
-          device="angler-armv7",
-          build_only=True,
-          bitness=32,
-          product="arm_krait",
-      ),
+    'target-build_only',
+    api.buildbucket.ci_build(
+      project='art',
+    ),
+    api.properties(
+      device="angler-armv7",
+      build_only=True,
+      bitness=32,
+      product="arm_krait",
+    ),
   )
 
   yield api.test(
-      'target_angler_setup_failure',
-      api.buildbucket.ci_build(
-          project='art',
-          builder='angler-armv7-ndebug',
-      ), api.step_data('setup device', retcode=1), api.expect_status('FAILURE'),
-      api.properties(
-          bot_id='TestBot',
-          device='angler-armv7',
-          debug=False,
-          bitness=32,
-          product="arm_krait",
-      ))
-
-  yield api.test(
-      'target_angler_device_pre_run_cleanup_failure',
-      api.buildbucket.ci_build(
-          project='art',
-          builder='angler-armv7-ndebug',
-      ), api.step_data('device pre-run cleanup', retcode=1),
-      api.expect_status('FAILURE'),
-      api.properties(
-          bot_id='TestBot',
-          device='angler-armv7',
-          debug=False,
-          bitness=32,
-          product="arm_krait",
-      ))
-
-  yield api.test(
-      'art.superproject-ci',  # tests gitiles_commit path.
-      api.buildbucket.ci_build(experiments=['art.superproject']),
-      api.step_data(
-          "checkout.find super-project commit",
-          stdout=api.raw_io.output_text("42424242")),
-      api.properties(build_only=True),
+    'target_angler_setup_failure',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='angler-armv7-ndebug',
+    ),
+    api.step_data('setup device', retcode=1),
+    api.expect_status('FAILURE'),
+    api.properties(
+      bot_id='TestBot',
+      device='angler-armv7',
+      debug=False,
+      bitness=32,
+      product="arm_krait",
+    ),
   )
 
   yield api.test(
-      'art.superproject-ci-retry',  # tests gitiles_commit path.
-      api.buildbucket.ci_build(experiments=['art.superproject']),
-      api.step_data(
-          "checkout.find super-project commit",
-          stdout=api.raw_io.output_text("")),
-      api.step_data(
-          "checkout.find super-project commit (retry 1)",
-          stdout=api.raw_io.output_text("42424242")),
-      api.properties(build_only=True),
+    'target_angler_device_pre_run_cleanup_failure',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='angler-armv7-ndebug',
+    ),
+    api.step_data('device pre-run cleanup', retcode=1),
+    api.expect_status('FAILURE'),
+    api.properties(
+      bot_id='TestBot',
+      device='angler-armv7',
+      debug=False,
+      bitness=32,
+      product="arm_krait",
+    ),
   )
 
   yield api.test(
-      'art.superproject-ci-retry-2',  # tests gitiles_commit path.
-      api.buildbucket.ci_build(experiments=['art.superproject']),
-      api.step_data(
-          "checkout.find super-project commit",
-          stdout=api.raw_io.output_text("")),
-      api.step_data(
-          "checkout.find super-project commit (retry 1)",
-          stdout=api.raw_io.output_text("")),
-      api.step_data(
-          "checkout.find super-project commit (retry 2)",
-          stdout=api.raw_io.output_text("42424242")),
-      api.properties(build_only=True),
+    'art.superproject-ci',  # tests gitiles_commit path.
+    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.step_data(
+      "checkout.find super-project commit",
+      stdout=api.raw_io.output_text("42424242"),
+    ),
+    api.properties(build_only=True),
   )
 
   yield api.test(
-      'art.superproject-try',  # tests gerrit_changes path.
-      api.buildbucket.try_build(experiments=['art.superproject']),
-      api.properties(build_only=True),
+    'art.superproject-ci-retry',  # tests gitiles_commit path.
+    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.step_data(
+      "checkout.find super-project commit", stdout=api.raw_io.output_text("")
+    ),
+    api.step_data(
+      "checkout.find super-project commit (retry 1)",
+      stdout=api.raw_io.output_text("42424242"),
+    ),
+    api.properties(build_only=True),
   )
 
   yield api.test(
-      'art.superproject-git2repo',  # repo checkout after git checkout.
-      api.buildbucket.ci_build(experiments=[]),
-      api.path.exists(api.path.cache_dir.joinpath("art/.git")),
-      api.properties(build_only=True),
+    'art.superproject-ci-retry-2',  # tests gitiles_commit path.
+    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.step_data(
+      "checkout.find super-project commit", stdout=api.raw_io.output_text("")
+    ),
+    api.step_data(
+      "checkout.find super-project commit (retry 1)",
+      stdout=api.raw_io.output_text(""),
+    ),
+    api.step_data(
+      "checkout.find super-project commit (retry 2)",
+      stdout=api.raw_io.output_text("42424242"),
+    ),
+    api.properties(build_only=True),
   )
 
   yield api.test(
-      'art.superproject-repo2git',  # git checkout after repo checkout.
-      api.buildbucket.ci_build(experiments=['art.superproject']),
-      api.path.exists(api.path.cache_dir.joinpath("art/.repo")),
-      api.step_data(
-          "checkout.find super-project commit",
-          stdout=api.raw_io.output_text("42424242")),
-      api.properties(build_only=True),
+    'art.superproject-try',  # tests gerrit_changes path.
+    api.buildbucket.try_build(experiments=['art.superproject']),
+    api.properties(build_only=True),
   )
 
   yield api.test(
-      'art.superproject-incremental',  # repeated git checkout.
-      api.buildbucket.ci_build(experiments=['art.superproject']),
-      api.path.exists(api.path.cache_dir.joinpath("art/.git")),
-      api.step_data(
-          "checkout.find super-project commit",
-          stdout=api.raw_io.output_text("42424242")),
-      api.properties(build_only=True),
+    'art.superproject-git2repo',  # repo checkout after git checkout.
+    api.buildbucket.ci_build(experiments=[]),
+    api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+    api.properties(build_only=True),
+  )
+
+  yield api.test(
+    'art.superproject-repo2git',  # git checkout after repo checkout.
+    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.path.exists(api.path.cache_dir.joinpath("art/.repo")),
+    api.step_data(
+      "checkout.find super-project commit",
+      stdout=api.raw_io.output_text("42424242"),
+    ),
+    api.properties(build_only=True),
+  )
+
+  yield api.test(
+    'art.superproject-incremental',  # repeated git checkout.
+    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+    api.step_data(
+      "checkout.find super-project commit",
+      stdout=api.raw_io.output_text("42424242"),
+    ),
+    api.properties(build_only=True),
   )

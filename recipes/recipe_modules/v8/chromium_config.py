@@ -11,7 +11,7 @@ from RECIPE_MODULES.build.chromium import CONFIG_CTX
 def v8(c):
   c.project_generator.tool = 'mb'
   c.project_generator.isolate_map_paths = [
-      'infra/mb/gn_isolate_map.pyl',
+    'infra/mb/gn_isolate_map.pyl',
   ]
   c.build_config_fs = 'build'
 
@@ -25,6 +25,7 @@ def v8(c):
 
   # Opt out of using gyp environment variables.
   c.use_gyp_env = False
+
 
 @CONFIG_CTX(includes=['v8'])
 def arm_hard_float(c):

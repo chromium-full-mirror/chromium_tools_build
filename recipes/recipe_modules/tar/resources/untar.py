@@ -35,9 +35,7 @@ def untar_with_subprocess(tar_file, output, quiet):
     options += 'v'
   options += 'f'
   args += [options, tar_file]
-  return subprocess.call(
-      args=args,
-      cwd=output)
+  return subprocess.call(args=args, cwd=output)
 
 
 def untar_with_python(tar_file, output):

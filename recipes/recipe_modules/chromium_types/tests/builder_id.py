@@ -28,6 +28,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

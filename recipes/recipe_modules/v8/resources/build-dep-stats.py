@@ -22,15 +22,24 @@ import sys
 
 def parse_args():
   parser = argparse.ArgumentParser()
-  parser.add_argument('-C', '--build-dir', type=str, required=True,
-                      help='ninja build directory')
-  parser.add_argument('-o', '--output', type=str,
-                      help='Output file (default: stdout)')
-  parser.add_argument('-x', '--exclude', type=str, action='append',
-                      help='Add an exclude pattern (regex)')
-  parser.add_argument('-v', '--verbose', action='store_true',
-                      help='Print much more information')
+  parser.add_argument(
+    '-C', '--build-dir', type=str, required=True, help='ninja build directory'
+  )
+  parser.add_argument(
+    '-o', '--output', type=str, help='Output file (default: stdout)'
+  )
+  parser.add_argument(
+    '-x',
+    '--exclude',
+    type=str,
+    action='append',
+    help='Add an exclude pattern (regex)',
+  )
+  parser.add_argument(
+    '-v', '--verbose', action='store_true', help='Print much more information'
+  )
   return parser.parse_args()
+
 
 args = parse_args()
 
@@ -72,8 +81,7 @@ def parse_ninja_deps(ninja_deps):
     if line[0] == ' ':
       # New dependency
       if len(line) < 5 or line[0:4] != '    ' or line[5] == ' ':
-        sys.exit('Lines must have no indentation or exactly four ' +
-                  'spaces.')
+        sys.exit('Lines must have no indentation or exactly four ' + 'spaces.')
       dep = g.get_or_create_node(line[5:])
       if current_target is None:
         sys.exit('Missing new target before dep')
@@ -109,15 +117,15 @@ def get_stats(nodes):
   top500_deps = [len(n.edges) for n in sorted_nodes[:500]]
 
   return {
-      'num_files':          len(nodes),
-      'avg_deps':           numpy.average(deps),
-      'median_deps':        numpy.median(deps),
-      'top100_avg_deps':    numpy.average(top100_deps),
-      'top100_median_deps': numpy.median(top100_deps),
-      'top200_avg_deps':    numpy.average(top200_deps),
-      'top200_median_deps': numpy.median(top200_deps),
-      'top500_avg_deps':    numpy.average(top500_deps),
-      'top500_median_deps': numpy.median(top500_deps),
+    'num_files': len(nodes),
+    'avg_deps': numpy.average(deps),
+    'median_deps': numpy.median(deps),
+    'top100_avg_deps': numpy.average(top100_deps),
+    'top100_median_deps': numpy.median(top100_deps),
+    'top200_avg_deps': numpy.average(top200_deps),
+    'top200_median_deps': numpy.median(top200_deps),
+    'top500_avg_deps': numpy.average(top500_deps),
+    'top500_median_deps': numpy.median(top500_deps),
   }
 
 

@@ -25,7 +25,6 @@ from recipe_engine import recipe_api
 
 
 class BuilderGroupApi(recipe_api.RecipeApi):
-
   @property
   def for_current(self):
     """Get the builder group for the currently running builder."""

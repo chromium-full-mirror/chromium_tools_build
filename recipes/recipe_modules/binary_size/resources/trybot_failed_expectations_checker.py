@@ -27,33 +27,38 @@ def _CheckExpectationsDir(dir_path):
       if fail_msg:
         failed_expectations.append(fail_msg)
   return {
-      'success': len(failed_expectations) == 0,
-      'failed_messages': failed_expectations,
+    'success': len(failed_expectations) == 0,
+    'failed_messages': failed_expectations,
   }
 
 
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--clear-expectations',
-      action='store_true',
-      help='Delete expectations files so they dont clober a new build.')
+    '--clear-expectations',
+    action='store_true',
+    help='Delete expectations files so they dont clober a new build.',
+  )
   parser.add_argument(
-      '--check-expectations',
-      action='store_true',
-      help='Check for the existance of failed expecation files after a build.')
+    '--check-expectations',
+    action='store_true',
+    help='Check for the existance of failed expecation files after a build.',
+  )
   parser.add_argument(
-      '--output-directory', required=True, help='E.g. out/Release')
+    '--output-directory', required=True, help='E.g. out/Release'
+  )
   parser.add_argument(
-      '--results-path', help='Output path for the trybot result .json file.')
+    '--results-path', help='Output path for the trybot result .json file.'
+  )
   args = parser.parse_args()
 
   expectations_dir = os.path.join(args.output_directory, 'failed_expectations')
 
   if args.check_expectations:
     if not args.results_path:
-      parser.error('--results-path is required when passing '
-                   '--check-expectations')
+      parser.error(
+        '--results-path is required when passing --check-expectations'
+      )
     result = _CheckExpectationsDir(expectations_dir)
     with open(args.results_path, 'w') as f:
       json.dump(result, f)

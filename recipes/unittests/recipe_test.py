@@ -18,7 +18,7 @@ VERBOSE_ARG = ['--verbose'] if VERBOSE else []
 
 ALLOWED_ARGS = 1 if VERBOSE else 0
 
-if len(sys.argv) > ALLOWED_ARGS+1:
+if len(sys.argv) > ALLOWED_ARGS + 1:
   print('It looks like you\'re manually invoking this test script. Please note')
   print('that this is just a wrapper to enable `git cl presubmit` testing.')
   print()
@@ -29,9 +29,14 @@ MODULE_ALLOWLIST = ['attr']
 
 
 def recipes_py(*args):
-  subprocess.check_call([
+  subprocess.check_call(
+    [
       os.path.join(ROOT_DIR, 'recipes.py'),
-  ] + VERBOSE_ARG + list(args))
+    ]
+    + VERBOSE_ARG
+    + list(args)
+  )
+
 
 recipes_py('test', 'run')
 

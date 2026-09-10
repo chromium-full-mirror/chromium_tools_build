@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Functions specific to bots, shared by several scripts.
-"""
+"""Functions specific to bots, shared by several scripts."""
 
 from __future__ import absolute_import
 from __future__ import print_function
@@ -40,8 +39,8 @@ class _NotAnyWorkingCopy(Exception):
 def _GitHash(wc_dir):
   """Finds the current commit hash of the wc_dir."""
   retval, text = chromium_utils.GetStatusOutput(
-      [_GitExe(), 'rev-parse', 'HEAD'],
-      cwd=wc_dir,
+    [_GitExe(), 'rev-parse', 'HEAD'],
+    cwd=wc_dir,
   )
   if retval or 'fatal: Not a git repository' in text:
     raise _NotGitWorkingCopy(wc_dir)
@@ -119,12 +118,12 @@ def _GSUtilGetMetadataField(name, provider_prefix=None):
 
   # See if it's innately supported by Google Storage
   if name in (
-      'Cache-Control',
-      'Content-Disposition',
-      'Content-Encoding',
-      'Content-Language',
-      'Content-MD5',
-      'Content-Type',
+    'Cache-Control',
+    'Content-Disposition',
+    'Content-Encoding',
+    'Content-Language',
+    'Content-MD5',
+    'Content-Type',
   ):
     return name
 
@@ -135,15 +134,15 @@ def _GSUtilGetMetadataField(name, provider_prefix=None):
 
 
 def GSUtilCopy(
-    source,
-    dest,
-    mimetype=None,
-    gs_acl=None,
-    cache_control=None,
-    metadata=None,
-    override_gsutil=None,
-    add_quiet_flag=False,
-    compress=False,
+  source,
+  dest,
+  mimetype=None,
+  gs_acl=None,
+  cache_control=None,
+  metadata=None,
+  override_gsutil=None,
+  add_quiet_flag=False,
+  compress=False,
 ):
   """Copy a file to Google Storage.
 
@@ -199,16 +198,16 @@ def GSUtilCopy(
 
 
 def GSUtilCopyFile(
-    filename,
-    gs_base,
-    subdir=None,
-    mimetype=None,
-    gs_acl=None,
-    cache_control=None,
-    metadata=None,
-    override_gsutil=None,
-    dest_filename=None,
-    add_quiet_flag=False,
+  filename,
+  gs_base,
+  subdir=None,
+  mimetype=None,
+  gs_acl=None,
+  cache_control=None,
+  metadata=None,
+  override_gsutil=None,
+  dest_filename=None,
+  add_quiet_flag=False,
 ):
   """Copies a file to Google Storage.
 
@@ -247,14 +246,14 @@ def GSUtilCopyFile(
     dest_filename = os.path.basename(filename)
   dest = '/'.join([dest, dest_filename])
   return GSUtilCopy(
-      source,
-      dest,
-      mimetype,
-      gs_acl,
-      cache_control,
-      metadata=metadata,
-      override_gsutil=override_gsutil,
-      add_quiet_flag=add_quiet_flag,
+    source,
+    dest,
+    mimetype,
+    gs_acl,
+    cache_control,
+    metadata=metadata,
+    override_gsutil=override_gsutil,
+    add_quiet_flag=add_quiet_flag,
   )
 
 
@@ -316,13 +315,13 @@ def _RemoveJumpListFiles():
   This does nothing if called on a non-Windows platform."""
   if chromium_utils.IsWindows():
     custom_destination_path = os.path.join(
-        os.environ['USERPROFILE'],
-        'AppData',
-        'Roaming',
-        'Microsoft',
-        'Windows',
-        'Recent',
-        'CustomDestinations',
+      os.environ['USERPROFILE'],
+      'AppData',
+      'Roaming',
+      'Microsoft',
+      'Windows',
+      'Recent',
+      'CustomDestinations',
     )
     _LogAndRemoveFiles(custom_destination_path, '.+')
 
@@ -350,12 +349,13 @@ def RemoveChromeTemporaryFiles():
     for i in ('Chromium', 'Google Chrome'):
       # Remove dumps.
       crash_path = '%s/Library/Application Support/%s/Crash Reports' % (
-          os.environ['HOME'], i
+        os.environ['HOME'],
+        i,
       )
       _LogAndRemoveFiles(crash_path, r'^.+\.dmp$')
   else:
     raise NotImplementedError(
-        'Platform "%s" is not currently supported.' % sys.platform
+      'Platform "%s" is not currently supported.' % sys.platform
     )
 
 
@@ -372,10 +372,10 @@ def AddArgs(parser):
   """
   group = parser.add_argument_group(title='Common `bot_utils.py` Options')
   group.add_argument(
-      '--bot-utils-gsutil-py-path',
-      metavar='PATH',
-      help='The path to the `gsutil.py` command to use for Google Storage '
-      'operations. This file lives in the <depot_tools> repository.'
+    '--bot-utils-gsutil-py-path',
+    metavar='PATH',
+    help='The path to the `gsutil.py` command to use for Google Storage '
+    'operations. This file lives in the <depot_tools> repository.',
   )
 
   return _AddArgsCallback

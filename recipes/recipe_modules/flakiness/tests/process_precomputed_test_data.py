@@ -22,18 +22,21 @@ class DEPS(RecipeScriptApi):
 
 
 def RunSteps(api: DEPS):
-  test_data = [{
+  test_data = [
+    {
       'test_id': 'ninja://some/test:module/TestSuite.test_a',
       'variant_hash': 'test_a',
-  }]
+    }
+  ]
   tests = api.flakiness.process_precomputed_test_data(test_data)
   api.assertions.assertEqual(len(tests), 1)
-  api.assertions.assertTrue(('ninja://some/test:module/TestSuite.test_a',
-                             'test_a') in tests)
+  api.assertions.assertTrue(
+    ('ninja://some/test:module/TestSuite.test_a', 'test_a') in tests
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

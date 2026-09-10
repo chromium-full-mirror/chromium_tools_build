@@ -13,14 +13,18 @@ from PB.recipe_engine import result as result_pb2
 
 from .cl_manager import CLManager, PatchPriorityCLManager
 from .commons import discard_local_changes
-from .deps_handlers import (TrustedRollHandler, UntrustedRollHandler,
-                            get_dep_updates)
+from .deps_handlers import (
+  TrustedRollHandler,
+  UntrustedRollHandler,
+  get_dep_updates,
+)
 from .chrome_handler import CfTPinRollHandler
 from .handler_base import DummyRollHandler
 from .test262_handler import Test262ImportHandler
 from .script_handlers import get_rollers
 
 BASE_URL = 'https://chromium.googlesource.com/'
+
 
 class V8AutoRoller(recipe_api.RecipeApi):
   """General purpose module for rolling dependencies in Chromium satelite
@@ -31,17 +35,16 @@ class V8AutoRoller(recipe_api.RecipeApi):
   external sources of truth.
   """
 
-
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.summary = []
     self.failures = []
 
   def setup_target(
-      self,
-      solution_name,
-      target_url,
-      requires_chromium_checkout=False,
+    self,
+    solution_name,
+    target_url,
+    requires_chromium_checkout=False,
   ):
     with self.m.step.nest('Setup'):
       gclient_config = self.m.gclient.make_config()
@@ -62,7 +65,8 @@ class V8AutoRoller(recipe_api.RecipeApi):
       # solution defined in gclient (autoroller_config -> target_config ->
       # solution_name), and might be something else, e.g. devtools-frontend.
       update_result = self.m.v8.checkout(
-          ignore_input_commit=True, set_output_commit=False)
+        ignore_input_commit=True, set_output_commit=False
+      )
 
       # Some builders require a chromium checkout. If that's not required,
       # rollers usually need chromium's DEPS file. We store it at the same
@@ -74,19 +78,21 @@ class V8AutoRoller(recipe_api.RecipeApi):
 
   def _download_chromium_deps_file(self):
     revision = self.m.gerrit.get_gerrit_branch(
-        'https://chromium-review.googlesource.com/',
-        'chromium/src',
-        'refs/heads/main',
-        step_test_data=lambda: self.m.json.test_api.output({
-            'ref': 'refs/heads/main',
-            'revision': 'deadbeef',
-        }),
+      'https://chromium-review.googlesource.com/',
+      'chromium/src',
+      'refs/heads/main',
+      step_test_data=lambda: self.m.json.test_api.output(
+        {
+          'ref': 'refs/heads/main',
+          'revision': 'deadbeef',
+        }
+      ),
     )
     deps = self.m.gitiles.download_file(
-        'https://chromium.googlesource.com/chromium/src',
-        'DEPS',
-        revision,
-        step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
+      'https://chromium.googlesource.com/chromium/src',
+      'DEPS',
+      revision,
+      step_test_data=lambda: self.m.gitiles.test_api.make_encoded_file(''),
     )
     chromium_path = self.m.v8.checkout_root / 'src'
     self.m.file.ensure_directory('ensure chromium cache dir', chromium_path)
@@ -94,11 +100,9 @@ class V8AutoRoller(recipe_api.RecipeApi):
     chromium_deps_file = chromium_path / 'DEPS'
     self.m.file.write_text('Store src/DEPS', chromium_deps_file, deps)
 
-  def build_cl_manager(self,
-                       source_dir,
-                       bugs=None,
-                       patched_cl_has_priority=False,
-                       cc=None):
+  def build_cl_manager(
+    self, source_dir, bugs=None, patched_cl_has_priority=False, cc=None
+  ):
     cls = PatchPriorityCLManager if patched_cl_has_priority else CLManager
     return cls(self.m, source_dir, bugs, cc=cc)
 
@@ -108,20 +112,24 @@ class V8AutoRoller(recipe_api.RecipeApi):
     if self.summary:
       result.summary_markdown = 'Updated ' + ', '.join(self.summary) + '.'
     if self.failures:
-      result.summary_markdown += 'Failed to update ' + ', '.join(
-        self.failures) + '.'
+      result.summary_markdown += (
+        'Failed to update ' + ', '.join(self.failures) + '.'
+      )
     return result
 
   def regular_roll(self, autoroller_config, cl_manager, source_dir):
     with self.m.step.nest('Find updated deps') as step_presentation:
       discard_local_changes(self.m, source_dir)
       trusted_updates, untrusted_updates = get_dep_updates(
-          self.m, step_presentation, autoroller_config)
+        self.m, step_presentation, autoroller_config
+      )
 
-    TrustedRollHandler(self, source_dir, autoroller_config,
-                       trusted_updates).roll(cl_manager)
-    UntrustedRollHandler(self, source_dir, autoroller_config,
-                         untrusted_updates).roll(cl_manager)
+    TrustedRollHandler(
+      self, source_dir, autoroller_config, trusted_updates
+    ).roll(cl_manager)
+    UntrustedRollHandler(
+      self, source_dir, autoroller_config, untrusted_updates
+    ).roll(cl_manager)
 
   def cft_pin_roll(self, autoroller_config, cl_manager, source_dir):
     CfTPinRollHandler(self, source_dir, autoroller_config).roll(cl_manager)
@@ -129,13 +137,12 @@ class V8AutoRoller(recipe_api.RecipeApi):
   def test262_roll(self, autoroller_config, cl_manager, source_dir):
     Test262ImportHandler(self, source_dir, autoroller_config).roll(cl_manager)
 
-  def scripted_rolls(self,
-                     autoroller_config,
-                     cl_manager,
-                     source_dir,
-                     scripted_keys=None):
-    scripted_rollers = get_rollers(self, source_dir, autoroller_config,
-                                   scripted_keys or [])
+  def scripted_rolls(
+    self, autoroller_config, cl_manager, source_dir, scripted_keys=None
+  ):
+    scripted_rollers = get_rollers(
+      self, source_dir, autoroller_config, scripted_keys or []
+    )
     if scripted_rollers:
       with self.m.step.nest('Scripted rolls'):
         for roller in scripted_rollers:
@@ -145,13 +152,16 @@ class V8AutoRoller(recipe_api.RecipeApi):
   def service_account(self):
     output_prefix = "Logged in as "
     step_result = self.m.step(
-        'get login info', ['luci-auth', 'info'],
-        infra_step=True,
-        stdout=self.m.raw_io.output_text(),
-        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-            f'{output_prefix}account@example.com.', stream='stdout'))
+      'get login info',
+      ['luci-auth', 'info'],
+      infra_step=True,
+      stdout=self.m.raw_io.output_text(),
+      step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+        f'{output_prefix}account@example.com.', stream='stdout'
+      ),
+    )
     first_line = step_result.stdout.splitlines()[0]
-    extracted_email = first_line[len(output_prefix):-1]
+    extracted_email = first_line[len(output_prefix) : -1]
     return extracted_email
 
   def dummy_roll(self, cl_manager, source_dir):

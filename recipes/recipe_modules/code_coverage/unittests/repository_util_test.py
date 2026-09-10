@@ -17,14 +17,14 @@ import mock
 from pyfakefs import fake_filesystem_unittest
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0,
-                os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources')))
+sys.path.insert(
+  0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
+)
 
 import repository_util
 
 
 class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
-
   def setUp(self):
     super().setUp()
     self.setUpPyfakefs()
@@ -65,11 +65,12 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
     mock_subprocess.side_effect = mock_subprocess_side_effect
 
     file_revisions = repository_util._GetFileRevisions(
-        '/src', 'DEPS', ['//file1.cc', '//third_party/repo/file2.cc'])
+      '/src', 'DEPS', ['//file1.cc', '//third_party/repo/file2.cc']
+    )
 
     expected_file_revisions = {
-        '//file1.cc': ('file1hash', 12345),
-        '//third_party/repo/file2.cc': ('file2hash', 12345)
+      '//file1.cc': ('file1hash', 12345),
+      '//third_party/repo/file2.cc': ('file2hash', 12345),
     }
     self.assertDictEqual(expected_file_revisions, file_revisions)
 
@@ -137,20 +138,24 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
 
   @mock.patch.object(repository_util, '_GetFileRevisions', autospec=True)
   def test_add_git_revisions_to_coverage_files_metadata(
-      self, mock_get_file_revisions):
+    self, mock_get_file_revisions
+  ):
     mock_get_file_revisions.return_value = {
-        '//dir1/file1.cc': ('hash1', 1234),
-        '//dir2/file2.cc': ('hash2', 5678),
+      '//dir1/file1.cc': ('hash1', 1234),
+      '//dir2/file2.cc': ('hash2', 5678),
     }
 
     coverage_files_data = [{'path': '//dir1/file1.cc'}]
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
-        coverage_files_data, '/src_path', 'DEPS')
-    expected_coverage_files_data = [{
+      coverage_files_data, '/src_path', 'DEPS'
+    )
+    expected_coverage_files_data = [
+      {
         'path': '//dir1/file1.cc',
         'revision': 'hash1',
         'timestamp': 1234,
-    }]
+      }
+    ]
     self.assertListEqual(expected_coverage_files_data, coverage_files_data)
 
   @mock.patch('repository_util.subprocess.check_output', autospec=True)
@@ -158,12 +163,21 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
     reference_commit = 'hash'
     src_path = '//chromium/src'
     file_path = 'base/myfile.cc'
-    diff_output = '\n'.join([
+    diff_output = '\n'.join(
+      [
         'diff --git a/newfile b/newfile',
-        'index cdf28dbec898..a92d664bc20a 100644', '--- a/newfile',
-        '+++ b/newfile', '@@ -1,4 +1,3 @@', '-line 0', ' line 1',
-        '-line 3 modified', '-line 4', '+line 2', '+line 3'
-    ])
+        'index cdf28dbec898..a92d664bc20a 100644',
+        '--- a/newfile',
+        '+++ b/newfile',
+        '@@ -1,4 +1,3 @@',
+        '-line 0',
+        ' line 1',
+        '-line 3 modified',
+        '-line 4',
+        '+line 2',
+        '+line 3',
+      ]
+    )
     head_content = '\n'.join(['line 0', 'line 1', 'line 3 modified', 'line 4'])
     reference_commit_content = '\n'.join(['line 1', 'line 2', 'line 3'])
 
@@ -187,61 +201,83 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
 
     mock_subprocess.side_effect = mock_subprocess_side_effect
     actual_unmodified_lines = repository_util.GetUnmodifiedLinesSinceCommit(
-        src_path, file_path, reference_commit)
+      src_path, file_path, reference_commit
+    )
     self.assertListEqual([2], actual_unmodified_lines)
 
 
 @mock.patch('subprocess.check_output')
 class RevisionCacheTest(fake_filesystem_unittest.TestCase):
-
   def setUp(self):
     super().setUp()
     self.setUpPyfakefs()
-    self.cache_path = os.path.join(tempfile.gettempdir(), '.cov-rev-cache',
-                                   '123abc.csv')
+    self.cache_path = os.path.join(
+      tempfile.gettempdir(), '.cov-rev-cache', '123abc.csv'
+    )
 
   def test_absent(self, mock_check_output):
     mock_check_output.side_effect = ['123abc:1111\n', '789def:2222\n']
     cache = repository_util.RevisionCache(self.cache_path)
 
     cache.TryLoad()
-    self.assertEqual(('//file1.cc', '123abc', 1111),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//', '//file1.cc')))
-    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//third_party/fake-submodule/',
-                          '//third_party/fake-submodule/file2.cc')))
+    self.assertEqual(
+      ('//file1.cc', '123abc', 1111),
+      cache.RetrieveRevision(('/path/to/src', '//', '//file1.cc')),
+    )
+    self.assertEqual(
+      ('//third_party/fake-submodule/file2.cc', '789def', 2222),
+      cache.RetrieveRevision(
+        (
+          '/path/to/src',
+          '//third_party/fake-submodule/',
+          '//third_party/fake-submodule/file2.cc',
+        )
+      ),
+    )
 
     cache.Flush()
-    self.verify_cache({
+    self.verify_cache(
+      {
         '//,file1.cc,123abc,1111\n',
         '//third_party/fake-submodule/,file2.cc,789def,2222\n',
-    })
+      }
+    )
 
   def test_present(self, mock_check_output):
     self.fs.create_file(
-        self.cache_path,
-        contents=('//,file1.cc,123abc,1111\n'
-                  '//third_party/fake-submodule/,file2.cc,789def,2222\n'))
+      self.cache_path,
+      contents=(
+        '//,file1.cc,123abc,1111\n'
+        '//third_party/fake-submodule/,file2.cc,789def,2222\n'
+      ),
+    )
     mock_check_output.side_effect = subprocess.SubprocessError
     cache = repository_util.RevisionCache(self.cache_path)
 
     cache.TryLoad()
     self.assertTrue(os.path.exists(self.cache_path))
-    self.assertEqual(('//file1.cc', '123abc', 1111),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//', '//file1.cc')))
-    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//third_party/fake-submodule/',
-                          '//third_party/fake-submodule/file2.cc')))
+    self.assertEqual(
+      ('//file1.cc', '123abc', 1111),
+      cache.RetrieveRevision(('/path/to/src', '//', '//file1.cc')),
+    )
+    self.assertEqual(
+      ('//third_party/fake-submodule/file2.cc', '789def', 2222),
+      cache.RetrieveRevision(
+        (
+          '/path/to/src',
+          '//third_party/fake-submodule/',
+          '//third_party/fake-submodule/file2.cc',
+        )
+      ),
+    )
 
     cache.Flush()
-    self.verify_cache({
+    self.verify_cache(
+      {
         '//,file1.cc,123abc,1111\n',
         '//third_party/fake-submodule/,file2.cc,789def,2222\n',
-    })
+      }
+    )
 
   def test_corrupt(self, mock_check_output):
     # Simulate an incomplete write
@@ -251,25 +287,34 @@ class RevisionCacheTest(fake_filesystem_unittest.TestCase):
 
     cache.TryLoad()
     self.assertFalse(os.path.exists(self.cache_path))
-    self.assertEqual(('//file1.cc', '123abc', 1111),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//', '//file1.cc')))
-    self.assertEqual(('//third_party/fake-submodule/file2.cc', '789def', 2222),
-                     cache.RetrieveRevision(
-                         ('/path/to/src', '//third_party/fake-submodule/',
-                          '//third_party/fake-submodule/file2.cc')))
+    self.assertEqual(
+      ('//file1.cc', '123abc', 1111),
+      cache.RetrieveRevision(('/path/to/src', '//', '//file1.cc')),
+    )
+    self.assertEqual(
+      ('//third_party/fake-submodule/file2.cc', '789def', 2222),
+      cache.RetrieveRevision(
+        (
+          '/path/to/src',
+          '//third_party/fake-submodule/',
+          '//third_party/fake-submodule/file2.cc',
+        )
+      ),
+    )
 
     cache.Flush()
-    self.verify_cache({
+    self.verify_cache(
+      {
         '//,file1.cc,123abc,1111\n',
         '//third_party/fake-submodule/,file2.cc,789def,2222\n',
-    })
+      }
+    )
 
   @mock.patch('subprocess.Popen')
   def test_consistency_batch_vs_individual(self, mock_popen, mock_check_output):
     files_data = [
-        ('//file1.cc', 'hash1', 12345),
-        ('//dir/file2.cc', 'hash2', 67890),
+      ('//file1.cc', 'hash1', 12345),
+      ('//dir/file2.cc', 'hash2', 67890),
     ]
 
     # 1. Run BatchRetrieve
@@ -281,10 +326,10 @@ class RevisionCacheTest(fake_filesystem_unittest.TestCase):
 
     # Simulating git log output for batch: newest first
     log_output = [
-        'COMMIT hash2 67890\n',
-        'dir/file2.cc\n',
-        'COMMIT hash1 12345\n',
-        'file1.cc\n',
+      'COMMIT hash2 67890\n',
+      'dir/file2.cc\n',
+      'COMMIT hash1 12345\n',
+      'file1.cc\n',
     ]
     mock_process.stdout = iter(log_output)
     mock_process.wait.return_value = 0
@@ -314,8 +359,8 @@ class RevisionCacheTest(fake_filesystem_unittest.TestCase):
 
     # Also assert they match the expected data
     expected_entries = {
-        ('//', 'file1.cc'): ('hash1', 12345),
-        ('//', 'dir/file2.cc'): ('hash2', 67890),
+      ('//', 'file1.cc'): ('hash1', 12345),
+      ('//', 'dir/file2.cc'): ('hash2', 67890),
     }
     self.assertDictEqual(expected_entries, cache_batch._entries)
 
@@ -326,61 +371,64 @@ class RevisionCacheTest(fake_filesystem_unittest.TestCase):
 
 
 class ParseGitLogStreamTest(unittest.TestCase):
-
   def test_happy_path(self):
     log_output = [
-        'COMMIT hash1 12345\n',
-        'file1.cc\n',
-        'file2.cc\n',
-        'COMMIT hash2 67890\n',
-        'file3.cc\n',
+      'COMMIT hash1 12345\n',
+      'file1.cc\n',
+      'file2.cc\n',
+      'COMMIT hash2 67890\n',
+      'file3.cc\n',
     ]
     expected = [
-        ('hash1', 12345, 'file1.cc'),
-        ('hash1', 12345, 'file2.cc'),
-        ('hash2', 67890, 'file3.cc'),
+      ('hash1', 12345, 'file1.cc'),
+      ('hash1', 12345, 'file2.cc'),
+      ('hash2', 67890, 'file3.cc'),
     ]
     self.assertEqual(
-        list(repository_util._ParseGitLogStream(log_output)), expected)
+      list(repository_util._ParseGitLogStream(log_output)), expected
+    )
 
   def test_empty_lines_ignored(self):
     log_output = [
-        '\n',
-        'COMMIT hash1 12345\n',
-        '\n',
-        'file1.cc\n',
-        '\n',
+      '\n',
+      'COMMIT hash1 12345\n',
+      '\n',
+      'file1.cc\n',
+      '\n',
     ]
     expected = [
-        ('hash1', 12345, 'file1.cc'),
+      ('hash1', 12345, 'file1.cc'),
     ]
     self.assertEqual(
-        list(repository_util._ParseGitLogStream(log_output)), expected)
+      list(repository_util._ParseGitLogStream(log_output)), expected
+    )
 
   def test_malformed_commit_skipped(self):
     log_output = [
-        'COMMIT hash1\n',  # Malformed, missing timestamp
-        'file1.cc\n',
-        'COMMIT hash2 67890\n',
-        'file2.cc\n',
+      'COMMIT hash1\n',  # Malformed, missing timestamp
+      'file1.cc\n',
+      'COMMIT hash2 67890\n',
+      'file2.cc\n',
     ]
     expected = [
-        ('hash2', 67890, 'file2.cc'),
+      ('hash2', 67890, 'file2.cc'),
     ]
     self.assertEqual(
-        list(repository_util._ParseGitLogStream(log_output)), expected)
+      list(repository_util._ParseGitLogStream(log_output)), expected
+    )
 
   def test_file_before_commit_skipped(self):
     log_output = [
-        'file1.cc\n',  # Before any COMMIT
-        'COMMIT hash1 12345\n',
-        'file2.cc\n',
+      'file1.cc\n',  # Before any COMMIT
+      'COMMIT hash1 12345\n',
+      'file2.cc\n',
     ]
     expected = [
-        ('hash1', 12345, 'file2.cc'),
+      ('hash1', 12345, 'file2.cc'),
     ]
     self.assertEqual(
-        list(repository_util._ParseGitLogStream(log_output)), expected)
+      list(repository_util._ParseGitLogStream(log_output)), expected
+    )
 
 
 if __name__ == '__main__':

@@ -12,7 +12,9 @@ from recipe_engine import recipe_api
 from recipe_engine import step_data
 from recipe_engine.config_types import Path
 
-from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_compile_instruction
+from RECIPE_MODULES.build.chromium_utr.instruction import (
+  get_utr_compile_instruction,
+)
 
 # GCS bucket for Siso reports.
 _GS_BUCKET = 'chrome-build-logs'
@@ -93,42 +95,44 @@ class SisoApi(recipe_api.RecipeApi):
     yield
     self._disabled = orig
 
-  def run_ninja(self,
-                source_dir: Path,
-                ninja_command,
-                *,
-                ninja_env=None,
-                name='compile',
-                siso_args=None,
-                post_step_func=None,
-                skip_log_upload=False,
-                resource_usage_output_file=None,
-                ninja_invocation_id=None,
-                include_utr_instruction=False,
-                builder_id=None,
-                **kwargs):
+  def run_ninja(
+    self,
+    source_dir: Path,
+    ninja_command,
+    *,
+    ninja_env=None,
+    name='compile',
+    siso_args=None,
+    post_step_func=None,
+    skip_log_upload=False,
+    resource_usage_output_file=None,
+    ninja_invocation_id=None,
+    include_utr_instruction=False,
+    builder_id=None,
+    **kwargs,
+  ):
     """Run the ninja command with siso.
 
-        Args:
-          ninja_command: Command used for build.
-                     e.g. ['ninja', '-C', 'out/Release'],
-          ninja_env: Environment for ninja.
-          name: Name of compile step.
-          siso_args: siso arguments.
-          post_step_func: a function that runs on the step result.
-          skip_log_upload: When true skip log.
-          resource_usage_output_file: File which if provided will
-            record the resource usage stats related to build step.
-          ninja_invocation_id: ID of the build invocation.
-          include_utr_instruction: Whether or not to include UTR reproduction
-            instructions
-          builder_id: ID for the builder compiling the targets.
+    Args:
+      ninja_command: Command used for build.
+                 e.g. ['ninja', '-C', 'out/Release'],
+      ninja_env: Environment for ninja.
+      name: Name of compile step.
+      siso_args: siso arguments.
+      post_step_func: a function that runs on the step result.
+      skip_log_upload: When true skip log.
+      resource_usage_output_file: File which if provided will
+        record the resource usage stats related to build step.
+      ninja_invocation_id: ID of the build invocation.
+      include_utr_instruction: Whether or not to include UTR reproduction
+        instructions
+      builder_id: ID for the builder compiling the targets.
 
-        Returns:
-          step_data.StepData of the build step.
+    Returns:
+      step_data.StepData of the build step.
 
-        Raises:
-          - InfraFailure when an unexpected failure occured.
+    Raises:
+      - InfraFailure when an unexpected failure occured.
     """
     assert self.enabled, 'siso is not enabled'
     self._assert_ninja_command(ninja_command)
@@ -136,21 +140,26 @@ class SisoApi(recipe_api.RecipeApi):
     cmd = []
 
     if resource_usage_output_file:
-      cmd.extend([
+      cmd.extend(
+        [
           _TIME_CMD,
           f'--format={RUSAGE_FORMAT}',
           '-o',
           resource_usage_output_file,
-      ])
+        ]
+      )
 
     ninja_dir = self._ninja_dir(ninja_command)
 
-    cmd.extend([
+    cmd.extend(
+      [
         self.siso_path(source_dir),
-    ])
+      ]
+    )
 
     if self._props.profile_mode == 'local':
-      cmd.extend([
+      cmd.extend(
+        [
           '-cpuprofile',
           self.m.path.join(ninja_dir, 'siso_cpu.prof'),
           '-memprofile',
@@ -159,9 +168,11 @@ class SisoApi(recipe_api.RecipeApi):
           self.m.path.join(ninja_dir, 'siso_block.prof'),
           '-mutexprofile',
           self.m.path.join(ninja_dir, 'siso_mutex.prof'),
-      ])
+        ]
+      )
 
-    cmd.extend([
+    cmd.extend(
+      [
         'ninja',
         '--project',
         self._props.project,
@@ -169,22 +180,30 @@ class SisoApi(recipe_api.RecipeApi):
         self.m.buildbucket.build.id,
         '--remote_jobs',
         self.remote_jobs,
-    ])
+      ]
+    )
 
     builder_id = self.m.buildbucket.build.builder
-    if (builder_id.project and builder_id.bucket and builder_id.builder and
-        self._supports_namespace(source_dir)):
-      cmd.extend([
+    if (
+      builder_id.project
+      and builder_id.bucket
+      and builder_id.builder
+      and self._supports_namespace(source_dir)
+    ):
+      cmd.extend(
+        [
           '-namespace',
           f"builder:{builder_id.project}/{builder_id.bucket}/{builder_id.builder}",
-      ])
+        ]
+      )
 
     experiments = list(self._props.experiments or [])
     max_compile_failures = None
     if self._props.HasField('keep_going'):
       max_compile_failures = self._props.keep_going
-    if (self.m.tryserver.is_gerrit_issue and
-        (footers := self.m.tryserver.get_footers())):
+    if self.m.tryserver.is_gerrit_issue and (
+      footers := self.m.tryserver.get_footers()
+    ):
       if _MAX_COMPILE_FAILURES in footers:
         try:
           footer = footers[_MAX_COMPILE_FAILURES]
@@ -194,7 +213,8 @@ class SisoApi(recipe_api.RecipeApi):
           res.presentation.status = self.m.step.FAILURE
           res.presentation.step_text = f"Invalid value: {footer}\n{e}"
           raise self.m.step.StepFailure(
-              f"Invalid {_MAX_COMPILE_FAILURES} footer", res)
+            f"Invalid {_MAX_COMPILE_FAILURES} footer", res
+          )
       if footers.get(_CHECK_DEPS):
         experiments.append('check-deps')
     if max_compile_failures is not None:
@@ -206,15 +226,19 @@ class SisoApi(recipe_api.RecipeApi):
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
     if self._props.reapi_address:
-      cmd.extend([
+      cmd.extend(
+        [
           '--reapi_address',
           self._props.reapi_address,
-      ])
+        ]
+      )
     if self._props.reapi_instance:
-      cmd.extend([
+      cmd.extend(
+        [
           '--reapi_instance',
           self._props.reapi_instance,
-      ])
+        ]
+      )
     if not skip_log_upload:
       if self._props.profile_mode == 'cloud':
         cmd.append('--enable_cloud_profiler')
@@ -223,17 +247,21 @@ class SisoApi(recipe_api.RecipeApi):
       if self._props.enable_cloud_monitoring:
         cmd.append('--enable_cloud_monitoring')
         if self._props.metrics_project:
-          cmd.extend([
+          cmd.extend(
+            [
               '--metrics_project',
               self._props.metrics_project,
-          ])
+            ]
+          )
         else:
           # Old Siso versions require specifying --metrics_project explicitly.
           # e.g. http://crbug.com/449542599
-          cmd.extend([
+          cmd.extend(
+            [
               '--metrics_project',
               self._props.project,
-          ])
+            ]
+          )
         labels = ''
         run_type = 'cq' if self.m.tryserver.is_tryserver else 'ci'
         labels += f'type={run_type},'
@@ -243,35 +271,51 @@ class SisoApi(recipe_api.RecipeApi):
         labels += f'host_os={system},'
         buildbucket_builder_id = self.m.buildbucket.build.builder
         if buildbucket_builder_id.project:
-          labels += 'project=' + re.sub(r'[=,]', '_',
-                                        buildbucket_builder_id.project) + ','
+          labels += (
+            'project='
+            + re.sub(r'[=,]', '_', buildbucket_builder_id.project)
+            + ','
+          )
         if buildbucket_builder_id.bucket:
-          labels += 'bucket=' + re.sub(r'[=,]', '_',
-                                       buildbucket_builder_id.bucket) + ','
+          labels += (
+            'bucket='
+            + re.sub(r'[=,]', '_', buildbucket_builder_id.bucket)
+            + ','
+          )
         if buildbucket_builder_id.builder:
-          labels += 'builder=' + re.sub(r'[=,]', '_',
-                                        buildbucket_builder_id.builder) + ','
+          labels += (
+            'builder='
+            + re.sub(r'[=,]', '_', buildbucket_builder_id.builder)
+            + ','
+          )
         if self.m.builder_group.for_current:
           labels += 'builder_group=' + self.m.builder_group.for_current + ','
-        labels += 'source=' + ('led'
-                               if self.m.led.launched_by_led else 'prod') + ','
+        labels += (
+          'source=' + ('led' if self.m.led.launched_by_led else 'prod') + ','
+        )
         labels += 'tool=siso'
         cmd.extend(['--metrics_labels', labels])
     if len(self._props.configs) > 0:
-      cmd.extend([
+      cmd.extend(
+        [
           '--config',
           ','.join(self._props.configs),
-      ])
+        ]
+      )
     if self._props.action_salt:
-      cmd.extend([
+      cmd.extend(
+        [
           '--action_salt',
           self._props.action_salt,
-      ])
+        ]
+      )
     if self._props.output_local_strategy:
-      cmd.extend([
+      cmd.extend(
+        [
           '--output_local_strategy',
           self._props.output_local_strategy,
-      ])
+        ]
+      )
     if siso_args:
       cmd.extend(siso_args)
     cmd.extend(ninja_command[1:])
@@ -291,8 +335,9 @@ class SisoApi(recipe_api.RecipeApi):
       with self.m.context(env=env, cwd=source_dir):
         step_result = self.m.step(name, cmd, **kwargs)
         if ninja_invocation_id:
-          step_result.presentation.tags[
-              'ninja_invocation_id'] = ninja_invocation_id
+          step_result.presentation.tags['ninja_invocation_id'] = (
+            ninja_invocation_id
+          )
         if include_utr_instruction and builder_id:
           get_utr_compile_instruction(self, step_result, builder_id)
         if post_step_func:
@@ -311,36 +356,44 @@ class SisoApi(recipe_api.RecipeApi):
           s.step_text = name
           now = self.m.time.utcnow()
           report_id = ninja_invocation_id or self.m.uuid.random()
-          report_foldername = 'reports.%s.%s' % (now.strftime('%Y%m%dT%H%M%SZ'),
-                                                 report_id)
-          gs_foldername = '%s/siso/%s' % (now.date().strftime('%Y/%m/%d'),
-                                          report_foldername)
+          report_foldername = 'reports.%s.%s' % (
+            now.strftime('%Y%m%dT%H%M%SZ'),
+            report_id,
+          )
+          gs_foldername = '%s/siso/%s' % (
+            now.date().strftime('%Y/%m/%d'),
+            report_foldername,
+          )
 
           files = [
-              # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
-              # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
-              'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
-              'siso_build.pprof',
-              'siso_explain',
-              'siso_localexec',
-              'siso_metadata.json',
-              'siso_metrics.json',
-              'siso_output',
-              'siso_trace.json',
-              '.siso_config',
-              '.siso_deps',
-              '.siso_failed_targets',
-              '.siso_filegroups',
-              '.siso_fs_state',
-              '.siso_fs_state.0',
-              '.ninja_log',
+            # TODO: b/295251052 - Sometimes it fails to upload logs to Cloud
+            # Loggin. Upload siso.INFO/siso.exe.INFO at the end for now.
+            'siso.exe.INFO' if self.m.platform.is_win else 'siso.INFO',
+            'siso_build.pprof',
+            'siso_explain',
+            'siso_localexec',
+            'siso_metadata.json',
+            'siso_metrics.json',
+            'siso_output',
+            'siso_trace.json',
+            '.siso_config',
+            '.siso_deps',
+            '.siso_failed_targets',
+            '.siso_filegroups',
+            '.siso_fs_state',
+            '.siso_fs_state.0',
+            '.ninja_log',
           ]
 
           if self._props.profile_mode == 'local':
-            files.extend([
-                'siso_cpu.prof', 'siso_mem.prof', 'siso_block.prof',
-                'siso_mutex.prof'
-            ])
+            files.extend(
+              [
+                'siso_cpu.prof',
+                'siso_mem.prof',
+                'siso_block.prof',
+                'siso_mutex.prof',
+              ]
+            )
 
           futures = []
           for file in files:
@@ -348,34 +401,37 @@ class SisoApi(recipe_api.RecipeApi):
             if not self.m.path.exists(abs_path):
               continue
             self.m.futures.spawn(
-                self.m.gsutil.upload,
-                abs_path,
-                _GS_BUCKET,
-                # gs_foldername should end with '/' to avoid
-                # storage.objects.list API call in gsutil.
-                gs_foldername + '/',
-                # Applies gzip transport encoding.
-                args=['-J'],
-                # Set text/plain for browser to detect the file type.
-                metadata={'Content-Type': 'text/plain; charset=utf-8'},
-                name='upload ' + file,
-                infra_step=True,
-                # Do not stop build due to a report upload failure.
-                raise_on_failure=False)
+              self.m.gsutil.upload,
+              abs_path,
+              _GS_BUCKET,
+              # gs_foldername should end with '/' to avoid
+              # storage.objects.list API call in gsutil.
+              gs_foldername + '/',
+              # Applies gzip transport encoding.
+              args=['-J'],
+              # Set text/plain for browser to detect the file type.
+              metadata={'Content-Type': 'text/plain; charset=utf-8'},
+              name='upload ' + file,
+              infra_step=True,
+              # Do not stop build due to a report upload failure.
+              raise_on_failure=False,
+            )
 
           self.m.futures.wait(futures)
 
       if self._props.fail_if_reapi_used:
         self.m.step(
-            name='fail if remote execution was used',
-            cmd=[
-                'python3',
-                self.resource('fail_if_reapi_used.py'),
-                '--siso_metrics_path',
-                self.m.path.abspath(
-                    self.m.path.join(ninja_dir, 'siso_metrics.json')),
-            ],
-            infra_step=True)
+          name='fail if remote execution was used',
+          cmd=[
+            'python3',
+            self.resource('fail_if_reapi_used.py'),
+            '--siso_metrics_path',
+            self.m.path.abspath(
+              self.m.path.join(ninja_dir, 'siso_metrics.json')
+            ),
+          ],
+          infra_step=True,
+        )
 
   def _assert_ninja_command(self, ninja_command):
     """Check ninja_command runs ninja
@@ -393,13 +449,13 @@ class SisoApi(recipe_api.RecipeApi):
   def _ninja_dir(self, ninja_command):
     """Retrieve ninja dir
 
-      Args:
-        ninja_command: a list of command line.
-                e.g. ['ninja', '-C', 'out/Release']
+    Args:
+      ninja_command: a list of command line.
+              e.g. ['ninja', '-C', 'out/Release']
 
-      Returns:
-        value for '-C'.
-      """
+    Returns:
+      value for '-C'.
+    """
     for i, arg in enumerate(ninja_command):
       if arg == '-C':
         return ninja_command[i + 1]
@@ -410,18 +466,24 @@ class SisoApi(recipe_api.RecipeApi):
     """Check if siso supports -namespace flag."""
     cmd = [self.siso_path(source_dir), 'help', 'ninja']
     step_result = self.m.step(
-        'check siso namespace support',
-        cmd,
-        stdout=self.m.raw_io.output_text(),
-        infra_step=True,
-        raise_on_failure=False,
+      'check siso namespace support',
+      cmd,
+      stdout=self.m.raw_io.output_text(),
+      infra_step=True,
+      raise_on_failure=False,
     )
     stdout = step_result.stdout or ''
     supported = '-namespace' in stdout
     return supported
 
-  def isolate_tests(self, step_name: str, source_dir: Path, build_dir: Path,
-                    tests: list[str], **kwargs) -> step_data.StepData:
+  def isolate_tests(
+    self,
+    step_name: str,
+    source_dir: Path,
+    build_dir: Path,
+    tests: list[str],
+    **kwargs,
+  ) -> step_data.StepData:
     """Uploads isolate tests to CAS server.
 
     This API is intended to be used in api.isolate.isolate_tests for
@@ -435,25 +497,26 @@ class SisoApi(recipe_api.RecipeApi):
       tests: List of tests to upload.
     """
     cmd = [
-        self.siso_path(source_dir),
-        'isolate',
-        '--project',
-        self._props.project,
-        '-cas_instance',
-        self.m.cas.instance,
-        '-C',
-        build_dir,
-        '--dump_json',
-        self.m.json.output(),
+      self.siso_path(source_dir),
+      'isolate',
+      '--project',
+      self._props.project,
+      '-cas_instance',
+      self.m.cas.instance,
+      '-C',
+      build_dir,
+      '--dump_json',
+      self.m.json.output(),
     ] + list(tests)
     with self.m.context(cwd=source_dir):
       return self.m.step(
-          step_name,
-          cmd,
-          step_test_data=lambda: self.m.json.test_api.output(
-              {test: '[dummy hash for %s/dummy size]' % test
-               for test in tests}),
-          **kwargs)
+        step_name,
+        cmd,
+        step_test_data=lambda: self.m.json.test_api.output(
+          {test: '[dummy hash for %s/dummy size]' % test for test in tests}
+        ),
+        **kwargs,
+      )
 
   def fs_flush(self, step_name: str, source_dir: Path, files: list[str]):
     """Fetches contents for the files from RBE.
@@ -464,20 +527,20 @@ class SisoApi(recipe_api.RecipeApi):
       files: List of files to fetch from RBE. Relative to the cwd.
     """
     cmd = [
-        self.siso_path(source_dir),
-        'fs',
-        'flush',
-        '--project',
-        self._props.project,
-        # TODO: Remove after fixing http://b/381210302#comment12
-        '-f',
+      self.siso_path(source_dir),
+      'fs',
+      'flush',
+      '--project',
+      self._props.project,
+      # TODO: Remove after fixing http://b/381210302#comment12
+      '-f',
     ] + files
     return self.m.step(step_name, cmd)
 
   @property
   def without_bytes(self) -> bool:
     """Return True if Siso build does not downlaod remote execution outptus
-       by default.
+    by default.
     """
     return self._props.output_local_strategy == 'minimum'
 
@@ -492,14 +555,18 @@ class SisoApi(recipe_api.RecipeApi):
     # * third_party/siso/siso{.exe}
     # A path with cipd is preferable. To determine which one to use,
     # check if cipd directory exists.
-    return source_dir / 'third_party/siso/cipd/siso' if \
-        self.m.path.exists(source_dir / 'third_party/siso/cipd') else \
-      source_dir / 'third_party/siso/siso'
+    return (
+      source_dir / 'third_party/siso/cipd/siso'
+      if self.m.path.exists(source_dir / 'third_party/siso/cipd')
+      else source_dir / 'third_party/siso/siso'
+    )
 
   def enable_download_remoteexec_cfg_hook(self):
     """Enable download_remoteexec_cfg gclient hook by setting gclient variables."""
     rbe_instance = "projects/%s/instances/%s" % (
-        self._props.project, self._props.reapi_instance or "default_instance")
+      self._props.project,
+      self._props.reapi_instance or "default_instance",
+    )
     gclient_solution = self.m.gclient.c.solutions[0]
     gclient_solution.custom_vars['rbe_instance'] = rbe_instance
     gclient_solution.custom_vars['download_remoteexec_cfg'] = 'True'

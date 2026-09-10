@@ -19,15 +19,25 @@ class TSMonApi(recipe_api.RecipeApi):
       return
 
     self._send_ts_mon_pkg_path = self.m.path.start_dir.joinpath(
-        'send_ts_mon_values')
+      'send_ts_mon_values'
+    )
     self.m.cipd.ensure(
-        self._send_ts_mon_pkg_path,
-        self.m.cipd.EnsureFile().add_package(
-            'infra/send_ts_mon_values/all', 'latest'))
+      self._send_ts_mon_pkg_path,
+      self.m.cipd.EnsureFile().add_package(
+        'infra/send_ts_mon_values/all', 'latest'
+      ),
+    )
 
-  def send_value(self, name, metric_type, value, fields=None,
-                 service_name='luci', job_name='recipe',
-                 step_name='upload ts_mon metrics'):
+  def send_value(
+    self,
+    name,
+    metric_type,
+    value,
+    fields=None,
+    service_name='luci',
+    job_name='recipe',
+    step_name='upload ts_mon metrics',
+  ):
     """Sends a value to the ts_mon monitoring service.
 
     Based on the ts_mon monitoring pipeline and script for sending data to it:
@@ -67,11 +77,18 @@ class TSMonApi(recipe_api.RecipeApi):
       step_name: Name of the step sending information to ts_mon.
     """
     self.send_values_batch(
-        name, metric_type, [(value, fields)], service_name, job_name, step_name)
+      name, metric_type, [(value, fields)], service_name, job_name, step_name
+    )
 
-  def send_values_batch(self, name, metric_type, value_fields,
-                       service_name='luci', job_name='recipe',
-                       step_name='upload ts_mon metrics'):
+  def send_values_batch(
+    self,
+    name,
+    metric_type,
+    value_fields,
+    service_name='luci',
+    job_name='recipe',
+    step_name='upload ts_mon metrics',
+  ):
     """Sends multiple values to the ts_mon monitoring service in batch mode.
 
     This method allows to send multiple values to the same metric in a batch.
@@ -90,7 +107,13 @@ class TSMonApi(recipe_api.RecipeApi):
       step_name: Name of the step sending information to ts_mon.
     """
     assert metric_type in [
-        'gauge', 'float', 'string', 'bool', 'counter', 'cumulative']
+      'gauge',
+      'float',
+      'string',
+      'bool',
+      'counter',
+      'cumulative',
+    ]
     self._ensure_send_ts_mon_values()
 
     metric_data = []
@@ -102,23 +125,26 @@ class TSMonApi(recipe_api.RecipeApi):
     serialized_data = '\n'.join(self.m.json.dumps(d) for d in metric_data)
     with self.m.context(cwd=self._send_ts_mon_pkg_path):
       result = self.m.step(
-          step_name, [
-              'vpython3',
-              '-vpython-spec',
-              self._send_ts_mon_pkg_path.joinpath('infra', 'tools',
-                                                  'send_ts_mon_values',
-                                                  'standalone.vpython3'),
-              '-m',
-              'infra.tools.send_ts_mon_values',
-              '--ts-mon-target-type',
-              'task',
-              '--ts-mon-task-service-name',
-              service_name,
-              '--ts-mon-task-job-name',
-              job_name,
-              '--%s-file' % metric_type,
-              self.m.raw_io.input(serialized_data),
-          ],
-          infra_step=True)
+        step_name,
+        [
+          'vpython3',
+          '-vpython-spec',
+          self._send_ts_mon_pkg_path.joinpath(
+            'infra', 'tools', 'send_ts_mon_values', 'standalone.vpython3'
+          ),
+          '-m',
+          'infra.tools.send_ts_mon_values',
+          '--ts-mon-target-type',
+          'task',
+          '--ts-mon-task-service-name',
+          service_name,
+          '--ts-mon-task-job-name',
+          job_name,
+          '--%s-file' % metric_type,
+          self.m.raw_io.input(serialized_data),
+        ],
+        infra_step=True,
+      )
     result.presentation.logs['metric_data'] = self.m.json.dumps(
-        metric_data, indent=2, separators=(',', ': ')).splitlines()
+      metric_data, indent=2, separators=(',', ': ')
+    ).splitlines()

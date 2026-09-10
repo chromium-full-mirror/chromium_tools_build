@@ -9,14 +9,14 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import (
-    gerrit,
-    gitiles,
-    tryserver,
+  gerrit,
+  gitiles,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    step,
+  buildbucket,
+  json,
+  step,
 )
 
 
@@ -28,5 +28,6 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   json: json.API
   step: step.API
+
 
 from .api import ChromiumGerritUitlsApi as API

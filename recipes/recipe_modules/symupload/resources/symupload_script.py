@@ -4,9 +4,9 @@
 # found in the LICENSE file.
 """A lightweight wrapper script around the symupload command.
 
-  The symupload binary can be invoked directly, but our existing infrastructure
-  prevents us from invoking it without having the api key being exposed for
-  the V2 protocol.
+The symupload binary can be invoked directly, but our existing infrastructure
+prevents us from invoking it without having the api key being exposed for
+the V2 protocol.
 """
 
 from __future__ import annotations
@@ -30,29 +30,34 @@ def parse_arguments(input_args):
   """
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--artifacts', help='Comma-delimited list of artifacts to symupload.')
+    '--artifacts', help='Comma-delimited list of artifacts to symupload.'
+  )
   parser.add_argument(
-      '--artifact_type',
-      help='Symbol upload type, one of [\'macho\' or \'dsym\']')
+    '--artifact_type', help='Symbol upload type, one of [\'macho\' or \'dsym\']'
+  )
   parser.add_argument(
-      '--api-key-file',
-      required=True,
-      help='File containing the Symbol Server API key.')
+    '--api-key-file',
+    required=True,
+    help='File containing the Symbol Server API key.',
+  )
   parser.add_argument('--binary-path', help='Path to the symupload binary.')
   parser.add_argument(
-      '--platform',
-      help='Platform currently running on. Used to '
-      'determine the binary (.exe for win)')
+    '--platform',
+    help='Platform currently running on. Used to '
+    'determine the binary (.exe for win)',
+  )
   parser.add_argument(
-      '--server-urls',
-      help='Comma-delimited list of server urls to symupload the '
-      'list of artifacts to.')
+    '--server-urls',
+    help='Comma-delimited list of server urls to symupload the '
+    'list of artifacts to.',
+  )
   args = parser.parse_args(input_args)
   return args
 
 
-def build_args(platform, artifact, artifact_type, server_url, api_key,
-               dump_inline):
+def build_args(
+  platform, artifact, artifact_type, server_url, api_key, dump_inline
+):
   """
   Args:
     platform: (str) platform for args, one of [win, mac, linux]
@@ -79,7 +84,8 @@ def build_args(platform, artifact, artifact_type, server_url, api_key,
       cmd_args.append('--i')
     # Set timeout to 3 mins.
     cmd_args.extend(
-        ['--timeout', '180000', '-p', artifact, server_url, api_key])
+      ['--timeout', '180000', '-p', artifact, server_url, api_key]
+    )
   else:
     # For types other than breakpad, tell symupload the type and basename.
     if artifact_type in {'macho', 'dsym'}:
@@ -87,7 +93,8 @@ def build_args(platform, artifact, artifact_type, server_url, api_key,
       cmd_args.extend(['-t', artifact_type, '-c', basename])
 
     cmd_args.extend(
-        ['-p', 'sym-upload-v2', '-k', api_key, artifact, server_url])
+      ['-p', 'sym-upload-v2', '-k', api_key, artifact, server_url]
+    )
   return cmd_args
 
 
@@ -113,19 +120,32 @@ def sanitize_args(cmd_args, api_key):
   return clean_args
 
 
-def upload_symbol_file(platform, artifact, artifact_type, url, api_key,
-                       symupload_binary_path, dump_inline):
+def upload_symbol_file(
+  platform,
+  artifact,
+  artifact_type,
+  url,
+  api_key,
+  symupload_binary_path,
+  dump_inline,
+):
   print('Uploading %s to %s' % (artifact, url))
 
-  cmd_args = build_args(platform, artifact, artifact_type, url, api_key,
-                        dump_inline)
-  print('\n' + subprocess.list2cmdline([symupload_binary_path] +
-                                       sanitize_args(cmd_args, api_key)))
+  cmd_args = build_args(
+    platform, artifact, artifact_type, url, api_key, dump_inline
+  )
+  print(
+    '\n'
+    + subprocess.list2cmdline(
+      [symupload_binary_path] + sanitize_args(cmd_args, api_key)
+    )
+  )
 
   result = 0
   try:
     output = subprocess.check_output(
-        [symupload_binary_path] + cmd_args, stderr=subprocess.STDOUT)
+      [symupload_binary_path] + cmd_args, stderr=subprocess.STDOUT
+    )
     print(output.decode('utf-8'))
   except subprocess.CalledProcessError as e:
     if e.returncode == 2:
@@ -133,8 +153,10 @@ def upload_symbol_file(platform, artifact, artifact_type, url, api_key,
     # Any other non-zero ret code returned as failure
     else:
       result = e.returncode
-      print('Failed to upload %s to %s. Return code %s with output %s' %
-            (artifact, url, result, e.output))
+      print(
+        'Failed to upload %s to %s. Return code %s with output %s'
+        % (artifact, url, result, e.output)
+      )
   return result
 
 
@@ -147,8 +169,9 @@ def main(args):
   # Show the symupload help text, which could be useful to debug failures (e.g.
   # to see if the flags change).
   try:
-    output = subprocess.check_output([symupload_binary_path, '-h'],
-                                     stderr=subprocess.STDOUT)
+    output = subprocess.check_output(
+      [symupload_binary_path, '-h'], stderr=subprocess.STDOUT
+    )
     output = output.decode('utf-8')
     dump_inline = "[--i]" in output
     print(output)
@@ -161,9 +184,15 @@ def main(args):
   result = 0
   for artifact in artifacts:
     for url in server_urls:
-      return_code = upload_symbol_file(args.platform, artifact,
-                                       args.artifact_type, url, api_key,
-                                       symupload_binary_path, dump_inline)
+      return_code = upload_symbol_file(
+        args.platform,
+        artifact,
+        args.artifact_type,
+        url,
+        api_key,
+        symupload_binary_path,
+        dump_inline,
+      )
       if return_code != 0:
         result = return_code
 

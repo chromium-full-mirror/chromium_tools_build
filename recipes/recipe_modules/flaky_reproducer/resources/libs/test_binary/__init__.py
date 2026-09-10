@@ -6,14 +6,17 @@ from __future__ import annotations
 
 import re
 
-from .base_test_binary import (BaseTestBinary, TestBinaryWithBatchMixin,
-                               TestBinaryWithParallelMixin)
+from .base_test_binary import (
+  BaseTestBinary,
+  TestBinaryWithBatchMixin,
+  TestBinaryWithParallelMixin,
+)
 from .gtest_test_binary import GTestTestBinary
 from .blink_web_tests_binary import BlinkWebTestsBinary
 
 TEST_BINARIES = {
-    GTestTestBinary.__name__: GTestTestBinary,
-    BlinkWebTestsBinary.__name__: BlinkWebTestsBinary,
+  GTestTestBinary.__name__: GTestTestBinary,
+  BlinkWebTestsBinary.__name__: BlinkWebTestsBinary,
 }
 
 NOT_SUPPORTED_TEST_SUITES = ('chrome_all_tast_tests',)
@@ -32,9 +35,13 @@ class TaskRequest:
 
   @staticmethod
   def from_jsonish(d):
-    return TaskRequest(d.get('tags', ()),
-                       [TaskRequest.TaskSlice.from_jsonish(ts)
-                        for ts in d.get('task_slices', ())])
+    return TaskRequest(
+      d.get('tags', ()),
+      [
+        TaskRequest.TaskSlice.from_jsonish(ts)
+        for ts in d.get('task_slices', ())
+      ],
+    )
 
   def __getitem__(self, it):
     return self.task_slices[it]
@@ -66,8 +73,9 @@ class TaskRequest:
       obj.dimensions = kv_list_to_dict(p.get('dimensions', []))
       if 'cas_input_root' in p:
         digest = p['cas_input_root']['digest']
-        obj.cas_input_root = digest['hash'] + \
-            '/' + digest.get('size_bytes', '0')
+        obj.cas_input_root = (
+          digest['hash'] + '/' + digest.get('size_bytes', '0')
+        )
       return obj
 
 
@@ -81,7 +89,7 @@ def create_test_binary_from_task_request(task_request):
   test_suite = None
   for tag in task_request.tags:
     if tag.startswith('test_suite:'):
-      test_suite = tag[len('test_suite:'):]
+      test_suite = tag[len('test_suite:') :]
   if test_suite in NOT_SUPPORTED_TEST_SUITES:
     raise NotImplementedError('Not Supported test suite: %s' % test_suite)
 
@@ -104,6 +112,7 @@ def create_test_binary_from_jsonish(json_data):
   if not 'class_name' in json_data:
     raise ValueError('Invalid TestBinary json format, missing class_name.')
   if json_data['class_name'] not in TEST_BINARIES:
-    raise ValueError('Unknown TestBinary class name: {0}.'.format(
-        json_data['class_name']))
+    raise ValueError(
+      'Unknown TestBinary class name: {0}.'.format(json_data['class_name'])
+    )
   return TEST_BINARIES[json_data['class_name']].from_jsonish(json_data)

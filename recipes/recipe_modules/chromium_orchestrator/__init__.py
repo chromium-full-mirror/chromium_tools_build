@@ -12,41 +12,41 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    chromium_bootstrap,
-    chromium_checkout,
-    chromium_rts,
-    chromium_swarming,
-    chromium_tests,
-    chromium_tests_builder_config,
-    code_coverage,
-    flakiness,
-    isolate,
-    profiles,
-    repro_instructions,
-    test_utils,
+  builder_group,
+  chromium,
+  chromium_bootstrap,
+  chromium_checkout,
+  chromium_rts,
+  chromium_swarming,
+  chromium_tests,
+  chromium_tests_builder_config,
+  code_coverage,
+  flakiness,
+  isolate,
+  profiles,
+  repro_instructions,
+  test_utils,
 )
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    gsutil,
-    tryserver,
+  gclient,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    cipd,
-    cv,
-    file,
-    futures,
-    json,
-    led,
-    path,
-    properties,
-    raw_io,
-    runtime,
-    step,
-    swarming,
+  buildbucket,
+  cas,
+  cipd,
+  cv,
+  file,
+  futures,
+  json,
+  led,
+  path,
+  properties,
+  raw_io,
+  runtime,
+  step,
+  swarming,
 )
 
 
@@ -83,7 +83,6 @@ class DEPS(RecipeScriptApi):
   swarming: swarming.API
   repro_instructions: repro_instructions.API
   test_utils: test_utils.API
-
 
 
 from .api import ChromiumOrchestratorApi as API

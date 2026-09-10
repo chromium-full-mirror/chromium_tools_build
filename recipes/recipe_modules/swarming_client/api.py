@@ -42,15 +42,15 @@ class SwarmingClientApi(recipe_api.RecipeApi):
       revision = '6b5e452e39fc4c629c40726b0421d495e40b3620'
     self._client_path = self.m.path.start_dir / 'swarming.client'
     self.m.git.checkout(
-        url='https://chromium.googlesource.com/infra/luci/client-py.git',
-        ref=revision,
-        dir_path=self._client_path,
-        step_suffix='swarming_client')
+      url='https://chromium.googlesource.com/infra/luci/client-py.git',
+      ref=revision,
+      dir_path=self._client_path,
+      step_suffix='swarming_client',
+    )
 
   @property
   def path(self):
-    """Returns path to a swarming client checkout.
-    """
+    """Returns path to a swarming client checkout."""
     if not self._client_path:
       self.checkout()
     return self._client_path

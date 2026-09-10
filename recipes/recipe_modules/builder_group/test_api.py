@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from recipe_engine import recipe_test_api
 
-class ChromiumTestApi(recipe_test_api.RecipeTestApi):
 
+class ChromiumTestApi(recipe_test_api.RecipeTestApi):
   def for_current(self, group):
     """Set the builder group for the currently running builder."""
     return self.m.properties(builder_group=group)

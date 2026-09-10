@@ -26,14 +26,16 @@ class ReproducingStep:
     total_run_cnt (int): Number of run times during verification.
   """
 
-  def __init__(self,
-               test_binary,
-               strategy,
-               reproducing_rate=0,
-               duration=0,
-               reproduced_cnt=0,
-               total_run_cnt=0,
-               **other):
+  def __init__(
+    self,
+    test_binary,
+    strategy,
+    reproducing_rate=0,
+    duration=0,
+    reproduced_cnt=0,
+    total_run_cnt=0,
+    **other,
+  ):
     self.test_binary = test_binary
     self.reproducing_rate = reproducing_rate
     self.duration = duration
@@ -48,12 +50,12 @@ class ReproducingStep:
 
   def to_jsonish(self):
     ret = dict(
-        strategy=self.strategy,
-        test_binary=self.test_binary.to_jsonish(),
-        reproducing_rate=self.reproducing_rate,
-        duration=self.duration,
-        reproduced_cnt=self.reproduced_cnt,
-        total_run_cnt=self.total_run_cnt,
+      strategy=self.strategy,
+      test_binary=self.test_binary.to_jsonish(),
+      reproducing_rate=self.reproducing_rate,
+      duration=self.duration,
+      reproduced_cnt=self.reproduced_cnt,
+      total_run_cnt=self.total_run_cnt,
     )
     ret.update(self.debug_info)
     return ret
@@ -67,30 +69,36 @@ class ReproducingStep:
     """Returns Human readable instruction of the reproducing steps."""
     if not self.reproducing_rate:
       return 'This failure was NOT reproduced by {0} strategy.'.format(
-          self.strategy)
+        self.strategy
+      )
     message = []
     message.append(
-        'The failure could be reproduced ({0:.1f}%) with command'.format(
-            self.reproducing_rate * 100))
+      'The failure could be reproduced ({0:.1f}%) with command'.format(
+        self.reproducing_rate * 100
+      )
+    )
     message.append(' by {0} strategy:\n\n'.format(self.strategy))
     message.append(self.test_binary.readable_command())
     return ''.join(message)
 
   def better_than(self, other):
-    """Returns if this reproducing step works better than the other.
-    """
+    """Returns if this reproducing step works better than the other."""
     # Reproducible step is always better than not reproduced step.
     if min(self.reproducing_rate, other.reproducing_rate) == 0.0:
       return self.reproducing_rate > other.reproducing_rate
     # Prefer reliable step (only apply if < 3 reproduction).
-    if (self.reproduced_cnt != other.reproduced_cnt and
-        (self.reproduced_cnt < 3 or other.reproduced_cnt < 3)):
+    if self.reproduced_cnt != other.reproduced_cnt and (
+      self.reproduced_cnt < 3 or other.reproduced_cnt < 3
+    ):
       return self.reproduced_cnt > other.reproduced_cnt
     # If the two reproducing step have similar reproducing_rate (>= 0.9), the
     # lesser tests is better. (It's not using the duration here because parallel
     # strategy would run a lot of tests in parallel which could have a shorter
     # duration than running the same number of repeats.)
-    if self.reproducing_rate >= 0.9 and other.reproducing_rate >= 0.9 and abs(
-        self.reproducing_rate - other.reproducing_rate) < 0.03:
+    if (
+      self.reproducing_rate >= 0.9
+      and other.reproducing_rate >= 0.9
+      and abs(self.reproducing_rate - other.reproducing_rate) < 0.03
+    ):
       return len(self.test_binary.tests) < len(other.test_binary.tests)
     return self.reproducing_rate > other.reproducing_rate

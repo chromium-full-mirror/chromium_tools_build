@@ -13,7 +13,9 @@ from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
 from RECIPE_MODULES.build.chromium_tests import steps
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from PB.go.chromium.org.luci.analysis.proto.v1 import common as common_weetbix_pb2
+from PB.go.chromium.org.luci.analysis.proto.v1 import (
+  common as common_weetbix_pb2,
+)
 from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2
 from PB.recipe_engine import result as result_pb2
 
@@ -32,7 +34,9 @@ class FlakinessApi(recipe_api.RecipeApi):
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._check_for_flakiness = properties.check_for_flakiness
-    self._check_for_flakiness_with_resultdb = properties.check_for_flakiness_with_resultdb
+    self._check_for_flakiness_with_resultdb = (
+      properties.check_for_flakiness_with_resultdb
+    )
     # Input to cross reference step in "verify_new_tests" might be too large
     # and cause step failure, when there are too many new tests to verify
     # (caused by stale history JSON file, or a config roll adding new test
@@ -118,10 +122,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     # requires a mechanism to set this value for the correct upload path.
     bucket = self.m.led.shadowed_bucket or builder.bucket
     return self.gs_source_template(experimental=experimental).format(
-        builder.project,
-        bucket,
-        builder.builder,
-        str(build_number) if build_number else 'latest',
+      builder.project,
+      bucket,
+      builder.builder,
+      str(build_number) if build_number else 'latest',
     ) + '{}.json.tar.gz'.format(builder.builder)
 
   def is_test_file_present(self, affected_files):
@@ -147,7 +151,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     """
     builder = self.m.buildbucket.build.builder
     source = self.builder_gs_path(
-        builder, experimental=self.m.runtime.is_experimental)
+      builder, experimental=self.m.runtime.is_experimental
+    )
     local_dest = self.m.path.mkstemp()
     try:
       self.m.gsutil.download(self.gs_bucket, source, local_dest)
@@ -161,18 +166,23 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     bucket = self.m.led.shadowed_bucket or builder.bucket
     return self.m.file.read_json(
-        'process precomputed test history',
-        output_dir.joinpath(builder.project, bucket,
-                            '{}.json'.format(builder.builder)),
-        test_data=[{
-            'test_id':
-                ('ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_'
-                 'eg2tests_module/TestSuite.test_a'),
-            'variant_hash': 'some_hash',
-        }],
-        # We turn off logging for the JSON as some of the files are pretty
-        # large, and logging significantly affects the runtime in these cases.
-        include_log=False)
+      'process precomputed test history',
+      output_dir.joinpath(
+        builder.project, bucket, '{}.json'.format(builder.builder)
+      ),
+      test_data=[
+        {
+          'test_id': (
+            'ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_'
+            'eg2tests_module/TestSuite.test_a'
+          ),
+          'variant_hash': 'some_hash',
+        }
+      ],
+      # We turn off logging for the JSON as some of the files are pretty
+      # large, and logging significantly affects the runtime in these cases.
+      include_log=False,
+    )
 
   def process_precomputed_test_data(self, test_data):
     """Process the precomputed test data into TestDefinition objects.
@@ -189,15 +199,17 @@ class FlakinessApi(recipe_api.RecipeApi):
     tests = set()
     for test_entry in test_data:
       tests.add(
-          utils.TestDefinition(
-              test_entry['test_id'],
-              variant_hash=test_entry.get('variant_hash', None)))
+        utils.TestDefinition(
+          test_entry['test_id'],
+          variant_hash=test_entry.get('variant_hash', None),
+        )
+      )
     return tests
 
   def verify_new_tests(
-      self,
-      prelim_tests: set[utils.TestDefinition],
-      builder: str,
+    self,
+    prelim_tests: set[utils.TestDefinition],
+    builder: str,
   ) -> set[utils.TestDefinition]:
     """Verify the newly identified tests are new by cross-checking ResultDB.
 
@@ -225,26 +237,31 @@ class FlakinessApi(recipe_api.RecipeApi):
       # frequency.
       earliest = now - 3600 * 28
       search_range = common_weetbix_pb2.TimeRange(
-          earliest=timestamp_pb2.Timestamp(seconds=earliest),
-          latest=timestamp_pb2.Timestamp(seconds=now))
+        earliest=timestamp_pb2.Timestamp(seconds=earliest),
+        latest=timestamp_pb2.Timestamp(seconds=now),
+      )
       # TODO(crbug.com/1366463): Add default test data to make creating
       # integration tests easier.
       # The default query size is 1000. This is sufficient for the query so
       # page token is not used.
       verdicts, _ = self.m.luci_analysis.query_test_history(
-          test_id,
-          sub_realm='try',
-          variant_predicate=predicate_pb2.VariantPredicate(
-              contains={'def': {
-                  'builder': builder,
-              }}),
-          submitted_filter=common_weetbix_pb2.ONLY_SUBMITTED,
-          partition_time_range=search_range)
+        test_id,
+        sub_realm='try',
+        variant_predicate=predicate_pb2.VariantPredicate(
+          contains={
+            'def': {
+              'builder': builder,
+            }
+          }
+        ),
+        submitted_filter=common_weetbix_pb2.ONLY_SUBMITTED,
+        partition_time_range=search_range,
+      )
 
       for test_verdict in verdicts:
         test = utils.TestDefinition(
-            test_id=test_verdict.test_id,
-            variant_hash=test_verdict.variant_hash,
+          test_id=test_verdict.test_id,
+          variant_hash=test_verdict.variant_hash,
         )
         # If a test has already been run, ie/ through chained CLs, the
         # test history RPC call should return it as part of the verdict
@@ -262,10 +279,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     return prelim_tests
 
   def trim_new_tests(
-      self,
-      new_tests: collections.abc.Sequence[utils.TestDefinition],
-      limit: int,
-      step_name: str | None = None,
+    self,
+    new_tests: collections.abc.Sequence[utils.TestDefinition],
+    limit: int,
+    step_name: str | None = None,
   ) -> collections.abc.Collection[utils.TestDefinition]:
     """trim_new_tests will return a subset of new_tests according to the limit
 
@@ -284,27 +301,34 @@ class FlakinessApi(recipe_api.RecipeApi):
     step_name = step_name or 'randomly sampling {} tests '.format(limit)
 
     log_text = [
-        ('The system only permits a total of {} new tests to prevent overloading '
-         'CQ.'.format(limit)),
-        'The following are the randomly selected subset that will be tested:\n',
+      (
+        'The system only permits a total of {} new tests to prevent overloading '
+        'CQ.'.format(limit)
+      ),
+      'The following are the randomly selected subset that will be tested:\n',
     ]
 
-    log_text += '\n'.join([
+    log_text += '\n'.join(
+      [
         'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-            t.test_id, t.variant_hash, t.duration_milliseconds) for t in res
-    ])
+          t.test_id, t.variant_hash, t.duration_milliseconds
+        )
+        for t in res
+      ]
+    )
 
     self.m.step.empty(
-        step_name,
-        step_text='too many new tests detected.',
-        log_text=log_text,
-        log_name='new_tests')
+      step_name,
+      step_text='too many new tests detected.',
+      log_text=log_text,
+      log_name='new_tests',
+    )
 
     return res
 
   def identify_new_tests(
-      self,
-      test_objects: collections.abc.Iterable[steps.Test],
+    self,
+    test_objects: collections.abc.Iterable[steps.Test],
   ) -> set[utils.TestDefinition]:
     """Coordinating method for identifying new tests on the current build.
 
@@ -329,14 +353,17 @@ class FlakinessApi(recipe_api.RecipeApi):
       # Note: InfraFailure is a subclass of StepFailure
       except recipe_api.InfraFailure:
         p.status = self.m.step.INFRA_FAILURE
-        p.step_text = ('Failed to parse the precomputed test history. '
-                       'Aborting the flakiness check.')
+        p.step_text = (
+          'Failed to parse the precomputed test history. '
+          'Aborting the flakiness check.'
+        )
         return set()
 
       if not precomputed_json:
         p.status = self.m.step.EXCEPTION
-        p.step_text = ('The current try builder may not have test data '
-                       'precomputed.')
+        p.step_text = (
+          'The current try builder may not have test data precomputed.'
+        )
         return set()
 
       # Historical tests are a set of TestDefinition objects with just
@@ -371,21 +398,25 @@ class FlakinessApi(recipe_api.RecipeApi):
 
             test_id = individual_test.test_id
             test_definition = utils.TestDefinition(
-                test_id,
-                test_name=individual_test.test_name,
-                duration_milliseconds=duration_milliseconds,
-                test_object=test_object,
-                variant_hash=variant_hash,
-                file_path=individual_test.test_metadata_file_name)
+              test_id,
+              test_name=individual_test.test_name,
+              duration_milliseconds=duration_milliseconds,
+              test_object=test_object,
+              variant_hash=variant_hash,
+              file_path=individual_test.test_metadata_file_name,
+            )
             current_tests_log.append('%s_%s' % (test_id, variant_hash))
 
             if not test_definition in historical_tests:
               preliminary_new_tests.add(test_definition)
               test_stats = (
-                  experimental_new_test_stats if test_object.is_experimental
-                  else non_experimental_new_test_stats)
-              self._add_test_to_stats(individual_test, step_name, variant_hash,
-                                      test_stats)
+                experimental_new_test_stats
+                if test_object.is_experimental
+                else non_experimental_new_test_stats
+              )
+              self._add_test_to_stats(
+                individual_test, step_name, variant_hash, test_stats
+              )
 
       p.logs['current_build_tests'] = current_tests_log
       if skipped_test_suites:
@@ -398,51 +429,64 @@ class FlakinessApi(recipe_api.RecipeApi):
 
       # Trim once before verify_new_tests to avoid input too large for RDB RPC.
       preliminary_new_tests = set(
-          self.trim_new_tests(
-              list(preliminary_new_tests),
-              self._max_test_variants_to_cross_reference))
+        self.trim_new_tests(
+          list(preliminary_new_tests),
+          self._max_test_variants_to_cross_reference,
+        )
+      )
 
       # Cross-referencing the potential new tests with ResultDB to ensure they
       # are not present in existing builds.
       try:
         new_tests = self.verify_new_tests(
-            prelim_tests=preliminary_new_tests,
-            builder=builder_name)
+          prelim_tests=preliminary_new_tests, builder=builder_name
+        )
       except recipe_api.StepFailure:
         p.status = self.m.step.INFRA_FAILURE
-        p.step_text = ('Failed to verify if new tests exist. '
-                       'Aborting flakiness check.')
+        p.step_text = (
+          'Failed to verify if new tests exist. Aborting flakiness check.'
+        )
         return set()
 
-      p.logs['new_tests'] = ('new tests: \n\n{}'.format('\n'.join([
-          'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-              t.test_id, t.variant_hash, t.duration_milliseconds)
-          for t in new_tests
-      ])))
+      p.logs['new_tests'] = 'new tests: \n\n{}'.format(
+        '\n'.join(
+          [
+            'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
+              t.test_id, t.variant_hash, t.duration_milliseconds
+            )
+            for t in new_tests
+          ]
+        )
+      )
 
     # At this time, test stats contains info in the initial
     # |preliminary_new_tests|. Filter to keep only new tests after trimming and
     # verification.
     new_test_filter = lambda item: item[0] in new_tests
     non_experimental_new_test_stats = dict(
-        filter(new_test_filter, non_experimental_new_test_stats.items()))
+      filter(new_test_filter, non_experimental_new_test_stats.items())
+    )
     experimental_new_test_stats = dict(
-        filter(new_test_filter, experimental_new_test_stats.items()))
+      filter(new_test_filter, experimental_new_test_stats.items())
+    )
 
     if self._calculate_flakiness_and_summary(
-        non_experimental_new_test_stats,
-        experimental_new_test_stats,
-        present_summary_in_step=True):
+      non_experimental_new_test_stats,
+      experimental_new_test_stats,
+      present_summary_in_step=True,
+    ):
       # Fail the build if there are already flaky new tests in "with patch" or
       # "retry shards with patch" steps, so we don't need to trigger new "check
       # flakiness" steps.
       self.m.step.empty(
-          'New tests are found flaky in with patch test runs.',
-          status=self.m.step.FAILURE,
-          step_text=('New test are flaky in "with patch" or'
-                     '"retry shards with patch" test steps.'
-                     'See %s step for details.' %
-                     self.CALCULATE_FLAKE_RATE_STEP_NAME))
+        'New tests are found flaky in with patch test runs.',
+        status=self.m.step.FAILURE,
+        step_text=(
+          'New test are flaky in "with patch" or'
+          '"retry shards with patch" test steps.'
+          'See %s step for details.' % self.CALCULATE_FLAKE_RATE_STEP_NAME
+        ),
+      )
 
     return new_tests
 
@@ -466,9 +510,9 @@ class FlakinessApi(recipe_api.RecipeApi):
     bucket = self.m.led.shadowed_bucket or builder.bucket
 
     baseline = 'projects/{}/baselines/{}:{}'.format(
-        builder.project,
-        bucket,
-        builder.builder,
+      builder.project,
+      bucket,
+      builder.builder,
     )
 
     step_name = '{} with ResultDB'.format(self.IDENTIFY_STEP_NAME)
@@ -493,8 +537,8 @@ class FlakinessApi(recipe_api.RecipeApi):
         new_tests_identified.add((new_test.test_id, new_test.variant_hash))
 
       p.logs['new_tests'] = [
-          'test_id: {}, variant_hash: {}'.format(t[0], t[1])
-          for t in new_tests_identified
+        'test_id: {}, variant_hash: {}'.format(t[0], t[1])
+        for t in new_tests_identified
       ]
 
     return new_tests_identified
@@ -523,11 +567,13 @@ class FlakinessApi(recipe_api.RecipeApi):
       return None
 
     # New v2 format
-    test_id_pattern = re.compile(r"://(?P<module_name>[^!]+)!"
-                                 r"(?P<scheme>[^:]+):"
-                                 r"(?P<coarse>[^:]*):"
-                                 r"(?P<fine>[^#]+)#"
-                                 r"(?P<case>.+)")
+    test_id_pattern = re.compile(
+      r"://(?P<module_name>[^!]+)!"
+      r"(?P<scheme>[^:]+):"
+      r"(?P<coarse>[^:]*):"
+      r"(?P<fine>[^#]+)#"
+      r"(?P<case>.+)"
+    )
     match = test_id_pattern.match(test_id)
     if not match:
       # Pattern didn't match, might be a different v2 structure or malformed.
@@ -559,9 +605,9 @@ class FlakinessApi(recipe_api.RecipeApi):
     return None
 
   def _map_test_object(
-      self,
-      test_objects: collections.abc.Iterable[steps.Test],
-      new_test_tuples: collections.abc.Collection[tuple[str, str]],
+    self,
+    test_objects: collections.abc.Iterable[steps.Test],
+    new_test_tuples: collections.abc.Collection[tuple[str, str]],
   ) -> dict[steps.Test, tuple[str, str]]:
     """_map_test_object formats tests objects to test filters and durations.
 
@@ -572,6 +618,7 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     A dict of test object to a tuple of (test filter, duration) is returned
     """
+
     # new_tests is a dict of Test object to list of test names (test filter).
     # If exists, the TestDefinition's filter list should be updated to store
     # the list of tests.
@@ -603,13 +650,17 @@ class FlakinessApi(recipe_api.RecipeApi):
             # Test object in list of new tests already, so update the filter.
             # Otherwise create a new one.
             test_filter, duration_milliseconds = new_tests.setdefault(
-                test_obj, ([], 0))
+              test_obj, ([], 0)
+            )
 
             legacy_filter = self._get_legacy_filter_from_test(test)
-            test_name_for_filter = legacy_filter if legacy_filter else test.test_name
+            test_name_for_filter = (
+              legacy_filter if legacy_filter else test.test_name
+            )
 
-            actual_group = utils.get_actual_test_group(test_name_for_filter,
-                                                       all_test_names)
+            actual_group = utils.get_actual_test_group(
+              test_name_for_filter, all_test_names
+            )
             for t in actual_group:
               if t not in test_filter:
                 test_filter.append(t)
@@ -627,9 +678,9 @@ class FlakinessApi(recipe_api.RecipeApi):
     return new_tests
 
   def check_test_files(
-      self,
-      new_tests: collections.abc.Iterable[utils.TestDefinition],
-      affected_files: list[str],
+    self,
+    new_tests: collections.abc.Iterable[utils.TestDefinition],
+    affected_files: list[str],
   ) -> list[utils.TestDefinition]:
     """Determines whether the correct test files are being modified by the patch
 
@@ -675,21 +726,31 @@ class FlakinessApi(recipe_api.RecipeApi):
       # logging purposes
       with self.m.step.nest('Skipped tests') as s:
         logs = [
-            ('some tests have been skipped because the file path defined for the '
-             'test is not being modified in this patchset.'),
-            'files affected by this patchset',
+          (
+            'some tests have been skipped because the file path defined for the '
+            'test is not being modified in this patchset.'
+          ),
+          'files affected by this patchset',
         ]
         logs += affected_files
         logs.append('excluded tests:')
         for et in excluded_tests:
-          logs.append(('test id %s variant_hash %s and path %s' %
-                       (et.test_id, et.variant_hash, et.file_path)))
+          logs.append(
+            (
+              'test id %s variant_hash %s and path %s'
+              % (et.test_id, et.variant_hash, et.file_path)
+            )
+          )
         s.logs['skipped tests'] = logs
 
         new_test_logs = []
         for nt in filtered_tests:
-          new_test_logs.append(('test id %s variant_hash %s and path %s' %
-                                (nt.test_id, nt.variant_hash, nt.file_path)))
+          new_test_logs.append(
+            (
+              'test id %s variant_hash %s and path %s'
+              % (nt.test_id, nt.variant_hash, nt.file_path)
+            )
+          )
         s.logs['new tests'] = new_test_logs
 
     return filtered_tests
@@ -710,7 +771,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     # Max runs per shard confirming to |self._MAX_SHARD_TIME_MINUTES|. At least
     # 1 run per shard.
     runs_per_shard = int(
-        max(max_shard_time_milliseconds / total_duration_milliseconds, 1))
+      max(max_shard_time_milliseconds / total_duration_milliseconds, 1)
+    )
     remaining = self._repeat_count
     shards = []
     while remaining > 0:
@@ -719,9 +781,9 @@ class FlakinessApi(recipe_api.RecipeApi):
     return shards
 
   def find_tests_for_flakiness(
-      self,
-      test_objects: collections.abc.Iterable[steps.Test],
-      affected_files: list[str] | None = None,
+    self,
+    test_objects: collections.abc.Iterable[steps.Test],
+    affected_files: list[str] | None = None,
   ) -> collections.abc.Mapping[str, list[steps.Test]]:
     """Searches for new tests in a given change
 
@@ -752,21 +814,22 @@ class FlakinessApi(recipe_api.RecipeApi):
       A mapping from test suffixes to lists of steps.Test objects.
     """
     # Do not run anything if both properties are not set.
-    if not (self.check_for_flakiness or
-            self._check_for_flakiness_with_resultdb):
+    if not (
+      self.check_for_flakiness or self._check_for_flakiness_with_resultdb
+    ):
       return {}
 
     # Check if there are endorser footers to parse
     commit_footer_values = [
-        val.lower()
-        for val in self.m.tryserver.get_footer(self.COMMIT_FOOTER_KEY)
+      val.lower() for val in self.m.tryserver.get_footer(self.COMMIT_FOOTER_KEY)
     ]
     if 'skip' in commit_footer_values:
       # No action for endorsing logic
       self.m.step(
-          'skipping flaky test check since commit footer '
-          '\'Validate-Test-Flakiness: Skip\' was detected.',
-          cmd=None)
+        'skipping flaky test check since commit footer '
+        '\'Validate-Test-Flakiness: Skip\' was detected.',
+        cmd=None,
+      )
       return {}
 
     # TODO (crbug/1456545) - With ResultDB, the new test detection system is
@@ -786,8 +849,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     # bound limit (at the time of writing, 40) through the random sampling to
     # avoid overloading CQ.
     affected_files = (
-        affected_files or
-        self.m.chromium_checkout.get_files_affected_by_patch())
+      affected_files or self.m.chromium_checkout.get_files_affected_by_patch()
+    )
 
     if not self.is_test_file_present(affected_files=affected_files):
       self.m.step.empty('no test files were detected with this change.')
@@ -822,17 +885,19 @@ class FlakinessApi(recipe_api.RecipeApi):
           new_test_tuples = sorted(new_test_tuples)
         new_test_tuples = random.sample(new_test_tuples, self._max_test_targets)
         self.m.step.empty(
-            'randomly sampling {} tests'.format(self._max_test_targets),
-            step_text='too many new tests detected',
-            log_text=[
-                'test_id: {} variant_hash: {}'.format(t[0], t[1])
-                for t in new_test_tuples
-            ],
-            log_name='new_tests')
+          'randomly sampling {} tests'.format(self._max_test_targets),
+          step_text='too many new tests detected',
+          log_text=[
+            'test_id: {} variant_hash: {}'.format(t[0], t[1])
+            for t in new_test_tuples
+          ],
+          log_name='new_tests',
+        )
 
       # test object to list of test names
       filter_and_time_by_test_object = self._map_test_object(
-          test_objects, new_test_tuples)
+        test_objects, new_test_tuples
+      )
     ### Original Cron-History-Based Workflow ###
     # TODO (crbug/1456545) - this workflow and methods specific to this workflow
     # should deprecate once all CQ builders migrate to the workflow above.
@@ -856,18 +921,21 @@ class FlakinessApi(recipe_api.RecipeApi):
         for new_test in new_tests:
           if new_test.test_object == test:
             test_filter.append(new_test)
-            total_duration_ms += (new_test.duration_milliseconds or 0)
+            total_duration_ms += new_test.duration_milliseconds or 0
 
         if test_filter:
           log_lines = [
-              'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-                  t.test_id, t.variant_hash, t.duration_milliseconds)
-              for t in test_filter
+            'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
+              t.test_id, t.variant_hash, t.duration_milliseconds
+            )
+            for t in test_filter
           ]
-          log_lines.append('total_duration_milliseconds: %d' %
-                           total_duration_ms)
-          s.presentation.logs['new tests to run in %s' %
-                              test.canonical_name] = '\n'.join(log_lines)
+          log_lines.append(
+            'total_duration_milliseconds: %d' % total_duration_ms
+          )
+          s.presentation.logs[
+            'new tests to run in %s' % test.canonical_name
+          ] = '\n'.join(log_lines)
 
           # Rework test filter into the required format
 
@@ -877,28 +945,34 @@ class FlakinessApi(recipe_api.RecipeApi):
             for t in rdb_suite_result.all_tests:
               legacy_filter = self._get_legacy_filter_from_test(t)
               all_test_names.append(
-                  legacy_filter if legacy_filter else t.test_name)
+                legacy_filter if legacy_filter else t.test_name
+              )
 
           expanded_filter = []
           for new_test in test_filter:
             legacy_filter = self._get_legacy_filter_from_test(new_test)
-            test_name_for_filter = legacy_filter if legacy_filter else new_test.test_name
-            actual_group = utils.get_actual_test_group(test_name_for_filter,
-                                                       all_test_names)
+            test_name_for_filter = (
+              legacy_filter if legacy_filter else new_test.test_name
+            )
+            actual_group = utils.get_actual_test_group(
+              test_name_for_filter, all_test_names
+            )
             for t in actual_group:
               if t not in expanded_filter:
                 expanded_filter.append(t)
 
-          filter_and_time_by_test_object[test] = (expanded_filter,
-                                                  total_duration_ms)
+          filter_and_time_by_test_object[test] = (
+            expanded_filter,
+            total_duration_ms,
+          )
 
     # For each new test update all test filters to repeat and rerun 20 times.
     for test, metadata in filter_and_time_by_test_object.items():
       test_filter = metadata[0]
       if isinstance(test.spec, steps.ScriptTestSpec):
         test_objects_by_suffix[self.test_suffix].append(
-            utils.apply_script_test_filter(test, test_filter,
-                                           self._repeat_count))
+          utils.apply_script_test_filter(test, test_filter, self._repeat_count)
+        )
       elif isinstance(test.spec, steps.SwarmingTestSpec):
         # For Swarming test objects, tests are sharded by duration, if the total
         # duration exceeds 20 minutes.
@@ -906,12 +980,14 @@ class FlakinessApi(recipe_api.RecipeApi):
         shards = self._shard_runs(total_duration_ms)
         for index, shard_runs in enumerate(shards):
           test_objects_by_suffix[self._suffix_by_shard_index(index)].append(
-              utils.apply_swarming_shard_test_filter(test, test_filter,
-                                                     shard_runs))
+            utils.apply_swarming_shard_test_filter(
+              test, test_filter, shard_runs
+            )
+          )
       else:
         test_objects_by_suffix[self.test_suffix].append(
-            utils.apply_default_test_filter(test, test_filter,
-                                            self._repeat_count))
+          utils.apply_default_test_filter(test, test_filter, self._repeat_count)
+        )
     return test_objects_by_suffix
 
   def _add_test_to_stats(self, test, step_name, variant_hash, stats):
@@ -936,8 +1012,12 @@ class FlakinessApi(recipe_api.RecipeApi):
     info = stats.get(key, ('', [], 0, 0))
     if unexpected_unpassed > 0:
       info[1].append(step_name)
-    stats[key] = (test_name, info[1], info[2] + unexpected_unpassed,
-                  info[3] + total)
+    stats[key] = (
+      test_name,
+      info[1],
+      info[2] + unexpected_unpassed,
+      info[3] + total,
+    )
 
   def _flakiness_summary_markdown(self, test_stats):
     """Creates a summary markdown using flakiness run results.
@@ -979,17 +1059,22 @@ class FlakinessApi(recipe_api.RecipeApi):
       infra_steps = stats[1]
       failures = stats[2]
       total = stats[3]
-      lines.append('Test: **{}**, variant hash: {}, # of failures: {}, '
-                   'total # of runs: {}. See failed runs in:'.format(
-                       test_name, variant_hash, failures, total))
+      lines.append(
+        'Test: **{}**, variant hash: {}, # of failures: {}, '
+        'total # of runs: {}. See failed runs in:'.format(
+          test_name, variant_hash, failures, total
+        )
+      )
 
       lines.extend(['- %s' % step for step in infra_steps])
     return lines
 
-  def _calculate_flakiness_and_summary(self,
-                                       flaky_non_experimental_test_stats,
-                                       flaky_experimental_test_stats,
-                                       present_summary_in_step=False):
+  def _calculate_flakiness_and_summary(
+    self,
+    flaky_non_experimental_test_stats,
+    flaky_experimental_test_stats,
+    present_summary_in_step=False,
+  ):
     """Calculates and returns summary if non experimental tests have flakiness.
 
     Args:
@@ -1008,55 +1093,66 @@ class FlakinessApi(recipe_api.RecipeApi):
     """
     with self.m.step.nest(self.CALCULATE_FLAKE_RATE_STEP_NAME) as p:
       p.step_text = (
-          'Tests that have exceeded the tolerated flake rate most likely '
-          'indicate flakiness. See logs for details of the flaky test '
-          'and the flake rate.\n')
+        'Tests that have exceeded the tolerated flake rate most likely '
+        'indicate flakiness. See logs for details of the flaky test '
+        'and the flake rate.\n'
+      )
 
       # Keep only test variants with unexpected results.
       test_stats_filter = lambda item: item[1][2] > 0
       flaky_non_experimental_test_stats = dict(
-          filter(test_stats_filter, flaky_non_experimental_test_stats.items()))
+        filter(test_stats_filter, flaky_non_experimental_test_stats.items())
+      )
       flaky_experimental_test_stats = dict(
-          filter(test_stats_filter, flaky_experimental_test_stats.items()))
+        filter(test_stats_filter, flaky_experimental_test_stats.items())
+      )
 
       non_experimental_summary_lines = []
       if flaky_non_experimental_test_stats:
         non_experimental_summary_lines.append(
-            'Flaky new test(s) in non-experimental suites (fatal):')
+          'Flaky new test(s) in non-experimental suites (fatal):'
+        )
         non_experimental_summary_lines.extend(
-            self._flakiness_summary_markdown(flaky_non_experimental_test_stats))
+          self._flakiness_summary_markdown(flaky_non_experimental_test_stats)
+        )
 
       experimental_summary_lines = []
       if flaky_experimental_test_stats:
         experimental_summary_lines.append(
-            'Flaky new test(s) in experimental suites (non-fatal):')
+          'Flaky new test(s) in experimental suites (non-fatal):'
+        )
         experimental_summary_lines.extend(
-            self._flakiness_summary_markdown(flaky_experimental_test_stats))
+          self._flakiness_summary_markdown(flaky_experimental_test_stats)
+        )
 
       if non_experimental_summary_lines or experimental_summary_lines:
-        p.logs['flaky tests'] = ('\n'.join(non_experimental_summary_lines +
-                                           experimental_summary_lines))
+        p.logs['flaky tests'] = '\n'.join(
+          non_experimental_summary_lines + experimental_summary_lines
+        )
 
         if non_experimental_summary_lines:
           p.status = self.m.step.FAILURE
           summary_lines = [
-              'Some new test(s) added from your CL appear '
-              'to be flaky. Please check "%s" step for test identification and '
-              'test steps for test run details.' % self.IDENTIFY_STEP_NAME
+            'Some new test(s) added from your CL appear '
+            'to be flaky. Please check "%s" step for test identification and '
+            'test steps for test run details.' % self.IDENTIFY_STEP_NAME
           ]
           summary_lines.extend(non_experimental_summary_lines)
           summary_markdown = '\n\n'.join(summary_lines)[:3500]
           summary_markdown += (
-              '\n\nSee full logs in "flaky tests" under %s step.' %
-              self.CALCULATE_FLAKE_RATE_STEP_NAME)
+            '\n\nSee full logs in "flaky tests" under %s step.'
+            % self.CALCULATE_FLAKE_RATE_STEP_NAME
+          )
 
           if present_summary_in_step:
             p.step_text += summary_markdown
           return summary_markdown
         # When there is non fatal flakiness, let users know why the build
         # doesn't fail.
-        p.step_text += ('\nFlaky new tests in logs are non fatal because they '
-                        'come from experimental suites.')
+        p.step_text += (
+          '\nFlaky new tests in logs are non fatal because they '
+          'come from experimental suites.'
+        )
 
     return None
 
@@ -1082,8 +1178,10 @@ class FlakinessApi(recipe_api.RecipeApi):
     for suffix, test_objects in suffix_suites.items():
       for t in test_objects:
         flaky_test_stats = (
-            flaky_experimental_test_stats
-            if t.is_experimental else flaky_non_experimental_test_stats)
+          flaky_experimental_test_stats
+          if t.is_experimental
+          else flaky_non_experimental_test_stats
+        )
         rdb_results = t.get_rdb_results(suffix)
         step_name = '%s (%s)' % (t.name, suffix)
         if not rdb_results.all_tests:
@@ -1093,31 +1191,36 @@ class FlakinessApi(recipe_api.RecipeApi):
         for test in rdb_results.all_tests:
           if test.unexpected_unpassed_count() > 0:
             flaky_suites.add(t)
-          self._add_test_to_stats(test, step_name, rdb_results.variant_hash,
-                                  flaky_test_stats)
+          self._add_test_to_stats(
+            test, step_name, rdb_results.variant_hash, flaky_test_stats
+          )
 
     self._record_suite_flakiness(list(flaky_suites), invalid_suites)
 
     if empty_result_steps:
       summary_lines = [
-          ('%s steps in %s didn\'t produce test results.' %
-           (', '.join(empty_result_steps), self.RUN_TEST_STEP_NAME))
+        (
+          '%s steps in %s didn\'t produce test results.'
+          % (', '.join(empty_result_steps), self.RUN_TEST_STEP_NAME)
+        )
       ]
       return result_pb2.RawResult(
-          summary_markdown='\n\n'.join(summary_lines),
-          status=common_pb2.FAILURE)
+        summary_markdown='\n\n'.join(summary_lines), status=common_pb2.FAILURE
+      )
 
     summary_markdown = self._calculate_flakiness_and_summary(
-        flaky_non_experimental_test_stats, flaky_experimental_test_stats)
+      flaky_non_experimental_test_stats, flaky_experimental_test_stats
+    )
     if summary_markdown:
       return result_pb2.RawResult(
-          summary_markdown=summary_markdown, status=common_pb2.FAILURE)
+        summary_markdown=summary_markdown, status=common_pb2.FAILURE
+      )
 
     return None
 
   def _record_suite_flakiness(self, flaky_tests, invalid_suites):
     step_result = self.m.step.empty('record suite flakiness')
     step_result.presentation.properties['flake_endorser_rejections'] = {
-        'flaky_suites': [test.name for test in flaky_tests],
-        'invalid_suites': [test.name for test in invalid_suites],
+      'flaky_suites': [test.name for test in flaky_tests],
+      'invalid_suites': [test.name for test in invalid_suites],
     }

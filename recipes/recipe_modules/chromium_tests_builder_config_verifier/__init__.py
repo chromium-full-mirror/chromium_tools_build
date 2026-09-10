@@ -8,17 +8,17 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import (
-    git,
-    tryserver,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    futures,
-    json,
-    path,
-    raw_io,
-    step,
+  context,
+  file,
+  futures,
+  json,
+  path,
+  raw_io,
+  step,
 )
 
 
@@ -33,6 +33,7 @@ class DEPS(RecipeScriptApi):
   path: path.API
   raw_io: raw_io.API
   step: step.API
+
 
 from .api import ChromiumTestsBuilderConfigVerifierApi as API
 from .test_api import ChromiumTestsBuilderConfigVerifierApi as TEST_API

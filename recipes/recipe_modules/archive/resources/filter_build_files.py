@@ -28,41 +28,47 @@ EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS = [
 ]
 
 EXCLUDED_TOP_LEVEL_DIRS = {
-    'win':
-        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-            'cfinstaller_archive',
-            'installer_archive',
-            'lib',
-        ]),
-    'mac':
-        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-            '.deps',
-            'App Shim Socket',
-            # We copy the framework into the app bundle, we don't need the second
-            # copy outside the app.
-            # TODO(mark): Since r28431, the copy in the build directory is actually
-            # used by tests.  Putting two copies in the .zip isn't great, so maybe
-            # we can find another workaround.
-            # 'Chromium Framework.framework',
-            # 'Google Chrome Framework.framework',
-            # We copy the Helper into the app bundle, we don't need the second
-            # copy outside the app.
-            'Chromium Helper.app',
-            'Google Chrome Helper.app',
-            'bytecode_builtins_list_generator.dSYM',
-            'gen-regexp-special-case.dSYM',
-            'lib',
-            'mksnapshot.dSYM',
-            'torque.dSYM',
-            'v8_shell.dSYM',
-        ]),
-    'linux':
-        set(EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS + [
-            '.deps',
-            'appcache',
-            'glue',
-            'src',
-        ]),
+  'win': set(
+    EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS
+    + [
+      'cfinstaller_archive',
+      'installer_archive',
+      'lib',
+    ]
+  ),
+  'mac': set(
+    EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS
+    + [
+      '.deps',
+      'App Shim Socket',
+      # We copy the framework into the app bundle, we don't need the second
+      # copy outside the app.
+      # TODO(mark): Since r28431, the copy in the build directory is actually
+      # used by tests.  Putting two copies in the .zip isn't great, so maybe
+      # we can find another workaround.
+      # 'Chromium Framework.framework',
+      # 'Google Chrome Framework.framework',
+      # We copy the Helper into the app bundle, we don't need the second
+      # copy outside the app.
+      'Chromium Helper.app',
+      'Google Chrome Helper.app',
+      'bytecode_builtins_list_generator.dSYM',
+      'gen-regexp-special-case.dSYM',
+      'lib',
+      'mksnapshot.dSYM',
+      'torque.dSYM',
+      'v8_shell.dSYM',
+    ]
+  ),
+  'linux': set(
+    EXCLUDED_TOP_LEVEL_DIRS_ALL_PLATFORMS
+    + [
+      '.deps',
+      'appcache',
+      'glue',
+      'src',
+    ]
+  ),
 }
 
 # Subdirectories located anywhere inside of build_dir. For example, 'obj' will
@@ -79,81 +85,85 @@ EXCLUDED_SUBDIRS = {
 
 # Basenames of the files to be excluded from the archive.
 EXCLUDED_FILES_ALL_PLATFORMS = [
-    '.landmines',
-    '.ninja_deps',
-    '.ninja_log',
-    'bytecode_builtins_list_generator',
-    'gen-regexp-special-case',
-    'mksnapshot',
-    'torque',
-    'v8_context_snapshot_generator',
-    'v8_shell',
+  '.landmines',
+  '.ninja_deps',
+  '.ninja_log',
+  'bytecode_builtins_list_generator',
+  'gen-regexp-special-case',
+  'mksnapshot',
+  'torque',
+  'v8_context_snapshot_generator',
+  'v8_shell',
 ]
 
 # Excluded files on specific platforms.
 EXCLUDED_FILES = {
-    'win':
-        set(EXCLUDED_FILES_ALL_PLATFORMS + [
-            'bytecode_builtins_list_generator.exe',
-            'bytecode_builtins_list_generator.exe.pdb',
-            'gen-regexp-special-case.exe',
-            'gen-regexp-special-case.exe.pdb',
-            'mksnapshot.exe',
-            'mksnapshot.exe.pdb',
-            'torque.exe',
-            'torque.exe.pdb',
-            'v8_context_snapshot_generator.exe',
-            'v8_context_snapshot_generator.exe.pdb',
-            'v8_shell.exe',
-            'v8_shell.exe.pdb',
-        ]),
-    # TODO: figure out which files we can skip on Mac.
-    'mac':
-        set(EXCLUDED_FILES_ALL_PLATFORMS + [
-            # We don't need the arm bits v8 builds.
-            'd8_arm',
-            'v8_shell_arm',
-            'obj.host',
-            'obj.target',
-            # pdfsqueeze is a build helper, no need to copy it to testers.
-            'pdfsqueeze',
-        ]),
-    'linux':
-        set(EXCLUDED_FILES_ALL_PLATFORMS + [
-            # Scons build cruft.
-            '.sconsign.dblite',
-            # Intermediate build directories (full of .o, .d, etc.).
-            'lib.host',
-            'obj.host',
-            'obj.target',
-        ]),
+  'win': set(
+    EXCLUDED_FILES_ALL_PLATFORMS
+    + [
+      'bytecode_builtins_list_generator.exe',
+      'bytecode_builtins_list_generator.exe.pdb',
+      'gen-regexp-special-case.exe',
+      'gen-regexp-special-case.exe.pdb',
+      'mksnapshot.exe',
+      'mksnapshot.exe.pdb',
+      'torque.exe',
+      'torque.exe.pdb',
+      'v8_context_snapshot_generator.exe',
+      'v8_context_snapshot_generator.exe.pdb',
+      'v8_shell.exe',
+      'v8_shell.exe.pdb',
+    ]
+  ),
+  # TODO: figure out which files we can skip on Mac.
+  'mac': set(
+    EXCLUDED_FILES_ALL_PLATFORMS
+    + [
+      # We don't need the arm bits v8 builds.
+      'd8_arm',
+      'v8_shell_arm',
+      'obj.host',
+      'obj.target',
+      # pdfsqueeze is a build helper, no need to copy it to testers.
+      'pdfsqueeze',
+    ]
+  ),
+  'linux': set(
+    EXCLUDED_FILES_ALL_PLATFORMS
+    + [
+      # Scons build cruft.
+      '.sconsign.dblite',
+      # Intermediate build directories (full of .o, .d, etc.).
+      'lib.host',
+      'obj.host',
+      'obj.target',
+    ]
+  ),
 }
 
 # Pattern for excluded files on specific platforms.
 EXCLUDED_FILES_PATTERN = {
-    'win':
-        re.compile(r'^(.+\.(o|a|d|obj|lib|pch|exp|ninja|stamp)|\.?siso[\._].*)$'
-                  ),
-    'mac':
-        re.compile(r'^(.+\.(a|ninja|stamp)|\.?siso[\._].*)$'),
-    'linux':
-        re.compile(r'^(.+\.(o|a|d|ninja|stamp)|\.?siso[\._].*)$'),
+  'win': re.compile(
+    r'^(.+\.(o|a|d|obj|lib|pch|exp|ninja|stamp)|\.?siso[\._].*)$'
+  ),
+  'mac': re.compile(r'^(.+\.(a|ninja|stamp)|\.?siso[\._].*)$'),
+  'linux': re.compile(r'^(.+\.(o|a|d|ninja|stamp)|\.?siso[\._].*)$'),
 }
 
 # Pattern for excluded files in a subdirectory.
 EXCLUDED_FILES_IN_SUBDIR_PATTERN = {
-    'bin': [
-        # Wrapper scripts for tests. These aren't needed for fuzzers.
-        re.compile(r'run_.*_fuzzer(\.bat)?$'),
-    ],
+  'bin': [
+    # Wrapper scripts for tests. These aren't needed for fuzzers.
+    re.compile(r'run_.*_fuzzer(\.bat)?$'),
+  ],
 }
 
 # Pattern for whitelisted files in a subdirectory.
 INCLUDED_FILES_IN_SUBDIR_PATTERN = {
-    'gen': [
-        # Include Mojo JS bindings and manifests for fuzzing.
-        re.compile(r'.*\.(js|json)$'),
-    ],
+  'gen': [
+    # Include Mojo JS bindings and manifests for fuzzing.
+    re.compile(r'.*\.(js|json)$'),
+  ],
 }
 
 
@@ -193,8 +203,11 @@ def walk_and_filter(dir_path, platform_name):
 
     for d in list(dirnames):
       # Filter out unneeded directories.
-      if (not relative_root and d in EXCLUDED_TOP_LEVEL_DIRS[platform_name] or
-          d in EXCLUDED_SUBDIRS[platform_name]):
+      if (
+        not relative_root
+        and d in EXCLUDED_TOP_LEVEL_DIRS[platform_name]
+        or d in EXCLUDED_SUBDIRS[platform_name]
+      ):
         dirnames.remove(d)
         continue
 
@@ -230,14 +243,18 @@ def walk_and_filter(dir_path, platform_name):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Exclude unneeded files from the given build directory.')
+    description='Exclude unneeded files from the given build directory.'
+  )
 
-  parser.add_argument('-d', '--dir', required=True,
-                      help='Path to a build directory.')
-  parser.add_argument('-p', '--platform', required=True,
-                      help='Platform name: win/mac/linux.')
-  parser.add_argument('-o', '--output', required=True,
-                      help='Path to an output file.')
+  parser.add_argument(
+    '-d', '--dir', required=True, help='Path to a build directory.'
+  )
+  parser.add_argument(
+    '-p', '--platform', required=True, help='Platform name: win/mac/linux.'
+  )
+  parser.add_argument(
+    '-o', '--output', required=True, help='Path to an output file.'
+  )
   args = parser.parse_args()
 
   build_dir = args.dir

@@ -22,14 +22,17 @@ def find_rpl_file(log_dir):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Compresses the reproxy RPL log using Gzip')
+    description='Compresses the reproxy RPL log using Gzip'
+  )
 
   parser.add_argument(
-      '--reclient-log-dir',
-      required=True,
-      help='Path to the reclient log directory')
+    '--reclient-log-dir',
+    required=True,
+    help='Path to the reclient log directory',
+  )
   parser.add_argument(
-      '--output-gzip-path', required=True, help='Path to the output gzip file.')
+    '--output-gzip-path', required=True, help='Path to the output gzip file.'
+  )
 
   args = parser.parse_args()
   log_dir = args.reclient_log_dir

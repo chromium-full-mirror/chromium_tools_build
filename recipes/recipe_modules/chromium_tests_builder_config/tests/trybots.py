@@ -19,7 +19,11 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import chromium_tests, chromium_tests_builder_config, filter as filter_module
+from RECIPE_MODULES.build import (
+  chromium_tests,
+  chromium_tests_builder_config,
+  filter as filter_module,
+)
 from RECIPE_MODULES.recipe_engine import properties, step
 
 
@@ -40,7 +44,8 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   builder_id, builder_config = (
-      api.chromium_tests_builder_config.lookup_builder())
+    api.chromium_tests_builder_config.lookup_builder()
+  )
   api.chromium_tests.trybot_steps(builder_id, builder_config)
   api.step('Success', ['echo', 'Success!'])
 
@@ -50,15 +55,18 @@ def GenTests(api: TEST_DEPS):
     builder_group = builder_id.group
     buildername = builder_id.builder
     yield api.test(
-        ('%s-%s' % (builder_group, buildername)).replace(' ', '_'),
-        (api.properties(xcode_build_version='11c29')
-         if 'ios' in buildername else api.properties()),
-        api.chromium_tests_builder_config.try_build(
-            builder_group=builder_group,
-            builder=buildername,
-            patch_set=1,
-        ),
-        # Supress analysis so that all targets show up as affected and we run
-        # recipe code for each configured test
-        api.post_process(post_process.DropExpectation),
+      ('%s-%s' % (builder_group, buildername)).replace(' ', '_'),
+      (
+        api.properties(xcode_build_version='11c29')
+        if 'ios' in buildername
+        else api.properties()
+      ),
+      api.chromium_tests_builder_config.try_build(
+        builder_group=builder_group,
+        builder=buildername,
+        patch_set=1,
+      ),
+      # Supress analysis so that all targets show up as affected and we run
+      # recipe code for each configured test
+      api.post_process(post_process.DropExpectation),
     )

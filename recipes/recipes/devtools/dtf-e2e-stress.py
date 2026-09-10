@@ -17,31 +17,31 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    chromium_swarming,
-    devtools,
-    perf_dashboard,
-    v8,
+  builder_group,
+  chromium,
+  chromium_swarming,
+  devtools,
+  perf_dashboard,
+  v8,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    git,
-    tryserver,
+  bot_update,
+  depot_tools,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    file,
-    futures,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  buildbucket,
+  cas,
+  context,
+  file,
+  futures,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -76,6 +76,7 @@ class TEST_DEPS(RecipeTestApi):
   builder_group: builder_group.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = InputProperties
 
 
@@ -90,15 +91,17 @@ def RunSteps(api: DEPS, properties):
     with api.chromium.guard_compile(build_dir):
       api.chromium.run_gn(api.devtools.source_dir, build_dir)
 
-      compilation_result = api.chromium.compile(api.devtools.source_dir,
-                                                build_dir)
+      compilation_result = api.chromium.compile(
+        api.devtools.source_dir, build_dir
+      )
       if compilation_result.status != common_pb.SUCCESS:
         return compilation_result
     cas_digest = api.devtools.archive_to_cas()
 
     trigger = SwarmingTrigger(api, cas_digest)
-    e2e_stressor = E2EStressTests(api, trigger, builder_config, 'E2E Tests',
-                                  properties.runner_args)
+    e2e_stressor = E2EStressTests(
+      api, trigger, builder_config, 'E2E Tests', properties.runner_args
+    )
 
     results = run_test_pipelines(api, [e2e_stressor])
 
@@ -106,9 +109,9 @@ def RunSteps(api: DEPS, properties):
 
 
 class E2EStressTests(E2ETests):
-
-  def __init__(self, api: DEPS, trigger, builder_config, step_name,
-               runner_args):
+  def __init__(
+    self, api: DEPS, trigger, builder_config, step_name, runner_args
+  ):
     super().__init__(api, trigger, builder_config, step_name)
     self.test_list = []
     self.extra_args = []
@@ -127,38 +130,40 @@ def GenTests(api: TEST_DEPS):
 
   def ci_build(builder):
     return api.buildbucket.ci_build(
-        project='devtools', builder=builder, git_repo=git_repo)
+      project='devtools', builder=builder, git_repo=git_repo
+    )
 
   def try_build(builder, **kwargs):
     return api.buildbucket.try_build(
-        project='devtools',
-        builder=builder,
-        git_repo=git_repo,
-        change_number=91827,
-        patch_set=1,
-        **kwargs)
+      project='devtools',
+      builder=builder,
+      git_repo=git_repo,
+      change_number=91827,
+      patch_set=1,
+      **kwargs,
+    )
 
   yield api.test(
-      'compile failure',
-      api.builder_group.for_current('devtools-frontend'),
-      ci_build(builder='linux'),
-      api.step_data('compile', retcode=1),
-      status='FAILURE',
+    'compile failure',
+    api.builder_group.for_current('devtools-frontend'),
+    ci_build(builder='linux'),
+    api.step_data('compile', retcode=1),
+    status='FAILURE',
   )
 
   yield api.test(
-      'e2e stress test default',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='e2e_stressor_linux'),
-      api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
-      status='SUCCESS',
+    'e2e stress test default',
+    api.builder_group.for_current('tryserver.devtools-frontend'),
+    try_build(builder='e2e_stressor_linux'),
+    api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'e2e stress test with args',
-      api.builder_group.for_current('tryserver.devtools-frontend'),
-      try_build(builder='e2e_stressor_linux'),
-      api.properties(runner_args='test123 --repeat=2'),
-      api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
-      status='SUCCESS',
+    'e2e stress test with args',
+    api.builder_group.for_current('tryserver.devtools-frontend'),
+    try_build(builder='e2e_stressor_linux'),
+    api.properties(runner_args='test123 --repeat=2'),
+    api.post_process(post_process.Filter().include_re(r'.*Pipeline.*')),
+    status='SUCCESS',
   )

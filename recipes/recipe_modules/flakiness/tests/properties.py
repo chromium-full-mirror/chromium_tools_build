@@ -34,7 +34,7 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'basic',
-      api.flakiness(check_for_flakiness=True),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.flakiness(check_for_flakiness=True),
+    api.post_process(post_process.DropExpectation),
   )

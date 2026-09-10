@@ -9,16 +9,16 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_checkout, webrtc
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    gerrit,
-    git,
+  depot_tools,
+  gclient,
+  gerrit,
+  git,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    json,
-    step,
+  buildbucket,
+  context,
+  json,
+  step,
 )
 
 
@@ -41,6 +41,7 @@ class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   json: json.TEST_API
 
+
 GERRIT_URL = 'https://webrtc-review.googlesource.com'
 GERRIT_PROJECT = 'src'
 
@@ -54,22 +55,22 @@ def RunSteps(api: DEPS):
   with api.context(cwd=source_dir):
     # Check for an open CL.
     commits = api.gerrit.get_changes(
-        GERRIT_URL,
-        query_params=[
-            ('project', GERRIT_PROJECT),
-            ('owner', 'self'),
-            ('status', 'open'),
-        ],
-        limit=1,
+      GERRIT_URL,
+      query_params=[
+        ('project', GERRIT_PROJECT),
+        ('owner', 'self'),
+        ('status', 'open'),
+      ],
+      limit=1,
     )
     if commits:
       cq_commits = api.gerrit.get_changes(
-          GERRIT_URL,
-          query_params=[
-              ('change', commits[0]['_number']),
-              ('label', 'Commit-Queue>=1'),
-          ],
-          limit=1,
+        GERRIT_URL,
+        query_params=[
+          ('change', commits[0]['_number']),
+          ('label', 'Commit-Queue>=1'),
+        ],
+        limit=1,
       )
       if cq_commits:
         assert cq_commits[0]['_number'] == commits[0]['_number']
@@ -80,7 +81,8 @@ def RunSteps(api: DEPS):
         with api.depot_tools.on_path():
           api.git('cl', 'set-close', '-i', commits[0]['_number'])
         api.step.active_result.presentation.step_text = (
-            'Stale CL found. Abandoned.')
+          'Stale CL found. Abandoned.'
+        )
 
     # Enforce a clean state, and discard any local commits from previous runs.
     api.git('checkout', '-f', 'main')
@@ -90,8 +92,9 @@ def RunSteps(api: DEPS):
     # Run the update script. It will take care of branch creation, WebRTC
     # version update, uploading etc. It will also delete any previous version
     # update branch.
-    script_path = source_dir.joinpath('tools_webrtc', 'version_updater',
-                                      'update_version.py')
+    script_path = source_dir.joinpath(
+      'tools_webrtc', 'version_updater', 'update_version.py'
+    )
 
     params = ['--clean']
     cmd = ['vpython3', '-u', script_path] + params
@@ -103,23 +106,20 @@ def GenTests(api: TEST_DEPS):
   base = api.buildbucket.generic_build()
 
   yield api.test(
-      'stale_update',
-      base,
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)', api.json.output([])),
+    'stale_update',
+    base,
+    api.override_step_data(
+      'gerrit changes', api.json.output([{'_number': '123'}])
+    ),
+    api.override_step_data('gerrit changes (2)', api.json.output([])),
   )
   yield api.test(
-      'previous_update_in_cq',
-      base,
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
+    'previous_update_in_cq',
+    base,
+    api.override_step_data(
+      'gerrit changes', api.json.output([{'_number': '123'}])
+    ),
+    api.override_step_data(
+      'gerrit changes (2)', api.json.output([{'_number': '123'}])
+    ),
   )

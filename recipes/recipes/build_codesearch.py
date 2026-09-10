@@ -5,8 +5,12 @@
 import re
 import textwrap
 
-from recipe_engine.post_process import (DropExpectation, StepCommandContains,
-                                        StatusFailure, StatusSuccess)
+from recipe_engine.post_process import (
+  DropExpectation,
+  StepCommandContains,
+  StatusFailure,
+  StatusSuccess,
+)
 from packaging.version import parse
 
 from dataclasses import dataclass
@@ -16,21 +20,21 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.infra import codesearch
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    gsutil,
+  bot_update,
+  gclient,
+  git,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    golang,
-    path,
-    platform,
-    properties,
-    step,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  golang,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -66,8 +70,9 @@ GO_VERSION_RE = re.compile(r'^go (\d+\.\d+(?:\.\d+)?)$', re.MULTILINE)
 
 
 def RunSteps(api: DEPS):
-  kythe_bin = api.codesearch.ensure_kythe().joinpath('extractors',
-                                                     'go_extractor')
+  kythe_bin = api.codesearch.ensure_kythe().joinpath(
+    'extractors', 'go_extractor'
+  )
   c = api.gclient.make_config()
   soln = c.solutions.add()
   soln.name = 'build'
@@ -82,9 +87,9 @@ def RunSteps(api: DEPS):
   build_dir = api.path.cache_dir / 'build'
   kzip_loc = api.path.cache_dir / kzip_name
   go_mod_files = api.file.glob_paths(
-      'find go.mod files',
-      build_dir,
-      '*/go.mod',
+    'find go.mod files',
+    build_dir,
+    '*/go.mod',
   )
   if not go_mod_files:
     raise api.step.StepFailure('No go.mod files found in the repository.')
@@ -108,166 +113,208 @@ def RunSteps(api: DEPS):
   # needed for siso-tap
   seccomp_dir = api.path.mkdtemp('libseccomp')
   ensure_file = api.cipd.EnsureFile()
-  ensure_file.add_package('infra/3pp/static_libs/libseccomp/${platform}',
-                          'latest')
+  ensure_file.add_package(
+    'infra/3pp/static_libs/libseccomp/${platform}', 'latest'
+  )
   api.cipd.ensure(seccomp_dir, ensure_file)
   base_env = {
-      'KYTHE_ROOT_DIRECTORY': build_dir,
-      'CGO_ENABLED': '1',
-      'CGO_CFLAGS': f'-I{seccomp_dir}/include',
-      'CGO_LDFLAGS': f'-L{seccomp_dir}/lib -lseccomp',
+    'KYTHE_ROOT_DIRECTORY': build_dir,
+    'CGO_ENABLED': '1',
+    'CGO_CFLAGS': f'-I{seccomp_dir}/include',
+    'CGO_LDFLAGS': f'-L{seccomp_dir}/lib -lseccomp',
   }
   env_prefixes = {
-      'PKG_CONFIG_PATH': [seccomp_dir / 'lib' / 'pkgconfig'],
+    'PKG_CONFIG_PATH': [seccomp_dir / 'lib' / 'pkgconfig'],
   }
 
   # KYTHE_ROOT_DIRECTORY makes sub modules relpath to build repo root.
-  with api.golang(version=go_version), api.context(
-      cwd=build_dir, env=base_env, env_prefixes=env_prefixes):
+  with (
+    api.golang(version=go_version),
+    api.context(cwd=build_dir, env=base_env, env_prefixes=env_prefixes),
+  ):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
-    api.step('override broken go modules', [
+    api.step(
+      'override broken go modules',
+      [
         'go',
         'work',
         'edit',
         '-replace',
         'go.opentelemetry.io/collector/exporter/exportertest=go.opentelemetry.io/collector/exporter/exportertest@v0.157.0',
-    ])
-    api.step('generate go kzip', [
-        kythe_bin, '--corpus', 'chromium.googlesource.com/build//main',
+      ],
+    )
+    api.step(
+      'generate go kzip',
+      [
+        kythe_bin,
+        '--corpus',
+        'chromium.googlesource.com/build//main',
         '--use_default_corpus_for_stdlib=true',
-        '--use_default_corpus_for_deps=true', '--output', kzip_loc
-    ] + targets)
+        '--use_default_corpus_for_deps=true',
+        '--output',
+        kzip_loc,
+      ]
+      + targets,
+    )
 
   api.gsutil.upload(
-      name='upload kythe index pack',
-      source=kzip_loc,
-      bucket='chrome-codesearch',
-      dest='build/%s' % kzip_name)
+    name='upload kythe index pack',
+    source=kzip_loc,
+    bucket='chrome-codesearch',
+    dest='build/%s' % kzip_name,
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.try_build(
-          project='infra',
-          builder='generic tester',
-          git_repo='https://chromium.googlesource.com/build'),
-      api.platform('linux', 64),
-      api.path.exists(api.path.cache_dir / 'build'),
-      api.step_data(
-          'find go.mod files',
-          api.file.glob_paths(['siso/go.mod', 'kajiya/go.mod',
-                               'bench/go.mod'])),
-      api.step_data(
-          'read [CACHE]/build/bench/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
+    'basic',
+    api.buildbucket.try_build(
+      project='infra',
+      builder='generic tester',
+      git_repo='https://chromium.googlesource.com/build',
+    ),
+    api.platform('linux', 64),
+    api.path.exists(api.path.cache_dir / 'build'),
+    api.step_data(
+      'find go.mod files',
+      api.file.glob_paths(['siso/go.mod', 'kajiya/go.mod', 'bench/go.mod']),
+    ),
+    api.step_data(
+      'read [CACHE]/build/bench/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
               module go.chromium.org/build/bench
               go 1.25.9
 
               tool (
                 google.golang.org/a/foo
                 google.golang.org/b/bar
-              )''')),
+              )''')
       ),
-      api.step_data(
-          'read [CACHE]/build/siso/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
+    ),
+    api.step_data(
+      'read [CACHE]/build/siso/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
               module go.chromium.org/build/siso
               go 1.26.2
 
               tool (
                 google.golang.org/a/foo
                 google.golang.org/b/bar
-              )''')),
+              )''')
       ),
-      api.step_data(
-          'read [CACHE]/build/kajiya/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
+    ),
+    api.step_data(
+      'read [CACHE]/build/kajiya/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
               module go.chromium.org/build/kajiya
               go 1.26.1
 
               tool (
                 google.golang.org/a/foo
                 google.golang.org/b/bar
-              )''')),
+              )''')
       ),
-      api.post_process(StepCommandContains, 'ensure_installed (3)',
-                       ['infra/3pp/tools/go/${platform} version:3@1.26.2']),
-      api.post_process(StepCommandContains, 'init go modules',
-                       ['go', 'work', 'init', 'bench', 'kajiya', 'siso']),
-      api.post_process(StepCommandContains, 'generate go kzip', [
-          'go.chromium.org/build/kajiya/...', 'go.chromium.org/build/siso/...'
-      ]),
-      api.post_process(StatusSuccess),
-      api.post_process(DropExpectation),
+    ),
+    api.post_process(
+      StepCommandContains,
+      'ensure_installed (3)',
+      ['infra/3pp/tools/go/${platform} version:3@1.26.2'],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'init go modules',
+      ['go', 'work', 'init', 'bench', 'kajiya', 'siso'],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'generate go kzip',
+      ['go.chromium.org/build/kajiya/...', 'go.chromium.org/build/siso/...'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'no_mod_files',
-      api.buildbucket.try_build(
-          project='infra',
-          builder='generic tester',
-          git_repo='https://chromium.googlesource.com/build'),
-      api.platform('linux', 64),
-      api.post_process(StatusFailure),
-      api.expect_status('FAILURE'),
-      api.post_process(DropExpectation),
+    'no_mod_files',
+    api.buildbucket.try_build(
+      project='infra',
+      builder='generic tester',
+      git_repo='https://chromium.googlesource.com/build',
+    ),
+    api.platform('linux', 64),
+    api.post_process(StatusFailure),
+    api.expect_status('FAILURE'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'malformed_mod_files',
-      api.buildbucket.try_build(
-          project='infra',
-          builder='generic tester',
-          git_repo='https://chromium.googlesource.com/build'),
-      api.platform('linux', 64),
-      api.path.exists(api.path.cache_dir / 'build'),
-      api.step_data('find go.mod files', api.file.glob_paths([
+    'malformed_mod_files',
+    api.buildbucket.try_build(
+      project='infra',
+      builder='generic tester',
+      git_repo='https://chromium.googlesource.com/build',
+    ),
+    api.platform('linux', 64),
+    api.path.exists(api.path.cache_dir / 'build'),
+    api.step_data(
+      'find go.mod files',
+      api.file.glob_paths(
+        [
           'siso/go.mod',
-      ])),
-      api.step_data(
-          'read [CACHE]/build/siso/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
+        ]
+      ),
+    ),
+    api.step_data(
+      'read [CACHE]/build/siso/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
               go 1.26.1
 
               tool (
                 google.golang.org/a/foo
                 google.golang.org/b/bar
-              )''')),
+              )''')
       ),
-      api.post_process(StatusFailure),
-      api.expect_status('FAILURE'),
-      api.post_process(DropExpectation),
+    ),
+    api.post_process(StatusFailure),
+    api.expect_status('FAILURE'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'malformed_mod_version',
-      api.buildbucket.try_build(
-          project='infra',
-          builder='generic tester',
-          git_repo='https://chromium.googlesource.com/build'),
-      api.platform('linux', 64),
-      api.path.exists(api.path.cache_dir / 'build'),
-      api.step_data('find go.mod files', api.file.glob_paths([
+    'malformed_mod_version',
+    api.buildbucket.try_build(
+      project='infra',
+      builder='generic tester',
+      git_repo='https://chromium.googlesource.com/build',
+    ),
+    api.platform('linux', 64),
+    api.path.exists(api.path.cache_dir / 'build'),
+    api.step_data(
+      'find go.mod files',
+      api.file.glob_paths(
+        [
           'siso/go.mod',
-      ])),
-      api.step_data(
-          'read [CACHE]/build/siso/go.mod',
-          api.file.read_text(
-              textwrap.dedent('''
+        ]
+      ),
+    ),
+    api.step_data(
+      'read [CACHE]/build/siso/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
               module go.chromium.org/build/kajiya
 
               tool (
                 google.golang.org/a/foo
                 google.golang.org/b/bar
-              )''')),
+              )''')
       ),
-      api.post_process(StatusFailure),
-      api.expect_status('FAILURE'),
-      api.post_process(DropExpectation),
+    ),
+    api.post_process(StatusFailure),
+    api.expect_status('FAILURE'),
+    api.post_process(DropExpectation),
   )

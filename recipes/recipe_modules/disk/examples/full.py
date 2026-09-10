@@ -27,6 +27,7 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
 
+
 GIB = 1 << 30
 
 
@@ -44,45 +45,51 @@ def RunSteps(api: DEPS):
   if not api.properties.get('no_usage1_data'):
     usage1_data = api.properties.get('usage1_data') or default_usage1
     usage1_data = dict(usage1_data)
-    usage1_kwargs.update({
-      'step_test_data': lambda: api.json.test_api.output_stream(usage1_data),
-    })
+    usage1_kwargs.update(
+      {
+        'step_test_data': lambda: api.json.test_api.output_stream(usage1_data),
+      }
+    )
   usage1 = api.disk.space_usage(
-      name='usage1',
-      can_fail_build=api.properties.get('usage1_fails_build'),
-      **usage1_kwargs)
+    name='usage1',
+    can_fail_build=api.properties.get('usage1_fails_build'),
+    **usage1_kwargs,
+  )
 
   api.disk.space_usage(
-      name='usage2',
-      step_test_data=lambda: api.json.test_api.output_stream(default_usage2),
-      previous_result=usage1)
+    name='usage2',
+    step_test_data=lambda: api.json.test_api.output_stream(default_usage2),
+    previous_result=usage1,
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test('basic')
   yield api.test(
-      'high_usage',
-      api.properties(usage1_data={
-          'capacity': 100 * GIB,
-          'used': 90 * GIB,
-      }),
+    'high_usage',
+    api.properties(
+      usage1_data={
+        'capacity': 100 * GIB,
+        'used': 90 * GIB,
+      }
+    ),
   )
   yield api.test(
-      'windows',
-      api.platform.name('win'),
+    'windows',
+    api.platform.name('win'),
   )
   yield api.test(
-      'no_test_data',
-      api.properties(no_usage1_data=True),
-  )
-
-  yield api.test(
-      'space_usage_doesnt_fail_build',
-      api.properties(usage1_data={'x': 1}),
+    'no_test_data',
+    api.properties(no_usage1_data=True),
   )
 
   yield api.test(
-      'space_usage_fails_build',
-      api.properties(usage1_data={'x': 1}, usage1_fails_build=True),
-      api.expect_status('FAILURE'),
+    'space_usage_doesnt_fail_build',
+    api.properties(usage1_data={'x': 1}),
+  )
+
+  yield api.test(
+    'space_usage_fails_build',
+    api.properties(usage1_data={'x': 1}, usage1_fails_build=True),
+    api.expect_status('FAILURE'),
   )

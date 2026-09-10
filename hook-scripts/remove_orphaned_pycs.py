@@ -22,7 +22,7 @@ def main(argv):
     # us an argument, and gclient getcwd() is ../ from our .gclient file. :(
     logging.debug("Cleaning orphaned *.pyc files from: %s" % root)
 
-    for (dirpath, _, filenames) in os.walk(root):
+    for dirpath, _, filenames in os.walk(root):
       fnset = set(filenames)
       for filename in filenames:
         if filename.endswith(".pyc") and filename[:-1] not in fnset:

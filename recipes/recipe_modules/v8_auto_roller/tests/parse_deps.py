@@ -25,6 +25,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   file: file.TEST_API
 
+
 V8_DEPS = """
 vars = {
   'chromium_url': Str('https://chromium.googlesource.com/'),
@@ -45,14 +46,14 @@ deps = {
 def RunSteps(api: DEPS):
   # Add defaults
   autoroller_config = {
-      'show_commit_log': False,
-      'subject': 'Generic deps update',
-      'manual_roll_reviewers': ['maik@example.com'],
+    'show_commit_log': False,
+    'subject': 'Generic deps update',
+    'manual_roll_reviewers': ['maik@example.com'],
   }
 
   update_result = api.v8_auto_roller.setup_target(
-      'v8',
-      'https://chromium.googlesource.com/v8/v8',
+    'v8',
+    'https://chromium.googlesource.com/v8/v8',
   )
   source_dir = update_result.source_root.path
   clm = api.v8_auto_roller.build_cl_manager(source_dir)
@@ -65,23 +66,24 @@ def GenTests(api: TEST_DEPS):
 
   def test(name, chromium_deps, v8_deps, *expectations):
     return api.test(
-        name,
-        api.override_step_data(
-            'Find updated deps.Read v8/DEPS',
-            api.file.read_text(v8_deps),
-        ),
-        api.override_step_data(
-            'Find updated deps.Read src/DEPS',
-            api.file.read_text(chromium_deps),
-        ),
-        *expectations,
-        api.post_process(DropExpectation),
+      name,
+      api.override_step_data(
+        'Find updated deps.Read v8/DEPS',
+        api.file.read_text(v8_deps),
+      ),
+      api.override_step_data(
+        'Find updated deps.Read src/DEPS',
+        api.file.read_text(chromium_deps),
+      ),
+      *expectations,
+      api.post_process(DropExpectation),
     )
 
   yield test(
-      'apply_Var_Str',
-      CHROMIUM_DEPS,
-      V8_DEPS,
-      api.post_process(MustRun,
-                       'Update trusted deps.gclient setdep third_party_icu'),
+    'apply_Var_Str',
+    CHROMIUM_DEPS,
+    V8_DEPS,
+    api.post_process(
+      MustRun, 'Update trusted deps.gclient setdep third_party_icu'
+    ),
   )

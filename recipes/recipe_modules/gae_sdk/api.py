@@ -8,27 +8,25 @@ from recipe_engine import recipe_api
 
 
 class GaeSdkApi(recipe_api.RecipeApi):
-
   PLAT_PYTHON = 'python'
   PLAT_GO = 'go'
 
   # Map of {Platform => {Arch => (base, dirname)}}. Platform names are
   # "recipe_engine/platform" values.
   _PKG_MAP = {
-      PLAT_PYTHON: {
-        'all': ('google_appengine_', 'google_appengine'),
-      },
-      PLAT_GO: {
-        'linux-amd64': ('go_appengine_sdk_linux_amd64-', 'go_appengine'),
-        'mac-amd64': ('go_appengine_sdk_darwin_amd64-', 'go_appengine'),
-      },
+    PLAT_PYTHON: {
+      'all': ('google_appengine_', 'google_appengine'),
+    },
+    PLAT_GO: {
+      'linux-amd64': ('go_appengine_sdk_linux_amd64-', 'go_appengine'),
+      'mac-amd64': ('go_appengine_sdk_darwin_amd64-', 'go_appengine'),
+    },
   }
 
   # Map of architecture bitness to CIPD bitness suffix.
   _BITS_MAP = {
-      64: 'amd64',
+    64: 'amd64',
   }
-
 
   class PackageNotFound(Exception):
     def __init__(self, plat, arch):
@@ -52,7 +50,9 @@ class GaeSdkApi(recipe_api.RecipeApi):
 
   def package(self, plat, arch=None):
     arch = arch or '%s-%s' % (
-        self.m.platform.name, self._BITS_MAP[self.m.platform.bits])
+      self.m.platform.name,
+      self._BITS_MAP[self.m.platform.bits],
+    )
     pkg_name, _, _ = self.package_spec(plat, arch)
     return pkg_name
 
@@ -74,6 +74,6 @@ class GaeSdkApi(recipe_api.RecipeApi):
       dst (path.Path): The destination directory to extract it.
     """
     self.m.cipd.ensure(
-        dst,
-        self.m.cipd.EnsureFile().add_package(
-            self.package(plat), self.latest_ref))
+      dst,
+      self.m.cipd.EnsureFile().add_package(self.package(plat), self.latest_ref),
+    )

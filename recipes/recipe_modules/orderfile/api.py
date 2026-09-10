@@ -12,7 +12,6 @@ from RECIPE_MODULES.depot_tools.bot_update.api import Result
 
 
 class OrderfileApi(recipe_api.RecipeApi):
-
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._use_orderfile = properties.use_orderfile
@@ -59,7 +58,8 @@ class OrderfileApi(recipe_api.RecipeApi):
     ref = self.m.buildbucket.gitiles_commit.ref
     if not ref:
       raise self.m.step.StepFailure(
-          f'Missing ref: {self.m.buildbucket.gitiles_commit}')
+        f'Missing ref: {self.m.buildbucket.gitiles_commit}'
+      )
     # Release ref: refs/branch-heads/4103
     # Main ref: refs/heads/main
     return ref.split('/', 2)[2]
@@ -72,8 +72,9 @@ class OrderfileApi(recipe_api.RecipeApi):
       if self.m.chromium.c.TARGET_BITS == 64:
         return 'arm64'
     raise self.m.step.StepFailure(
-        f'Unsupported arch={self.m.chromium.c.TARGET_ARCH}. Currently only '
-        'arm/arm64 are supported.')
+      f'Unsupported arch={self.m.chromium.c.TARGET_ARCH}. Currently only '
+      'arm/arm64 are supported.'
+    )
 
   def configure_custom_pgo_profile(self, source_dir: Path):
     """Add custom GN args to use the latest PGO profile.
@@ -129,20 +130,24 @@ class OrderfileApi(recipe_api.RecipeApi):
       if not self.m.path.exists(orderfile_path):
         presentation.status = self.m.step.FAILURE
         raise self.m.step.StepFailure(
-            f'Orderfile not found at {orderfile_path}')
+          f'Orderfile not found at {orderfile_path}'
+        )
 
       if not self.upload_orderfile:
         return self.m.step.empty(
-            'skipping upload to CIPD for this generated orderfile as the '
-            'upload_orderfile property is not enabled')
+          'skipping upload to CIPD for this generated orderfile as the '
+          'upload_orderfile property is not enabled'
+        )
 
       if not self.last_uploaded_pgo_filename:
         return self.m.step.empty(
-            'skipping upload to CIPD as last_uploaded_pgo_filename is not set')
+          'skipping upload to CIPD as last_uploaded_pgo_filename is not set'
+        )
       pkg_def = self.m.cipd.PackageDefinition(
-          package_name=self._get_orderfile_package_name(
-              arch, self.m.buildbucket.builder_name),
-          package_root=self.m.profiles.profile_dir(),
+        package_name=self._get_orderfile_package_name(
+          arch, self.m.buildbucket.builder_name
+        ),
+        package_root=self.m.profiles.profile_dir(),
       )
 
       if not self.m.led.led_build:
@@ -156,33 +161,39 @@ class OrderfileApi(recipe_api.RecipeApi):
       pkg_def.add_file(new_orderfile_path)
 
       pgo_profile_path = (
-          source_dir / 'chrome/build/pgo_profiles' /
-          self.last_uploaded_pgo_filename)
+        source_dir
+        / 'chrome/build/pgo_profiles'
+        / self.last_uploaded_pgo_filename
+      )
       if not self.m.path.exists(pgo_profile_path):
         # We need to allow orderfile generation without PGO as currently arm32
         # relies on this. See https://crbug.com/430004881 for context.
         presentation.step_text += (
-            str(pgo_profile_path) +
-            ' profile does not exist, skipping it for CIPD upload.<br/>')
+          str(pgo_profile_path)
+          + ' profile does not exist, skipping it for CIPD upload.<br/>'
+        )
       else:
         presentation.step_text += str(pgo_profile_path) + ' exists.<br/>'
         new_pgo_profile_path = (
-            self.m.profiles.profile_dir() / f'pgo_profile.{arch}.profdata')
+          self.m.profiles.profile_dir() / f'pgo_profile.{arch}.profdata'
+        )
         presentation.step_text += str(new_pgo_profile_path) + '<br/>'
-        self.m.file.copy('copy over PGO profile', pgo_profile_path,
-                         new_pgo_profile_path)
+        self.m.file.copy(
+          'copy over PGO profile', pgo_profile_path, new_pgo_profile_path
+        )
         pkg_def.add_file(new_pgo_profile_path)
 
       revision = result.manifest['src']['revision']
       tags = {
-          'git_revision': revision,
-          'branch': self._branch,
-          'original_pgo_profile': self.last_uploaded_pgo_filename,
+        'git_revision': revision,
+        'branch': self._branch,
+        'original_pgo_profile': self.last_uploaded_pgo_filename,
       }
       if not self.m.led.led_build:
         # TODO(crbug.com/372693140): Only add the latest ref if running on CI
         # not try.
         self.m.bcid_reporter.create_from_pkg(
-            pkg_def, tags=tags, refs=[f'latest-{self._branch}'])
+          pkg_def, tags=tags, refs=[f'latest-{self._branch}']
+        )
 
         self.m.bcid_reporter.report_stage("upload-complete")

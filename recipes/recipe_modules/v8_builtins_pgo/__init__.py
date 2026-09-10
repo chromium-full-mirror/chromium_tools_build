@@ -9,27 +9,27 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium_swarming,
-    v8,
-    v8_orchestrator,
-    v8_tests,
+  chromium_swarming,
+  v8,
+  v8_orchestrator,
+  v8_tests,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    gerrit,
-    gsutil,
+  bot_update,
+  gclient,
+  gerrit,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    file,
-    json,
-    path,
-    raw_io,
-    step,
-    time,
+  buildbucket,
+  cas,
+  context,
+  file,
+  json,
+  path,
+  raw_io,
+  step,
+  time,
 )
 
 
@@ -52,6 +52,7 @@ class DEPS(RecipeScriptApi):
   v8: v8.API
   v8_orchestrator: v8_orchestrator.API
   v8_tests: v8_tests.API
+
 
 from .api import V8BuiltinsPgoApi as API
 from .test_api import V8BuiltinsPgoTestApi as TEST_API

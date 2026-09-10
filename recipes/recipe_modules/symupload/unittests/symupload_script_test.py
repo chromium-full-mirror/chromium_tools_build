@@ -12,26 +12,26 @@ import unittest
 from unittest import mock
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0,
-                os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources')))
+sys.path.insert(
+  0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
+)
 
 import symupload_script
 
 
 class SymuploadTest(unittest.TestCase):
-
   def test_args(self):
     all_args = [
-        '--artifacts',
-        '/some/out/dir/artifact1,/some/out/dir/artifact2',
-        '--api-key-file',
-        '/some/path/api_key_file.txt',
-        '--binary-path',
-        '/some/symupload',
-        '--platform',
-        'mac',
-        '--server-urls',
-        'https://some.url.com,https://some.url2.com',
+      '--artifacts',
+      '/some/out/dir/artifact1,/some/out/dir/artifact2',
+      '--api-key-file',
+      '/some/path/api_key_file.txt',
+      '--binary-path',
+      '/some/symupload',
+      '--platform',
+      'mac',
+      '--server-urls',
+      'https://some.url.com,https://some.url2.com',
     ]
 
     args = symupload_script.parse_arguments(all_args)
@@ -53,19 +53,21 @@ class SymuploadTest(unittest.TestCase):
     server_url = 'https://some.url.com'
     api_key = 'sample_key'
 
-    build_args = symupload_script.build_args(platform, artifact, artifact_type,
-                                             server_url, api_key, True)
+    build_args = symupload_script.build_args(
+      platform, artifact, artifact_type, server_url, api_key, True
+    )
     self.assertTrue(
-        ['--i', '--timeout', '60000', '-p', artifact, server_url, api_key],
-        build_args)
+      ['--i', '--timeout', '60000', '-p', artifact, server_url, api_key],
+      build_args,
+    )
 
     for platform in ['mac', 'linux']:
-      build_args = symupload_script.build_args(platform, artifact,
-                                               artifact_type, server_url,
-                                               api_key, False)
+      build_args = symupload_script.build_args(
+        platform, artifact, artifact_type, server_url, api_key, False
+      )
       self.assertTrue(
-          ['-p', 'sym-upload-v2', '-k', api_key, artifact, server_url],
-          build_args)
+        ['-p', 'sym-upload-v2', '-k', api_key, artifact, server_url], build_args
+      )
 
   @mock.patch('symupload_script.os')
   def test_read_api_key_not_existent(self, mock_os):
@@ -79,8 +81,9 @@ class SymuploadTest(unittest.TestCase):
     key_content = 'fake_key'
 
     mock_os.path.exists.return_value = True
-    with mock.patch('symupload_script.open',
-                    mock.mock_open(read_data=key_content)) as m:
+    with mock.patch(
+      'symupload_script.open', mock.mock_open(read_data=key_content)
+    ) as m:
       result = symupload_script.read_api_key(path)
       m.assert_called_once_with(path, 'r')
       self.assertEqual(result, key_content)
@@ -91,15 +94,16 @@ class SymuploadTest(unittest.TestCase):
     artifact_type = None
     server_url = 'https://some.url.com'
     api_key = 'sample_key'
-    build_args = symupload_script.build_args(platform, artifact, artifact_type,
-                                             server_url, api_key, True)
+    build_args = symupload_script.build_args(
+      platform, artifact, artifact_type, server_url, api_key, True
+    )
     sanitized_args = symupload_script.sanitize_args(build_args, api_key)
     self.assertTrue(sanitized_args[6] == '********')
 
     for platform in ['mac', 'linux']:
-      build_args = symupload_script.build_args(platform, artifact,
-                                               artifact_type, server_url,
-                                               api_key, False)
+      build_args = symupload_script.build_args(
+        platform, artifact, artifact_type, server_url, api_key, False
+      )
       sanitized_args = symupload_script.sanitize_args(build_args, api_key)
       self.assertTrue(sanitized_args[3] == '********')
 
@@ -110,20 +114,21 @@ class SymuploadTest(unittest.TestCase):
     mock_subprocess.check_output.side_effect = [b'help_cmd', b'success!']
     path = '/some/path/api_key_file.txt'
     all_args = [
-        '--artifacts',
-        '/some/out/dir/artifact1',
-        '--api-key-file',
-        path,
-        '--binary-path',
-        '/some/symupload',
-        '--platform',
-        'mac',
-        '--server-urls',
-        'https://some.url.com',
+      '--artifacts',
+      '/some/out/dir/artifact1',
+      '--api-key-file',
+      path,
+      '--binary-path',
+      '/some/symupload',
+      '--platform',
+      'mac',
+      '--server-urls',
+      'https://some.url.com',
     ]
     key_content = 'fake_key'
-    with mock.patch('symupload_script.open',
-                    mock.mock_open(read_data=key_content)) as m:
+    with mock.patch(
+      'symupload_script.open', mock.mock_open(read_data=key_content)
+    ) as m:
       ret_code = symupload_script.main(all_args)
       m.assert_called_once_with(path, 'r')
       self.assertTrue(ret_code == 0)
@@ -139,27 +144,30 @@ class SymuploadTest(unittest.TestCase):
 
     mock_os.path.exists.return_value = True
     error = subprocess.CalledProcessError(
-        returncode=2,
-        cmd=('/some/symupload -p ' + artifact + ' ' + server_url + ' ' +
-             key_content),
-        output='already exists!')
+      returncode=2,
+      cmd=(
+        '/some/symupload -p ' + artifact + ' ' + server_url + ' ' + key_content
+      ),
+      output='already exists!',
+    )
     mock_subprocess.side_effect = [b'help_cmd', error]
 
     all_args = [
-        '--artifacts',
-        artifact,
-        '--api-key-file',
-        path,
-        '--binary-path',
-        binary_path,
-        '--platform',
-        'win',
-        '--server-urls',
-        server_url,
+      '--artifacts',
+      artifact,
+      '--api-key-file',
+      path,
+      '--binary-path',
+      binary_path,
+      '--platform',
+      'win',
+      '--server-urls',
+      server_url,
     ]
 
-    with mock.patch('symupload_script.open',
-                    mock.mock_open(read_data=key_content)):
+    with mock.patch(
+      'symupload_script.open', mock.mock_open(read_data=key_content)
+    ):
       ret_code = symupload_script.main(all_args)
       # retcode 2 should still be treated as retcode 0
       self.assertTrue(ret_code == 0)
@@ -175,20 +183,30 @@ class SymuploadTest(unittest.TestCase):
 
     mock_os.path.exists.return_value = True
     error = subprocess.CalledProcessError(
-        returncode=1,
-        cmd=('/some/symupload -p ' + artifact + ' ' + server_url + ' ' +
-             key_content),
-        output='already exists!')
+      returncode=1,
+      cmd=(
+        '/some/symupload -p ' + artifact + ' ' + server_url + ' ' + key_content
+      ),
+      output='already exists!',
+    )
     mock_subprocess.side_effect = [b'help_cmd', error, b'success!']
 
     all_args = [
-        '--artifacts', artifact + ',' + '/some/out/dir/artifact2',
-        '--api-key-file', path, '--binary-path', binary_path, '--platform',
-        'win', '--server-urls', server_url
+      '--artifacts',
+      artifact + ',' + '/some/out/dir/artifact2',
+      '--api-key-file',
+      path,
+      '--binary-path',
+      binary_path,
+      '--platform',
+      'win',
+      '--server-urls',
+      server_url,
     ]
 
-    with mock.patch('symupload_script.open',
-                    mock.mock_open(read_data=key_content)):
+    with mock.patch(
+      'symupload_script.open', mock.mock_open(read_data=key_content)
+    ):
       ret_code = symupload_script.main(all_args)
       self.assertTrue(ret_code == 1)
 

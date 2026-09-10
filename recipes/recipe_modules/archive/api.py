@@ -13,8 +13,10 @@ from . import manual_bisect_files
 
 from google.protobuf import json_format
 
-from PB.recipe_modules.build.archive.properties import ArchiveData, \
-                                                       InputProperties
+from PB.recipe_modules.build.archive.properties import (
+  ArchiveData,
+  InputProperties,
+)
 from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
 
 from recipe_engine import recipe_api
@@ -37,6 +39,7 @@ MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
 # File that stores the build arguments like GN args.
 ARGS_FILENAME = 'args.gn'
 
+
 class ArchiveApi(recipe_api.RecipeApi):
   """Chromium specific module for zipping, uploading and downloading build
   artifacts implemented as a wrapper around zip_build.py script.
@@ -52,37 +55,42 @@ class ArchiveApi(recipe_api.RecipeApi):
     # This input property is populated by the global property $build/archive.
     self._default_config = props
 
-  def zip_and_upload_build(self,
-                           step_name,
-                           target,
-                           source_dir: Path,
-                           *,
-                           build_url=None,
-                           build_revision=None,
-                           package_dsym_files=False,
-                           exclude_files=None,
-                           exclude_perf_test_files=False,
-                           update_properties=None,
-                           store_by_hash=True,
-                           platform=None,
-                           **kwargs):
+  def zip_and_upload_build(
+    self,
+    step_name,
+    target,
+    source_dir: Path,
+    *,
+    build_url=None,
+    build_revision=None,
+    package_dsym_files=False,
+    exclude_files=None,
+    exclude_perf_test_files=False,
+    update_properties=None,
+    store_by_hash=True,
+    platform=None,
+    **kwargs,
+  ):
     """Returns a step invoking zip_build.py to zip up a Chromium build.
-       If build_url is specified, also uploads the build."""
+    If build_url is specified, also uploads the build."""
     args = [
-        '--target',
-        target,
-        '--gsutil-py-path',
-        self.m.depot_tools.gsutil_py_path,
-        '--staging-dir',
-        self.m.path.cache_dir / 'cs',
-        '--src-dir',
-        source_dir,
+      '--target',
+      target,
+      '--gsutil-py-path',
+      self.m.depot_tools.gsutil_py_path,
+      '--staging-dir',
+      self.m.path.cache_dir / 'cs',
+      '--src-dir',
+      source_dir,
     ]
     if 'build_archive_url' in self.m.properties:
-      args.extend([
-          '--use-build-url-name', '--build-url',
-          self.m.properties['build_archive_url']
-      ])
+      args.extend(
+        [
+          '--use-build-url-name',
+          '--build-url',
+          self.m.properties['build_archive_url'],
+        ]
+      )
     elif build_url:
       args.extend(['--build-url', build_url])
     if build_revision:
@@ -94,12 +102,15 @@ class ArchiveApi(recipe_api.RecipeApi):
     if 'gs_acl' in self.m.properties:
       args.extend(['--gs-acl', self.m.properties['gs_acl']])
     if exclude_perf_test_files and platform:
-      include_bisect_file_list = (
-          manual_bisect_files.CHROME_REQUIRED_FILES.get(platform))
-      include_bisect_strip_list = (
-          manual_bisect_files.CHROME_STRIP_LIST.get(platform))
-      include_bisect_whitelist = (
-          manual_bisect_files.CHROME_WHITELIST_FILES.get(platform))
+      include_bisect_file_list = manual_bisect_files.CHROME_REQUIRED_FILES.get(
+        platform
+      )
+      include_bisect_strip_list = manual_bisect_files.CHROME_STRIP_LIST.get(
+        platform
+      )
+      include_bisect_whitelist = manual_bisect_files.CHROME_WHITELIST_FILES.get(
+        platform
+      )
       if include_bisect_file_list:
         inclusions = ','.join(include_bisect_file_list)
         args.extend(['--include-files', inclusions])
@@ -119,15 +130,15 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     args.extend(['--json-urls', self.m.json.output()])
 
-    kwargs['step_test_data'] = lambda: self.test_api.m.json.output({
-        'storage_url':
-            'gs://zip_build.example.com/output.zip',
-        'zip_url':
-            'https://storage.cloud.google.com/zip_build.example.com/output.zip',
-    })
+    kwargs['step_test_data'] = lambda: self.test_api.m.json.output(
+      {
+        'storage_url': 'gs://zip_build.example.com/output.zip',
+        'zip_url': 'https://storage.cloud.google.com/zip_build.example.com/output.zip',
+      }
+    )
     cmd = [
-        'python3',
-        self.repo_resource('recipes', 'zip_build.py'),
+      'python3',
+      self.repo_resource('recipes', 'zip_build.py'),
     ] + args
     result = self.m.step(step_name, cmd, infra_step=True, **kwargs)
     urls = result.json.output
@@ -145,8 +156,9 @@ class ArchiveApi(recipe_api.RecipeApi):
       key = 'got_%s_revision_cp' % primary_project
     else:
       key = 'got_revision_cp'
-    return update_properties.get(key,
-                                 update_properties.get('got_src_revision_cp'))
+    return update_properties.get(
+      key, update_properties.get('got_src_revision_cp')
+    )
 
   def _get_git_commit(self, update_properties, primary_project):
     """Returns: (str/None) the git commit hash for a given project.
@@ -177,11 +189,11 @@ class ArchiveApi(recipe_api.RecipeApi):
     return str(number)
 
   def _collect_runtime_deps(
-      self,
-      compile_targets: list[str],
-      source_dir: Path,
-      build_dir: Path,
-      archive_root: Path,
+    self,
+    compile_targets: list[str],
+    source_dir: Path,
+    build_dir: Path,
+    archive_root: Path,
   ) -> list[str]:
     """Collects the necessary runtime dependencies for the compile targets by
     reading the `.runtime_deps` file for each target in the `build_dir`.
@@ -197,22 +209,25 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     with self.m.context(cwd=source_dir):
       with self.m.step.nest(
-          'collect runtime deps for compile targets') as step_result:
+        'collect runtime deps for compile targets'
+      ) as step_result:
         for target in compile_targets:
           target_name = target.removesuffix('.exe')
           deps_file = build_dir / f'{target_name}.runtime_deps'
           deps_content = self.m.file.read_text(
-              f'read {target_name}.runtime_deps',
-              deps_file,
-              test_data=f'./{target}\n'
-              f'./{target_name}_dependency\n'
-              '../../testing/data/fuzzer_seed.txt')
+            f'read {target_name}.runtime_deps',
+            deps_file,
+            test_data=f'./{target}\n'
+            f'./{target_name}_dependency\n'
+            '../../testing/data/fuzzer_seed.txt',
+          )
           deps = deps_content.splitlines()
           runtime_deps.update(
-              # relpath() resolves paths relative to archive_root and normalizes
-              # the paths (removes trailing slashes on directory dependencies).
-              self.m.path.relpath(build_dir / dep, archive_root)
-              for dep in deps)
+            # relpath() resolves paths relative to archive_root and normalizes
+            # the paths (removes trailing slashes on directory dependencies).
+            self.m.path.relpath(build_dir / dep, archive_root)
+            for dep in deps
+          )
           # Archive the .runtime_deps file itself, as it is needed by
           # ClusterFuzz to do target unpacking for coverage-guided fuzzers.
           runtime_deps.add(self.m.path.relpath(deps_file, archive_root))
@@ -220,19 +235,21 @@ class ArchiveApi(recipe_api.RecipeApi):
         step_result.logs['paths_to_archive'] = runtime_deps
     return runtime_deps
 
-  def clusterfuzz_archive_targets(self,
-                                  source_dir: Path,
-                                  archive_root: Path,
-                                  update_properties,
-                                  gs_bucket,
-                                  archive_prefix,
-                                  build_config,
-                                  compile_targets: list[str],
-                                  build_dir: Path,
-                                  *,
-                                  archive_schema_version: int = 1,
-                                  fuzz_targets: list[str] | None = None,
-                                  **kwargs) -> None:
+  def clusterfuzz_archive_targets(
+    self,
+    source_dir: Path,
+    archive_root: Path,
+    update_properties,
+    gs_bucket,
+    archive_prefix,
+    build_config,
+    compile_targets: list[str],
+    build_dir: Path,
+    *,
+    archive_schema_version: int = 1,
+    fuzz_targets: list[str] | None = None,
+    **kwargs,
+  ) -> None:
     """Wrapper for clusterfuzz_archive that collects runtime deps for GN
     targets.
 
@@ -257,8 +274,9 @@ class ArchiveApi(recipe_api.RecipeApi):
     if not compile_targets:
       raise ValueError("compile_targets must be provided and non-empty")
 
-    runtime_deps = self._collect_runtime_deps(compile_targets, source_dir,
-                                              build_dir, archive_root)
+    runtime_deps = self._collect_runtime_deps(
+      compile_targets, source_dir, build_dir, archive_root
+    )
     args_file_path = build_dir / ARGS_FILENAME
     args_file = self.m.path.relpath(args_file_path, archive_root)
     paths_to_archive = [MANIFEST_FILENAME, args_file]
@@ -268,53 +286,56 @@ class ArchiveApi(recipe_api.RecipeApi):
       paths_to_archive.extend(runtime_deps)
 
     manifest_dict = {
-        'archive_schema_version': archive_schema_version,
+      'archive_schema_version': archive_schema_version,
     }
 
     if fuzz_targets is not None:
       manifest_dict['fuzz_targets'] = [
-          self.m.path.relpath(build_dir / target, archive_root)
-          for target in fuzz_targets
+        self.m.path.relpath(build_dir / target, archive_root)
+        for target in fuzz_targets
       ]
 
     self.m.file.write_json(
-        'write archive manifest',
-        archive_root / MANIFEST_FILENAME,
-        manifest_dict,
+      'write archive manifest',
+      archive_root / MANIFEST_FILENAME,
+      manifest_dict,
     )
 
     self.clusterfuzz_archive(
-        source_dir=source_dir,
-        archive_root=archive_root,
-        update_properties=update_properties,
-        gs_bucket=gs_bucket,
-        archive_prefix=archive_prefix,
-        build_config=build_config,
-        paths_to_archive=paths_to_archive,
-        **kwargs)
+      source_dir=source_dir,
+      archive_root=archive_root,
+      update_properties=update_properties,
+      gs_bucket=gs_bucket,
+      archive_prefix=archive_prefix,
+      build_config=build_config,
+      paths_to_archive=paths_to_archive,
+      **kwargs,
+    )
 
   # TODO(518016282): Make this method private (e.g. rename to
   # `_clusterfuzz_archive`) once all builders have switched to
   # `clusterfuzz_archive_targets`.
-  def clusterfuzz_archive(self,
-                          source_dir: Path,
-                          archive_root: Path,
-                          update_properties,
-                          gs_bucket,
-                          archive_prefix,
-                          build_config,
-                          *,
-                          archive_path: str | None = None,
-                          use_archive_path: bool = False,
-                          paths_to_archive: list[str] | None = None,
-                          archive_subdir_suffix='',
-                          gs_acl=None,
-                          revision_dir=None,
-                          primary_project=None,
-                          bitness=None,
-                          use_legacy=True,
-                          sortkey_datetime=None,
-                          **kwargs) -> None:
+  def clusterfuzz_archive(
+    self,
+    source_dir: Path,
+    archive_root: Path,
+    update_properties,
+    gs_bucket,
+    archive_prefix,
+    build_config,
+    *,
+    archive_path: str | None = None,
+    use_archive_path: bool = False,
+    paths_to_archive: list[str] | None = None,
+    archive_subdir_suffix='',
+    gs_acl=None,
+    revision_dir=None,
+    primary_project=None,
+    bitness=None,
+    use_legacy=True,
+    sortkey_datetime=None,
+    **kwargs,
+  ) -> None:
     # TODO(machenbach): Merge revision_dir and primary_project. The
     # revision_dir is only used for building the archive name while the
     # primary_project is authoritative for the commit position.
@@ -389,11 +410,13 @@ class ArchiveApi(recipe_api.RecipeApi):
     if sortkey_datetime is not None:
       sortkey_path = sortkey_datetime.strftime('%Y%m%d%H%M')
     else:
-      commit_position = self._get_commit_position(update_properties,
-                                                  primary_project)
+      commit_position = self._get_commit_position(
+        update_properties, primary_project
+      )
       cp_ref, cp_number = self.m.commit_position.parse(commit_position)
       sortkey_path = self._get_comparable_upload_path_for_sort_key(
-          cp_ref, cp_number)
+        cp_ref, cp_number
+      )
       gs_metadata[GS_COMMIT_POSITION_NUMBER_KEY] = cp_number
       if commit_position:
         gs_metadata[GS_COMMIT_POSITION_KEY] = commit_position
@@ -402,15 +425,17 @@ class ArchiveApi(recipe_api.RecipeApi):
     self.m.file.ensure_directory('create staging_dir', staging_dir)
 
     lzma_sdk_args = []
-    can_fetch_7zip = self.m.platform.is_mac or (self.m.platform.is_linux and
-                                                self.m.platform.arch == "intel"
-                                                and self.m.platform.bits == 64)
+    can_fetch_7zip = self.m.platform.is_mac or (
+      self.m.platform.is_linux
+      and self.m.platform.arch == "intel"
+      and self.m.platform.bits == 64
+    )
     if self.m.path.exists(source_dir) and self.m.platform.is_win:
       lzma_sdk_args = [source_dir / 'third_party/lzma_sdk/bin/win64']
     elif can_fetch_7zip:
       cipd_pkg = 'infra/3pp/tools/7z/${platform}'
       lzma_sdk_args = [
-          os.path.dirname(str(self.m.cipd.ensure_tool(cipd_pkg, 'latest')))
+        os.path.dirname(str(self.m.cipd.ensure_tool(cipd_pkg, 'latest')))
       ]
 
     if paths_to_archive:
@@ -438,14 +463,19 @@ class ArchiveApi(recipe_api.RecipeApi):
       if not self.m.platform.is_win:
         llvm_lib_dir = source_dir / 'third_party/llvm-build/Release+Asserts/lib'
         libstdcplusplus_lib = 'libstdc++.so.6'
-        libstdcplusplus_lib_src = self.m.path.join(llvm_lib_dir,
-                                                   libstdcplusplus_lib)
-        libstdcplusplus_lib_dst = self.m.path.join(archive_root,
-                                                   libstdcplusplus_lib)
+        libstdcplusplus_lib_src = self.m.path.join(
+          llvm_lib_dir, libstdcplusplus_lib
+        )
+        libstdcplusplus_lib_dst = self.m.path.join(
+          archive_root, libstdcplusplus_lib
+        )
         if self.m.path.exists(libstdcplusplus_lib_src):
           try:
-            self.m.file.copy('Copy ' + libstdcplusplus_lib,
-                             libstdcplusplus_lib_src, libstdcplusplus_lib_dst)
+            self.m.file.copy(
+              'Copy ' + libstdcplusplus_lib,
+              libstdcplusplus_lib_src,
+              libstdcplusplus_lib_dst,
+            )
           except self.m.step.StepFailure:  # pragma: no cover
             # On some builds, it appears that a soft/hard link of libstdc++.so.6
             # exists in the archive root, which causes shutil.copy to raise an
@@ -454,27 +484,29 @@ class ArchiveApi(recipe_api.RecipeApi):
 
       # Build the list of files to archive.
       cmd = [
-          'python3',
-          self.resource('filter_build_files.py'),
-          '--dir',
-          archive_root,
-          '--platform',
-          self.m.platform.name,
-          '--output',
-          self.m.json.output(),
+        'python3',
+        self.resource('filter_build_files.py'),
+        '--dir',
+        archive_root,
+        '--platform',
+        self.m.platform.name,
+        '--output',
+        self.m.json.output(),
       ]
       filter_result = self.m.step(
-          'filter archive_root',
-          cmd,
-          infra_step=True,
-          step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']
-                                                            ),
-          **kwargs)
+        'filter archive_root',
+        cmd,
+        infra_step=True,
+        step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']),
+        **kwargs,
+      )
 
       zip_file_list = filter_result.json.output
 
     if use_archive_path:
-      assert archive_path, 'archive_path must be provided if use_archive_path is True'
+      assert archive_path, (
+        'archive_path must be provided if use_archive_path is True'
+      )
       zip_file_base_name = os.path.basename(archive_path)
       subdir = os.path.dirname(archive_path)
     else:
@@ -502,14 +534,19 @@ class ArchiveApi(recipe_api.RecipeApi):
       if revision_dir:
         component = '-%s-component' % revision_dir
 
-      zip_file_base_name = '%s-%s-%s%s' % (archive_prefix, platform_name,
-                                           target_name, component)
+      zip_file_base_name = '%s-%s-%s%s' % (
+        archive_prefix,
+        platform_name,
+        target_name,
+        component,
+      )
 
       if archive_path:
         derived_path = f'{subdir}/{zip_file_base_name}'
         assert derived_path == archive_path, (
-            f'Derived path \'{derived_path}\' does not match configured '
-            f'archive_path \'{archive_path}\'')
+          f'Derived path \'{derived_path}\' does not match configured '
+          f'archive_path \'{archive_path}\''
+        )
 
     # `zip_file_base_name` is the file name minus the `.zip` extension, as
     # expected by `zip_archive.py`.
@@ -518,11 +555,17 @@ class ArchiveApi(recipe_api.RecipeApi):
       zip_file_base_name += '-experimental'
 
     cmd = [
-        'python3',
-        self.resource('zip_archive.py'), '--output-dir', staging_dir,
-        '--archive-name', zip_file_base_name, '--json-file-list',
-        self.m.json.input(zip_file_list), '--file-relative-dir', archive_root,
-        '--no-root-dir'
+      'python3',
+      self.resource('zip_archive.py'),
+      '--output-dir',
+      staging_dir,
+      '--archive-name',
+      zip_file_base_name,
+      '--json-file-list',
+      self.m.json.input(zip_file_list),
+      '--file-relative-dir',
+      archive_root,
+      '--no-root-dir',
     ]
     if len(lzma_sdk_args) > 0:
       cmd.extend(['--lzma-sdk-dir'] + lzma_sdk_args)
@@ -540,33 +583,35 @@ class ArchiveApi(recipe_api.RecipeApi):
     # Only upload to GCS from CI bots, for ClusterFuzz to consume.
     if not self.m.tryserver.is_tryserver:
       self.m.gsutil.upload(
-          zip_file,
-          gs_bucket,
-          "/".join([subdir, zip_file_name]),
-          args=gs_args,
-          metadata=gs_metadata,
-          use_retry_wrapper=False,
+        zip_file,
+        gs_bucket,
+        "/".join([subdir, zip_file_name]),
+        args=gs_args,
+        metadata=gs_metadata,
+        use_retry_wrapper=False,
       )
     self.m.file.remove(zip_file_name, zip_file)
 
-  def download_and_unzip_build(self,
-                               step_name,
-                               target,
-                               build_url,
-                               source_dir: Path,
-                               *,
-                               build_revision=None,
-                               build_archive_url=None,
-                               **kwargs):
+  def download_and_unzip_build(
+    self,
+    step_name,
+    target,
+    build_url,
+    source_dir: Path,
+    *,
+    build_revision=None,
+    build_archive_url=None,
+    **kwargs,
+  ):
     """Returns a step invoking extract_build.py to download and unzip
-       a Chromium build."""
+    a Chromium build."""
     args = [
-        '--gsutil-py-path',
-        self.m.depot_tools.gsutil_py_path,
-        '--target',
-        target,
-        '--src-dir',
-        source_dir,
+      '--gsutil-py-path',
+      self.m.depot_tools.gsutil_py_path,
+      '--target',
+      target,
+      '--src-dir',
+      source_dir,
     ]
     if build_archive_url:
       args.extend(['--build-archive-url', build_archive_url])
@@ -576,8 +621,8 @@ class ArchiveApi(recipe_api.RecipeApi):
         args.extend(['--build_revision', build_revision])
 
     cmd = [
-        'python3',
-        self.repo_resource('recipes', 'extract_build.py'),
+      'python3',
+      self.repo_resource('recipes', 'extract_build.py'),
     ] + args
     self.m.step(step_name, cmd, infra_step=True, **kwargs)
 
@@ -620,14 +665,20 @@ class ArchiveApi(recipe_api.RecipeApi):
     protects production builds from intererence from experimentation.
     """
 
-    result = ('gs://' + gs_bucket_name)
+    result = 'gs://' + gs_bucket_name
     if self.m.runtime.is_experimental:
-      result += ('/experimental')
+      result += '/experimental'
     if extra_url_components:
-      result += ('/' + extra_url_components)
+      result += '/' + extra_url_components
     if is_download:
-      result += ('/' + self.m.properties['parent_buildername'] + '/' +
-                 'full-build-' + self.legacy_platform_name() + '.zip')
+      result += (
+        '/'
+        + self.m.properties['parent_buildername']
+        + '/'
+        + 'full-build-'
+        + self.legacy_platform_name()
+        + '.zip'
+      )
     else:
       result += '/' + self.m.buildbucket.builder_name
     return result
@@ -655,13 +706,14 @@ class ArchiveApi(recipe_api.RecipeApi):
     return self._legacy_url(True, gs_bucket_name, extra_url_components)
 
   def _create_tar_archive_for_upload(
-      self,
-      archive_data: InputProperties.archive_datas,
-      build_dir: typing.Text,
-      files: typing.List[typing.Text],
-      directories: typing.List[typing.Text],
-      compression: typing.Text = 'gz',
-      compression_level: typing.Optional[int] = None) -> None:
+    self,
+    archive_data: InputProperties.archive_datas,
+    build_dir: typing.Text,
+    files: typing.List[typing.Text],
+    directories: typing.List[typing.Text],
+    compression: typing.Text = 'gz',
+    compression_level: typing.Optional[int] = None,
+  ) -> None:
     """Adds files and dirs to a tar.gz file to be uploaded.
 
     Args:
@@ -683,8 +735,9 @@ class ArchiveApi(recipe_api.RecipeApi):
     suffix = {'gz': 'gz', 'zstd': 'zst'}[compression]
     tmp_dir = self.m.path.mkdtemp()
     output = tmp_dir / 'artifact.tar.{}'.format(suffix)
-    pkg = self.m.tar.make_package(build_dir, output, compression,
-                                  compression_level)
+    pkg = self.m.tar.make_package(
+      build_dir, output, compression, compression_level
+    )
 
     for f in files:
       pkg.add_file(build_dir / f)
@@ -701,8 +754,9 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     return output
 
-  def _create_zip_archive_for_upload(self, archive_data, build_dir, files,
-                                     directories):
+  def _create_zip_archive_for_upload(
+    self, archive_data, build_dir, files, directories
+  ):
     """Adds files and directories to a zip file to be uploaded.
 
     Args:
@@ -745,16 +799,18 @@ class ArchiveApi(recipe_api.RecipeApi):
     def step_test_data():
       contents = '\n'.join(['MAJOR=91', 'MINOR=0', 'BUILD=4458', 'PATCH=0'])
       response_data = base64.b64encode(contents.encode('utf-8')).decode('ascii')
-      return self.m.json.test_api.output({
+      return self.m.json.test_api.output(
+        {
           'value': response_data,
-      })
+        }
+      )
 
     contents = self.m.gitiles.download_file(
-        "https://chromium.googlesource.com/chromium/src.git/",
-        base_name,
-        branch='refs/heads/main',
-        step_name='fetch milestone_branch',
-        step_test_data=step_test_data,
+      "https://chromium.googlesource.com/chromium/src.git/",
+      base_name,
+      branch='refs/heads/main',
+      step_name='fetch milestone_branch',
+      step_test_data=step_test_data,
     )
     canary_milestone = int(contents.split('\n')[0].split('=')[1])
 
@@ -792,9 +848,10 @@ class ArchiveApi(recipe_api.RecipeApi):
       # Channel name for old milestones set to legacy.
       return 'legacy%s' % milestone
     self.m.step.empty(  # pragma: no cover
-        'Unknown channel',
-        status=self.m.step.FAILURE,
-        step_text='Can not find channel for milestone: %s' % milestone)
+      'Unknown channel',
+      status=self.m.step.FAILURE,
+      step_text='Can not find channel for milestone: %s' % milestone,
+    )
 
   def _evaluate_condition(self, source_dir: Path, condition):
     """Evaluates a condition from the following `when` placeholder. See
@@ -806,16 +863,17 @@ class ArchiveApi(recipe_api.RecipeApi):
     if condition == 'is_canary':
       return self.get_channel_name(source_dir) == 'canary'
     self.m.step.empty(
-        'Unknown condition',
-        status=self.m.step.FAILURE,
-        step_text=condition + ' can not be evaluated')
+      'Unknown condition',
+      status=self.m.step.FAILURE,
+      step_text=condition + ' can not be evaluated',
+    )
 
   def _replace_placeholders(
-      self,
-      source_dir: Path,
-      update_properties,
-      custom_vars,
-      input_str,
+    self,
+    source_dir: Path,
+    update_properties,
+    custom_vars,
+    input_str,
   ):
     # Evaluate the condition placeholder formatting like:
     # {% text when condition %}.
@@ -828,12 +886,15 @@ class ArchiveApi(recipe_api.RecipeApi):
     # the builder is running on canary. E.g.
     # {% m{%milestone}_fuchsia_ready when is_canary %}.
     for placeholder, value, condition in re.findall(
-        '({%\s(.*?)\swhen\s(.*?)\s%})', input_str):
+      '({%\s(.*?)\swhen\s(.*?)\s%})', input_str
+    ):
       if self._evaluate_condition(source_dir, condition):
         input_str = input_str.replace(
-            placeholder,
-            self._replace_placeholders(source_dir, update_properties,
-                                       custom_vars, value))
+          placeholder,
+          self._replace_placeholders(
+            source_dir, update_properties, custom_vars, value
+          ),
+        )
       else:
         input_str = input_str.replace(placeholder, '')
 
@@ -842,19 +903,22 @@ class ArchiveApi(recipe_api.RecipeApi):
       commit_position = self._get_commit_position(update_properties, None)
       if not commit_position:
         self.m.step.empty(
-            'Missing position placeholder',
-            status=self.m.step.FAILURE,
-            step_text=(
-                'got_revision_cp or got_src_revision_cp is needed to populate '
-                'the {%position%} placeholder'))
+          'Missing position placeholder',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'got_revision_cp or got_src_revision_cp is needed to populate '
+            'the {%position%} placeholder'
+          ),
+        )
       _, position = self.m.commit_position.parse(commit_position)
       input_str = input_str.replace(position_placeholder, str(position))
 
     milestone_position_placeholder = '{%milestone_position%}'
     if milestone_position_placeholder in input_str:
       milestone_position = self._get_milestone_position(source_dir)
-      input_str = input_str.replace(milestone_position_placeholder,
-                                    milestone_position)
+      input_str = input_str.replace(
+        milestone_position_placeholder, milestone_position
+      )
 
     channel_placeholder = '{%channel%}'
     if channel_placeholder in input_str:
@@ -863,18 +927,23 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     arch_placeholder = '{%arch%}'
     if arch_placeholder in input_str:
-      if (self.m.chromium.c.TARGET_ARCH == 'arm' and
-          self.m.chromium.c.TARGET_BITS in (64, 32)):
+      if (
+        self.m.chromium.c.TARGET_ARCH == 'arm'
+        and self.m.chromium.c.TARGET_BITS in (64, 32)
+      ):
         arch = 'arm' + str(self.m.chromium.c.TARGET_BITS)
-      elif (self.m.chromium.c.TARGET_ARCH == 'intel' and
-            self.m.chromium.c.TARGET_BITS == 64):
+      elif (
+        self.m.chromium.c.TARGET_ARCH == 'intel'
+        and self.m.chromium.c.TARGET_BITS == 64
+      ):
         arch = 'amd64'
       else:  # pragma: no cover
         self.m.step.empty(
-            'Unresolved placeholder',
-            status=self.m.step.FAILURE,
-            step_text='Unsupported value for arch placeholder: %s-%d' %
-            (self.m.chromium.c.TARGET_ARCH, self.m.chromium.c.TARGET_BITS))
+          'Unresolved placeholder',
+          status=self.m.step.FAILURE,
+          step_text='Unsupported value for arch placeholder: %s-%d'
+          % (self.m.chromium.c.TARGET_ARCH, self.m.chromium.c.TARGET_BITS),
+        )
       input_str = input_str.replace(arch_placeholder, arch)
 
     commit_placeholder = '{%commit%}'
@@ -882,10 +951,12 @@ class ArchiveApi(recipe_api.RecipeApi):
       commit = self._get_git_commit(update_properties, None)
       if not commit:
         self.m.step.empty(
-            'Missing commit placeholder',
-            status=self.m.step.FAILURE,
-            step_text=('got_revision is needed to populate '
-                       'the {%commit%} placeholder'))
+          'Missing commit placeholder',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'got_revision is needed to populate the {%commit%} placeholder'
+          ),
+        )
       input_str = input_str.replace(commit_placeholder, commit)
 
     timestamp_placeholder = '{%timestamp%}'
@@ -896,8 +967,12 @@ class ArchiveApi(recipe_api.RecipeApi):
     chromium_version_placeholder = '{%chromium_version%}'
     if chromium_version_placeholder in input_str:
       version = self.m.chromium.get_version(source_dir)
-      value = "%s.%s.%s.%s" % (version['MAJOR'], version['MINOR'],
-                               version['BUILD'], version['PATCH'])
+      value = "%s.%s.%s.%s" % (
+        version['MAJOR'],
+        version['MINOR'],
+        version['BUILD'],
+        version['PATCH'],
+      )
       input_str = input_str.replace(chromium_version_placeholder, value)
 
     builder_name_placeholder = '{%builder_name%}'
@@ -913,8 +988,8 @@ class ArchiveApi(recipe_api.RecipeApi):
     milestone_placeholder = '{%milestone%}'
     if milestone_placeholder in input_str:
       input_str = input_str.replace(
-          milestone_placeholder,
-          self.m.chromium.get_version(source_dir)['MAJOR'])
+        milestone_placeholder, self.m.chromium.get_version(source_dir)['MAJOR']
+      )
 
     if custom_vars:
       for placeholder, key in re.findall('({%(.*?)%})', input_str):
@@ -922,9 +997,10 @@ class ArchiveApi(recipe_api.RecipeApi):
           input_str = input_str.replace(placeholder, custom_vars[key])
         else:
           self.m.step.empty(
-              'Unresolved placeholder',
-              status=self.m.step.FAILURE,
-              step_text=placeholder + ' can not be resolved')
+            'Unresolved placeholder',
+            status=self.m.step.FAILURE,
+            step_text=placeholder + ' can not be resolved',
+          )
 
     return input_str
 
@@ -938,23 +1014,26 @@ class ArchiveApi(recipe_api.RecipeApi):
   def _read_source_side_archive_spec(self, source_side_archive_spec_path):
     if not self.m.path.exists(source_side_archive_spec_path):
       self.m.step.empty(
-          'Could not find specified archive config',
-          status=self.m.step.INFRA_FAILURE,
-          step_text=f'{source_side_archive_spec_path} archive spec does not exist.'
+        'Could not find specified archive config',
+        status=self.m.step.INFRA_FAILURE,
+        step_text=f'{source_side_archive_spec_path} archive spec does not exist.',
       )
     source_side_archive_spec = self.m.file.read_json(
-        'read archive spec (%s)' %
-        self.m.path.basename(source_side_archive_spec_path),
-        source_side_archive_spec_path,
-        test_data={})
+      'read archive spec (%s)'
+      % self.m.path.basename(source_side_archive_spec_path),
+      source_side_archive_spec_path,
+      test_data={},
+    )
     self.m.step.active_result.presentation.step_text = (
-        'path: %s' % source_side_archive_spec_path)
+      'path: %s' % source_side_archive_spec_path
+    )
     return source_side_archive_spec
 
   def _get_source_side_archive_spec(self, checkout_dir: Path, spec_path):
     source_side_archive_spec_path = checkout_dir.joinpath(*spec_path)
     archive_spec = self._read_source_side_archive_spec(
-        source_side_archive_spec_path)
+      source_side_archive_spec_path
+    )
     return archive_spec
 
   def _get_archive_config(self, checkout_dir: Path, config):
@@ -965,12 +1044,12 @@ class ArchiveApi(recipe_api.RecipeApi):
       return config
 
     source_side_archive_spec = self._get_source_side_archive_spec(
-        checkout_dir, config.source_side_spec_path)
+      checkout_dir, config.source_side_spec_path
+    )
     if source_side_archive_spec:
       source_side_config = json_format.ParseDict(
-          source_side_archive_spec,
-          InputProperties(),
-          ignore_unknown_fields=True)
+        source_side_archive_spec, InputProperties(), ignore_unknown_fields=True
+      )
       if config.verify_paths_only:
         source_side_config.verify_paths_only = True
       return source_side_config
@@ -1009,37 +1088,41 @@ class ArchiveApi(recipe_api.RecipeApi):
     expanded_files = set()
     for filename in file_globs:
       for f in self.m.file.glob_paths(
-          'expand file globs',
-          base_path,
-          filename,
-          test_data=('glob1.txt', 'glob2.txt')):
+        'expand file globs',
+        base_path,
+        filename,
+        test_data=('glob1.txt', 'glob2.txt'),
+      ):
         # Turn the returned Path object back into a string relative to
         # base_path.
         assert base_path.base == f.base
         assert base_path in f.parents
-        common_pieces = f.pieces[len(base_path.pieces):]
+        common_pieces = f.pieces[len(base_path.pieces) :]
         expanded_files.add(os.path.sep.join(common_pieces))
     return expanded_files
 
-  def _verify_gcs_archive_paths(self, checkout_dir: Path, build_dir: Path,
-                                archive_data):
+  def _verify_gcs_archive_paths(
+    self, checkout_dir: Path, build_dir: Path, archive_data
+  ):
     base_path = build_dir
     if archive_data.base_dir:
       base_path = checkout_dir / archive_data.base_dir
 
     expanded_files = set(archive_data.files)
-    expanded_files |= self._expand_archive_files(base_path,
-                                                 archive_data.file_globs)
+    expanded_files |= self._expand_archive_files(
+      base_path, archive_data.file_globs
+    )
     self._validate_paths('files', archive_data, base_path, expanded_files)
-    self._validate_paths('directories', archive_data, base_path,
-                         list(archive_data.dirs))
+    self._validate_paths(
+      'directories', archive_data, base_path, list(archive_data.dirs)
+    )
 
   def _verify_archive_paths(
-      self,
-      checkout_dir: Path,
-      build_dir: Path,
-      *,
-      archive_config: InputProperties = None,
+    self,
+    checkout_dir: Path,
+    build_dir: Path,
+    *,
+    archive_config: InputProperties = None,
   ):
     """Verify the existence of the paths in archive config."""
     with self.m.step.nest('Verify Archive Paths', status='last'):
@@ -1047,20 +1130,23 @@ class ArchiveApi(recipe_api.RecipeApi):
         self._verify_gcs_archive_paths(checkout_dir, build_dir, archive_data)
       if archive_config.cipd_archive_datas:
         raise self.m.step.StepFailure(
-            'verify_paths_only only applies to archive_datas '
-            'but cipd_archive_datas specified.')
+          'verify_paths_only only applies to archive_datas '
+          'but cipd_archive_datas specified.'
+        )
 
-  def generic_archive(self,
-                      checkout_dir: Path,
-                      source_dir: Path,
-                      build_dir: Path,
-                      update_properties,
-                      *,
-                      custom_vars=None,
-                      config=None,
-                      report_artifacts=False,
-                      use_hardlink=False,
-                      generate_sboms=False):
+  def generic_archive(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    update_properties,
+    *,
+    custom_vars=None,
+    config=None,
+    report_artifacts=False,
+    use_hardlink=False,
+    generate_sboms=False,
+  ):
     """Archives one or multiple packages to either google cloud storage or CIPD.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -1107,49 +1193,56 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     archive_config = self._get_archive_config(checkout_dir, config)
 
-    if (not archive_config.archive_datas and
-        not archive_config.cipd_archive_datas):
+    if (
+      not archive_config.archive_datas and not archive_config.cipd_archive_datas
+    ):
       return upload_results
 
     if archive_config.verify_paths_only:
       self._verify_archive_paths(
-          checkout_dir, build_dir, archive_config=archive_config)
+        checkout_dir, build_dir, archive_config=archive_config
+      )
       return upload_results
 
     with self.m.step.nest('Generic Archiving Steps', status='last'):
       for archive_data in archive_config.archive_datas:
         if not archive_data.only_upload_on_tests_success:
           gcs_uploads = self.gcs_archive(
-              checkout_dir,
-              source_dir,
-              build_dir,
-              update_properties,
-              archive_data,
-              custom_vars=custom_vars,
-              generate_sboms=generate_sboms,
-              report_artifacts=report_artifacts,
-              use_hardlink=use_hardlink)
+            checkout_dir,
+            source_dir,
+            build_dir,
+            update_properties,
+            archive_data,
+            custom_vars=custom_vars,
+            generate_sboms=generate_sboms,
+            report_artifacts=report_artifacts,
+            use_hardlink=use_hardlink,
+          )
           upload_results['gcs'].append(gcs_uploads)
       for cipd_archive_data in archive_config.cipd_archive_datas:
         upload_results['cipd'].update(
-            self.cipd_archive(
-                source_dir,
-                build_dir,
-                update_properties,
-                custom_vars,
-                cipd_archive_data,
-                report_artifacts=report_artifacts))
+          self.cipd_archive(
+            source_dir,
+            build_dir,
+            update_properties,
+            custom_vars,
+            cipd_archive_data,
+            report_artifacts=report_artifacts,
+          )
+        )
     return upload_results
 
-  def generic_archive_after_tests(self,
-                                  checkout_dir: Path,
-                                  source_dir: Path,
-                                  build_dir: Path,
-                                  *,
-                                  config=None,
-                                  upload_results=None,
-                                  test_success=False):
-    """ Additional archiving steps after tests run.
+  def generic_archive_after_tests(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    *,
+    config=None,
+    upload_results=None,
+    test_success=False,
+  ):
+    """Additional archiving steps after tests run.
 
     For google cloud storage packages, they will only be uploaded in this step
     if test_success is True and only_upload_on_tests_success is set to True,
@@ -1169,8 +1262,9 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     archive_config = self._get_archive_config(checkout_dir, config)
 
-    if (not archive_config.archive_datas and
-        not archive_config.cipd_archive_datas):
+    if (
+      not archive_config.archive_datas and not archive_config.cipd_archive_datas
+    ):
       return
 
     if archive_config.verify_paths_only:
@@ -1180,52 +1274,57 @@ class ArchiveApi(recipe_api.RecipeApi):
       for archive_data in archive_config.archive_datas:
         if archive_data.only_upload_on_tests_success:
           self.gcs_archive(
-              checkout_dir,
-              source_dir,
-              build_dir,
-              upload_results['update_properties'],
-              archive_data,
-              custom_vars=upload_results['custom_vars'],
+            checkout_dir,
+            source_dir,
+            build_dir,
+            upload_results['update_properties'],
+            archive_data,
+            custom_vars=upload_results['custom_vars'],
           )
       if upload_results['cipd']:
         for pkg in upload_results['cipd']:
           self.m.cipd.set_ref(
-              package_name=pkg,
-              version=upload_results['cipd'][pkg]['instance'],
-              refs=upload_results['cipd'][pkg]['refs'])
+            package_name=pkg,
+            version=upload_results['cipd'][pkg]['instance'],
+            refs=upload_results['cipd'][pkg]['refs'],
+          )
 
   def batch_copy(self, src, dst, file_list):
     input_file_list = self.m.path.mkstemp()
     self.m.file.write_text(
-        'Write file list to copy',
-        input_file_list,
-        (os.linesep).join(sorted(file_list)),
+      'Write file list to copy',
+      input_file_list,
+      (os.linesep).join(sorted(file_list)),
     )
     self.m.step(
-        'Copy files to a temp folder', [
-            'vpython3',
-            self.resource('batch.py'),
-            'copy',
-            '--des-dir',
-            dst,
-            '--base-dir',
-            src,
-            '--input-file-list',
-            input_file_list,
-        ],
-        infra_step=True)
+      'Copy files to a temp folder',
+      [
+        'vpython3',
+        self.resource('batch.py'),
+        'copy',
+        '--des-dir',
+        dst,
+        '--base-dir',
+        src,
+        '--input-file-list',
+        input_file_list,
+      ],
+      infra_step=True,
+    )
 
-  def gcs_archive(self,
-                  checkout_dir: Path,
-                  source_dir: Path,
-                  build_dir: Path,
-                  update_properties,
-                  archive_data,
-                  *,
-                  custom_vars=None,
-                  generate_sboms=False,
-                  report_artifacts=False,
-                  use_hardlink=False):
+  def gcs_archive(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    update_properties,
+    archive_data,
+    *,
+    custom_vars=None,
+    generate_sboms=False,
+    report_artifacts=False,
+    use_hardlink=False,
+  ):
     """Archives a single package to google cloud storage.
 
     The exact configuration of the archive is specified by InputProperties. See
@@ -1253,20 +1352,22 @@ class ArchiveApi(recipe_api.RecipeApi):
     def _sanitize_gcs_path(gcs_path, file_path):
       gcs = gcs_path.split('/')
       f = file_path.split('/')
-      return ('/'.join([x for x in gcs if x]) + '/' +
-              '/'.join([x for x in f if x]))
+      return (
+        '/'.join([x for x in gcs if x]) + '/' + '/'.join([x for x in f if x])
+      )
 
     base_path = build_dir
     if archive_data.base_dir:
       base_path = checkout_dir / archive_data.base_dir
 
     # Perform dynamic configuration from placeholders, if necessary.
-    gcs_path = self._replace_placeholders(source_dir, update_properties,
-                                          custom_vars, archive_data.gcs_path)
+    gcs_path = self._replace_placeholders(
+      source_dir, update_properties, custom_vars, archive_data.gcs_path
+    )
 
-    gcs_bucket = self._replace_placeholders(source_dir, update_properties,
-                                            custom_vars,
-                                            archive_data.gcs_bucket)
+    gcs_bucket = self._replace_placeholders(
+      source_dir, update_properties, custom_vars, archive_data.gcs_bucket
+    )
 
     experimental = self.m.runtime.is_experimental
     if experimental:
@@ -1274,22 +1375,26 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     gcs_args = []
     expanded_files = set(archive_data.files)
-    expanded_files |= self._expand_archive_files(base_path,
-                                                 archive_data.file_globs)
+    expanded_files |= self._expand_archive_files(
+      base_path, archive_data.file_globs
+    )
     expanded_files = set(
-        self._validate_paths('files', archive_data, base_path, expanded_files))
+      self._validate_paths('files', archive_data, base_path, expanded_files)
+    )
 
     # Copy all files to a temporary directory. Keeping the structure.
     # This directory will be used for archiving.
     temp_dir = self.m.path.mkdtemp()
     if archive_data.root_permission_override:
       self.m.step(
-          'Update temporary folder permissions', [
-              'chmod',
-              archive_data.root_permission_override,
-              str(temp_dir),
-          ],
-          infra_step=True)
+        'Update temporary folder permissions',
+        [
+          'chmod',
+          archive_data.root_permission_override,
+          str(temp_dir),
+        ],
+        infra_step=True,
+      )
 
     if use_hardlink:
       self.batch_copy(base_path, temp_dir, expanded_files)
@@ -1300,22 +1405,28 @@ class ArchiveApi(recipe_api.RecipeApi):
         tmp_file_dir = self.m.path.dirname(tmp_file_path)
         if not str(tmp_file_dir) in created:
           self.m.file.ensure_directory(
-              'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir)
+            'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir
+          )
           created.add(str(tmp_file_dir))
-        self.m.file.copy("Copy file %s" % filename,
-                         self.m.path.join(base_path, filename), tmp_file_path)
+        self.m.file.copy(
+          "Copy file %s" % filename,
+          self.m.path.join(base_path, filename),
+          tmp_file_path,
+        )
 
     updated_dirs = self._validate_paths(
-        'directories', archive_data, base_path, list(archive_data.dirs))
+      'directories', archive_data, base_path, list(archive_data.dirs)
+    )
 
     for directory in updated_dirs:
       self.m.file.copytree(
-          "Copy folder %s" % directory,
-          self.m.path.join(base_path, directory),
-          self.m.path.join(temp_dir, directory),
-          symlinks=True,
-          hardlink=use_hardlink,
-          allow_override=True)
+        "Copy folder %s" % directory,
+        self.m.path.join(base_path, directory),
+        self.m.path.join(temp_dir, directory),
+        symlinks=True,
+        hardlink=use_hardlink,
+        allow_override=True,
+      )
 
     # Starting here, we will only need to care about the temporary folder
     # which holds the files. So reset the base_path to temp_dir.
@@ -1325,13 +1436,15 @@ class ArchiveApi(recipe_api.RecipeApi):
       expanded_files.remove(rename_file.from_file)
 
       # Support placeholder replacement for file renames.
-      new_filename = self._replace_placeholders(source_dir, update_properties,
-                                                custom_vars,
-                                                rename_file.to_file)
+      new_filename = self._replace_placeholders(
+        source_dir, update_properties, custom_vars, rename_file.to_file
+      )
       expanded_files.add(new_filename)
-      self.m.file.move("Move file",
-                       self.m.path.join(base_path, rename_file.from_file),
-                       self.m.path.join(base_path, new_filename))
+      self.m.file.move(
+        "Move file",
+        self.m.path.join(base_path, rename_file.from_file),
+        self.m.path.join(base_path, new_filename),
+      )
 
     root_rename = None
     for rename_dir in archive_data.rename_dirs:
@@ -1342,44 +1455,55 @@ class ArchiveApi(recipe_api.RecipeApi):
         continue
 
       # Support placeholder replacement for renames.
-      new_dirname = self._replace_placeholders(source_dir, update_properties,
-                                               custom_vars, rename_dir.to_dir)
+      new_dirname = self._replace_placeholders(
+        source_dir, update_properties, custom_vars, rename_dir.to_dir
+      )
 
       move_from_path = self.m.path.join(base_path, rename_dir.from_dir)
       for idx, dirname in enumerate(updated_dirs):
-        if (dirname == rename_dir.from_dir or
-            dirname.startswith(rename_dir.from_dir + self.m.path.sep)):
-          updated_dirs[idx] = dirname.replace(rename_dir.from_dir,
-                                              rename_dir.to_dir, 1)
+        if dirname == rename_dir.from_dir or dirname.startswith(
+          rename_dir.from_dir + self.m.path.sep
+        ):
+          updated_dirs[idx] = dirname.replace(
+            rename_dir.from_dir, rename_dir.to_dir, 1
+          )
 
       moved_files = {}
       for fn in expanded_files:
         if fn.startswith(rename_dir.from_dir + self.m.path.sep):
-          moved_files[fn] = fn.replace(rename_dir.from_dir, rename_dir.to_dir,
-                                       1)
+          moved_files[fn] = fn.replace(
+            rename_dir.from_dir, rename_dir.to_dir, 1
+          )
       expanded_files = expanded_files.difference(moved_files.keys())
       expanded_files = expanded_files.union(moved_files.values())
 
       self.m.file.move(
-          "Move dir: '%s'->'%s'" % (rename_dir.from_dir, new_dirname),
-          move_from_path, self.m.path.join(base_path, new_dirname))
+        "Move dir: '%s'->'%s'" % (rename_dir.from_dir, new_dirname),
+        move_from_path,
+        self.m.path.join(base_path, new_dirname),
+      )
 
     if root_rename:
       # Handle special case of adding a prefix path to the archive dir (i.e.
       # moving the archive to a subdir of itself).
       # The archive dir is temporarily moved to a new path because you can't
       # actually move a dir into a subdir of itself.
-      new_dirname = self._replace_placeholders(source_dir, update_properties,
-                                               custom_vars, root_rename.to_dir)
+      new_dirname = self._replace_placeholders(
+        source_dir, update_properties, custom_vars, root_rename.to_dir
+      )
       move_from_path = self.m.path.mkdtemp().joinpath(
-          self.m.path.basename(base_path))
+        self.m.path.basename(base_path)
+      )
       self.m.file.move("Prep archive root move", base_path, move_from_path)
       self.m.file.move(
-          "Move dir: '%s'->'%s'" % (root_rename.from_dir, new_dirname),
-          move_from_path, self.m.path.join(base_path, new_dirname))
+        "Move dir: '%s'->'%s'" % (root_rename.from_dir, new_dirname),
+        move_from_path,
+        self.m.path.join(base_path, new_dirname),
+      )
       # All files and need to be prefixed with the new root.
       expanded_files = set(
-          self.m.path.join(new_dirname, fn) for fn in expanded_files)
+        self.m.path.join(new_dirname, fn) for fn in expanded_files
+      )
       updated_dirs = [self.m.path.join(new_dirname, d) for d in updated_dirs]
 
     expanded_files = sorted(expanded_files)
@@ -1390,27 +1514,34 @@ class ArchiveApi(recipe_api.RecipeApi):
     if archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_FILES:
       if archive_data.dirs:
         self.m.step.empty(
-            'ARCHIVE_TYPE_FILES does not support dirs',
-            status=self.m.step.FAILURE,
-            step_text=('archive_data properties with |archive_type| '
-                       'ARCHIVE_TYPE_FILES must have empty |dirs|'))
+          'ARCHIVE_TYPE_FILES does not support dirs',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'archive_data properties with |archive_type| '
+            'ARCHIVE_TYPE_FILES must have empty |dirs|'
+          ),
+        )
       uploads = {
-          base_path / f: _sanitize_gcs_path(gcs_path, f) for f in expanded_files
+        base_path / f: _sanitize_gcs_path(gcs_path, f) for f in expanded_files
       }
-    elif (archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES):
+    elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES:
       if archive_data.dirs:
         self.m.step.empty(
-            'ARCHIVE_TYPE_FLATTEN_FILES does not support dirs',
-            status=self.m.step.FAILURE,
-            step_text=('archive_data properties with |archive_type| '
-                       'ARCHIVE_TYPE_FLATTEN_FILES must have empty |dirs|'))
+          'ARCHIVE_TYPE_FLATTEN_FILES does not support dirs',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'archive_data properties with |archive_type| '
+            'ARCHIVE_TYPE_FLATTEN_FILES must have empty |dirs|'
+          ),
+        )
       uploads = {
-          base_path / f: _sanitize_gcs_path(gcs_path, self.m.path.basename(f))
-          for f in expanded_files
+        base_path / f: _sanitize_gcs_path(gcs_path, self.m.path.basename(f))
+        for f in expanded_files
       }
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_GZ:
       archive_file = self._create_tar_archive_for_upload(
-          archive_data, base_path, expanded_files, updated_dirs, 'gz')
+        archive_data, base_path, expanded_files, updated_dirs, 'gz'
+      )
       if archive_file:
         uploads = {archive_file: gcs_path}
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_TAR_ZSTD:
@@ -1418,21 +1549,25 @@ class ArchiveApi(recipe_api.RecipeApi):
       if archive_data.tar_zstd_params.compression_level:
         compression_level = archive_data.tar_zstd_params.compression_level
       archive_file = self._create_tar_archive_for_upload(
-          archive_data,
-          base_path,
-          expanded_files,
-          updated_dirs,
-          'zstd',
-          compression_level=compression_level)
+        archive_data,
+        base_path,
+        expanded_files,
+        updated_dirs,
+        'zstd',
+        compression_level=compression_level,
+      )
       if archive_file:
         uploads = {archive_file: gcs_path}
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE:
       if not archive_data.dirs:
         self.m.step.empty(
-            'ARCHIVE_TYPE_RECURSIVE does not support empty dirs',
-            status=self.m.step.FAILURE,
-            step_text=('archive_data properties with |archive_type| '
-                       'ARCHIVE_TYPE_RECURSIVE must specify |dirs|'))
+          'ARCHIVE_TYPE_RECURSIVE does not support empty dirs',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'archive_data properties with |archive_type| '
+            'ARCHIVE_TYPE_RECURSIVE must specify |dirs|'
+          ),
+        )
       uploads = {base_path / d: gcs_path for d in updated_dirs}
       gcs_args += ['-R']
     elif archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_SQUASHFS:
@@ -1440,8 +1575,10 @@ class ArchiveApi(recipe_api.RecipeApi):
       algorithm = None
       compression_level = None
       block_size = None
-      if (archive_data.squashfs_params.algorithm == 'zstd' or
-          archive_data.squashfs_algorithm == 'zstd'):
+      if (
+        archive_data.squashfs_params.algorithm == 'zstd'
+        or archive_data.squashfs_algorithm == 'zstd'
+      ):
         if archive_data.squashfs_params.algorithm:
           algorithm = archive_data.squashfs_params.algorithm
         else:
@@ -1452,53 +1589,63 @@ class ArchiveApi(recipe_api.RecipeApi):
         compression_level = archive_data.squashfs_params.compression_level
       if archive_data.squashfs_params.block_size:
         block_size = archive_data.squashfs_params.block_size
-      self.m.squashfs.mksquashfs(base_path, archive_file, algorithm,
-                                 compression_level, block_size)
+      self.m.squashfs.mksquashfs(
+        base_path, archive_file, algorithm, compression_level, block_size
+      )
       uploads = {archive_file: gcs_path}
     else:
       archive_file = self._create_zip_archive_for_upload(
-          archive_data, base_path, expanded_files, updated_dirs)
+        archive_data, base_path, expanded_files, updated_dirs
+      )
       if archive_file:
         uploads = {archive_file: gcs_path}
 
     # Build SBOMs for artifacts that require them.
     generated_sboms = {}
-    if generate_sboms and archive_data.HasField(
-        'requires_sbom') and archive_data.archive_type in (
-            ArchiveData.ARCHIVE_TYPE_ZIP, ArchiveData.ARCHIVE_TYPE_FILES,
-            ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES):
+    if (
+      generate_sboms
+      and archive_data.HasField('requires_sbom')
+      and archive_data.archive_type
+      in (
+        ArchiveData.ARCHIVE_TYPE_ZIP,
+        ArchiveData.ARCHIVE_TYPE_FILES,
+        ArchiveData.ARCHIVE_TYPE_FLATTEN_FILES,
+      )
+    ):
       # TODO(b/356745797): Remove try/except once SBOM generation
       # is stable.
       try:
         sbom_config = archive_data.requires_sbom
         if len(sbom_config.gn_targets) > 0:
-
           sbom_artifact_dict = {}
           for f, d in uploads.items():
             sbom_artifact_dict[self.m.path.basename(d)] = f
 
           sboms = self.m.ssci.generate_sbom_for_artifacts(
-              artifacts=sbom_artifact_dict,
-              source_dir=source_dir,
-              build_dir=build_dir,
-              gn_targets=sbom_config.gn_targets,
+            artifacts=sbom_artifact_dict,
+            source_dir=source_dir,
+            build_dir=build_dir,
+            gn_targets=sbom_config.gn_targets,
           )
 
           for f, sbom in sboms.items():
-            sbom_gcs_path = _sanitize_gcs_path(gcs_path,
-                                               self.m.path.basename(f))
+            sbom_gcs_path = _sanitize_gcs_path(
+              gcs_path, self.m.path.basename(f)
+            )
             if archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_ZIP:
               sbom_gcs_path = gcs_path + SBOM_EXTENSION
             generated_sboms[sbom.sbom_path] = sbom_gcs_path
       except Exception as e:
         skip_sbom = self.m.step.empty(
-            'skip SBOM generation because of an exception')
+          'skip SBOM generation because of an exception'
+        )
         skip_sbom.presentation.step_text = f'exception raised: {e}'
 
     # Report artifacts that require provenance.
-    if (archive_data.requires_provenance and
-        not archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE):
-
+    if (
+      archive_data.requires_provenance
+      and not archive_data.archive_type == ArchiveData.ARCHIVE_TYPE_RECURSIVE
+    ):
       for path, gcs_path in generated_sboms.items():
         # TODO(b/356745797): Remove try/except once SBOM generation
         # is stable.
@@ -1510,15 +1657,18 @@ class ArchiveApi(recipe_api.RecipeApi):
           if report_artifacts:
             artifact_path = str(path).removesuffix(SBOM_EXTENSION)
             artifact_hash = self.m.file.file_hash(
-                sbom_artifact_dict[self.m.path.basename(artifact_path)],
-                test_data='deadbeef')
+              sbom_artifact_dict[self.m.path.basename(artifact_path)],
+              test_data='deadbeef',
+            )
 
             self.m.bcid_reporter.report_sbom(
-                spdx_hash, 'gs://%s/%s' % (gcs_bucket, gcs_path), artifact_hash)
+              spdx_hash, 'gs://%s/%s' % (gcs_bucket, gcs_path), artifact_hash
+            )
 
         except Exception as e:
           skip_sbom = self.m.step.empty(
-              'skip SBOM reporting because of an exception')
+            'skip SBOM reporting because of an exception'
+          )
           skip_sbom.presentation.step_text = f'exception raised: {e}'
 
       for path, gcs_path in uploads.items():
@@ -1526,8 +1676,9 @@ class ArchiveApi(recipe_api.RecipeApi):
         file_hash = self.m.file.file_hash(path, test_data='deadbeef')
         # Need to report full destination path of the artifact.
         if report_artifacts:
-          self.m.bcid_reporter.report_gcs(file_hash,
-                                          'gs://%s/%s' % (gcs_bucket, gcs_path))
+          self.m.bcid_reporter.report_gcs(
+            file_hash, 'gs://%s/%s' % (gcs_bucket, gcs_path)
+          )
 
     # Upload the generated SBOMs the same way the rest of the
     # artifacts are uploaded.
@@ -1538,33 +1689,50 @@ class ArchiveApi(recipe_api.RecipeApi):
 
     for file_path in uploads.keys():
       self.m.gsutil.upload(
-          file_path,
-          bucket=gcs_bucket,
-          dest=uploads[file_path],
-          args=gcs_args,
-          name="upload {}".format(str(uploads[file_path])))
+        file_path,
+        bucket=gcs_bucket,
+        dest=uploads[file_path],
+        args=gcs_args,
+        name="upload {}".format(str(uploads[file_path])),
+      )
 
     if archive_data.HasField('latest_upload'):
-      if (not archive_data.latest_upload.gcs_file_content or
-          not archive_data.latest_upload.gcs_path):
+      if (
+        not archive_data.latest_upload.gcs_file_content
+        or not archive_data.latest_upload.gcs_path
+      ):
         self.m.step.empty(
-            ('latest_upload.gcs_path or latest_upload.gcs_file_content'
-             ' not declared'),
-            status=self.m.step.FAILURE,
-            step_text=('Both latest_gcs_path and '
-                       'latest_gcs_file_content must be non-empty.'))
+          (
+            'latest_upload.gcs_path or latest_upload.gcs_file_content'
+            ' not declared'
+          ),
+          status=self.m.step.FAILURE,
+          step_text=(
+            'Both latest_gcs_path and '
+            'latest_gcs_file_content must be non-empty.'
+          ),
+        )
 
       latest_path = self._replace_placeholders(
-          source_dir, update_properties, custom_vars,
-          archive_data.latest_upload.gcs_path)
+        source_dir,
+        update_properties,
+        custom_vars,
+        archive_data.latest_upload.gcs_path,
+      )
       content = self._replace_placeholders(
-          source_dir, update_properties, custom_vars,
-          archive_data.latest_upload.gcs_file_content)
+        source_dir,
+        update_properties,
+        custom_vars,
+        archive_data.latest_upload.gcs_file_content,
+      )
 
       if archive_data.latest_upload.gcs_bucket:
         latest_gcs_bucket = self._replace_placeholders(
-            source_dir, update_properties, custom_vars,
-            archive_data.latest_upload.gcs_bucket)
+          source_dir,
+          update_properties,
+          custom_vars,
+          archive_data.latest_upload.gcs_bucket,
+        )
       else:
         latest_gcs_bucket = gcs_bucket
 
@@ -1574,9 +1742,11 @@ class ArchiveApi(recipe_api.RecipeApi):
 
         try:
           self.m.gsutil.download(
-              bucket=latest_gcs_bucket, source=latest_path, dest=dest_path)
+            bucket=latest_gcs_bucket, source=latest_path, dest=dest_path
+          )
           last_version = self.m.file.read_text(
-              'Read in last version', dest_path, test_data='1.2.3.4')
+            'Read in last version', dest_path, test_data='1.2.3.4'
+          )
         except Exception:
           last_version = '0.0.0.0'
 
@@ -1595,10 +1765,11 @@ class ArchiveApi(recipe_api.RecipeApi):
       output_file = temp_dir / 'latest.txt'
       self.m.file.write_text('Write latest file', output_file, content_ascii)
       self.m.gsutil.upload(
-          output_file,
-          bucket=latest_gcs_bucket,
-          dest=latest_path,
-          name="upload {}/{}".format(latest_gcs_bucket, latest_path))
+        output_file,
+        bucket=latest_gcs_bucket,
+        dest=latest_path,
+        name="upload {}/{}".format(latest_gcs_bucket, latest_path),
+      )
 
     # Generates a REVISIONS file
     if archive_data.HasField('revisions_file'):
@@ -1622,52 +1793,60 @@ class ArchiveApi(recipe_api.RecipeApi):
       output_file = temp_dir / 'revisions.txt'
       self.m.file.write_text('Write REVISIONS file', output_file, content_json)
       revisions_path = self._replace_placeholders(
-          source_dir, update_properties, custom_vars,
-          archive_data.revisions_file.gcs_path)
+        source_dir,
+        update_properties,
+        custom_vars,
+        archive_data.revisions_file.gcs_path,
+      )
       self.m.gsutil.upload(
-          output_file,
-          bucket=gcs_bucket,
-          dest=revisions_path,
-          name="upload {}".format(revisions_path))
+        output_file,
+        bucket=gcs_bucket,
+        dest=revisions_path,
+        name="upload {}".format(revisions_path),
+      )
 
     return uploads
 
   def _replace_placeholders_in_list(
-      self,
-      source_dir: Path,
-      update_properties,
-      custom_vars,
-      values,
+    self,
+    source_dir: Path,
+    update_properties,
+    custom_vars,
+    values,
   ):
     ret = []
     for value in values:
-      value = self._replace_placeholders(source_dir, update_properties,
-                                         custom_vars, value)
+      value = self._replace_placeholders(
+        source_dir, update_properties, custom_vars, value
+      )
       if value:
         ret.append(value)
     return ret
 
   def _replace_placeholders_in_dict(
-      self,
-      source_dir: Path,
-      update_properties,
-      custom_vars,
-      values,
+    self,
+    source_dir: Path,
+    update_properties,
+    custom_vars,
+    values,
   ):
     ret = dict(values)
     for key in ret:
-      ret[key] = self._replace_placeholders(source_dir, update_properties,
-                                            custom_vars, ret[key])
+      ret[key] = self._replace_placeholders(
+        source_dir, update_properties, custom_vars, ret[key]
+      )
     return {k: v for k, v in ret.items() if v}
 
-  def cipd_archive(self,
-                   source_dir: Path,
-                   build_dir: Path,
-                   update_properties,
-                   custom_vars,
-                   cipd_archive_data,
-                   *,
-                   report_artifacts=False):
+  def cipd_archive(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    update_properties,
+    custom_vars,
+    cipd_archive_data,
+    *,
+    report_artifacts=False,
+  ):
     """Archives packages to CIPD.
 
     Args:
@@ -1680,15 +1859,15 @@ class ArchiveApi(recipe_api.RecipeApi):
       cipd_archive_data: An instance of archive/properties.proto:
                          InputProperties.cipd_archive_datas.
     """
-    refs = self._replace_placeholders_in_list(source_dir, update_properties,
-                                              custom_vars,
-                                              cipd_archive_data.refs)
-    tags = self._replace_placeholders_in_dict(source_dir, update_properties,
-                                              custom_vars,
-                                              cipd_archive_data.tags)
-    pkg_vars = self._replace_placeholders_in_dict(source_dir, update_properties,
-                                                  custom_vars,
-                                                  cipd_archive_data.pkg_vars)
+    refs = self._replace_placeholders_in_list(
+      source_dir, update_properties, custom_vars, cipd_archive_data.refs
+    )
+    tags = self._replace_placeholders_in_dict(
+      source_dir, update_properties, custom_vars, cipd_archive_data.tags
+    )
+    pkg_vars = self._replace_placeholders_in_dict(
+      source_dir, update_properties, custom_vars, cipd_archive_data.pkg_vars
+    )
 
     compression_level = None
     if cipd_archive_data.HasField('compression'):
@@ -1708,17 +1887,18 @@ class ArchiveApi(recipe_api.RecipeApi):
       if report_artifacts:
         create_from_yaml = self.m.bcid_reporter.create_from_yaml
       create_results = create_from_yaml(
-          pkg_def=pkg_def,
-          refs=pkg_refs,
-          tags=tags,
-          pkg_vars=pkg_vars,
-          compression_level=compression_level,
-          verification_timeout=verification_timeout)
+        pkg_def=pkg_def,
+        refs=pkg_refs,
+        tags=tags,
+        pkg_vars=pkg_vars,
+        compression_level=compression_level,
+        verification_timeout=verification_timeout,
+      )
       if cipd_archive_data.only_set_refs_on_tests_success:
         # Store info needed for setting refs through calling
         # generic_archive_after_tests.
         upload_results[create_results[0]] = {
-            'refs': refs,
-            'instance': create_results[1]
+          'refs': refs,
+          'instance': create_results[1],
         }
     return upload_results

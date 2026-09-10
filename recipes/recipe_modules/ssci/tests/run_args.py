@@ -13,10 +13,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import ssci
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    path,
-    properties,
+  buildbucket,
+  json,
+  path,
+  properties,
 )
 
 
@@ -38,31 +38,34 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   api.ssci.run(
-      src_dir=api.path.abspath(source_dir),
-      build_dir='out/Release',
-      targets=["ChromeRemoteDesktop.apk"],
-      sbom_filename_postfix=None,
-      sbom_bucket='my-bucket',
-      sbom_folder='os/version/',
-      chrome_version="111.111.111.11")
+    src_dir=api.path.abspath(source_dir),
+    build_dir='out/Release',
+    targets=["ChromeRemoteDesktop.apk"],
+    sbom_filename_postfix=None,
+    sbom_bucket='my-bucket',
+    sbom_folder='os/version/',
+    chrome_version="111.111.111.11",
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'non-channel',
-      api.buildbucket.ci_build(
-          project='myproject', bucket='mybucket', builder='mybuilder'),
-      api.properties(
-          **{
-              '$build/ssci': {
-                  "bq_artifact_table": "project.dataset.table",
-                  "bq_library_table": "project.dataset.table",
-                  "depbot_version": "latest",
-                  "targets": ["//example:example"],
-                  "partybot_version": "AABBCC",
-                  "bq_thirdparty_table": "project.dataset.table",
-                  "ssci_version": "latest",
-                  "ssci_sbom_version": "latest",
-              }
-          }),
+    'non-channel',
+    api.buildbucket.ci_build(
+      project='myproject', bucket='mybucket', builder='mybuilder'
+    ),
+    api.properties(
+      **{
+        '$build/ssci': {
+          "bq_artifact_table": "project.dataset.table",
+          "bq_library_table": "project.dataset.table",
+          "depbot_version": "latest",
+          "targets": ["//example:example"],
+          "partybot_version": "AABBCC",
+          "bq_thirdparty_table": "project.dataset.table",
+          "ssci_version": "latest",
+          "ssci_sbom_version": "latest",
+        }
+      }
+    ),
   )

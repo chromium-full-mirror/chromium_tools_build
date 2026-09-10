@@ -9,21 +9,21 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_android,
-    perf_dashboard,
+  chromium,
+  chromium_android,
+  perf_dashboard,
 )
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    gsutil,
+  gclient,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    path,
-    properties,
-    runtime,
-    step,
+  buildbucket,
+  json,
+  path,
+  properties,
+  runtime,
+  step,
 )
 
 
@@ -40,5 +40,6 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   runtime: runtime.API
   step: step.API
+
 
 from .api import CronetApi as API

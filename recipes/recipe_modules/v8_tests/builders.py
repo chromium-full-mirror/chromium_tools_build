@@ -16,8 +16,17 @@ from .testing import V8Variant
 
 class TestStepConfig:
   """Per-step test configuration."""
-  def __init__(self, name, shards=1, suffix='', test_args=None, variants=None,
-               swarming_dimensions=None, swarming_task_attrs=None):
+
+  def __init__(
+    self,
+    name,
+    shards=1,
+    suffix='',
+    test_args=None,
+    variants=None,
+    swarming_dimensions=None,
+    swarming_task_attrs=None,
+  ):
     """Init per-step test configuration.
 
     Args:
@@ -77,15 +86,17 @@ class TestStepConfig:
           test config. Per-test attributes will override these defaults.
     """
     return TestStepConfig(
-        name=packed[0],
-        shards=int(packed[1]),
-        variants=V8Variant.unpack(packed[2]) if packed[2] else None,
-        suffix=packed[3],
-        test_args=packed[4],
-        swarming_dimensions=
-          dict((swarming_dimensions or {}), **(packed[5] or {})),
-        swarming_task_attrs=
-          dict((swarming_task_attrs or {}), **(packed[6] or {})),
+      name=packed[0],
+      shards=int(packed[1]),
+      variants=V8Variant.unpack(packed[2]) if packed[2] else None,
+      suffix=packed[3],
+      test_args=packed[4],
+      swarming_dimensions=dict(
+        (swarming_dimensions or {}), **(packed[5] or {})
+      ),
+      swarming_task_attrs=dict(
+        (swarming_task_attrs or {}), **(packed[6] or {})
+      ),
     )
 
   @staticmethod
@@ -93,13 +104,13 @@ class TestStepConfig:
     """Constructs a test-step config from the V8-side pyl test spec."""
     variant = spec.get('variant')
     return TestStepConfig(
-        name=spec['name'],
-        swarming_dimensions=spec.get('swarming_dimensions'),
-        swarming_task_attrs=spec.get('swarming_task_attrs'),
-        shards=int(spec.get('shards', 1)),
-        suffix=spec.get('suffix', ''),
-        test_args=spec.get('test_args'),
-        variants=V8Variant(variant) if variant else None,
+      name=spec['name'],
+      swarming_dimensions=spec.get('swarming_dimensions'),
+      swarming_task_attrs=spec.get('swarming_task_attrs'),
+      shards=int(spec.get('shards', 1)),
+      suffix=spec.get('suffix', ''),
+      test_args=spec.get('test_args'),
+      variants=V8Variant(variant) if variant else None,
     )
 
 
@@ -110,6 +121,7 @@ class TestSpec:
   The builder set is comprised of the parent builder and all triggered child
   builders.
   """
+
   def __init__(self):
     self._test_spec = {}
 
@@ -160,7 +172,8 @@ class TestSpec:
     swarming_task_attrs = builder_spec.get('swarming_task_attrs', {})
     return [
       TestStepConfig.unpack(
-          packed_spec, swarming_dimensions, swarming_task_attrs)
+        packed_spec, swarming_dimensions, swarming_task_attrs
+      )
       for packed_spec in builder_spec.get('tests', [])
     ]
 
@@ -216,7 +229,8 @@ class TestSpec:
     # and properties into each object.
     return [
       TestStepConfig.unpack(
-          test_spec.pack(), swarming_dimensions, swarming_task_attrs)
+        test_spec.pack(), swarming_dimensions, swarming_task_attrs
+      )
       for test_spec in builder_spec.get('tests', [])
     ]
 

@@ -6,8 +6,13 @@ from __future__ import annotations
 
 import collections.abc
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum, mapping,
-                                             sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  enum,
+  mapping,
+  sequence,
+)
 from RECIPE_MODULES.build.chromium_types import BuilderId
 
 COMPILE_AND_TEST = 'compile/test'
@@ -29,8 +34,9 @@ class TryMirror:
 
   def __attrs_post_init__(self):
     assert self.tester_id != self.builder_id, (
-        "'tester_id' should not be equal to 'builder_id',"
-        " pass None for 'tester_id'")
+      "'tester_id' should not be equal to 'builder_id',"
+      " pass None for 'tester_id'"
+    )
 
   @classmethod
   def create(cls, builder_group, buildername, tester=None, tester_group=None):
@@ -55,8 +61,9 @@ class TryMirror:
     builder_id = BuilderId.create_for_group(builder_group, buildername)
     tester_id = None
     if tester is not None:
-      tester_id = BuilderId.create_for_group(tester_group or builder_group,
-                                             tester)
+      tester_id = BuilderId.create_for_group(
+        tester_group or builder_group, tester
+      )
       if tester_id == builder_id:
         tester_id = None
     return cls(builder_id, tester_id)
@@ -116,12 +123,9 @@ class TrySpec:
     return cls(mirrors=mirrors, **kwargs)
 
   @classmethod
-  def create_for_single_mirror(cls,
-                               builder_group,
-                               buildername,
-                               tester=None,
-                               tester_group=None,
-                               **kwargs):
+  def create_for_single_mirror(
+    cls, builder_group, buildername, tester=None, tester_group=None, **kwargs
+  ):
     """Create a TrySpec with a single mirror.
 
     Args:
@@ -142,10 +146,11 @@ class TrySpec:
       * The remaining fields are initialized with the values passed in kwargs.
     """
     return cls.create(
-        mirrors=[
-            TryMirror.create(builder_group, buildername, tester, tester_group)
-        ],
-        **kwargs)
+      mirrors=[
+        TryMirror.create(builder_group, buildername, tester, tester_group)
+      ],
+      **kwargs,
+    )
 
 
 @attrs()

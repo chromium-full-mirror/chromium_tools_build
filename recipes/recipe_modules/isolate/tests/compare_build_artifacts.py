@@ -39,27 +39,34 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(buildername='test_buildername', buildnumber=123),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.properties(buildername='test_buildername', buildnumber=123),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'failure',
-      api.properties(buildername='test_buildername', buildnumber=123),
-      api.step_data('compare_build_artifacts', retcode=1),
-      api.post_process(post_process.SummaryMarkdown,
-                       "Step('compare_build_artifacts') (retcode: 1)"),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'failure',
+    api.properties(buildername='test_buildername', buildnumber=123),
+    api.step_data('compare_build_artifacts', retcode=1),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      "Step('compare_build_artifacts') (retcode: 1)",
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'win',
-      api.platform.name('win'),
-      api.properties(buildername='test_buildername', buildnumber=123),
-      api.post_check(post_process.StepCommandContains, 'gsutil upload',
-                     ('gs://chrome-determinism/test_buildername/123/'
-                      'deterministic_build_diffs.tgz')),
-      api.post_process(post_process.DropExpectation),
+    'win',
+    api.platform.name('win'),
+    api.properties(buildername='test_buildername', buildnumber=123),
+    api.post_check(
+      post_process.StepCommandContains,
+      'gsutil upload',
+      (
+        'gs://chrome-determinism/test_buildername/123/'
+        'deterministic_build_diffs.tgz'
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
   )

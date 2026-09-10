@@ -6,8 +6,13 @@ from __future__ import annotations
 
 from . import steps
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             mapping, sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  cached_property,
+  mapping,
+  sequence,
+)
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -50,7 +55,8 @@ class TargetsConfig:
   def all_tests(self):
     """Returns all tests in scope for the builder config."""
     return self._get_tests_for(
-        self.builder_config.builder_ids_in_scope_for_testing)
+      self.builder_config.builder_ids_in_scope_for_testing
+    )
 
   def tests_on(self, builder_id):
     """Returns all tests for the specified builder."""
@@ -59,7 +65,8 @@ class TargetsConfig:
   def tests_triggered_by(self, builder_id):
     """Returns all tests for builders triggered by the specified builder."""
     return self._get_tests_for(
-        self.builder_config.builder_db.builder_graph[builder_id])
+      self.builder_config.builder_db.builder_graph[builder_id]
+    )
 
   @cached_property
   def compile_only_targets(self):

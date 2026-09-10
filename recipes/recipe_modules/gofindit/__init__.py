@@ -9,10 +9,10 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    step,
-    swarming,
+  buildbucket,
+  json,
+  step,
+  swarming,
 )
 
 
@@ -22,5 +22,6 @@ class DEPS(RecipeScriptApi):
   json: json.API
   step: step.API
   swarming: swarming.API
+
 
 from .api import LuciBisectionApi as API

@@ -40,13 +40,19 @@ def RunSteps(api: DEPS):
 
 
 def GenTests(api: TEST_DEPS):
-  yield api.test('basic', api.buildbucket.try_build(),
-                 api.properties(logcat_bucket='test-bucket'),
-                 api.post_process(post_process.MustRun, 'logcat_dump'),
-                 api.post_process(post_process.MustRun, 'gsutil upload'),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'basic',
+    api.buildbucket.try_build(),
+    api.properties(logcat_bucket='test-bucket'),
+    api.post_process(post_process.MustRun, 'logcat_dump'),
+    api.post_process(post_process.MustRun, 'gsutil upload'),
+    api.post_process(post_process.DropExpectation),
+  )
 
-  yield api.test('no-bucket', api.buildbucket.try_build(),
-                 api.post_process(post_process.MustRun, 'logcat_dump'),
-                 api.post_process(post_process.DoesNotRun, 'gsutil upload'),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'no-bucket',
+    api.buildbucket.try_build(),
+    api.post_process(post_process.MustRun, 'logcat_dump'),
+    api.post_process(post_process.DoesNotRun, 'gsutil upload'),
+    api.post_process(post_process.DropExpectation),
+  )

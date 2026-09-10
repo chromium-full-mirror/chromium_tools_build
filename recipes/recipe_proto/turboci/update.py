@@ -19,7 +19,7 @@ LOG_URL = BASE_URL + '/+log/main?format=JSON&n=1'
 TAR_URL = BASE_URL + '/+archive/{}/{}.tar.gz'
 
 REPO_PATHS = [
-    'turboci/data/chrome/build',
+  'turboci/data/chrome/build',
 ]
 
 
@@ -46,9 +46,9 @@ def main():
 
   with open(readme_path, 'r', encoding='utf-8') as rmd:
     prev_commit = re.match(
-        r'.*/([a-f0-9]{40})/.*',
-        rmd.read(),
-        re.MULTILINE | re.DOTALL,
+      r'.*/([a-f0-9]{40})/.*',
+      rmd.read(),
+      re.MULTILINE | re.DOTALL,
     ).group(1)
 
   to_remove = set()

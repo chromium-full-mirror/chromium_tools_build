@@ -44,31 +44,20 @@ from . import migration_testing
 # * chromium.swangle
 # * chromium.win
 
-BUILDERS = builder_db.BuilderDatabase.create({
-    'chromium.devtools-frontend':
-        chromium_devtools_frontend.SPEC,
-    'chromium.perf':
-        chromium_perf.SPEC,
-    'chromium.perf.fyi':
-        chromium_perf_fyi.SPEC,
-    'chromium.perf.pinpoint':
-        chromium_perf_pinpoint.SPEC,
-    'client.devtools-frontend.integration':
-        client_devtools_frontend_integration.SPEC,
-    'client.openscreen.chromium':
-        client_openscreen_chromium.SPEC,
-    'client.v8.chromium':
-        client_v8_chromium.SPEC,
-    'client.v8.fyi':
-        client_v8_fyi.SPEC,
-    'tryserver.devtools-frontend':
-        tryserver_devtools_frontend.SPEC,
-    'tryserver.v8':
-        tryserver_v8.SPEC,
-    'tryserver.webrtc':
-        tryserver_webrtc.SPEC,
-
+BUILDERS = builder_db.BuilderDatabase.create(
+  {
+    'chromium.devtools-frontend': chromium_devtools_frontend.SPEC,
+    'chromium.perf': chromium_perf.SPEC,
+    'chromium.perf.fyi': chromium_perf_fyi.SPEC,
+    'chromium.perf.pinpoint': chromium_perf_pinpoint.SPEC,
+    'client.devtools-frontend.integration': client_devtools_frontend_integration.SPEC,
+    'client.openscreen.chromium': client_openscreen_chromium.SPEC,
+    'client.v8.chromium': client_v8_chromium.SPEC,
+    'client.v8.fyi': client_v8_fyi.SPEC,
+    'tryserver.devtools-frontend': tryserver_devtools_frontend.SPEC,
+    'tryserver.v8': tryserver_v8.SPEC,
+    'tryserver.webrtc': tryserver_webrtc.SPEC,
     # For testing the migration scripts
-    'migration.testing':
-        migration_testing.SPEC,
-})
+    'migration.testing': migration_testing.SPEC,
+  }
+)

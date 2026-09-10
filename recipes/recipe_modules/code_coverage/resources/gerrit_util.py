@@ -28,12 +28,12 @@ _HTTP_NUM_RETRY = 3
 
 
 def fetch_files_content(
-    host,
-    project,
-    change,
-    patchset,
-    file_paths,
-    token_path=None,
+  host,
+  project,
+  change,
+  patchset,
+  file_paths,
+  token_path=None,
 ):
   """Fetches file content for a list of files from Gerrit.
 
@@ -53,8 +53,10 @@ def fetch_files_content(
   project_quoted = urllib.parse.quote(project, safe='')
   change_id = '%s~%d' % (project_quoted, change)
 
-  url = 'https://%s/changes/%s?o=ALL_REVISIONS&o=SKIP_MERGEABLE' % (host,
-                                                                    change_id)
+  url = 'https://%s/changes/%s?o=ALL_REVISIONS&o=SKIP_MERGEABLE' % (
+    host,
+    change_id,
+  )
   headers = {}
   token = None
   if token_path:
@@ -63,7 +65,7 @@ def fetch_files_content(
       headers['Authorization'] = 'Bearer %s' % token
   request = urllib.request.Request(url=url, headers=headers)
   response = _retry_url_open(request)
-  change_details = json.loads(response.read()[len(_RESPONSE_PREFIX):])
+  change_details = json.loads(response.read()[len(_RESPONSE_PREFIX) :])
   patchset_revision = None
 
   for revision, value in change_details['revisions'].items():
@@ -73,13 +75,15 @@ def fetch_files_content(
 
   if not patchset_revision:
     raise RuntimeError(
-        'Patchset %d is not found in the change descriptions returned by '
-        'requesting %s.' % (patchset, url))
+      'Patchset %d is not found in the change descriptions returned by '
+      'requesting %s.' % (patchset, url)
+    )
 
   result = []
   for file_path in file_paths:
     content = _fetch_file_content(
-        host, change_id, patchset_revision, file_path, token=token)
+      host, change_id, patchset_revision, file_path, token=token
+    )
     if content:
       result.append(content)
 
@@ -104,7 +108,11 @@ def _fetch_file_content(host, change_id, revision, file_path, token=None):
   file_path = file_path.replace(os.sep, '/')
   quoted_file_path = urllib.parse.quote(file_path, safe='')
   url = 'https://%s/changes/%s/revisions/%s/files/%s/content' % (
-      host, change_id, revision, quoted_file_path)
+    host,
+    change_id,
+    revision,
+    quoted_file_path,
+  )
   headers = {}
   if token:
     headers['Authorization'] = 'Bearer %s' % token

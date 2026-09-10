@@ -27,23 +27,23 @@ def RunSteps(api: DEPS):
   checkout_dir = api.path.start_dir / 'crossbench'
 
   cmd = [
-      'vpython3',
-      '-vpython-spec',
-      checkout_dir / '.vpython3',
-      '-m',
-      'pytype',
-      '--keep-going',
-      '--jobs=auto',
-      checkout_dir / 'crossbench',
-      '-o',
-      api.path.cache_dir / 'pytype',
+    'vpython3',
+    '-vpython-spec',
+    checkout_dir / '.vpython3',
+    '-m',
+    'pytype',
+    '--keep-going',
+    '--jobs=auto',
+    checkout_dir / 'crossbench',
+    '-o',
+    api.path.cache_dir / 'pytype',
   ]
   api.step('Run pytype', cmd)
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(MustRun, 'Run pytype'),
-      api.post_process(DropExpectation),
+    'basic',
+    api.post_process(MustRun, 'Run pytype'),
+    api.post_process(DropExpectation),
   )

@@ -23,17 +23,22 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   api.gn.clean(
-      api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
-      step_name='foobar')
+    api.path.cache_dir / 'builder' / 'src' / 'out' / 'Release',
+    step_name='foobar',
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(StepCommandContains, 'foobar', [
-          'RECIPE_REPO[depot_tools]/gn.py',
-          'clean',
-          '[CACHE]/builder/src/out/Release',
-      ]),
-      api.post_process(DropExpectation),
+    'basic',
+    api.post_process(
+      StepCommandContains,
+      'foobar',
+      [
+        'RECIPE_REPO[depot_tools]/gn.py',
+        'clean',
+        '[CACHE]/builder/src/out/Release',
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

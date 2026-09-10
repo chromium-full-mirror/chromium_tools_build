@@ -10,21 +10,23 @@ from PB.recipe_modules.build.orderfile import properties
 
 
 class OrderfileTestApi(recipe_test_api.RecipeTestApi):
-
-  def __call__(self,
-               *,
-               use_orderfile=False,
-               upload_orderfile=False,
-               gs_bucket="",
-               gs_bucket_path="",
-               last_uploaded_pgo_filename=""):
+  def __call__(
+    self,
+    *,
+    use_orderfile=False,
+    upload_orderfile=False,
+    gs_bucket="",
+    gs_bucket_path="",
+    last_uploaded_pgo_filename="",
+  ):
     return self.m.properties(
-        **{
-            '$build/orderfile':
-                properties.InputProperties(
-                    use_orderfile=use_orderfile,
-                    upload_orderfile=upload_orderfile,
-                    gs_bucket=gs_bucket,
-                    gs_bucket_path=gs_bucket_path,
-                    last_uploaded_pgo_filename=last_uploaded_pgo_filename),
-        })
+      **{
+        '$build/orderfile': properties.InputProperties(
+          use_orderfile=use_orderfile,
+          upload_orderfile=upload_orderfile,
+          gs_bucket=gs_bucket,
+          gs_bucket_path=gs_bucket_path,
+          last_uploaded_pgo_filename=last_uploaded_pgo_filename,
+        ),
+      }
+    )

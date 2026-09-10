@@ -17,11 +17,12 @@ from RECIPE_MODULES.depot_tools.tryserver.api import SubmodulePathsResult
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
-from PB.go.chromium.org.luci.resultdb.proto.v1 import invocation as invocation_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  invocation as invocation_pb,
+)
 
 
 class ChromiumCheckoutApi(recipe_api.RecipeApi):
-
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     # We track if the default checkout dir was accessed so that we can detect
@@ -42,8 +43,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     return self.m.path.cache_dir / 'builder'
 
   _UNSET_USAGE_MESSAGE = (
-      'call chromium_checkout.ensure_checkout, chromium_checkout.set_paths'
-      ' or chromium_checkout.set_paths_from_update_result first')
+    'call chromium_checkout.ensure_checkout, chromium_checkout.set_paths'
+    ' or chromium_checkout.set_paths_from_update_result first'
+  )
 
   @property
   def checkout_dir(self) -> Path:
@@ -67,18 +69,23 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
   def _set_paths(self, checkout_dir: Path, source_dir: Path) -> None:
     assert self._checkout_dir is None and self._source_dir is None, (
-        'paths have already been set')
+      'paths have already been set'
+    )
     assert checkout_dir in source_dir.parents, (
-        'source_dir must be within checkout_dir')
+      'source_dir must be within checkout_dir'
+    )
     # We expect that if someone accessed default_checkout_dir then checkout_dir
     # will end up set to default_checkout_dir. If that's not the case, we expect
     # it to be a mistake.
-    if (self._default_checkout_dir_accessed and
-        checkout_dir != self.default_checkout_dir):
+    if (
+      self._default_checkout_dir_accessed
+      and checkout_dir != self.default_checkout_dir
+    ):
       raise ValueError(
-          f'checkout_dir is being set to {checkout_dir} after'
-          f' default_checkout_dir ({self.default_checkout_dir}) was accessed,'
-          ' this indicates a likely mistake')
+        f'checkout_dir is being set to {checkout_dir} after'
+        f' default_checkout_dir ({self.default_checkout_dir}) was accessed,'
+        ' this indicates a likely mistake'
+      )
     self._checkout_dir = checkout_dir
     self._source_dir = source_dir
 
@@ -105,8 +112,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       source_dir = checkout_dir / source_dir
     self._set_paths(checkout_dir, source_dir)
 
-  def set_paths_from_update_result(self,
-                                   update_result: bot_update.Result) -> None:
+  def set_paths_from_update_result(
+    self, update_result: bot_update.Result
+  ) -> None:
     """Manually set the paths for the module.
 
     This is intended for uses cases where the checkout is performed via
@@ -121,10 +129,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     """
     self._set_paths(update_result.checkout_dir, update_result.source_root.path)
 
-  def get_files_affected_by_patch(self,
-                                  relative_to=None,
-                                  cwd=None,
-                                  report_via_property=False):
+  def get_files_affected_by_patch(
+    self, relative_to=None, cwd=None, report_via_property=False
+  ):
     """Returns list of POSIX paths of files affected by patch for "analyze".
 
     Paths are relative to `relative_to` which for analyze in Chromium should be
@@ -136,44 +143,52 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       return []
     patch_root = self.m.gclient.get_gerrit_patch_root()
     assert patch_root, (
-        'local path is not configured for %s' %
-            self.m.tryserver.gerrit_change_repo_url)
+      'local path is not configured for %s'
+      % self.m.tryserver.gerrit_change_repo_url
+    )
     cwd = cwd or self.checkout_dir / patch_root
     with self.m.context(cwd=cwd):
       files = self.m.tryserver.get_files_affected_by_patch(
-          patch_root,
-          report_files_via_property=('affected_files'
-                                     if report_via_property else None))
+        patch_root,
+        report_files_via_property=(
+          'affected_files' if report_via_property else None
+        ),
+      )
     return self.format_affected_file_paths(files, relative_to=relative_to)
 
-  def get_files_affected_by_patch_with_submodules(self,
-                                                  relative_to=None,
-                                                  cwd=None,
-                                                  report_via_property=False):
+  def get_files_affected_by_patch_with_submodules(
+    self, relative_to=None, cwd=None, report_via_property=False
+  ):
     """Returns SubmodulePathsResult containing POSIX paths of affected files and submodule metadata."""
     if not self.m.tryserver.gerrit_change:
       # There is no patch to begin with.
       return SubmodulePathsResult()
     patch_root = self.m.gclient.get_gerrit_patch_root()
-    assert patch_root, ('local path is not configured for %s' %
-                        self.m.tryserver.gerrit_change_repo_url)
+    assert patch_root, (
+      'local path is not configured for %s'
+      % self.m.tryserver.gerrit_change_repo_url
+    )
     cwd = cwd or self.checkout_dir / patch_root
     with self.m.context(cwd=cwd):
       submodule_paths_result = (
-          self.m.tryserver.get_files_affected_by_patch_with_submodules(
-              patch_root,
-              report_files_via_property=('affected_files'
-                                         if report_via_property else None),
-          ))
+        self.m.tryserver.get_files_affected_by_patch_with_submodules(
+          patch_root,
+          report_files_via_property=(
+            'affected_files' if report_via_property else None
+          ),
+        )
+      )
     formatted_files = self.format_affected_file_paths(
-        list(submodule_paths_result.affected_files), relative_to=relative_to)
+      list(submodule_paths_result.affected_files), relative_to=relative_to
+    )
     return SubmodulePathsResult(
-        affected_files=formatted_files,
-        unchecked_out_submodules=(
-            submodule_paths_result.unchecked_out_submodules),
-        deleted_submodules=submodule_paths_result.deleted_submodules,
-        new_submodules=submodule_paths_result.new_submodules,
-        nested_submodules=submodule_paths_result.nested_submodules,
+      affected_files=formatted_files,
+      unchecked_out_submodules=(
+        submodule_paths_result.unchecked_out_submodules
+      ),
+      deleted_submodules=submodule_paths_result.deleted_submodules,
+      new_submodules=submodule_paths_result.new_submodules,
+      nested_submodules=submodule_paths_result.nested_submodules,
     )
 
   def format_affected_file_paths(self, files, relative_to=None):
@@ -189,10 +204,10 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     return files
 
   def ensure_checkout(
-      self,
-      *,
-      timeout: int | None = None,
-      **kwargs,
+    self,
+    *,
+    timeout: int | None = None,
+    **kwargs,
   ) -> bot_update.Result:
     """Wrapper for bot_update.ensure_checkout with chromium-specific additions.
 
@@ -219,7 +234,8 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
     gclient_config = self.m.gclient.c
     with self.m.chromium_bootstrap.update_gclient_config(
-        gclient_config) as callback:
+      gclient_config
+    ) as callback:
       self._report_gclient_config(gclient_config)
 
       with self.m.context(cwd=self.m.context.cwd or self.default_checkout_dir):
@@ -227,30 +243,36 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         # and in this worst case scenario the last step would simply overwrite
         # earlier ones.
         step_name = self.m.bot_update.step_name(
-            kwargs.get('patch', True), kwargs.get('suffix', None))
+          kwargs.get('patch', True), kwargs.get('suffix', None)
+        )
 
         step_tag = self.m.repro_instructions.tag_for_step(step_name)
         update_result = None
         try:
           update_result = self.m.bot_update.ensure_checkout(
-              gclient_config=gclient_config,
-              timeout=timeout,
-              step_tags={'resultdb.instruction.id': step_tag},
-              **kwargs)
+            gclient_config=gclient_config,
+            timeout=timeout,
+            step_tags={'resultdb.instruction.id': step_tag},
+            **kwargs,
+          )
         finally:
-          revision = update_result.manifest.get('src', {}).get(
-              'revision', '') if update_result else ''
+          revision = (
+            update_result.manifest.get('src', {}).get('revision', '')
+            if update_result
+            else ''
+          )
           instruction = self._get_repro_instruction(gclient_config, revision)
           self.m.repro_instructions.create_step_instruction(
-              step_tag,
-              f'{step_name} instructions',
-              remote_content=instruction,
-              local_content=instruction,
+            step_tag,
+            f'{step_name} instructions',
+            remote_content=instruction,
+            local_content=instruction,
           )
           self.m.repro_instructions.update_invocation_instructions()
 
-      if set_output_commit and (out_commit :=
-                                self._get_out_commit(update_result)):
+      if set_output_commit and (
+        out_commit := self._get_out_commit(update_result)
+      ):
         self.m.buildbucket.set_output_gitiles_commit(out_commit)
 
       # TODO(crbug.com/395081730): Remove this prop plumbing.
@@ -266,14 +288,17 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       checkout_dir = update_result.checkout_dir
       source_dir = update_result.source_root.path
       assert (
-          self._checkout_dir == checkout_dir and self._source_dir == source_dir
-      ), ('checkout performed with different paths, previously'
-          f' checkout_dir={self._checkout_dir}, source_dir={self._source_dir},'
-          ' attempting to set'
-          f' checkout_dir={checkout_dir}, source_dir={source_dir}')
+        self._checkout_dir == checkout_dir and self._source_dir == source_dir
+      ), (
+        'checkout performed with different paths, previously'
+        f' checkout_dir={self._checkout_dir}, source_dir={self._source_dir},'
+        ' attempting to set'
+        f' checkout_dir={checkout_dir}, source_dir={source_dir}'
+      )
 
     self.update_rdb_source_spec_invocation(
-        gitiles_commit=update_result.out_commit)
+      gitiles_commit=update_result.out_commit
+    )
 
     return update_result
 
@@ -288,9 +313,9 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     # .gclient is python not json, this leads to problems like booleans becoming
     # true rather than True so it cannot be directly copy/pasted with as_jsonish
     json_python_replacements = {
-        'true': 'True',
-        'false': 'False',
-        'null': 'None'
+      'true': 'True',
+      'false': 'False',
+      'null': 'None',
     }
 
     def replace_json(line):
@@ -307,36 +332,43 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     jsonish_config = gclient_config.as_jsonish(include_hidden=True)
     for key in ('solutions', 'target_cpu', 'target_os'):
       filtered_config[key] = '\n'.join(
-          replace_json(line) for line in self.m.json.dumps(
-              jsonish_config[key], indent=2).split('\n'))
+        replace_json(line)
+        for line in self.m.json.dumps(jsonish_config[key], indent=2).split('\n')
+      )
 
     filtered_config = '\n'.join(
-        [f'{key} = {value}' for key, value in filtered_config.items()])
+      [f'{key} = {value}' for key, value in filtered_config.items()]
+    )
 
     lines = []
     lines.append(
-        'See the '
-        '[docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) '
-        'for more platform specific update instructions.')
+      'See the '
+      '[docs](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/get_the_code.md) '
+      'for more platform specific update instructions.'
+    )
 
     gclient_file_details = (
-        '<details><summary>`.gclient` file for this update</summary>'
-        f'<pre><code>{filtered_config}</code></pre></details>')
+      '<details><summary>`.gclient` file for this update</summary>'
+      f'<pre><code>{filtered_config}</code></pre></details>'
+    )
     lines.append(gclient_file_details.replace(' ', '&nbsp;'))
 
     if src_revision:
       lines.append('To test at the same revision as this builder run:')
       lines.append(
-          f'```git fetch; git checkout {src_revision}; gclient sync```')
+        f'```git fetch; git checkout {src_revision}; gclient sync```'
+      )
       lines.append('')
 
     lines.append('To test at the latest revision run:')
     lines.append('```git pull; gclient sync```')
 
     lines.append('')
-    lines.append('*This will run both bot update and runhook steps. To '
-                 'separate these instead run `gclient sync --nohooks` and '
-                 '`gclient runhooks` separately*')
+    lines.append(
+      '*This will run both bot update and runhook steps. To '
+      'separate these instead run `gclient sync --nohooks` and '
+      '`gclient runhooks` separately*'
+    )
     return '<br/>'.join(lines)
 
   def _report_gclient_config(self, gclient_config):
@@ -350,8 +382,8 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       return revision
 
     gclient_config.revisions = {
-        k: _replace_revision_resolver(v)
-        for k, v in gclient_config.revisions.items()
+      k: _replace_revision_resolver(v)
+      for k, v in gclient_config.revisions.items()
     }
 
     for s in gclient_config.solutions:
@@ -359,15 +391,20 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
 
     step = self.m.step('gclient config', [])
     step.presentation.logs['config'] = self.m.json.dumps(
-        gclient_config.as_jsonish(include_hidden=True), indent=2).split('\n')
+      gclient_config.as_jsonish(include_hidden=True), indent=2
+    ).split('\n')
 
   def _get_out_commit(
-      self, update_result: bot_update.Result) -> common_pb.GitilesCommit | None:
+    self, update_result: bot_update.Result
+  ) -> common_pb.GitilesCommit | None:
     # If input commit ref is a tag, use it as output to display more
     # user-friendly information on Buildbucket UI.
     in_commit = self.m.buildbucket.gitiles_commit
-    return in_commit if in_commit and in_commit.ref.startswith(
-        'refs/tags/') else update_result.out_commit
+    return (
+      in_commit
+      if in_commit and in_commit.ref.startswith('refs/tags/')
+      else update_result.out_commit
+    )
 
   def update_rdb_source_spec_invocation(self, gitiles_commit):
     """Update the rdb invocation to include the SourceSpec being used.
@@ -380,47 +417,54 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       return None
 
     with self.m.step.nest('set rdb sources'):
-      if not gitiles_commit or not all([
+      if not gitiles_commit or not all(
+        [
           gitiles_commit.host,
           gitiles_commit.project,
           gitiles_commit.id,
           gitiles_commit.ref,
           gitiles_commit.position,
-      ]):
-
+        ]
+      ):
         step_result = self.m.step.empty('missing gitiles commit info')
         # TODO(sshrimp): Remove excess debug info. The gitiles_commit might not
         # be set if it's not the primary checkout, however,
         # self.m.buildbucket.build.output will still contain an empty object
         # set this  property so we can check for all edge cases
-        step_result.presentation.properties[
-            'failed_rdb_invocation_update'] = True
+        step_result.presentation.properties['failed_rdb_invocation_update'] = (
+          True
+        )
         step_result.presentation.logs['gitiles_commit'] = str(gitiles_commit)
         step_result.presentation.logs['gerrit_changes'] = str(
-            self.m.buildbucket.build.input.gerrit_changes)
+          self.m.buildbucket.build.input.gerrit_changes
+        )
         return
 
       baseline_id = ResultDB.generate_baseline_id(
-          self.m.buildbucket.build.builder.bucket,
-          self.m.buildbucket.builder_name)
+        self.m.buildbucket.build.builder.bucket, self.m.buildbucket.builder_name
+      )
       self.m.resultdb.update_invocation(
-          step_name='update invocation',
-          is_source_spec_final=True,
-          source_spec=invocation_pb.SourceSpec(
-              sources=common_rdb_pb.Sources(
-                  gitiles_commit=common_rdb_pb.GitilesCommit(
-                      host=gitiles_commit.host,
-                      project=gitiles_commit.project,
-                      commit_hash=gitiles_commit.id,
-                      ref=gitiles_commit.ref,
-                      position=gitiles_commit.position,
-                  ),
-                  changelists=[
-                      common_rdb_pb.GerritChange(
-                          host=change.host,
-                          project=change.project,
-                          change=change.change,
-                          patchset=change.patchset) for change in
-                      self.m.buildbucket.build.input.gerrit_changes
-                  ])),
-          baseline_id=baseline_id)
+        step_name='update invocation',
+        is_source_spec_final=True,
+        source_spec=invocation_pb.SourceSpec(
+          sources=common_rdb_pb.Sources(
+            gitiles_commit=common_rdb_pb.GitilesCommit(
+              host=gitiles_commit.host,
+              project=gitiles_commit.project,
+              commit_hash=gitiles_commit.id,
+              ref=gitiles_commit.ref,
+              position=gitiles_commit.position,
+            ),
+            changelists=[
+              common_rdb_pb.GerritChange(
+                host=change.host,
+                project=change.project,
+                change=change.change,
+                patchset=change.patchset,
+              )
+              for change in self.m.buildbucket.build.input.gerrit_changes
+            ],
+          )
+        ),
+        baseline_id=baseline_id,
+      )

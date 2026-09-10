@@ -10,30 +10,30 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_swarming,
-    chromium_tests,
-    code_coverage,
-    gn,
-    isolate,
-    profiles,
-    siso,
+  chromium,
+  chromium_checkout,
+  chromium_swarming,
+  chromium_tests,
+  code_coverage,
+  gn,
+  isolate,
+  profiles,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    git,
+  gclient,
+  git,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    milo,
-    path,
-    platform,
-    raw_io,
-    resultdb,
-    step,
-    swarming,
+  context,
+  file,
+  milo,
+  path,
+  platform,
+  raw_io,
+  resultdb,
+  step,
+  swarming,
 )
 
 
@@ -59,6 +59,7 @@ class DEPS(RecipeScriptApi):
   resultdb: resultdb.API
   step: step.API
   swarming: swarming.API
+
 
 ENV_PROPERTIES = request.EnvProperties
 

@@ -19,10 +19,12 @@ from .util import GTestResults, RDBPerSuiteResults, RDBResults
 from .util import IndividualTestStabilityAnalysis, StabilityAnalysisPerSuite
 from google.protobuf import timestamp_pb2
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_exoneration as
-                                                       test_exoneration_pb2)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       test_result_pb2)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_exoneration as test_exoneration_pb2,
+)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as test_result_pb2,
+)
 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.recipe_engine.json.api import JsonOutputPlaceholder
@@ -32,7 +34,6 @@ _RETRY_SUFFIX = 'retry shards'
 
 
 class GTestResultsOutputPlaceholder(JsonOutputPlaceholder):
-
   def result(self, presentation, test):
     ret = super().result(presentation, test)
     return GTestResults(ret)
@@ -61,13 +62,15 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
   # Header for ignored failures due to without patch.
   IGNORED_FAILURES_TEXT = (
-      'Tests failed with patch, but ignored as they also fail without patch '
-      '(see Test Results Tab for more info):')
+    'Tests failed with patch, but ignored as they also fail without patch '
+    '(see Test Results Tab for more info):'
+  )
 
   # Header for ignored failures due to that they're known to be flaky.
   IGNORED_FLAKES_TEXT = (
-      'Tests failed with patch, but ignored as they are known to be flaky '
-      '(see Test Results Tab for more info):')
+    'Tests failed with patch, but ignored as they are known to be flaky '
+    '(see Test Results Tab for more info):'
+  )
 
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
@@ -87,7 +90,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # that 90th percentile cycle time can be improved by 2.2% with a loss of
     # 0.15% false rejection rate.
     self._min_failed_suites_to_skip_retry = (
-        properties.min_failed_suites_to_skip_retry or 5)
+      properties.min_failed_suites_to_skip_retry or 5
+    )
 
   def get_milo_test_results_url(self, test_name):
     """Returns a URL to the "Test Results" tab in Milo for the current build."""
@@ -117,17 +121,19 @@ class TestUtilsApi(recipe_api.RecipeApi):
       limit = self._max_reported_failures
     if len(failures) <= limit:
       return failures, [
-          f'[{failure}]({self.get_milo_test_results_url(failure)})'
-          for failure in failures
+        f'[{failure}]({self.get_milo_test_results_url(failure)})'
+        for failure in failures
       ]
-    overflow_line = '... %d more (%d total) ...' % (len(failures) - limit,
-                                                    len(failures))
+    overflow_line = '... %d more (%d total) ...' % (
+      len(failures) - limit,
+      len(failures),
+    )
     # failures might be a set, which doesn't support slicing, so create a list
     # out of an islice so that only the elemnts we are keeping are copied
     limited_failures = list(itertools.islice(failures, limit))
     return limited_failures, [
-        f'[{failure}]({self.get_milo_test_results_url(failure)})'
-        for failure in limited_failures
+      f'[{failure}]({self.get_milo_test_results_url(failure)})'
+      for failure in limited_failures
     ] + [overflow_line]
 
   def present_gtest_failures(self, step_result, presentation=None):
@@ -160,26 +166,34 @@ class TestUtilsApi(recipe_api.RecipeApi):
         # FIXME: We could theoretically split up each run more. This would
         # require some refactoring in util.py to store each individual run's
         # logs, which we don't do currently.
-        log_name = '%s: %s (status %s)' % (prefix, f, ','.join(
-            r.raw_results[f]))
-        p.logs[log_name] = [
-            "Test '%s' completed with the following status(es): '%s'" %
-            (f, '\',\''.join(r.raw_results[f])),
+        log_name = '%s: %s (status %s)' % (
+          prefix,
+          f,
+          ','.join(r.raw_results[f]),
+        )
+        p.logs[log_name] = (
+          [
+            "Test '%s' completed with the following status(es): '%s'"
+            % (f, '\',\''.join(r.raw_results[f])),
             '\n',
             "Test '%s' had the following logs when run:\n" % f,
             '\n',
             '=' * 80 + '\n',
             '\n',
-        ] + r.logs[f] + [
+          ]
+          + r.logs[f]
+          + [
             '\n',
             '=' * 80,
-        ]
+          ]
+        )
 
       deterministic_failures_set = set(r.deterministic_failures)
       flaky_failures_set = set(r.unique_failures) - deterministic_failures_set
       non_notrun_failures_set = {
-          f for f in deterministic_failures_set
-          if set(r.raw_results[f]) != {'NOTRUN'}
+        f
+        for f in deterministic_failures_set
+        if set(r.raw_results[f]) != {'NOTRUN'}
       }
 
       # If the deterministic_failures_set has other state of failures other
@@ -188,22 +202,26 @@ class TestUtilsApi(recipe_api.RecipeApi):
       if non_notrun_failures_set:
         deterministic_failures_set = non_notrun_failures_set
 
-      deterministic_failures, deterministic_failures_text = (
-          self.limit_failures(sorted(deterministic_failures_set)))
-      flaky_failures, flaky_failures_text = (
-          self.limit_failures(sorted(flaky_failures_set)))
+      deterministic_failures, deterministic_failures_text = self.limit_failures(
+        sorted(deterministic_failures_set)
+      )
+      flaky_failures, flaky_failures_text = self.limit_failures(
+        sorted(flaky_failures_set)
+      )
       for f in deterministic_failures:
         emit_log(f, 'Deterministic failure')
       for f in flaky_failures:
         emit_log(f, 'Flaky failure')
 
-      p.step_text += self.m.presentation_utils.format_step_text([
+      p.step_text += self.m.presentation_utils.format_step_text(
+        [
           [
-              'deterministic failures [caused step to fail]:',
-              deterministic_failures_text
+            'deterministic failures [caused step to fail]:',
+            deterministic_failures_text,
           ],
           ['flaky failures [ignored]:', flaky_failures_text],
-      ])
+        ]
+      )
     return r
 
   def _retrieve_bad_results(self, suites, suffix):
@@ -233,9 +251,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # The dictionary is initialized with explicit keys to ensure that if a new
     # locality is added, it gets handled here
     test_suites_by_locality = {
-        steps.TestLocality.LOCAL: [],
-        steps.TestLocality.SWARMING: [],
-        steps.TestLocality.SKYLAB: [],
+      steps.TestLocality.LOCAL: [],
+      steps.TestLocality.SWARMING: [],
+      steps.TestLocality.SKYLAB: [],
     }
     for t in test_suites:
       test_suites_by_locality[t.locality].append(t)
@@ -245,27 +263,33 @@ class TestUtilsApi(recipe_api.RecipeApi):
       # take longer to complete, and triggering take a few minutes, so this
       # should get us a few extra minutes of speed.
       test_suites_by_locality[steps.TestLocality.SWARMING].sort(
-          key=lambda t: -t.shards)
+        key=lambda t: -t.shards
+      )
 
     groups = [
-        LocalGroup(test_suites_by_locality[steps.TestLocality.LOCAL],
-                   self.m.resultdb),
-        SwarmingGroup(test_suites_by_locality[steps.TestLocality.SWARMING],
-                      self.m.resultdb),
-        SkylabGroup(test_suites_by_locality[steps.TestLocality.SKYLAB],
-                    self.m.resultdb),
+      LocalGroup(
+        test_suites_by_locality[steps.TestLocality.LOCAL], self.m.resultdb
+      ),
+      SwarmingGroup(
+        test_suites_by_locality[steps.TestLocality.SWARMING], self.m.resultdb
+      ),
+      SkylabGroup(
+        test_suites_by_locality[steps.TestLocality.SKYLAB], self.m.resultdb
+      ),
     ]
     return groups
 
-  def run_tests_once(self,
-                     checkout_dir: Path,
-                     source_dir: Path,
-                     build_dir: Path,
-                     test_suites,
-                     suffix,
-                     *,
-                     sort_by_shard=False,
-                     include_utr_instruction=False):
+  def run_tests_once(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    test_suites,
+    suffix,
+    *,
+    sort_by_shard=False,
+    include_utr_instruction=False,
+  ):
     """Runs a set of tests once. Used as a helper function by run_tests.
 
     Args:
@@ -297,8 +321,10 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # Update the instructions for the test result instructions
     if test_suites:
       self.m.repro_instructions.update_invocation_instructions(
-          step_name=f'update invocation instructions {suffix}'
-          if suffix else 'update invocation instructions')
+        step_name=f'update invocation instructions {suffix}'
+        if suffix
+        else 'update invocation instructions'
+      )
 
     for group in groups:
       group.run(self.m, checkout_dir, source_dir, build_dir, suffix)
@@ -312,27 +338,31 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # Serialize the recipe's internal representation of its test results to a
     # log. To be used only for debugging.
     step_result = self.m.step(
-        '$debug - all results%s' % ('' if not suffix else ' (%s)' % suffix),
-        cmd=None)
-    step_result.presentation.logs['serialized results'] = (
-        self.m.json.dumps(rdb_results.to_jsonish(), indent=2).splitlines())
+      '$debug - all results%s' % ('' if not suffix else ' (%s)' % suffix),
+      cmd=None,
+    )
+    step_result.presentation.logs['serialized results'] = self.m.json.dumps(
+      rdb_results.to_jsonish(), indent=2
+    ).splitlines()
     total_size, mem_usage_lines = rdb_results.get_size_details()
     step_result.presentation.step_text = total_size
     step_result.presentation.logs['memory usage'] = mem_usage_lines
 
     bad_results_dict = {}
-    (bad_results_dict['invalid'],
-     bad_results_dict['failed']) = self._retrieve_bad_results(
-         test_suites, suffix)
+    (bad_results_dict['invalid'], bad_results_dict['failed']) = (
+      self._retrieve_bad_results(test_suites, suffix)
+    )
 
     return bad_results_dict['invalid'], bad_results_dict['failed']
 
-  def run_tests_for_flake_endorser(self,
-                                   checkout_dir: Path,
-                                   source_dir: Path,
-                                   build_dir: Path,
-                                   test_objects_by_suffix,
-                                   include_utr_instruction: bool = False):
+  def run_tests_for_flake_endorser(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    test_objects_by_suffix,
+    include_utr_instruction: bool = False,
+  ):
     """Runs tests flake endorser test reruns.
 
     RDB results and failed/invalid test_suites isn't returned because flake
@@ -373,13 +403,16 @@ class TestUtilsApi(recipe_api.RecipeApi):
       str
     """
     return 'https://ci.chromium.org/ui/inv/{}/test-results'.format(
-        invocation_id)
+      invocation_id
+    )
 
-  def fetch_rdb_results(self,
-                        test,
-                        suffix,
-                        test_invocation_names=None,
-                        force_fetch_all_results=False):
+  def fetch_rdb_results(
+    self,
+    test,
+    suffix,
+    test_invocation_names=None,
+    force_fetch_all_results=False,
+  ):
     """Queries RDB for the given test's results.
 
     If Flake Endorser is enabled and the target result count is not too large
@@ -400,13 +433,17 @@ class TestUtilsApi(recipe_api.RecipeApi):
         sizes are below a limit.
     """
     if not test.is_enabled:
-      res = RDBPerSuiteResults.create({},
-                                      failure_on_exit=False,
-                                      total_tests_ran=0,
-                                      suite_name=test.canonical_name,
-                                      test_id_prefix=test.test_id_prefix)
-    elif not (invocation_names := test_invocation_names or
-              test.get_invocation_names(suffix)):
+      res = RDBPerSuiteResults.create(
+        {},
+        failure_on_exit=False,
+        total_tests_ran=0,
+        suite_name=test.canonical_name,
+        test_id_prefix=test.test_id_prefix,
+      )
+    elif not (
+      invocation_names := test_invocation_names
+      or test.get_invocation_names(suffix)
+    ):
       # If we can't find invocation names and resultdb is enabled for the test,
       # just mark its status as invalid.
       failure_on_exit = True
@@ -414,36 +451,42 @@ class TestUtilsApi(recipe_api.RecipeApi):
       if not test.spec.resultdb.enable:
         failure_on_exit = test.failure_on_exit(suffix)
         total_tests_ran = 1
-      res = RDBPerSuiteResults.create({},
-                                      failure_on_exit=failure_on_exit,
-                                      total_tests_ran=total_tests_ran,
-                                      suite_name=test.canonical_name,
-                                      test_id_prefix=test.test_id_prefix)
+      res = RDBPerSuiteResults.create(
+        {},
+        failure_on_exit=failure_on_exit,
+        total_tests_ran=total_tests_ran,
+        suite_name=test.canonical_name,
+        test_id_prefix=test.test_id_prefix,
+      )
     else:
       test_stats = self.m.resultdb.query_test_result_statistics(
-          invocations=invocation_names, step_name='%s stats' % test.name)
+        invocations=invocation_names, step_name='%s stats' % test.name
+      )
       variants_with_unexpected_results = True
-      if (force_fetch_all_results or
-          (self.m.flakiness and self.m.flakiness.check_for_flakiness and
-           test_stats.total_test_results
-           <= self.m.flakiness.PER_TEST_OBJECT_RESULT_LIMIT)):
+      if force_fetch_all_results or (
+        self.m.flakiness
+        and self.m.flakiness.check_for_flakiness
+        and test_stats.total_test_results
+        <= self.m.flakiness.PER_TEST_OBJECT_RESULT_LIMIT
+      ):
         variants_with_unexpected_results = False
       # TODO(crbug.com/1366463): Add default test data for "check flakiness"
       # steps.
       unexpected_result_invocations = self.m.resultdb.query(
-          inv_ids=self.m.resultdb.invocation_ids(invocation_names),
-          variants_with_unexpected_results=variants_with_unexpected_results,
-          limit=0,
-          step_name='%s results' % test.name,
-          tr_fields=RDBPerSuiteResults.NEEDED_FIELDS,
+        inv_ids=self.m.resultdb.invocation_ids(invocation_names),
+        variants_with_unexpected_results=variants_with_unexpected_results,
+        limit=0,
+        step_name='%s results' % test.name,
+        tr_fields=RDBPerSuiteResults.NEEDED_FIELDS,
       )
       res = RDBPerSuiteResults.create(
-          unexpected_result_invocations,
-          suite_name=test.canonical_name,
-          total_tests_ran=test_stats.total_test_results,
-          allow_flaky_passes=suffix != 'without patch',
-          failure_on_exit=test.failure_on_exit(suffix),
-          test_id_prefix=test.test_id_prefix)
+        unexpected_result_invocations,
+        suite_name=test.canonical_name,
+        total_tests_ran=test_stats.total_test_results,
+        allow_flaky_passes=suffix != 'without patch',
+        failure_on_exit=test.failure_on_exit(suffix),
+        test_id_prefix=test.test_id_prefix,
+      )
     test.update_rdb_results(suffix, res)
 
   def _exonerate_unrelated_failures(self, test_suites, suffix):
@@ -464,16 +507,18 @@ class TestUtilsApi(recipe_api.RecipeApi):
       # Any failures in experimental suites should be exonerated.
       if suite.is_experimental:
         explanation_html = (
-            'The test is marked as experimental, meaning any failures will '
-            'not fail the build.')
+          'The test is marked as experimental, meaning any failures will '
+          'not fail the build.'
+        )
         for t in results.unexpected_failing_tests:
           exonerations.append(
-              test_exoneration_pb2.TestExoneration(
-                  test_id=t.test_id,
-                  variant=results.variant,
-                  explanation_html=explanation_html,
-                  reason=test_exoneration_pb2.ExonerationReason.NOT_CRITICAL,
-              ))
+            test_exoneration_pb2.TestExoneration(
+              test_id=t.test_id,
+              variant=results.variant,
+              explanation_html=explanation_html,
+              reason=test_exoneration_pb2.ExonerationReason.NOT_CRITICAL,
+            )
+          )
       elif suffix == 'without patch':
         # Most unexpected failures in the "without patch" phase should be
         # exonerated. Tests that are skipped should _not_ be exonerated.
@@ -482,49 +527,53 @@ class TestUtilsApi(recipe_api.RecipeApi):
         # https://source.chromium.org/chromium/chromium/tools/build/+/main:recipes/recipe_modules/chromium_tests/steps.py;drc=137053ea;l=907
         # until that can be removed in favor of RDB.
         explanation_html = (
-            'The test failed in both (with patch) and (without patch) steps, '
-            'so the CL is exonerated for the test failures.'
+          'The test failed in both (with patch) and (without patch) steps, '
+          'so the CL is exonerated for the test failures.'
         )
 
         # results.unexpected_failing_tests contains tests that resulted in
         # any unexpected non-PASS status (so FAIL, SKIP, CRASH). If the status
         # is SKIP, don't record it as an exoneration.
-        for t in (results.unexpected_failing_tests -
-                  results.unexpected_skipped_tests):
+        for t in (
+          results.unexpected_failing_tests - results.unexpected_skipped_tests
+        ):
           test_results_link = self.luci_milo_test_results_url(t.invocation_id)
           updated_html = explanation_html + (
-              '<br><a href="{}" target="_blank">Test results without patch</a>'
+            '<br><a href="{}" target="_blank">Test results without patch</a>'
           ).format(test_results_link)
           exonerations.append(
-              test_exoneration_pb2.TestExoneration(
-                  test_id=t.test_id,
-                  variant=results.variant,
-                  explanation_html=updated_html,
-                  reason=test_exoneration_pb2.ExonerationReason
-                  .OCCURS_ON_MAINLINE,
-              ))
+            test_exoneration_pb2.TestExoneration(
+              test_id=t.test_id,
+              variant=results.variant,
+              explanation_html=updated_html,
+              reason=test_exoneration_pb2.ExonerationReason.OCCURS_ON_MAINLINE,
+            )
+          )
       # Any failure known to be flaky should also be exonerated.
       elif suffix == 'with patch':
         flakes = suite.known_luci_analysis_flaky_failures
         for known_flake in flakes:
           exonerations.append(
-              test_exoneration_pb2.TestExoneration(
-                  test_id=(results.individual_unexpected_test_by_test_name[
-                      known_flake].test_id),
-                  variant=results.variant,
-                  # TODO(crbug.com/1076096): add deep link to the Milo UI to
-                  #  display the exonerated test results.
-                  explanation_html=(
-                      'LUCI Analysis reported this test as being flaky or '
-                      'failing.'),
-                  reason=test_exoneration_pb2.ExonerationReason
-                  .OCCURS_ON_OTHER_CLS,
-              ))
+            test_exoneration_pb2.TestExoneration(
+              test_id=(
+                results.individual_unexpected_test_by_test_name[
+                  known_flake
+                ].test_id
+              ),
+              variant=results.variant,
+              # TODO(crbug.com/1076096): add deep link to the Milo UI to
+              #  display the exonerated test results.
+              explanation_html=(
+                'LUCI Analysis reported this test as being flaky or failing.'
+              ),
+              reason=test_exoneration_pb2.ExonerationReason.OCCURS_ON_OTHER_CLS,
+            )
+          )
 
     if exonerations:
       self.m.resultdb.exonerate(
-          test_exonerations=exonerations,
-          step_name='exonerate unrelated test failures',
+        test_exonerations=exonerations,
+        step_name='exonerate unrelated test failures',
       )
 
   def _clean_failed_suite_list(self, failed_test_suites):
@@ -552,7 +601,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # connection could be implemented, but the cost is high and return is not;
     # both for CQ cycle time and for overall resource usage, return is very low.
     if not self._should_exonerate_flaky_failures:
-      return failed_test_suites, []  #pragma: nocover
+      return failed_test_suites, []  # pragma: nocover
 
     pruned_suites = failed_test_suites[:]
     exonerated_suites_to_retry = []
@@ -562,7 +611,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
         continue
 
       if set(t.deterministic_failures('with patch')).issubset(
-          t.known_luci_analysis_flaky_failures):
+        t.known_luci_analysis_flaky_failures
+      ):
         pruned_suites.remove(t)
 
     for t in failed_test_suites:
@@ -571,19 +621,24 @@ class TestUtilsApi(recipe_api.RecipeApi):
       # effectively "cannibalizing" our data
       # Long-term, we're thinking of triggering the retry shards and not
       # having the build collect the results.
-      if (t.weak_luci_analysis_flaky_failures):
+      if t.weak_luci_analysis_flaky_failures:
         exonerated_suites_to_retry.append(t)
 
     if exonerated_suites_to_retry:
-      to_log = [{
+      to_log = [
+        {
           'suite_name': t.name,
           'tests_being_retried': list(t.deterministic_failures('with patch')),
-      } for t in exonerated_suites_to_retry]
+        }
+        for t in exonerated_suites_to_retry
+      ]
       log_step = self.m.step.empty(
-          'logging weak LUCI Analysis exonerations',
-          log_text=self.m.json.dumps(to_log, indent=2))
+        'logging weak LUCI Analysis exonerations',
+        log_text=self.m.json.dumps(to_log, indent=2),
+      )
       log_step.presentation.properties['weetbix.retry_weak_exonerations'] = (
-          to_log)
+        to_log
+      )
 
     return pruned_suites, exonerated_suites_to_retry
 
@@ -597,12 +652,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
       return
 
     total_failing_variants = sum(
-        len(tests.get_rdb_results('with patch').unexpected_failing_tests)
-        for tests in tests_to_check)
+      len(tests.get_rdb_results('with patch').unexpected_failing_tests)
+      for tests in tests_to_check
+    )
     if total_failing_variants > 100:
       self.m.step.empty(
-          'Skipping querying LUCI Analysis for failure rates',
-          step_text='Too many failed tests: %d' % total_failing_variants)
+        'Skipping querying LUCI Analysis for failure rates',
+        step_text='Too many failed tests: %d' % total_failing_variants,
+      )
       return
 
     self._query_stability_rate(tests_to_check)
@@ -631,42 +688,51 @@ class TestUtilsApi(recipe_api.RecipeApi):
       for failing_test in sorted(rdb_results.unexpected_failing_tests):
         gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
         sources = {
-            'gitilesCommit': {
-                'host': gitiles_commit.host,
-                'project': gitiles_commit.project,
-                'commitHash': gitiles_commit.id,
-                'ref': gitiles_commit.ref,
-                'position': gitiles_commit.position,
-            },
-            'changelists': [{
-                'host': change.host,
-                'project': change.project,
-                'change': change.change,
-                'patchset': change.patchset,
-            } for change in self.m.buildbucket.build.input.gerrit_changes],
+          'gitilesCommit': {
+            'host': gitiles_commit.host,
+            'project': gitiles_commit.project,
+            'commitHash': gitiles_commit.id,
+            'ref': gitiles_commit.ref,
+            'position': gitiles_commit.position,
+          },
+          'changelists': [
+            {
+              'host': change.host,
+              'project': change.project,
+              'change': change.change,
+              'patchset': change.patchset,
+            }
+            for change in self.m.buildbucket.build.input.gerrit_changes
+          ],
         }
-        test_variants_to_query.append({
+        test_variants_to_query.append(
+          {
             'testId': failing_test.test_id,
             'variantHash': rdb_results.variant_hash,
             'sources': sources,
-        })
-        test_info_for_zip.append({
+          }
+        )
+        test_info_for_zip.append(
+          {
             'test_name': failing_test.test_name,
             'suite_name': suite.name,
-        })
+          }
+        )
     stability_analysis_protos = []
     query_stability_rate_step_error_msg = None
     try:
       stability_analysis_protos, _ = self.m.luci_analysis.query_stability(
-          test_variants_to_query)
+        test_variants_to_query
+      )
     except self.m.step.StepFailure as f:
       # Don't fail the build if something's wrong with LUCI Analysis.
       # We'll just not exonerate any failing tests and log that this happened.
       # Handles LUCI Analysis RPC server errors: 500s
       query_stability_rate_step_error_msg = f.reason
       log_step = self.m.step.empty(
-          'error querying LUCI Analysis for failure rates',
-          step_text=query_stability_rate_step_error_msg)
+        'error querying LUCI Analysis for failure rates',
+        step_text=query_stability_rate_step_error_msg,
+      )
       # Set an output property so this is easily queryable
       log_step.presentation.properties['luci_analysis_query_error'] = True
       return
@@ -674,22 +740,26 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # There should be an analysis object for each queried test
     assert len(test_info_for_zip) == len(stability_analysis_protos)
     suite_to_per_suite_analysis = {}
-    for test_info, stability_analysis in zip(test_info_for_zip,
-                                             stability_analysis_protos):
+    for test_info, stability_analysis in zip(
+      test_info_for_zip, stability_analysis_protos
+    ):
       suite_name = test_info['suite_name']
       indiv_stability_analysis = IndividualTestStabilityAnalysis.create(
-          stability_analysis=stability_analysis,
-          suite_name=suite_name,
-          test_name=test_info['test_name'],
+        stability_analysis=stability_analysis,
+        suite_name=suite_name,
+        test_name=test_info['test_name'],
       )
 
       if suite_name not in suite_to_per_suite_analysis:
         suite_to_per_suite_analysis[suite_name] = (
-            StabilityAnalysisPerSuite.create(suite_name,
-                                             [indiv_stability_analysis]))
+          StabilityAnalysisPerSuite.create(
+            suite_name, [indiv_stability_analysis]
+          )
+        )
       else:
         suite_to_per_suite_analysis[suite_name].append_stability_analysis(
-            indiv_stability_analysis)
+          indiv_stability_analysis
+        )
 
     luci_analysis_build_output = []
     for suite in tests_to_check:
@@ -701,8 +771,10 @@ class TestUtilsApi(recipe_api.RecipeApi):
       test_name_to_result = rdb_results.individual_unexpected_test_by_test_name
       for analysis in stability_analysis_per_suite.stability_analysis_list:
         # Don't exonerate skipped tests
-        if (test_name_to_result[analysis.test_name]
-            in rdb_results.unexpected_skipped_tests):
+        if (
+          test_name_to_result[analysis.test_name]
+          in rdb_results.unexpected_skipped_tests
+        ):
           continue
 
         exonerated = analysis.failure_rate_is_met or analysis.flake_rate_is_met
@@ -710,7 +782,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
           test_names_to_exonerate.add(analysis.test_name)
 
         strongly_exonerated = analysis.failure_rate_is_met or (
-            analysis.flake_rate_is_met and analysis.run_flaky_verdicts_12h > 0)
+          analysis.flake_rate_is_met and analysis.run_flaky_verdicts_12h > 0
+        )
 
         if not strongly_exonerated and analysis.flake_rate_is_met:
           suite.add_weak_luci_analysis_flaky_failure(analysis.test_name)
@@ -718,12 +791,12 @@ class TestUtilsApi(recipe_api.RecipeApi):
         # This is to output LUCI Analysis information in the build output
         # property
         to_log = {
-            'failure_rate_is_met': analysis.failure_rate_is_met,
-            'flake_rate_is_met': analysis.flake_rate_is_met,
-            'variant_hash': analysis.variant_hash,
-            'exonerated': exonerated,
-            'strongly_exonerated': strongly_exonerated,
-            'test_id': analysis.test_id,
+          'failure_rate_is_met': analysis.failure_rate_is_met,
+          'flake_rate_is_met': analysis.flake_rate_is_met,
+          'variant_hash': analysis.variant_hash,
+          'exonerated': exonerated,
+          'strongly_exonerated': strongly_exonerated,
+          'test_id': analysis.test_id,
         }
         luci_analysis_build_output.append(to_log)
 
@@ -732,7 +805,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     output_luci_analysis_step = self.m.step.empty('output LUCI Analysis')
     output_luci_analysis_step.presentation.properties['luci_analysis_info'] = (
-        luci_analysis_build_output)
+      luci_analysis_build_output
+    )
 
   def _query_and_mark_flaky_failures(self, failed_test_suites):
     """Queries and marks failed tests that are already known to be flaky.
@@ -775,11 +849,13 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # patch' steps, so all invalid local suites are still invalid
     invalid_local_suites = [t for t in old_invalid_suites if t.runs_locally]
     still_invalid_remote_suites = list(
-        set(old_invalid_suites).intersection(retried_invalid_suites))
+      set(old_invalid_suites).intersection(retried_invalid_suites)
+    )
     return still_invalid_remote_suites + invalid_local_suites
 
-  def _should_abort_retry(self, failed_test_suites, suffix,
-                          allowed_failing_suites):
+  def _should_abort_retry(
+    self, failed_test_suites, suffix, allowed_failing_suites
+  ):
     """Determines if the current recipe should skip its next retry phases.
 
     Args:
@@ -794,7 +870,8 @@ class TestUtilsApi(recipe_api.RecipeApi):
     if self.m.tryserver.is_tryserver:
       try:
         skip_retry_footer = self.m.tryserver.get_footer(
-            self.m.tryserver.constants.SKIP_RETRY_FOOTER)
+          self.m.tryserver.constants.SKIP_RETRY_FOOTER
+        )
       except self.m.step.StepFailure:
         result = self.m.step('failure getting footers', [])
         result.presentation.status = self.m.step.WARNING
@@ -803,13 +880,17 @@ class TestUtilsApi(recipe_api.RecipeApi):
         if skip_retry_footer:
           result = self.m.step('retries disabled', [])
           result.presentation.step_text = (
-              '\nfooter {} disables suite-level retries'.format(
-                  self.m.tryserver.constants.SKIP_RETRY_FOOTER))
+            '\nfooter {} disables suite-level retries'.format(
+              self.m.tryserver.constants.SKIP_RETRY_FOOTER
+            )
+          )
           return True
 
     unexpected = [
-        s for s in failed_test_suites if s.failures_including_retry(suffix) and
-        s.name not in allowed_failing_suites
+      s
+      for s in failed_test_suites
+      if s.failures_including_retry(suffix)
+      and s.name not in allowed_failing_suites
     ]
     should_abort = len(unexpected) >= self._min_failed_suites_to_skip_retry
     total_test_cases_ran = 0
@@ -822,28 +903,38 @@ class TestUtilsApi(recipe_api.RecipeApi):
       result = self.m.step('abort retry', [])
       result.presentation.status = self.m.step.FAILURE
       result.presentation.step_text = (
-          '\nskip retrying because there are >= {} test suites with test '
-          'failures and it most likely indicates a problem with the CL. These '
-          'suites being:\n{}'.format(self._min_failed_suites_to_skip_retry,
-                                     '\n'.join(x.name for x in unexpected)))
+        '\nskip retrying because there are >= {} test suites with test '
+        'failures and it most likely indicates a problem with the CL. These '
+        'suites being:\n{}'.format(
+          self._min_failed_suites_to_skip_retry,
+          '\n'.join(x.name for x in unexpected),
+        )
+      )
     else:
       result = self.m.step('proceed with retry', [])
       result.presentation.step_text = (
-          '\nfewer than {} failures, continue with retries'.format(
-              self._min_failed_suites_to_skip_retry))
+        '\nfewer than {} failures, continue with retries'.format(
+          self._min_failed_suites_to_skip_retry
+        )
+      )
 
     # TODO(crbug.com/388310032): Consider incorporating these stats in the
     # "abort retry" logic above rather than using total suite numbers.
     result.presentation.properties['retry_decision_stats'] = {
-        'total_test_cases_ran': total_test_cases_ran,
-        'total_test_cases_failed': total_test_cases_failed,
+      'total_test_cases_ran': total_test_cases_ran,
+      'total_test_cases_failed': total_test_cases_failed,
     }
 
     return should_abort
 
-  def _extract_retriable_suites(self, failed_suites, invalid_suites,
-                                exonerated_suites_to_retry, retry_failed_shards,
-                                retry_invalid_shards):
+  def _extract_retriable_suites(
+    self,
+    failed_suites,
+    invalid_suites,
+    exonerated_suites_to_retry,
+    retry_failed_shards,
+    retry_invalid_shards,
+  ):
     target_suites = set(exonerated_suites_to_retry)
     if retry_failed_shards:
       target_suites.update(failed_suites)
@@ -858,7 +949,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
       return suffix
     if suffix == _RETRY_SUFFIX:
       return ''
-    return suffix[len(_RETRY_SUFFIX) + 1:]
+    return suffix[len(_RETRY_SUFFIX) + 1 :]
 
   def prepend_retry_shards(self, suffix):
     """Helper to prepend retry shards to the given suffix."""
@@ -866,17 +957,19 @@ class TestUtilsApi(recipe_api.RecipeApi):
       return _RETRY_SUFFIX
     return _RETRY_SUFFIX + ' ' + suffix
 
-  def run_tests(self,
-                checkout_dir: Path,
-                source_dir: Path,
-                build_dir: Path,
-                test_suites,
-                suffix,
-                *,
-                sort_by_shard=False,
-                retry_failed_shards=False,
-                retry_invalid_shards=False,
-                include_utr_instruction=False):
+  def run_tests(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    test_suites,
+    suffix,
+    *,
+    sort_by_shard=False,
+    retry_failed_shards=False,
+    retry_invalid_shards=False,
+    include_utr_instruction=False,
+  ):
     """Runs a list of test suites and returns the failed ones.
 
     If retry_[failed|invalid]_shards is true, this method retries shards that
@@ -906,24 +999,28 @@ class TestUtilsApi(recipe_api.RecipeApi):
     """
     if not self.m.resultdb.enabled:
       self.m.step.empty(
-          'resultdb not enabled',
-          status=self.m.step.FAILURE,
-          step_text=('every build supported by chromium recipe code'
-                     ' must have resultdb enabled'))
-    invalid_test_suites, failed_test_suites = (
-        self.run_tests_once(
-            checkout_dir,
-            source_dir,
-            build_dir,
-            test_suites,
-            suffix,
-            sort_by_shard=sort_by_shard,
-            include_utr_instruction=include_utr_instruction))
+        'resultdb not enabled',
+        status=self.m.step.FAILURE,
+        step_text=(
+          'every build supported by chromium recipe code'
+          ' must have resultdb enabled'
+        ),
+      )
+    invalid_test_suites, failed_test_suites = self.run_tests_once(
+      checkout_dir,
+      source_dir,
+      build_dir,
+      test_suites,
+      suffix,
+      sort_by_shard=sort_by_shard,
+      include_utr_instruction=include_utr_instruction,
+    )
 
     exonerated_suites_to_retry = []
     if suffix == 'with patch':
       failed_test_suites, exonerated_suites_to_retry = (
-          self._clean_failed_suite_list(failed_test_suites))
+        self._clean_failed_suite_list(failed_test_suites)
+      )
 
     # If we encounter any unexpected test results that we believe aren't due to
     # the CL under test, inform RDB of these tests so it keeps a record.
@@ -931,37 +1028,46 @@ class TestUtilsApi(recipe_api.RecipeApi):
 
     experimental_suites = {x.name for x in test_suites if x.is_experimental}
     if retry_failed_shards and self._should_abort_retry(
-        failed_test_suites, suffix, allowed_failing_suites=experimental_suites):
+      failed_test_suites, suffix, allowed_failing_suites=experimental_suites
+    ):
       return invalid_test_suites, invalid_test_suites + failed_test_suites
 
     failed_and_invalid_suites = list(
-        set(failed_test_suites + invalid_test_suites))
+      set(failed_test_suites + invalid_test_suites)
+    )
 
     if not (retry_failed_shards or retry_invalid_shards):
       return invalid_test_suites, failed_and_invalid_suites
 
     swarming_test_suites = self._extract_retriable_suites(
-        failed_test_suites, invalid_test_suites, exonerated_suites_to_retry,
-        retry_failed_shards, retry_invalid_shards)
+      failed_test_suites,
+      invalid_test_suites,
+      exonerated_suites_to_retry,
+      retry_failed_shards,
+      retry_invalid_shards,
+    )
     if not swarming_test_suites:
       return invalid_test_suites, failed_and_invalid_suites
 
     output_retry_shard_step = self.m.step.empty('record ran_tests_retry_shard')
-    output_retry_shard_step.presentation.properties[
-        'ran_tests_retry_shard'] = True
+    output_retry_shard_step.presentation.properties['ran_tests_retry_shard'] = (
+      True
+    )
     retry_suffix = self.prepend_retry_shards(suffix)
     new_swarming_invalid_suites, _ = self.run_tests_once(
-        checkout_dir,
-        source_dir,
-        build_dir,
-        swarming_test_suites,
-        retry_suffix,
-        sort_by_shard=True,
-        include_utr_instruction=include_utr_instruction)
+      checkout_dir,
+      source_dir,
+      build_dir,
+      swarming_test_suites,
+      retry_suffix,
+      sort_by_shard=True,
+      include_utr_instruction=include_utr_instruction,
+    )
 
     invalid_test_suites = self._still_invalid_suites(
-        old_invalid_suites=invalid_test_suites,
-        retried_invalid_suites=new_swarming_invalid_suites)
+      old_invalid_suites=invalid_test_suites,
+      retried_invalid_suites=new_swarming_invalid_suites,
+    )
 
     # Some suites might be passing now, since we retried some tests. Remove
     # any suites which are now fully passing.
@@ -974,18 +1080,20 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # exonerated but have just been retried for luci analysis's sake (see
     # _clean_failed_suite_list() for more details).
     failed_and_invalid_suites = [
-        t for t in failed_and_invalid_suites if _still_failing(t)
+      t for t in failed_and_invalid_suites if _still_failing(t)
     ]
 
     return invalid_test_suites, failed_and_invalid_suites
 
-  def run_tests_with_patch(self,
-                           checkout_dir: Path,
-                           source_dir: Path,
-                           build_dir: Path,
-                           test_suites,
-                           retry_failed_shards=False,
-                           include_utr_instruction=False):
+  def run_tests_with_patch(
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    test_suites,
+    retry_failed_shards=False,
+    include_utr_instruction=False,
+  ):
     """Runs tests and returns failures.
 
     Args:
@@ -1007,25 +1115,31 @@ class TestUtilsApi(recipe_api.RecipeApi):
           invalid_test_suites.
     """
     return self.run_tests(
-        checkout_dir,
-        source_dir,
-        build_dir,
-        test_suites,
-        'with patch',
-        sort_by_shard=True,
-        retry_failed_shards=retry_failed_shards,
-        retry_invalid_shards=(retry_failed_shards or
-                              any(t.runs_on_skylab for t in test_suites)),
-        include_utr_instruction=include_utr_instruction,
+      checkout_dir,
+      source_dir,
+      build_dir,
+      test_suites,
+      'with patch',
+      sort_by_shard=True,
+      retry_failed_shards=retry_failed_shards,
+      retry_invalid_shards=(
+        retry_failed_shards or any(t.runs_on_skylab for t in test_suites)
+      ),
+      include_utr_instruction=include_utr_instruction,
     )
 
   # TODO(crbug/1314194): Refactor ignored_failures and ignored_flakes to take
   # into account for ignored ToT failures exonerated by luci analysis.
-  def _summarize_new_and_ignored_failures(self, test_suite, new_failures,
-                                          ignored_failures, ignored_flakes,
-                                          new_failures_text,
-                                          ignored_failures_text,
-                                          ignored_flakes_text):
+  def _summarize_new_and_ignored_failures(
+    self,
+    test_suite,
+    new_failures,
+    ignored_failures,
+    ignored_flakes,
+    new_failures_text,
+    ignored_failures_text,
+    ignored_flakes_text,
+  ):
     """Summarizes new and ignored failures and flakes in the test_suite.
 
     Args:
@@ -1051,42 +1165,50 @@ class TestUtilsApi(recipe_api.RecipeApi):
     # There can be multiple blink_web_tests or blink_wpt_tests steps. Archive
     # the summaries to different files.
     if test_suite.spec.results_handler_name == 'layout tests':
-      dest_file = '%s_%s.json' % (test_suite.canonical_name,
-                                  suffix.replace(' ', '_'))
+      dest_file = '%s_%s.json' % (
+        test_suite.canonical_name,
+        suffix.replace(' ', '_'),
+      )
       self._archive_test_results_summary(
-          {
-              'failures': new_failures,
-              'ignored': ignored_failures
-          }, dest_file)
+        {'failures': new_failures, 'ignored': ignored_failures}, dest_file
+      )
 
     step_name = '%s (%s)' % (test_suite.name, suffix)
     _, truncated_new_failures = self.limit_failures(new_failures)
     _, truncated_ignored_failures = self.limit_failures(ignored_failures)
     _, truncated_ignored_flakes = self.limit_failures(ignored_flakes)
     step_text = self.m.presentation_utils.format_step_text(
-        [[new_failures_text, truncated_new_failures],
-         [ignored_failures_text, truncated_ignored_failures],
-         [ignored_flakes_text, truncated_ignored_flakes]])
+      [
+        [new_failures_text, truncated_new_failures],
+        [ignored_failures_text, truncated_ignored_failures],
+        [ignored_flakes_text, truncated_ignored_flakes],
+      ]
+    )
 
     if ignored_flakes:
-      step_text += ('<br/>If the mentioned known flaky tests are incorrect, '
-                    'please file a bug at: http://bit.ly/37I61c2<br/>')
+      step_text += (
+        '<br/>If the mentioned known flaky tests are incorrect, '
+        'please file a bug at: http://bit.ly/37I61c2<br/>'
+      )
 
     result = self.m.step.empty(step_name, step_text=step_text)
     if new_failures:
-      result.presentation.logs[
-          'failures caused build to fail'] = self.m.json.dumps(
-              new_failures, indent=2).split('\n')
+      result.presentation.logs['failures caused build to fail'] = (
+        self.m.json.dumps(new_failures, indent=2).split('\n')
+      )
     if ignored_failures:
       result.presentation.logs[
-          'failures ignored as they also fail without patch'] = (
-              self.m.json.dumps(ignored_failures, indent=2).split('\n'))
+        'failures ignored as they also fail without patch'
+      ] = self.m.json.dumps(ignored_failures, indent=2).split('\n')
     if ignored_flakes:
-      ignored_flakes_key = ('failures ignored as they are known to be flaky or '
-                            'deterministically failing')
+      ignored_flakes_key = (
+        'failures ignored as they are known to be flaky or '
+        'deterministically failing'
+      )
 
       result.presentation.logs[ignored_flakes_key] = self.m.json.dumps(
-          ignored_flakes, indent=2).split('\n')
+        ignored_flakes, indent=2
+      ).split('\n')
 
     if new_failures:
       result.presentation.status = self.m.step.FAILURE
@@ -1113,59 +1235,72 @@ class TestUtilsApi(recipe_api.RecipeApi):
     valid, new_failures = test_suite.deterministic_without_patch_failures()
     if not valid:
       result = self.m.step.empty(
-          '%s (test results summary)' % test_suite.name,
-          step_text=('\n%s (without patch) did not produce valid results. '
-                     'The suite likely reported no failed tests but exited '
-                     'non-zero.') % test_suite.name)
+        '%s (test results summary)' % test_suite.name,
+        step_text=(
+          '\n%s (without patch) did not produce valid results. '
+          'The suite likely reported no failed tests but exited '
+          'non-zero.'
+        )
+        % test_suite.name,
+      )
       result.presentation.status = self.m.step.FAILURE
       self.m.tryserver.set_test_failure_tryjob_result()
       return False
 
     _, ignored_failures = test_suite.without_patch_failures_to_ignore()
     return self._summarize_new_and_ignored_failures(
-        test_suite, new_failures, ignored_failures,
-        test_suite.known_luci_analysis_flaky_failures, self.NEW_FAILURES_TEXT,
-        self.IGNORED_FAILURES_TEXT, self.IGNORED_FLAKES_TEXT)
+      test_suite,
+      new_failures,
+      ignored_failures,
+      test_suite.known_luci_analysis_flaky_failures,
+      self.NEW_FAILURES_TEXT,
+      self.IGNORED_FAILURES_TEXT,
+      self.IGNORED_FLAKES_TEXT,
+    )
 
   def summarize_failing_test_with_no_retries(self, test_suite):
     """Summarizes a failing test suite that is not going to be retried."""
     valid_results, new_failures = (
-        test_suite.with_patch_failures_including_retry())
+      test_suite.with_patch_failures_including_retry()
+    )
 
     if not valid_results:  # pragma: nocover
       self.m.step.empty(
-          '{} assertion'.format(test_suite.name),
-          status=self.m.step.INFRA_FAILURE,
-          step_text=(
-              'This line should never be reached.'
-              ' If a test has invalid results and is not going to be retried,'
-              ' then a failing step should have already been emitted.'))
+        '{} assertion'.format(test_suite.name),
+        status=self.m.step.INFRA_FAILURE,
+        step_text=(
+          'This line should never be reached.'
+          ' If a test has invalid results and is not going to be retried,'
+          ' then a failing step should have already been emitted.'
+        ),
+      )
 
     return self._summarize_new_and_ignored_failures(
-        test_suite,
-        new_failures,
-        set(),
-        test_suite.known_luci_analysis_flaky_failures,
-        new_failures_text=self.NEW_FAILURES_TEXT,
-        ignored_failures_text=self.IGNORED_FAILURES_TEXT,
-        ignored_flakes_text=self.IGNORED_FLAKES_TEXT)
+      test_suite,
+      new_failures,
+      set(),
+      test_suite.known_luci_analysis_flaky_failures,
+      new_failures_text=self.NEW_FAILURES_TEXT,
+      ignored_failures_text=self.IGNORED_FAILURES_TEXT,
+      ignored_flakes_text=self.IGNORED_FLAKES_TEXT,
+    )
 
   def _archive_test_results_summary(self, test_results_summary, dest_filename):
     """Archives the test results summary as JSON, storing it alongside the
     results from the first run."""
     cmd = [
-        'python3',
-        self.resource('archive_layout_test_results_summary.py'),
-        '--test-results-summary-json',
-        self.m.json.input(test_results_summary),
-        '--build-number',
-        self.m.buildbucket.build.number or self.m.buildbucket.build.id,
-        '--builder-name',
-        self.m.buildbucket.builder_name,
-        '--gs-bucket',
-        'gs://chromium-layout-test-archives',
-        '--dest-filename',
-        dest_filename,
+      'python3',
+      self.resource('archive_layout_test_results_summary.py'),
+      '--test-results-summary-json',
+      self.m.json.input(test_results_summary),
+      '--build-number',
+      self.m.buildbucket.build.number or self.m.buildbucket.build.id,
+      '--builder-name',
+      self.m.buildbucket.builder_name,
+      '--gs-bucket',
+      'gs://chromium-layout-test-archives',
+      '--dest-filename',
+      dest_filename,
     ]
     cmd += ['--bot-utils-gsutil-py-path', self.m.depot_tools.gsutil_py_path]
     self.m.step('archive_test_results_summary', cmd)
@@ -1191,8 +1326,9 @@ class TestUtilsApi(recipe_api.RecipeApi):
     step_result.presentation.properties['test_status'] = {}
     for test_suite in test_suites:
       if test_suite.is_enabled:
-        step_result.presentation.properties['test_status'][
-            test_suite.name] = test_suite.get_status(suffix)
+        step_result.presentation.properties['test_status'][test_suite.name] = (
+          test_suite.get_status(suffix)
+        )
 
 
 class TestGroup:
@@ -1207,10 +1343,9 @@ class TestGroup:
     self._test_suites = test_suites
     self.resultdb_api = resultdb_api
 
-  def pre_run(self,
-              api,
-              suffix,
-              include_utr_instruction=False):  # pragma: no cover
+  def pre_run(
+    self, api, suffix, include_utr_instruction=False
+  ):  # pragma: no cover
     """Executes the |pre_run| method of each test.
 
     Args:
@@ -1221,8 +1356,9 @@ class TestGroup:
     """
     raise NotImplementedError()
 
-  def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
-          suffix):
+  def run(
+    self, api, checkout_dir: Path, source_dir: Path, build_dir: Path, suffix
+  ):
     """Executes the |run| method of each test.
 
     Args:
@@ -1244,8 +1380,9 @@ class TestGroup:
     except api.step.StepFailure:
       pass
 
-  def include_rdb_invocation(self, suffix,
-                             step_name='include test invocations'):
+  def include_rdb_invocation(
+    self, suffix, step_name='include test invocations'
+  ):
     invocation_names = []
     if self.resultdb_api and self.resultdb_api.enabled:
       for t in self._test_suites:
@@ -1257,12 +1394,12 @@ class TestGroup:
       # patch under test.
       if invocation_names and suffix != 'without patch':
         self.resultdb_api.include_invocations(
-            self.resultdb_api.invocation_ids(invocation_names),
-            step_name=step_name)
+          self.resultdb_api.invocation_ids(invocation_names),
+          step_name=step_name,
+        )
 
 
 class LocalGroup(TestGroup):
-
   def __init__(self, test_suites, resultdb):
     super().__init__(test_suites, resultdb)
 
@@ -1272,8 +1409,9 @@ class LocalGroup(TestGroup):
       with self._handle_test_errors(api):
         t.pre_run(suffix, include_utr_instruction)
 
-  def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
-          suffix):
+  def run(
+    self, api, checkout_dir: Path, source_dir: Path, build_dir: Path, suffix
+  ):
     """Executes the |run| method of each test."""
     for t in self._test_suites:
       with self._handle_test_errors(api):
@@ -1281,11 +1419,11 @@ class LocalGroup(TestGroup):
       api.test_utils.fetch_rdb_results(t, suffix)
 
     self.include_rdb_invocation(
-        suffix, step_name='include local test invocations')
+      suffix, step_name='include local test invocations'
+    )
 
 
 class SwarmingGroup(TestGroup):
-
   def __init__(self, test_suites, resultdb):
     super().__init__(test_suites, resultdb)
     self._task_ids_to_test = {}
@@ -1298,11 +1436,13 @@ class SwarmingGroup(TestGroup):
       futures = []
       for t in self._test_suites:
         futures.append(
-            api.futures.spawn_immediate(t.pre_run, suffix,
-                                        include_utr_instruction))
+          api.futures.spawn_immediate(
+            t.pre_run, suffix, include_utr_instruction
+          )
+        )
       for f in futures:
         f.result()
-    else:  #pragma nocover
+    else:  # pragma nocover
       for t in self._test_suites:
         t.pre_run(suffix, include_utr_instruction)
 
@@ -1315,10 +1455,12 @@ class SwarmingGroup(TestGroup):
       self._task_ids_to_test[task_ids] = t
 
     self.include_rdb_invocation(
-        suffix, step_name='include swarming task invocations')
+      suffix, step_name='include swarming task invocations'
+    )
 
-  def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
-          suffix):
+  def run(
+    self, api, checkout_dir: Path, source_dir: Path, build_dir: Path, suffix
+  ):
     """Executes the |run| method of each test."""
     for test in self._test_suites:
       if not test.is_enabled:
@@ -1341,11 +1483,13 @@ class SwarmingGroup(TestGroup):
         # in an unbalanced order.
         for server, server_task_ids in server_to_task_ids.items():
           finished_sets, attempts = (
-              api.chromium_swarming.wait_for_finished_task_set(
-                  server_task_ids,
-                  suffix=((' (%s)' % suffix) if suffix else ''),
-                  attempts=attempts,
-                  server=server))
+            api.chromium_swarming.wait_for_finished_task_set(
+              server_task_ids,
+              suffix=((' (%s)' % suffix) if suffix else ''),
+              attempts=attempts,
+              server=server,
+            )
+          )
           all_finished_sets.extend(finished_sets)
           for task_set in finished_sets:
             test = self._task_ids_to_test[tuple(task_set)]
@@ -1363,15 +1507,17 @@ class SwarmingGroup(TestGroup):
       # Something weird is going on, just collect tasks like normal, and log a
       # warning.
       api.step.empty(
-          'swarming tasks.get_states issue',
-          status=api.step.WARNING,
-          step_text=(
-              'swarming tasks.get_states seemed to indicate that all tasks for'
-              ' this build were finished collecting, but the recipe thinks the'
-              ' following tests still need to be collected:\n%s'
-              '\nSomething is probably wrong with the swarming server.'
-              ' Falling back on the old collection logic.' %
-              ', '.join(test.name for test in self._task_ids_to_test.values())))
+        'swarming tasks.get_states issue',
+        status=api.step.WARNING,
+        step_text=(
+          'swarming tasks.get_states seemed to indicate that all tasks for'
+          ' this build were finished collecting, but the recipe thinks the'
+          ' following tests still need to be collected:\n%s'
+          '\nSomething is probably wrong with the swarming server.'
+          ' Falling back on the old collection logic.'
+          % ', '.join(test.name for test in self._task_ids_to_test.values())
+        ),
+      )
 
       for test in self._task_ids_to_test.values():
         # We won't collect any already collected tasks, as they're removed from
@@ -1381,7 +1527,6 @@ class SwarmingGroup(TestGroup):
 
 
 class SkylabGroup(TestGroup):
-
   def __init__(self, test_suites, result_db):
     super().__init__(test_suites, result_db)
     self.ctp_build_timeout_sec = 3600
@@ -1395,8 +1540,9 @@ class SkylabGroup(TestGroup):
       if not t.is_enabled:
         continue
       # Respect timeout of each test run by this CTP build.
-      self.ctp_build_timeout_sec = max(t.spec.timeout_sec,
-                                       self.ctp_build_timeout_sec)
+      self.ctp_build_timeout_sec = max(
+        t.spec.timeout_sec, self.ctp_build_timeout_sec
+      )
       t.pre_run(suffix, include_utr_instruction)
       for build_id in t.ctp_build_ids.values():
         if not build_id in self.ctp_build_ids:
@@ -1404,18 +1550,19 @@ class SkylabGroup(TestGroup):
 
     self.include_rdb_invocation(suffix, step_name='include skylab invocations')
 
-  def run(self, api, checkout_dir: Path, source_dir: Path, build_dir: Path,
-          suffix):
+  def run(
+    self, api, checkout_dir: Path, source_dir: Path, build_dir: Path, suffix
+  ):
     """Render test results for each Skylab Test."""
     try:
       api.buildbucket.collect_builds(
-          list(self.ctp_build_ids),
-          # Collect CTP with slightly longer timeout.
-          # CTP cancels child testers with ctp_build_timeout_sec, we should
-          # allow some overhead for CTPs.
-          timeout=self.ctp_build_timeout_sec +
-          self.ctp_overhead_allowed_time_sec,
-          step_name='collect skylab results')
+        list(self.ctp_build_ids),
+        # Collect CTP with slightly longer timeout.
+        # CTP cancels child testers with ctp_build_timeout_sec, we should
+        # allow some overhead for CTPs.
+        timeout=self.ctp_build_timeout_sec + self.ctp_overhead_allowed_time_sec,
+        step_name='collect skylab results',
+      )
     except api.step.StepFailure as err:
       # Perhaps some of the builds have completed, so continue
       # to collect their results even if the step timed out.

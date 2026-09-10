@@ -7,13 +7,19 @@ from __future__ import annotations
 import re
 
 from . import utils
-from .base_test_binary import (BaseTestBinary, TestBinaryWithBatchMixin,
-                               TestBinaryWithParallelMixin)
-from ..result_summary.blink_web_tests_result_summary import BlinkWebTestsResultSummary
+from .base_test_binary import (
+  BaseTestBinary,
+  TestBinaryWithBatchMixin,
+  TestBinaryWithParallelMixin,
+)
+from ..result_summary.blink_web_tests_result_summary import (
+  BlinkWebTestsResultSummary,
+)
 
 
-class BlinkWebTestsBinary(TestBinaryWithBatchMixin, TestBinaryWithParallelMixin,
-                          BaseTestBinary):
+class BlinkWebTestsBinary(
+  TestBinaryWithBatchMixin, TestBinaryWithParallelMixin, BaseTestBinary
+):
   RESULT_SUMMARY_CLS = BlinkWebTestsResultSummary
 
   def strip_for_bots(self):
@@ -21,19 +27,36 @@ class BlinkWebTestsBinary(TestBinaryWithBatchMixin, TestBinaryWithParallelMixin,
 
     # We will take control of these switches
     strip_switches = [
-        'isolated-script-test-output', 'write-full-results-to',
-        'json-test-results', 'json-failing-test-results', 'results-directory',
-        'isolated-script-test-perf-output', 'num-retries',
-        'test-launcher-retry-limit',
-        'isolated-script-test-launcher-retry-limit', 'no-retry-failures',
-        'child-processes', 'jobs', 'j', 'iterations',
-        'isolated-script-test-repeat', 'gtest_repeat',
-        'isolated-script-test-also-run-disabled-tests',
-        'restart-shell-between-tests', 'test-list', 'order', 'seed',
-        'isolated-script-test-filter-file', 'test-launcher-filter-file',
-        'isolated-script-test-filter', 'gtest_filter', 'gerrit-issue',
-        'gerrit-patchset', 'buildbucket-id', 'git-revision',
-        'write-run-histories-to'
+      'isolated-script-test-output',
+      'write-full-results-to',
+      'json-test-results',
+      'json-failing-test-results',
+      'results-directory',
+      'isolated-script-test-perf-output',
+      'num-retries',
+      'test-launcher-retry-limit',
+      'isolated-script-test-launcher-retry-limit',
+      'no-retry-failures',
+      'child-processes',
+      'jobs',
+      'j',
+      'iterations',
+      'isolated-script-test-repeat',
+      'gtest_repeat',
+      'isolated-script-test-also-run-disabled-tests',
+      'restart-shell-between-tests',
+      'test-list',
+      'order',
+      'seed',
+      'isolated-script-test-filter-file',
+      'test-launcher-filter-file',
+      'isolated-script-test-filter',
+      'gtest_filter',
+      'gerrit-issue',
+      'gerrit-patchset',
+      'buildbucket-id',
+      'git-revision',
+      'write-run-histories-to',
     ]
     strip_switches = {key: 1 for key in strip_switches}
     ret.command = utils.strip_command_switches(ret.command, strip_switches)
@@ -41,7 +64,8 @@ class BlinkWebTestsBinary(TestBinaryWithBatchMixin, TestBinaryWithParallelMixin,
     is_local = ret.command and re.match(r"^bin[\\\/]run_", ret.command[0])
     if not is_local:
       raise NotImplementedError(
-          'Command line contains unknown wrapper: {0}'.format(ret.command))
+        'Command line contains unknown wrapper: {0}'.format(ret.command)
+      )
 
     shard_env_keys = ('GTEST_SHARD_INDEX', 'GTEST_TOTAL_SHARDS')
     ret.env_vars = utils.strip_env_vars(ret.env_vars, shard_env_keys)

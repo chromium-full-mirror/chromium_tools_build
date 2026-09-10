@@ -34,58 +34,64 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   trigger_props = {'foo': 'bar'}
   api.chromium_bootstrap.update_trigger_properties(trigger_props)
-  api.assertions.assertEqual(trigger_props,
-                             thaw(api.properties['expected_properties']))
+  api.assertions.assertEqual(
+    trigger_props, thaw(api.properties['expected_properties'])
+  )
 
 
 def GenTests(api: TEST_DEPS):
 
   def expect_properties(properties):
-    return sum([
+    return sum(
+      [
         api.properties(expected_properties=properties),
         api.post_process(post_process.DropExpectation),
-    ], api.empty_test_data())
+      ],
+      api.empty_test_data(),
+    )
 
   yield api.test(
-      'not-bootstrapped',
-      expect_properties({'foo': 'bar'}),
+    'not-bootstrapped',
+    expect_properties({'foo': 'bar'}),
   )
 
   commits = [
-      common.GitilesCommit(
-          host='chromium.googlesource.com',
-          project='chromium/src',
-          ref='refs/heads/main',
-          id='src-hash',
-      ),
-      common.GitilesCommit(
-          host='chrome-internal.googlesource.com',
-          project='chrome/src-internal',
-          ref='refs/heads/main',
-          id='src-internal-hash',
-      ),
+    common.GitilesCommit(
+      host='chromium.googlesource.com',
+      project='chromium/src',
+      ref='refs/heads/main',
+      id='src-hash',
+    ),
+    common.GitilesCommit(
+      host='chrome-internal.googlesource.com',
+      project='chrome/src-internal',
+      ref='refs/heads/main',
+      id='src-internal-hash',
+    ),
   ]
 
   yield api.test(
-      'bootstrapped',
-      api.chromium_bootstrap.properties(commits=commits),
-      expect_properties({
-          'foo': 'bar',
-          '$bootstrap/trigger': {
-              'commits': [
-                  {
-                      'host': 'chromium.googlesource.com',
-                      'project': 'chromium/src',
-                      'ref': 'refs/heads/main',
-                      'id': 'src-hash',
-                  },
-                  {
-                      'host': 'chrome-internal.googlesource.com',
-                      'project': 'chrome/src-internal',
-                      'ref': 'refs/heads/main',
-                      'id': 'src-internal-hash',
-                  },
-              ],
-          },
-      }),
+    'bootstrapped',
+    api.chromium_bootstrap.properties(commits=commits),
+    expect_properties(
+      {
+        'foo': 'bar',
+        '$bootstrap/trigger': {
+          'commits': [
+            {
+              'host': 'chromium.googlesource.com',
+              'project': 'chromium/src',
+              'ref': 'refs/heads/main',
+              'id': 'src-hash',
+            },
+            {
+              'host': 'chrome-internal.googlesource.com',
+              'project': 'chrome/src-internal',
+              'ref': 'refs/heads/main',
+              'id': 'src-internal-hash',
+            },
+          ],
+        },
+      }
+    ),
   )

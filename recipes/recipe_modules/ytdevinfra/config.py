@@ -11,9 +11,9 @@ from recipe_engine.config import Single, Static, BadConf
 
 def BaseConfig(TARGET='AndroidAPK'):
   return ConfigGroup(
-      android_apk=Single(bool),
-      tool=Single(str, required=True),
-      TARGET=Static(str(TARGET)),
+    android_apk=Single(bool),
+    tool=Single(str, required=True),
+    TARGET=Static(str(TARGET)),
   )
 
 

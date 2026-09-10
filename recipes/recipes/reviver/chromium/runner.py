@@ -22,11 +22,11 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_polymorphic,
-    chromium_reviver,
-    chromium_tests,
-    chromium_tests_builder_config,
+  chromium,
+  chromium_polymorphic,
+  chromium_reviver,
+  chromium_tests,
+  chromium_tests_builder_config,
 )
 
 
@@ -55,30 +55,36 @@ def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
-      'basic',
-      api.chromium.generic_build(
-          project='reviver-project',
-          bucket='reviver-bucket',
-          builder='fake-runner',
-          builder_group=None,
-      ),
-      api.chromium_polymorphic.triggered_properties(
-          project='fake-project',
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder='fake-builder',
-              builder_group='fake-group',
-          ).assemble()),
-      api.chromium_tests.read_targets_spec('fake-group', {
-          'fake-builder': {
-              'gtest_tests': [{
-                  'test': 'fake-gtest',
-              }],
-          },
-      }),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.generic_build(
+      project='reviver-project',
+      bucket='reviver-bucket',
+      builder='fake-runner',
+      builder_group=None,
+    ),
+    api.chromium_polymorphic.triggered_properties(
+      project='fake-project',
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder='fake-builder',
+        builder_group='fake-group',
+      ).assemble()
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-builder': {
+          'gtest_tests': [
+            {
+              'test': 'fake-gtest',
+            }
+          ],
+        },
+      },
+    ),
+    api.post_process(post_process.DropExpectation),
   )

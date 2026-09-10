@@ -1,4 +1,0 @@
-# This file must be in repo root for it to be used by `git cl format`. Unlike
-# .gitignore, patterns in this file are only simple Unix shell-style wildcard
-# patterns (e.g. *.ext" matches all paths that end in .ext).
-*_pb2.py

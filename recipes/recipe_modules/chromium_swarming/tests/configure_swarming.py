@@ -35,38 +35,41 @@ def RunSteps(api: DEPS):
   api.chromium.set_config('android', TARGET_PLATFORM='android')
 
   api.chromium_swarming.configure_swarming(
-      precommit=api.properties['precommit'],
-      # Fake path to make tests pass.
-      path_to_merge_scripts=api.path.start_dir.joinpath('checkout',
-                                                        'merge_scripts'))
+    precommit=api.properties['precommit'],
+    # Fake path to make tests pass.
+    path_to_merge_scripts=api.path.start_dir.joinpath(
+      'checkout', 'merge_scripts'
+    ),
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'precommit_cq',
-      api.properties(
-          precommit=True,
-          patch_project='chromium',
-          requester='commit-bot@chromium.org',
-          blamelist=['some-user@chromium.org']),
-      api.post_process(post_process.DropExpectation),
+    'precommit_cq',
+    api.properties(
+      precommit=True,
+      patch_project='chromium',
+      requester='commit-bot@chromium.org',
+      blamelist=['some-user@chromium.org'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'precommit_manual',
-      api.properties(precommit=True, patch_project='chromium'),
-      api.post_process(post_process.DropExpectation),
+    'precommit_manual',
+    api.properties(precommit=True, patch_project='chromium'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'postcommit',
-      api.properties(precommit=False),
-      api.post_process(post_process.DropExpectation),
+    'postcommit',
+    api.properties(precommit=False),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'experimental',
-      api.properties(precommit=False),
-      api.runtime(is_experimental=True),
-      api.post_process(post_process.DropExpectation),
+    'experimental',
+    api.properties(precommit=False),
+    api.runtime(is_experimental=True),
+    api.post_process(post_process.DropExpectation),
   )

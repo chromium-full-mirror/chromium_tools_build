@@ -5,7 +5,11 @@
 import re
 
 from recipe_engine.post_process import (
-    DoesNotRun, DropExpectation, StepCommandContains, StepTextEquals)
+  DoesNotRun,
+  DropExpectation,
+  StepCommandContains,
+  StepTextEquals,
+)
 
 from RECIPE_MODULES.build.v8.v8version import choose_revision_to_roll
 
@@ -16,17 +20,17 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import v8
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    gitiles,
+  bot_update,
+  gclient,
+  git,
+  gitiles,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    raw_io,
-    step,
+  context,
+  file,
+  path,
+  raw_io,
+  step,
 )
 
 
@@ -55,6 +59,7 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
   v8: v8.TEST_API
 
+
 TEST_DEPS_FILE = """
 vars = {
   'chromium_git': 'https://chromium.googlesource.com',
@@ -73,19 +78,20 @@ V8_VERSION_RE = re.compile(r'^\d+\.\d+\.\d+(?:\.\d+)?$')
 def get_last_v8_revision(api: DEPS):
   """Retrieve the last V8 revision in Chromium from gitiles."""
   deps = api.gitiles.download_file(
-      'https://chromium.googlesource.com/chromium/src',
-      'DEPS',
-      branch='refs/heads/main',
-      step_test_data=lambda: api.gitiles.test_api.make_encoded_file(
-          TEST_DEPS_FILE % 'deadbeef'),
+    'https://chromium.googlesource.com/chromium/src',
+    'DEPS',
+    branch='refs/heads/main',
+    step_test_data=lambda: api.gitiles.test_api.make_encoded_file(
+      TEST_DEPS_FILE % 'deadbeef'
+    ),
   )
 
   deps_file = api.path.mkdtemp('gitiles') / 'DEPS'
   api.file.write_text('gitiles', deps_file, deps)
   revision = api.gclient(
-      'get gitiles deps',
-      ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
-      stdout=api.raw_io.output_text(),
+    'get gitiles deps',
+    ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
+    stdout=api.raw_io.output_text(),
   ).stdout.strip()
   api.step.active_result.presentation.logs['revision'] = [revision]
   return revision
@@ -115,9 +121,12 @@ def get_next_v8_revision(api: DEPS, last_v8_revision):
     assert last_version, 'The last rolled v8 revision is not tagged.'
 
     ref_lines = api.v8.git_output(
-        'for-each-ref', '--count=160', '--sort=-committerdate',
-        '--format', '%(refname) %(objectname) %(committerdate)',
-        'refs/tags/*',
+      'for-each-ref',
+      '--count=160',
+      '--sort=-committerdate',
+      '--format',
+      '%(refname) %(objectname) %(committerdate)',
+      'refs/tags/*',
     ).split('\n')
     revision, reason = choose_revision_to_roll(ref_lines, last_version)
     parent.step_text = reason
@@ -131,17 +140,23 @@ def RunSteps(api: DEPS):
 
   last_v8_revision = get_last_v8_revision(api)
   with api.context(
-      cwd=source_dir,
-      env={'DEPOT_TOOLS_UPDATE': '0'},
-      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
+    cwd=source_dir,
+    env={'DEPOT_TOOLS_UPDATE': '0'},
+    env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]},
+  ):
     next_v8_revision = get_next_v8_revision(api, last_v8_revision)
 
     api.git(
-        'fetch', 'https://chromium.googlesource.com/v8/v8',
-        'refs/heads/roll', next_v8_revision)
+      'fetch',
+      'https://chromium.googlesource.com/v8/v8',
+      'refs/heads/roll',
+      next_v8_revision,
+    )
     api.git(
-        'push', 'https://chromium.googlesource.com/v8/v8',
-        f'+{next_v8_revision}:refs/heads/roll')
+      'push',
+      'https://chromium.googlesource.com/v8/v8',
+      f'+{next_v8_revision}:refs/heads/roll',
+    )
 
 
 TEST_REF_DATA = """
@@ -155,49 +170,52 @@ refs/tags/11.7.9 aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa1 Fri Jul 7 10:32:02 202
 def GenTests(api: TEST_DEPS):
   def last_v8_revision():
     return api.override_step_data(
-        'gclient get gitiles deps',
-        api.raw_io.stream_output_text('deadbeef', stream='stdout'))
+      'gclient get gitiles deps',
+      api.raw_io.stream_output_text('deadbeef', stream='stdout'),
+    )
 
   def v8_tag(tag):
     return api.override_step_data(
-        'Choose revision.git tag',
-        api.raw_io.stream_output_text(f'{tag}-pgo\n{tag}', stream='stdout'))
+      'Choose revision.git tag',
+      api.raw_io.stream_output_text(f'{tag}-pgo\n{tag}', stream='stdout'),
+    )
 
   def v8_ref_data():
     return api.override_step_data(
-        'Choose revision.git for-each-ref',
-        api.raw_io.stream_output_text(TEST_REF_DATA, stream='stdout'))
+      'Choose revision.git for-each-ref',
+      api.raw_io.stream_output_text(TEST_REF_DATA, stream='stdout'),
+    )
 
   yield api.test(
-      'standard',
-      last_v8_revision(),
-      v8_tag('11.7.8'),
-      v8_ref_data(),
-      api.post_process(
-          StepTextEquals,
-          'Choose revision',
-          'found revision to roll: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2'),
-      api.post_process(
-          StepCommandContains,
-          'git push',
-          ['+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2:refs/heads/roll']),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    'standard',
+    last_v8_revision(),
+    v8_tag('11.7.8'),
+    v8_ref_data(),
+    api.post_process(
+      StepTextEquals,
+      'Choose revision',
+      'found revision to roll: aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2',
+    ),
+    api.post_process(
+      StepCommandContains,
+      'git push',
+      ['+aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa2:refs/heads/roll'],
+    ),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'nothing_new',
-      last_v8_revision(),
-      v8_tag('11.7.11'),
-      v8_ref_data(),
-      api.post_process(
-          StepTextEquals,
-          'Choose revision',
-          'found no newer revision than: 11.7.11'),
-      api.post_process(
-          StepCommandContains,
-          'git push',
-          ['+deadbeef:refs/heads/roll']),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    'nothing_new',
+    last_v8_revision(),
+    v8_tag('11.7.11'),
+    v8_ref_data(),
+    api.post_process(
+      StepTextEquals, 'Choose revision', 'found no newer revision than: 11.7.11'
+    ),
+    api.post_process(
+      StepCommandContains, 'git push', ['+deadbeef:refs/heads/roll']
+    ),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )

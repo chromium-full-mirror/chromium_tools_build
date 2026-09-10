@@ -15,21 +15,21 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_tests,
-    isolate,
-    test_utils,
+  chromium,
+  chromium_tests,
+  isolate,
+  test_utils,
 )
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    buildbucket,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  assertions,
+  buildbucket,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -65,9 +65,8 @@ def RunSteps(api: DEPS):
 
   resultdb = steps.ResultDB(result_format='json')
   test_spec = steps.LocalIsolatedScriptTestSpec.create(
-      test_name,
-      isolate_profile_data=isolate_profile_data,
-      resultdb=resultdb)
+    test_name, isolate_profile_data=isolate_profile_data, resultdb=resultdb
+  )
 
   test = test_spec.get_test(api.chromium_tests)
 
@@ -76,10 +75,11 @@ def RunSteps(api: DEPS):
   test_repeat_count = api.properties.get('repeat_count')
   if test_repeat_count:
     test.test_options = steps.TestOptions.create(
-        test_filter=api.properties.get('test_filter'),
-        repeat_count=test_repeat_count,
-        retry_limit=0,
-        run_disabled=bool(test_repeat_count))
+      test_filter=api.properties.get('test_filter'),
+      repeat_count=test_repeat_count,
+      retry_limit=0,
+      run_disabled=bool(test_repeat_count),
+    )
 
   raw_cmd = api.properties.get('raw_cmd') or []
   if raw_cmd:
@@ -94,14 +94,15 @@ def RunSteps(api: DEPS):
   build_dir = source_dir / 'out' / 'some_build_dir'
   try:
     invalid_suites, failed_suites = api.test_utils.run_tests_once(
-        checkout_dir, source_dir, build_dir, [test], '')
+      checkout_dir, source_dir, build_dir, [test], ''
+    )
   finally:
     api.step('details', [])
     api.step.active_result.presentation.logs['details'] = [
-        'compile_targets: %r' % test.compile_targets(),
-        'isolate_target: %r' % test.isolate_target,
-        'uses_local_devices: %r' % test.uses_local_devices,
-        'uses_isolate: %r' % test.uses_isolate,
+      'compile_targets: %r' % test.compile_targets(),
+      'isolate_target: %r' % test.isolate_target,
+      'uses_local_devices: %r' % test.uses_local_devices,
+      'uses_isolate: %r' % test.uses_isolate,
     ]
 
   if invalid_suites or failed_suites:
@@ -110,105 +111,124 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   def verify_isolate_flag(check, step_odict):
-    step = step_odict[
-        'base_unittests']
-    check('LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw'
-          in step.cmd)
+    step = step_odict['base_unittests']
+    check(
+      'LLVM_PROFILE_FILE=${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw'
+      in step.cmd
+    )
 
   yield api.test(
-      'basic',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-      }),
-      api.post_process(post_process.StepCommandContains, 'base_unittests',
-                       ['rdb']),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      }
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'base_unittests', ['rdb']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'failure',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
+    'failure',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      }
+    ),
+    api.override_step_data(
+      'base_unittests results',
+      stdout=api.raw_io.output_text(
+        api.test_utils.rdb_results('base_unittests', failing_tests=['Test.One'])
       ),
-      api.properties(swarm_hashes={
-          'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-      }),
-      api.override_step_data(
-          'base_unittests results',
-          stdout=api.raw_io.output_text(
-              api.test_utils.rdb_results(
-                  'base_unittests', failing_tests=['Test.One']))),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'raw_cmd',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-          },
-          raw_cmd=['./base_unittests', '--bar'],
-          relative_cwd='out/Release'),
-      api.post_process(post_process.StepCommandContains, 'base_unittests', [
-          '--relative-cwd', 'out/Release', '--', './base_unittests', '--bar',
-          '--isolated-script-test-output'
-      ]),
-      api.post_process(post_process.DropExpectation),
+    'raw_cmd',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      },
+      raw_cmd=['./base_unittests', '--bar'],
+      relative_cwd='out/Release',
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'base_unittests',
+      [
+        '--relative-cwd',
+        'out/Release',
+        '--',
+        './base_unittests',
+        '--bar',
+        '--isolated-script-test-output',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'customized_test_options',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          swarm_hashes={
-              'blink_web_tests': 'ffffffffffffffffffffffffffffffffffffffff',
-          },
-          test_filter=['test1', 'test2'],
-          repeat_count=20,
-          test_name='blink_web_tests'),
-      api.post_process(post_process.DropExpectation),
+    'customized_test_options',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'blink_web_tests': 'ffffffffffffffffffffffffffffffffffffffff',
+      },
+      test_filter=['test1', 'test2'],
+      repeat_count=20,
+      test_name='blink_web_tests',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'angle_unittests_options',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          swarm_hashes={
-              'angle_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-          },
-          test_filter=['test1', 'test2'],
-          repeat_count=20,
-          test_name='angle_unittests'),
-      api.post_process(post_process.DropExpectation),
+    'angle_unittests_options',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'angle_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      },
+      test_filter=['test1', 'test2'],
+      repeat_count=20,
+      test_name='angle_unittests',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'isolate_profile_data',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          isolate_profile_data=True,
-          swarm_hashes={
-              'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
-          }),
-      api.post_process(verify_isolate_flag),
-      api.post_process(post_process.DropExpectation),
+    'isolate_profile_data',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      isolate_profile_data=True,
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff',
+      },
+    ),
+    api.post_process(verify_isolate_flag),
+    api.post_process(post_process.DropExpectation),
   )

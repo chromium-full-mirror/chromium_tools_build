@@ -13,8 +13,14 @@ class DiskApi(recipe_api.RecipeApi):
   """DiskApi contains helper functions for reading disk info."""
 
   def space_usage(
-      self, path=None, warning_level=None, previous_result=None,
-      can_fail_build=False, name=None, **kwargs):
+    self,
+    path=None,
+    warning_level=None,
+    previous_result=None,
+    can_fail_build=False,
+    name=None,
+    **kwargs,
+  ):
     """Displays disk space usage.
 
     Does not support Windows yet, does not emit steps.
@@ -38,9 +44,11 @@ class DiskApi(recipe_api.RecipeApi):
     name = name or 'disk space usage'
     warning_level = warning_level or 0.9
     kwargs.setdefault(
-        'step_test_data',
-        lambda: self.m.json.test_api.output_stream(
-            self.test_api.space_usage_result()))
+      'step_test_data',
+      lambda: self.m.json.test_api.output_stream(
+        self.test_api.space_usage_result()
+      ),
+    )
 
     if self.m.platform.is_win:
       # Not supported. Feel free to implement.
@@ -49,28 +57,36 @@ class DiskApi(recipe_api.RecipeApi):
     step = None
     try:
       step = self.m.step(
-          name, ['python3', self.resource('statvfs.py'), path],
-          stdout=self.m.json.output(),
-          **kwargs)
+        name,
+        ['python3', self.resource('statvfs.py'), path],
+        stdout=self.m.json.output(),
+        **kwargs,
+      )
       capacity_mb = step.stdout['capacity'] / 1024.0 / 1024.0
       used_mb = step.stdout['used'] / 1024.0 / 1024.0
       percent = used_mb / capacity_mb
       step.presentation.step_text = '%.2f/%.2f GiB (%d%%) used' % (
-          used_mb / 1024.0, capacity_mb / 1024.0, percent * 100)
+        used_mb / 1024.0,
+        capacity_mb / 1024.0,
+        percent * 100,
+      )
       if percent >= warning_level:
         step.presentation.status = self.m.step.WARNING
       if previous_result:
         step.presentation.step_text += '. Delta: %+.2f MiB' % (
-            used_mb - previous_result['used'])
+          used_mb - previous_result['used']
+        )
       return {
-          'capacity': capacity_mb,
-          'used': used_mb,
+        'capacity': capacity_mb,
+        'used': used_mb,
       }
     except Exception as ex:
       # Do not fail entire build because of a disk space step failure.
       if step:
         step.presentation.logs['exception'] = [
-            str(ex), '\n', traceback.format_exc()
+          str(ex),
+          '\n',
+          traceback.format_exc(),
         ]
         step.presentation.status = self.m.step.WARNING
       if can_fail_build:

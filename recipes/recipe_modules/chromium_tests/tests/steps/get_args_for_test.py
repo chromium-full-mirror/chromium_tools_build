@@ -33,6 +33,7 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
   tryserver: tryserver.TEST_API
 
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests import generators
@@ -50,264 +51,288 @@ def RunSteps(api: DEPS):
   precommit_details = None
   if api.tryserver.is_tryserver:
     precommit_details = generators.PrecommitDetails(
-        footers=api.tryserver.get_footers())
+      footers=api.tryserver.get_footers()
+    )
 
   generator = generators.Generator(
-      api.chromium_tests,
-      update_result.properties,
-      update_result.source_root.path,
-      precommit_details=precommit_details,
+    api.chromium_tests,
+    update_result.properties,
+    update_result.source_root.path,
+    precommit_details=precommit_details,
   )
   test_args = generator._get_args_for_test(test_spec)
   if 'expected_args' in api.properties:
     # For some reason, we get expected_args as a tuple instead of a list
     api.assertions.assertEqual(
-        list(api.properties.get('expected_args')), test_args)
+      list(api.properties.get('expected_args')), test_args
+    )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'buildbucket_string',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${buildbucket_build_id}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['8945511751514863184'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'buildbucket_string',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${buildbucket_build_id}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'buildbucket_unicode',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${buildbucket_build_id}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['8945511751514863184'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'buildbucket_unicode',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${buildbucket_build_id}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'buildbucket_dictionary',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${buildbucket_build_id}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['8945511751514863184'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'buildbucket_dictionary',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${buildbucket_build_id}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'conditional args added',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'conditional_args': [{
-                  'variable': 'buildbucket_project',
-                  'value': 'chromium',
-                  'args': ['foo', 'bar'],
-              }],
-          },
-          expected_args=['foo', 'bar'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'conditional args added',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [
+          {
+            'variable': 'buildbucket_project',
+            'value': 'chromium',
+            'args': ['foo', 'bar'],
+          }
+        ],
+      },
+      expected_args=['foo', 'bar'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'conditional args not added',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'conditional_args': [{
-                  'variable': 'buildbucket_project',
-                  'value': 'chrome',
-                  'args': ['foo', 'bar'],
-              }],
-          },
-          expected_args=[],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'conditional args not added',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [
+          {
+            'variable': 'buildbucket_project',
+            'value': 'chrome',
+            'args': ['foo', 'bar'],
+          }
+        ],
+      },
+      expected_args=[],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'inverted conditional args added',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'conditional_args': [{
-                  'variable': 'buildbucket_project',
-                  'value': 'chrome',
-                  'invert': True,
-                  'args': ['foo', 'bar'],
-              }],
-          },
-          expected_args=['foo', 'bar'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'inverted conditional args added',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [
+          {
+            'variable': 'buildbucket_project',
+            'value': 'chrome',
+            'invert': True,
+            'args': ['foo', 'bar'],
+          }
+        ],
+      },
+      expected_args=['foo', 'bar'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'inverted conditional args not added',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'conditional_args': [{
-                  'variable': 'buildbucket_project',
-                  'value': 'chromium',
-                  'invert': True,
-                  'args': ['foo', 'bar'],
-              }],
-          },
-          expected_args=[],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'inverted conditional args not added',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [
+          {
+            'variable': 'buildbucket_project',
+            'value': 'chromium',
+            'invert': True,
+            'args': ['foo', 'bar'],
+          }
+        ],
+      },
+      expected_args=[],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'conditional args without variable',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(single_spec={
-          'conditional_args': [{}],
-      }),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_check(lambda check, steps: \
-          check("Conditional has no 'variable' key"
-                in steps['Invalid conditional'].step_text)),
-      api.post_process(post_process.DropExpectation),
+    'conditional args without variable',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [{}],
+      }
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_check(
+      lambda check, steps: check(
+        "Conditional has no 'variable' key"
+        in steps['Invalid conditional'].step_text
+      )
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'conditional args with unknown variable',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(single_spec={
-          'conditional_args': [{
-              'variable': 'foobar',
-          }],
-      }),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_check(lambda check, steps: \
-          check("Unknown variable 'foobar'"
-                in steps['Invalid conditional'].step_text)),
-      api.post_process(post_process.DropExpectation),
+    'conditional args with unknown variable',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'conditional_args': [
+          {
+            'variable': 'foobar',
+          }
+        ],
+      }
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_check(
+      lambda check, steps: check(
+        "Unknown variable 'foobar'" in steps['Invalid conditional'].step_text
+      )
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'use_permissive_angle_pixel_comparison not trybot',
-      api.chromium.ci_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${use_permissive_angle_pixel_comparison}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['0'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'use_permissive_angle_pixel_comparison not trybot',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${use_permissive_angle_pixel_comparison}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['0'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'use_permissive_angle_pixel_comparison trybot no footer',
-      api.chromium.try_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${use_permissive_angle_pixel_comparison}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['0'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'use_permissive_angle_pixel_comparison trybot no footer',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${use_permissive_angle_pixel_comparison}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['0'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'use_permissive_angle_pixel_comparison trybot footer not true',
-      api.chromium.try_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${use_permissive_angle_pixel_comparison}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['0'],
-      ),
-      api.tryserver.get_footers(
-          {'Use-Permissive-Angle-Pixel-Comparison': ['False']},),
-      api.post_process(post_process.DropExpectation),
+    'use_permissive_angle_pixel_comparison trybot footer not true',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${use_permissive_angle_pixel_comparison}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['0'],
+    ),
+    api.tryserver.get_footers(
+      {'Use-Permissive-Angle-Pixel-Comparison': ['False']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'use_permissive_angle_pixel_comparison trybot footer true',
-      api.chromium.try_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${use_permissive_angle_pixel_comparison}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['1'],
-      ),
-      api.tryserver.get_footers(
-          {'Use-Permissive-Angle-Pixel-Comparison': ['True']},),
-      api.post_process(post_process.DropExpectation),
+    'use_permissive_angle_pixel_comparison trybot footer true',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${use_permissive_angle_pixel_comparison}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['1'],
+    ),
+    api.tryserver.get_footers(
+      {'Use-Permissive-Angle-Pixel-Comparison': ['True']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'use_permissive_angle_pixel_comparison trybot multiple footers true',
-      api.chromium.try_build(
-          builder_group='test_group',
-          builder='test_buildername',
-      ),
-      api.properties(
-          single_spec={
-              'args': ['${use_permissive_angle_pixel_comparison}'],
-              'test': 'base_unittests',
-          },
-          expected_args=['1'],
-      ),
-      api.tryserver.get_footers(
-          {'Use-Permissive-Angle-Pixel-Comparison': ['foo', 'True']},),
-      api.post_process(post_process.DropExpectation),
+    'use_permissive_angle_pixel_comparison trybot multiple footers true',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${use_permissive_angle_pixel_comparison}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['1'],
+    ),
+    api.tryserver.get_footers(
+      {'Use-Permissive-Angle-Pixel-Comparison': ['foo', 'True']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )

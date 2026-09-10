@@ -37,31 +37,39 @@ go install github.com/bazelbuild/buildtools/buildozer@latest
 
 def parse_args(args: Optional[Sequence[str]] = None) -> argparse.Namespace:
   parser = argparse.ArgumentParser(
-      description='A wrapper around buildozer for chromium starlark.',
-      epilog=_EPILOG)
+    description='A wrapper around buildozer for chromium starlark.',
+    epilog=_EPILOG,
+  )
   parser.add_argument(
-      '--infra-config-dir',
-      default='.',
-      help=('The path to the //infra/config directory'
-            ' containing starlark files to modify.'))
+    '--infra-config-dir',
+    default='.',
+    help=(
+      'The path to the //infra/config directory'
+      ' containing starlark files to modify.'
+    ),
+  )
   parser.add_argument(
-      '--buildozer-binary',
-      default='buildozer',
-      help=('The buildozer binary to use.'
-            ' The path can be an absolute or relative path,'
-            ' or a simply the name of the command if it is on PATH.'))
+    '--buildozer-binary',
+    default='buildozer',
+    help=(
+      'The buildozer binary to use.'
+      ' The path can be an absolute or relative path,'
+      ' or a simply the name of the command if it is on PATH.'
+    ),
+  )
   parser.add_argument(
-      'input_json',
-      help='The path to the json file containing the edits to apply.')
+    'input_json',
+    help='The path to the json file containing the edits to apply.',
+  )
   return parser.parse_args(args)
 
 
 def _execute_buildozer(
-    *,
-    buildozer_binary: str,
-    input_file_path: str,
-    output_file_path: str,
-    commands: Collection[str],
+  *,
+  buildozer_binary: str,
+  input_file_path: str,
+  output_file_path: str,
+  commands: Collection[str],
 ) -> None:
   try:
     os.makedirs(os.path.dirname(output_file_path))
@@ -77,19 +85,25 @@ def _execute_buildozer(
     with open(input_file_path) as stdin, open(output_file_path, 'w') as stdout:
       # buildozer has non-standard exit code, we have check logic afterwards
       # pylint: disable=subprocess-run-check
-      result = subprocess.run([buildozer_binary, '-f', commands_file_path],
-                              text=True,
-                              stdin=stdin,
-                              stdout=stdout)
+      result = subprocess.run(
+        [buildozer_binary, '-f', commands_file_path],
+        text=True,
+        stdin=stdin,
+        stdout=stdout,
+      )
 
   # buildozer won't have an exit code of 0 because that indicates that it
   # succeeded and modified files. When operating on stdin, it won't modify
   # files. So we look for exit code 3 which indicates that it succeeded
   # without modifying files.
   if result.returncode != 3:
-    print(('Failed to execute buildozer with commands file:\n'
-           f'{commands_file_contents}'),
-          file=sys.stderr)
+    print(
+      (
+        'Failed to execute buildozer with commands file:\n'
+        f'{commands_file_contents}'
+      ),
+      file=sys.stderr,
+    )
     result.check_returncode()
 
 
@@ -102,12 +116,12 @@ def _escape_spaces(s: str) -> str:
 
 
 def perform_edits(
-    *,
-    buildozer_binary: str,
-    infra_config_dir: str,
-    output_dir: str,
-    builder_group: str,
-    edits_by_builder: str,
+  *,
+  buildozer_binary: str,
+  infra_config_dir: str,
+  output_dir: str,
+  builder_group: str,
+  edits_by_builder: str,
 ) -> None:
   # TODO(gbeaty) Actually figure out what file a builder is in so that this will
   # work for builders that don't match the heuristic
@@ -126,7 +140,7 @@ def perform_edits(
     # argument set to target_name.
     target = f'-:{builder}'
     ops = [
-        f'set {attr} {_escape_spaces(value)}' for attr, value in edits.items()
+      f'set {attr} {_escape_spaces(value)}' for attr, value in edits.items()
     ]
     commands.append('|'.join(ops + [target]))
 
@@ -135,10 +149,10 @@ def perform_edits(
   output_file_path = f'{output_dir}/{path_to_edit}'
 
   _execute_buildozer(
-      buildozer_binary=buildozer_binary,
-      input_file_path=input_file_path,
-      output_file_path=output_file_path,
-      commands=commands,
+    buildozer_binary=buildozer_binary,
+    input_file_path=input_file_path,
+    output_file_path=output_file_path,
+    commands=commands,
   )
 
 
@@ -146,8 +160,10 @@ def main() -> int:
   args = parse_args()
 
   if shutil.which(args.buildozer_binary) is None:
-    message = (f'buildozer binary {args.buildozer_binary}'
-               ' could not be found (or is not executable).')
+    message = (
+      f'buildozer binary {args.buildozer_binary}'
+      ' could not be found (or is not executable).'
+    )
     print(message, file=sys.stderr)
     return 1
 
@@ -163,11 +179,11 @@ def main() -> int:
     with tempfile.TemporaryDirectory() as output_dir:
       for group, edits_by_builder in edits_by_builder_by_builder_group.items():
         perform_edits(
-            buildozer_binary=args.buildozer_binary,
-            infra_config_dir=args.infra_config_dir,
-            output_dir=output_dir,
-            builder_group=group,
-            edits_by_builder=edits_by_builder,
+          buildozer_binary=args.buildozer_binary,
+          infra_config_dir=args.infra_config_dir,
+          output_dir=output_dir,
+          builder_group=group,
+          edits_by_builder=edits_by_builder,
         )
 
       shutil.copytree(output_dir, args.infra_config_dir, dirs_exist_ok=True)

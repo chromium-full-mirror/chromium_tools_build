@@ -44,37 +44,38 @@ def RunSteps(api: DEPS):
   with api.step.nest('js-fuzzer'):
     fuzzer_dir = source_dir.joinpath('tools', 'clusterfuzz', 'js_fuzzer')
     docker_cmd = [
-        'run',
-        '--rm',
-        '--name',
-        'dummy',
-        '--security-opt',
-        'no-new-privileges',
-        '-v',
-        '%s:/usr/src/app' % fuzzer_dir,
-        '-w',
-        '/usr/src/app',
+      'run',
+      '--rm',
+      '--name',
+      'dummy',
+      '--security-opt',
+      'no-new-privileges',
+      '-v',
+      '%s:/usr/src/app' % fuzzer_dir,
+      '-w',
+      '/usr/src/app',
     ]
     with api.context(cwd=fuzzer_dir):
       api.docker.login(infra_step=True)
       api.docker(
-          *(docker_cmd + ['node:23', 'npm', 'install']),
-          step_name='npm install')
+        *(docker_cmd + ['node:23', 'npm', 'install']), step_name='npm install'
+      )
       api.docker(
-          *(docker_cmd + ['--network=none', 'node:23', 'npm', 'test']),
-          step_name='npm test')
+        *(docker_cmd + ['--network=none', 'node:23', 'npm', 'test']),
+        step_name='npm test',
+      )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(Filter('js-fuzzer.npm install', 'js-fuzzer.npm test')),
-      status='SUCCESS',
+    'basic',
+    api.post_process(Filter('js-fuzzer.npm install', 'js-fuzzer.npm test')),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'login failure',
-      api.override_step_data('js-fuzzer.docker login', retcode=1),
-      api.post_process(DropExpectation),
-      status='INFRA_FAILURE',
+    'login failure',
+    api.override_step_data('js-fuzzer.docker login', retcode=1),
+    api.post_process(DropExpectation),
+    status='INFRA_FAILURE',
   )

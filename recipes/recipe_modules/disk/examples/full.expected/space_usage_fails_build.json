@@ -14,7 +14,7 @@
       "@@@STEP_LOG_LINE@exception@'capacity'@@@",
       "@@@STEP_LOG_LINE@exception@@@@",
       "@@@STEP_LOG_LINE@exception@Traceback (most recent call last):@@@",
-      "@@@STEP_LOG_LINE@exception@  File \"RECIPE_REPO[build]/recipes/recipe_modules/disk/api.py\", line 55, in space_usage@@@",
+      "@@@STEP_LOG_LINE@exception@  File \"RECIPE_REPO[build]/recipes/recipe_modules/disk/api.py\", line 65, in space_usage@@@",
       "@@@STEP_LOG_LINE@exception@    capacity_mb = step.stdout['capacity'] / 1024.0 / 1024.0@@@",
       "@@@STEP_LOG_LINE@exception@                  ~~~~~~~~~~~^^^^^^^^^^^^@@@",
       "@@@STEP_LOG_LINE@exception@KeyError: 'capacity'@@@",

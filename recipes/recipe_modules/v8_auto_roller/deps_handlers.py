@@ -7,10 +7,10 @@ from __future__ import annotations
 from . import commons
 from .handler_base import RollHandler
 from .definitions import (
-    Artifact,
-    CipdDep,
-    GcsDep,
-    GitDep,
+  Artifact,
+  CipdDep,
+  GcsDep,
+  GitDep,
 )
 
 from abc import ABC
@@ -21,7 +21,6 @@ from typing import Dict, List, Literal, Optional
 
 
 class DEPSRollHandler(RollHandler, ABC):
-
   def __init__(self, module, source_dir, autoroller_config, updates=None):
     super().__init__(module, source_dir, autoroller_config)
     self.updates = updates
@@ -41,8 +40,9 @@ class DEPSRollHandler(RollHandler, ABC):
 
   def commit_msg_lines(self, changes):
     return [
-        line for c in changes
-        for line in c.get_commit_message(self.config['show_commit_log'])
+      line
+      for c in changes
+      for line in c.get_commit_message(self.config['show_commit_log'])
     ] + [commons.roll_origin_line(self.api)]
 
   def summary(self):
@@ -50,7 +50,6 @@ class DEPSRollHandler(RollHandler, ABC):
 
 
 class TrustedRollHandler(DEPSRollHandler):
-
   def upload_flags(self):
     return ['--set-bot-commit', '--use-commit-queue']
 
@@ -59,14 +58,14 @@ class TrustedRollHandler(DEPSRollHandler):
 
 
 class UntrustedRollHandler(DEPSRollHandler):
-
   def name(self):
     return 'reviewed'
 
   def commit_msg_lines(self, changes):
     return commons.commit_msg_lines_w_reviewes(
-        super().commit_msg_lines(changes),
-        self.config.get('manual_roll_reviewers'))
+      super().commit_msg_lines(changes),
+      self.config.get('manual_roll_reviewers'),
+    )
 
 
 def get_dep_updates(api, step_presentation, autoroller_config):
@@ -128,19 +127,20 @@ def filter_artifacts(autoroller_config, artifacts):
   dep_names = {a.dep.path for a in artifacts}
 
   assert excludes is None or includes is None, (
-      'Either excludes or includes can be declared, not both.')
+    'Either excludes or includes can be declared, not both.'
+  )
   assert excludes is None or all(e in dep_names for e in excludes), (
-      'At least one excluded dep does not exist. Found '
-      f'{", ".join(dep_names)}')
+    f'At least one excluded dep does not exist. Found {", ".join(dep_names)}'
+  )
   assert includes is None or all(i in dep_names for i in includes), (
-      'At least one included dep does not exist. Found '
-      f'{", ".join(dep_names)}')
+    f'At least one included dep does not exist. Found {", ".join(dep_names)}'
+  )
 
   artifacts = [
-      a for a in artifacts if excludes is None or a.dep.path not in excludes
+    a for a in artifacts if excludes is None or a.dep.path not in excludes
   ]
   artifacts = [
-      a for a in artifacts if includes is None or a.dep.path in includes
+    a for a in artifacts if includes is None or a.dep.path in includes
   ]
 
   return artifacts
@@ -153,13 +153,14 @@ def get_deps(api, name):
   # Parse DEPS file.
   deps_file_path = api.v8.checkout_root / name / 'DEPS'
   deps_content = api.file.read_text(
-      f'Read {name}/DEPS', deps_file_path, include_log=False)
+    f'Read {name}/DEPS', deps_file_path, include_log=False
+  )
 
   local_scope = {}
   global_scope = {
-      'Str': lambda str_value: str_value,
-      'Var': lambda var_name: local_scope['vars'][var_name],
-      'deps_os': {},
+    'Str': lambda str_value: str_value,
+    'Var': lambda var_name: local_scope['vars'][var_name],
+    'deps_os': {},
   }
   exec(deps_content, global_scope, local_scope)
   deps = sorted(local_scope.get('deps', {}).items())
@@ -178,16 +179,22 @@ def get_deps(api, name):
       dep_instances.append(CipdDep(api, path, {'packages': entry['packages']}))
     elif entry['dep_type'] == 'gcs':
       dep_instances.append(
-          GcsDep(
-              api, path, {
-                  'bucket':
-                      entry['bucket'],
-                  'objects': [{
-                      'object_name': o['object_name'],
-                      'sha256sum': o['sha256sum'],
-                      'size_bytes': o['size_bytes'],
-                      'generation': o['generation'],
-                  } for o in entry['objects']]
-              }))
+        GcsDep(
+          api,
+          path,
+          {
+            'bucket': entry['bucket'],
+            'objects': [
+              {
+                'object_name': o['object_name'],
+                'sha256sum': o['sha256sum'],
+                'size_bytes': o['size_bytes'],
+                'generation': o['generation'],
+              }
+              for o in entry['objects']
+            ],
+          },
+        )
+      )
 
   return dep_instances

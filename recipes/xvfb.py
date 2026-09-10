@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Functions to setup xvfb, which is used by the linux machines.
-"""
+"""Functions to setup xvfb, which is used by the linux machines."""
 
 import os
 import signal
@@ -55,10 +54,12 @@ def StartVirtualX(build_dir):
   if xdisplaycheck_path and os.path.exists(xdisplaycheck_path):
     print('Verifying Xvfb is not running ...')
     checkstarttime = time.time()
-    xdisplayproc = subprocess.Popen([xdisplaycheck_path, '--noserver'],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT,
-                                    env=env)
+    xdisplayproc = subprocess.Popen(
+      [xdisplaycheck_path, '--noserver'],
+      stdout=subprocess.PIPE,
+      stderr=subprocess.STDOUT,
+      env=env,
+    )
     # Wait for xdisplaycheck to exit.
     logs = xdisplayproc.communicate()[0]
     if xdisplayproc.returncode == 0:
@@ -78,10 +79,23 @@ def StartVirtualX(build_dir):
 
   # Start a virtual X server that we run the tests in.  This makes it so we can
   # run the tests even if we didn't start the tests from an X session.
-  proc = subprocess.Popen([cmd, display, '-screen', '0', '1280x800x24', '-ac',
-                           '-dpi', '96', '-maxclients', '512'],
-                          stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
-                          env=env)
+  proc = subprocess.Popen(
+    [
+      cmd,
+      display,
+      '-screen',
+      '0',
+      '1280x800x24',
+      '-ac',
+      '-dpi',
+      '96',
+      '-maxclients',
+      '512',
+    ],
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    env=env,
+  )
   xvfb_pid_filename = _XvfbPidFilename()
   open(xvfb_pid_filename, 'w').write(str(proc.pid))
 
@@ -89,9 +103,9 @@ def StartVirtualX(build_dir):
   if xdisplaycheck_path and os.path.exists(xdisplaycheck_path):
     print('Verifying Xvfb has started...')
     checkstarttime = time.time()
-    xdisplayproc = subprocess.Popen([xdisplaycheck_path],
-                                    stdout=subprocess.PIPE,
-                                    stderr=subprocess.STDOUT)
+    xdisplayproc = subprocess.Popen(
+      [xdisplaycheck_path], stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+    )
     # Wait for xdisplaycheck to exit.
     logs = xdisplayproc.communicate()[0]
     checktime = time.time() - checkstarttime
@@ -121,7 +135,6 @@ def StartVirtualX(build_dir):
   # Some ChromeOS tests need a window manager.
   subprocess.Popen('openbox', stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   print('Window manager (openbox) started.')
-
 
 
 def StopVirtualX():

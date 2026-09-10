@@ -14,8 +14,9 @@ import os
 import posixpath
 
 
-def get_aggregated_coverage_data_from_files(files_coverage_data,
-                                            dir_to_component=None):
+def get_aggregated_coverage_data_from_files(
+  files_coverage_data, dir_to_component=None
+):
   """Aggregates files coverage data to directories and components.
 
   Note: this function assumes that all files are written in the same language,
@@ -31,17 +32,19 @@ def get_aggregated_coverage_data_from_files(files_coverage_data,
     component to GroupCoverageSummary data.
   """
   per_directory_summaries = _caclulate_per_directory_summaries(
-      files_coverage_data)
+    files_coverage_data
+  )
   per_directory_files = _calculate_per_directory_files(files_coverage_data)
   per_directory_subdirs = _calculate_per_directory_subdirs(
-      per_directory_summaries)
+    per_directory_summaries
+  )
   per_directory_coverage_data = {}
   for dir_path in per_directory_summaries:
     per_directory_coverage_data[dir_path] = {
-        'path': dir_path,
-        'dirs': per_directory_subdirs[dir_path],
-        'files': per_directory_files[dir_path],
-        'summaries': per_directory_summaries[dir_path],
+      'path': dir_path,
+      'dirs': per_directory_subdirs[dir_path],
+      'files': per_directory_files[dir_path],
+      'summaries': per_directory_summaries[dir_path],
     }
 
   if not dir_to_component:
@@ -54,16 +57,19 @@ def get_aggregated_coverage_data_from_files(files_coverage_data,
     for dir_path in component_to_dirs[component]:
       _merge_summary(summaries, per_directory_summaries[dir_path])
 
-    sub_dirs = [{
+    sub_dirs = [
+      {
         'path': dir_path,
         'name': posixpath.basename(dir_path[:-1]) + '/',
         'summaries': per_directory_summaries[dir_path],
-    } for dir_path in component_to_dirs[component]]
+      }
+      for dir_path in component_to_dirs[component]
+    ]
 
     per_component_coverage_data[component] = {
-        'path': component,
-        'dirs': sub_dirs,
-        'summaries': summaries,
+      'path': component,
+      'dirs': sub_dirs,
+      'summaries': summaries,
     }
 
   return per_directory_coverage_data, per_component_coverage_data
@@ -79,14 +85,16 @@ def _caclulate_per_directory_summaries(files_coverage_data):
     A dict mapping from directory to coverage metric summaries.
   """
   per_directory_summaries = defaultdict(
-      lambda: _new_summaries(files_coverage_data[0]['summaries']))
+    lambda: _new_summaries(files_coverage_data[0]['summaries'])
+  )
   for file_record in files_coverage_data:
     parent_dir = posixpath.dirname(file_record['path'])
     while parent_dir != '//':
       # In the coverage data format, dirs end with '/' except for root.
       parent_coverage_path = parent_dir + '/'
-      _merge_summary(per_directory_summaries[parent_coverage_path],
-                     file_record['summaries'])
+      _merge_summary(
+        per_directory_summaries[parent_coverage_path], file_record['summaries']
+      )
       parent_dir = posixpath.dirname(parent_dir)
 
     _merge_summary(per_directory_summaries['//'], file_record['summaries'])
@@ -110,11 +118,13 @@ def _calculate_per_directory_files(files_coverage_data):
       # In the coverage data format, dirs end with '/' except for root.
       direct_parent_dir += '/'
 
-    per_directory_files[direct_parent_dir].append({
+    per_directory_files[direct_parent_dir].append(
+      {
         'name': posixpath.basename(file_record['path']),
         'path': file_record['path'],
         'summaries': file_record['summaries'],
-    })
+      }
+    )
 
   return per_directory_files
 
@@ -135,17 +145,20 @@ def _calculate_per_directory_subdirs(per_directory_summaries):
       continue
 
     assert dir_path.endswith('/'), (
-        'Directory path: %s is expected to end with / in coverage data format' %
-        dir_path)
+      'Directory path: %s is expected to end with / in coverage data format'
+      % dir_path
+    )
     parent_dir_path, dirname = posixpath.split(dir_path[:-1])
     if parent_dir_path != '//':
       parent_dir_path += '/'
 
-    per_directory_subdirs[parent_dir_path].append({
+    per_directory_subdirs[parent_dir_path].append(
+      {
         'name': dirname + '/',
         'path': dir_path,
         'summaries': per_directory_summaries[dir_path],
-    })
+      }
+    )
 
   return per_directory_subdirs
 
@@ -172,7 +185,6 @@ def _extract_component_to_dirs_mapping(dir_to_component):
   # Paths in dir to component mapping is relative path that always uses '/' as
   # path separator and does NOT end with '/', for example, 'media/cast'.
   for dir_path, component in sorted(dir_to_component.items()):
-
     # Check if we already added the parent directory of this directory. If
     # yes, skip this sub-directory to avoid double-counting.
     found_parent_same_component = False
@@ -207,8 +219,8 @@ def _merge_summary(merge_dest, merge_src):
     return {s['name'] for s in summaries}
 
   assert get_metrics(merge_dest) == get_metrics(merge_src), (
-      '%s and %s are expected to have the same metrics' % (merge_dest,
-                                                           merge_src))
+    '%s and %s are expected to have the same metrics' % (merge_dest, merge_src)
+  )
 
   merge_src_dict = {i['name']: i for i in merge_src}
   for merge_dest_item in merge_dest:
@@ -218,8 +230,7 @@ def _merge_summary(merge_dest, merge_src):
 
 def _new_summaries(reference_summaries):
   """Returns new summaries with the same metrics as the reference one."""
-  return [{
-      'name': summary['name'],
-      'covered': 0,
-      'total': 0
-  } for summary in reference_summaries]
+  return [
+    {'name': summary['name'], 'covered': 0, 'total': 0}
+    for summary in reference_summaries
+  ]

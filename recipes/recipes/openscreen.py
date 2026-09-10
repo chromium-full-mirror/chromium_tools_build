@@ -16,25 +16,25 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import code_coverage, profiles
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    git,
-    gsutil,
-    osx_sdk,
-    tryserver,
+  bot_update,
+  depot_tools,
+  gclient,
+  git,
+  gsutil,
+  osx_sdk,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    step,
-    swarming,
+  buildbucket,
+  cas,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  step,
+  swarming,
 )
 
 
@@ -76,6 +76,7 @@ class TEST_DEPS(RecipeTestApi):
   swarming: swarming.TEST_API
   tryserver: tryserver.TEST_API
 
+
 # Open Screen specific paths and repository information.
 BUILD_CONFIG = 'Default'
 UNIT_TEST_BINARY_NAME = 'openscreen_unittests'
@@ -84,32 +85,32 @@ CAST_E2E_TEST_SCRIPT_NAME = 'standalone_e2e.py'
 CAST_SENDER_BINARY_NAME = 'cast_sender'
 CAST_RECEIVER_BINARY_NAME = 'cast_receiver'
 BUILD_TARGETS = [
-    'gn_all',
-    UNIT_TEST_BINARY_NAME,
-    E2E_TEST_BINARY_NAME,
-    'fuzzer_tests_all',
-    CAST_SENDER_BINARY_NAME,
-    CAST_RECEIVER_BINARY_NAME,
+  'gn_all',
+  UNIT_TEST_BINARY_NAME,
+  E2E_TEST_BINARY_NAME,
+  'fuzzer_tests_all',
+  CAST_SENDER_BINARY_NAME,
+  CAST_RECEIVER_BINARY_NAME,
 ]
 OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
-    'cast_allow_developer_certificate',
-    'enable_rust',
-    'have_ffmpeg',
-    'have_libopus',
-    'have_libsdl2',
-    'have_libvpx',
-    'is_asan',
-    'is_clang',
-    'is_component_build',
-    'is_debug',
-    'is_msan',
-    'is_tsan',
-    'sysroot',
-    'target_cpu',
-    'use_custom_libcxx',
-    'use_coverage',
+  'cast_allow_developer_certificate',
+  'enable_rust',
+  'have_ffmpeg',
+  'have_libopus',
+  'have_libsdl2',
+  'have_libvpx',
+  'is_asan',
+  'is_clang',
+  'is_component_build',
+  'is_debug',
+  'is_msan',
+  'is_tsan',
+  'sysroot',
+  'target_cpu',
+  'use_custom_libcxx',
+  'use_coverage',
 ]
 
 # List of dimensions used for starting swarming on ARM64.
@@ -131,10 +132,12 @@ class RepositoryPaths:
     self.unit_test_binary_path = self.output_path / UNIT_TEST_BINARY_NAME
     self.e2e_test_binary_path = self.output_path / E2E_TEST_BINARY_NAME
     self.cast_e2e_test_script_path = (
-        self.checkout_path / 'cast' / CAST_E2E_TEST_SCRIPT_NAME)
+      self.checkout_path / 'cast' / CAST_E2E_TEST_SCRIPT_NAME
+    )
     self.cast_sender_binary_path = self.output_path / CAST_SENDER_BINARY_NAME
     self.cast_receiver_binary_path = (
-        self.output_path / CAST_RECEIVER_BINARY_NAME)
+      self.output_path / CAST_RECEIVER_BINARY_NAME
+    )
     self.test_data_path = self.checkout_path / 'test' / 'data'
     self.ninja_path = self.checkout_path / 'third_party' / 'ninja' / 'ninja'
 
@@ -161,8 +164,12 @@ def GenerateCoverageTestConstants(api: DEPS, paths: RepositoryPaths):
   """Generates fake file paths used for validation in code coverage tests."""
   if api.properties.get('is_valid_coverage_test', False):
     llvm_dir = (
-        paths.checkout_path / 'third_party' / 'llvm-build' / 'Release+Asserts' /
-        'bin')
+      paths.checkout_path
+      / 'third_party'
+      / 'llvm-build'
+      / 'Release+Asserts'
+      / 'bin'
+    )
     api.path.mock_add_paths(paths.checkout_path / 'build' / 'code_coverage')
     api.path.mock_add_paths(llvm_dir / 'llvm-profdata')
     api.path.mock_add_paths(llvm_dir / 'llvm-cov')
@@ -180,8 +187,9 @@ def GetChangedFiles(api: DEPS, checkout_path: Path) -> list[str]:
   files = []
   if api.tryserver.gerrit_change:
     patch_root = api.gclient.get_gerrit_patch_root()
-    assert patch_root, (f'local path is not configured for '
-                        f'{api.tryserver.gerrit_change_repo_url}')
+    assert patch_root, (
+      f'local path is not configured for {api.tryserver.gerrit_change_repo_url}'
+    )
     with api.context(cwd=checkout_path):
       files = api.tryserver.get_files_affected_by_patch(patch_root)
     files = [api.path.relpath(str(path), checkout_path) for path in files]
@@ -210,14 +218,14 @@ def FormatGnArgs(properties: recipe_api.Properties) -> str:
 def UploadOpenscreenTestFilesToCas(api: DEPS, paths: RepositoryPaths) -> str:
   """Pushes files up to RBE-CAS server storage."""
   return api.cas.archive(
-      'upload files to cas',
-      paths.checkout_path,
-      paths.unit_test_binary_path,
-      paths.e2e_test_binary_path,
-      paths.cast_e2e_test_script_path,
-      paths.cast_sender_binary_path,
-      paths.cast_receiver_binary_path,
-      paths.test_data_path,
+    'upload files to cas',
+    paths.checkout_path,
+    paths.unit_test_binary_path,
+    paths.e2e_test_binary_path,
+    paths.cast_e2e_test_script_path,
+    paths.cast_sender_binary_path,
+    paths.cast_receiver_binary_path,
+    paths.test_data_path,
   )
 
 
@@ -230,58 +238,67 @@ class SwarmRequest:
     self.task_name = task_name
 
 
-def TriggerTest(api: DEPS, dimensions: dict[str, str],
-                swarm_request: SwarmRequest):
+def TriggerTest(
+  api: DEPS, dimensions: dict[str, str], swarm_request: SwarmRequest
+):
   """Triggers a swarming test request."""
   request = api.swarming.task_request().with_name(swarm_request.task_name)
   task_slice = (
-      request[0].with_command([swarm_request.binary_path]).with_dimensions(
-          **dimensions).with_cas_input_root(swarm_request.cas_digest))
+    request[0]
+    .with_command([swarm_request.binary_path])
+    .with_dimensions(**dimensions)
+    .with_cas_input_root(swarm_request.cas_digest)
+  )
 
   request = request.with_slice(0, task_slice)
   return api.swarming.trigger(
-      f'trigger {swarm_request.task_name}', requests=[request])
+    f'trigger {swarm_request.task_name}', requests=[request]
+  )
 
 
 def SwarmTests(api: DEPS, paths: RepositoryPaths, dimensions: dict[str, str]):
   """Runs specific types of tests on a separate swarming bot."""
   cas_digest = UploadOpenscreenTestFilesToCas(api, paths)
   requests = {
-      'unit tests':
-          SwarmRequest(cas_digest,
-                       paths.swarming_binary_path(UNIT_TEST_BINARY_NAME),
-                       'unit tests'),
-      'e2e tests':
-          SwarmRequest(cas_digest,
-                       paths.swarming_binary_path(E2E_TEST_BINARY_NAME),
-                       'e2e tests'),
+    'unit tests': SwarmRequest(
+      cas_digest,
+      paths.swarming_binary_path(UNIT_TEST_BINARY_NAME),
+      'unit tests',
+    ),
+    'e2e tests': SwarmRequest(
+      cas_digest, paths.swarming_binary_path(E2E_TEST_BINARY_NAME), 'e2e tests'
+    ),
   }
 
   if api.properties.get('cast_allow_developer_certificate'):
     requests['cast streaming e2e tests'] = SwarmRequest(
-        cas_digest, f'./cast/{CAST_E2E_TEST_SCRIPT_NAME}',
-        'cast streaming e2e tests')
+      cas_digest,
+      f'./cast/{CAST_E2E_TEST_SCRIPT_NAME}',
+      'cast streaming e2e tests',
+    )
 
   # Trigger all tests in parallel.
   metadata = {
-      name: TriggerTest(api, dimensions, req)[0]
-      for name, req in requests.items()
+    name: TriggerTest(api, dimensions, req)[0] for name, req in requests.items()
   }
 
   # Collect all tests in parallel.
   output_dir = api.path.mkdtemp('swarming-output')
   results = api.swarming.collect(
-      'collect swarming tests',
-      list(metadata.values()),
-      output_dir=output_dir,
-      timeout='30m')
+    'collect swarming tests',
+    list(metadata.values()),
+    output_dir=output_dir,
+    timeout='30m',
+  )
   results_by_id = {r.id: r for r in results}
 
   # Check results.
   for name, meta in metadata.items():
     result = results_by_id[meta.id]
-    if result.state in (api.swarming.TaskState.COMPLETED,
-                        api.swarming.TaskState.TIMED_OUT):
+    if result.state in (
+      api.swarming.TaskState.COMPLETED,
+      api.swarming.TaskState.TIMED_OUT,
+    ):
       if not result.success:
         step = api.step.empty(f'{name} failure')
         step.presentation.status = api.step.FAILURE
@@ -290,11 +307,13 @@ def SwarmTests(api: DEPS, paths: RepositoryPaths, dimensions: dict[str, str]):
       result.analyze()
 
 
-def SetCodeCoverageConstants(api: DEPS, checkout_path: Path, output_path: Path,
-                             host_tool_label: str):
+def SetCodeCoverageConstants(
+  api: DEPS, checkout_path: Path, output_path: Path, host_tool_label: str
+):
   """Configures the code_coverage and profiles modules."""
   llvm_dir = (
-      checkout_path / 'third_party' / 'llvm-build' / 'Release+Asserts' / 'bin')
+    checkout_path / 'third_party' / 'llvm-build' / 'Release+Asserts' / 'bin'
+  )
   merge_libs_dir = checkout_path / 'build' / 'code_coverage'
 
   api.profiles.llvm_profdata_exec = llvm_dir / 'llvm-profdata'
@@ -317,9 +336,10 @@ def SetCodeCoverageConstants(api: DEPS, checkout_path: Path, output_path: Path,
 
   if missing:
     api.step.empty(
-        'code coverage executable dependencies missing!',
-        status=api.step.INFRA_FAILURE,
-        step_text='\n'.join(missing))
+      'code coverage executable dependencies missing!',
+      status=api.step.INFRA_FAILURE,
+      step_text='\n'.join(missing),
+    )
 
 
 def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
@@ -327,7 +347,9 @@ def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
   temp_dir = api.profiles.profile_dir('profdata')
 
   # Process the raw code coverage data.
-  api.step('process raw coverage data', [
+  api.step(
+    'process raw coverage data',
+    [
       'python3',
       api.profiles.merge_results_script,
       '--output-json',
@@ -343,7 +365,8 @@ def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
       '--chromium-src-dir',
       paths.checkout_path,
       '--per-cl-coverage',
-  ])
+    ],
+  )
 
   source = paths.output_path / 'default.profdata'
   dest = temp_dir / 'default.profdata'
@@ -358,7 +381,8 @@ def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
     api.step.empty('failed to process coverage data', status=api.step.FAILURE)
 
   api.code_coverage.process_clang_coverage_data(
-      binaries={paths.unit_test_binary_path}, upload_metadata=True)
+    binaries={paths.unit_test_binary_path}, upload_metadata=True
+  )
 
 
 def RunTestsLocally(api: DEPS, paths: RepositoryPaths):
@@ -372,10 +396,11 @@ def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
   with api.step.nest('run tests'):
     with api.step.nest('perform pre-test cleanup'):
       files = api.file.glob_paths(
-          'get files',
-          paths.checkout_path,
-          '**/*.profraw',
-          test_data=[paths.output_path / 'default.profraw'])
+        'get files',
+        paths.checkout_path,
+        '**/*.profraw',
+        test_data=[paths.output_path / 'default.profraw'],
+      )
       for path in files:
         api.file.remove(f'remove {path}', path)
 
@@ -387,8 +412,9 @@ def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
 
     if not api.path.exists(profraw_path):
       api.step.empty(
-          'skip coverage calculations because no data was generated',
-          status=api.step.FAILURE)
+        'skip coverage calculations because no data was generated',
+        status=api.step.FAILURE,
+      )
     else:
       with api.step.nest('calculate code coverage'):
         CalculateCodeCoverage(api, paths)
@@ -421,23 +447,27 @@ def RunSteps(api: recipe_api.RecipeApi):
   # The revision should match 'chrome_version' in openscreen/DEPS.
   chrome_version = '4a1c93eb7da3e438ea5cb677c783379a282ed75d'
   scripts_to_download = [
-      'merge_results.py',
-      'merge_steps.py',
-      'merge_lib.py',
+    'merge_results.py',
+    'merge_steps.py',
+    'merge_lib.py',
   ]
   with api.step.nest('download coverage scripts'):
     for script in scripts_to_download:
-      api.step(f'download {script}', [
+      api.step(
+        f'download {script}',
+        [
           'python3',
-          update_result.source_root.path / 'tools' /
-          'download-chromium-file.py',
+          update_result.source_root.path
+          / 'tools'
+          / 'download-chromium-file.py',
           '--revision',
           chrome_version,
           '--path',
           f'testing/merge_scripts/code_coverage/{script}',
           '--output',
           update_result.source_root.path / 'build' / 'code_coverage' / script,
-      ])
+        ],
+      )
 
   paths = RepositoryPaths(api, update_result.source_root.path)
   GenerateCoverageTestConstants(api, paths)
@@ -449,7 +479,8 @@ def RunSteps(api: recipe_api.RecipeApi):
   env = {}
   if api.properties.get('is_asan'):
     env['ASAN_SYMBOLIZER_PATH'] = str(
-        api.profiles.llvm_exec_path('llvm-symbolizer'))
+      api.profiles.llvm_exec_path('llvm-symbolizer')
+    )
 
   is_ci = api.properties.get('is_ci', False)
   use_coverage = api.properties.get('use_coverage', False)
@@ -460,19 +491,21 @@ def RunSteps(api: recipe_api.RecipeApi):
         try:
           host_tool_label = GetHostToolLabel(api.platform)
           SetCodeCoverageConstants(
-              api,
-              paths.checkout_path,
-              paths.output_path,
-              host_tool_label,
+            api,
+            paths.checkout_path,
+            paths.output_path,
+            host_tool_label,
           )
 
           if not is_ci:
             changed_files = GetChangedFiles(api, paths.checkout_path)
             api.code_coverage.instrument(
-                changed_files, output_dir=paths.output_path)
+              changed_files, output_dir=paths.output_path
+            )
             api.step.empty(
-                f'coverage calculations for {len(changed_files)} files',
-                step_text='\n'.join(changed_files))
+              f'coverage calculations for {len(changed_files)} files',
+              step_text='\n'.join(changed_files),
+            )
         except Exception:  # pylint: disable=broad-except
           coverage_step.status = api.step.FAILURE
           use_coverage = False
@@ -480,8 +513,11 @@ def RunSteps(api: recipe_api.RecipeApi):
     # api.osx_sdk is a no-op on non-macOS platforms.
     with api.osx_sdk('mac'):
       gn_args = [
-          'python3', api.depot_tools.gn_py_path, 'gen', paths.output_path,
-          '--check'
+        'python3',
+        api.depot_tools.gn_py_path,
+        'gen',
+        paths.output_path,
+        '--check',
       ]
       if gn_args_str := FormatGnArgs(api.properties):
         gn_args.append(f'--args={gn_args_str}')
@@ -505,187 +541,200 @@ def RunSteps(api: recipe_api.RecipeApi):
 def GenTests(api: recipe_api.RecipeTestApi):
   """Generates tests used to verify there are no python usage errors."""
   yield api.test(
-      'linux_x64_coverage',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          gn_args=['is_asan=true', 'use_coverage=true'],
-          is_asan=True,
-          use_coverage=True,
-          is_valid_coverage_test=True,
-          generate_test_profraw=True,
-          generate_test_profdata=True),
-      api.step_data(
-          'run tests.calculate code coverage.process raw coverage data',
-          retcode=0),
+    'linux_x64_coverage',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_coverage=true'],
+      is_asan=True,
+      use_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+      generate_test_profdata=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data', retcode=0
+    ),
   )
   yield api.test(
-      'linux_x64_coverage_no_profdata_does_fail_bot',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          gn_args=['is_asan=true', 'use_coverage=true'],
-          is_asan=True,
-          use_coverage=True,
-          is_valid_coverage_test=True,
-          generate_test_profraw=True,
-      ),
-      api.step_data(
-          'run tests.calculate code coverage.process raw coverage data',
-          retcode=0),
-      api.expect_status('FAILURE'),
+    'linux_x64_coverage_no_profdata_does_fail_bot',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_coverage=true'],
+      is_asan=True,
+      use_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data', retcode=0
+    ),
+    api.expect_status('FAILURE'),
   )
   yield api.test(
-      'linux_x64_coverage_no_profraw_does_fail_bot',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          gn_args=['is_asan=true', 'use_coverage=true'],
-          is_asan=True,
-          use_coverage=True,
-          is_valid_coverage_test=True),
-      api.expect_status('FAILURE'),
+    'linux_x64_coverage_no_profraw_does_fail_bot',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_coverage=true'],
+      is_asan=True,
+      use_coverage=True,
+      is_valid_coverage_test=True,
+    ),
+    api.expect_status('FAILURE'),
   )
   yield api.test(
-      'linux_x64_coverage_failed_coverage_init',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          gn_args=['is_asan=true', 'use_coverage=true'],
-          is_asan=True,
-          use_coverage=True),
+    'linux_x64_coverage_failed_coverage_init',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_coverage=true'],
+      is_asan=True,
+      use_coverage=True,
+    ),
   )
   yield api.test(
-      'linux_x64_coverage_full_repo_coverage',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'ci'),
-      api.properties(
-          gn_args=['is_asan=true', 'use_coverage=true'],
-          is_asan=True,
-          is_ci=True,
-          use_coverage=True,
-          is_valid_coverage_test=True,
-          generate_test_profraw=True,
-          generate_test_profdata=True),
-      api.step_data(
-          'run tests.calculate code coverage.process raw coverage data',
-          retcode=0),
+    'linux_x64_coverage_full_repo_coverage',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'ci'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_coverage=true'],
+      is_asan=True,
+      is_ci=True,
+      use_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+      generate_test_profdata=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data', retcode=0
+    ),
   )
   yield api.test(
-      'linux_x64',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(gn_args=['is_asan=true'], is_asan=True),
+    'linux_x64',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(gn_args=['is_asan=true'], is_asan=True),
   )
   yield api.test(
-      'linux_x64_tsan_rel',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(gn_args=['is_debug=false', 'is_tsan=true']),
+    'linux_x64_tsan_rel',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(gn_args=['is_debug=false', 'is_tsan=true']),
   )
   yield api.test(
-      'linux_x64_msan_rel',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(gn_args=['is_debug=false', 'is_msan=true']),
+    'linux_x64_msan_rel',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(gn_args=['is_debug=false', 'is_msan=true']),
   )
   yield api.test(
-      'linux_x64_gcc',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(gn_args=['is_clang=false', 'use_custom_libcxx=false']),
+    'linux_x64_gcc',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(gn_args=['is_clang=false', 'use_custom_libcxx=false']),
   )
   yield api.test(
-      'linux_arm64',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          target_cpu='arm64',
-          gn_args=['is_component_build=false', 'target_cpu=arm64']),
+    'linux_arm64',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      target_cpu='arm64',
+      gn_args=['is_component_build=false', 'target_cpu=arm64'],
+    ),
   )
   yield api.test(
-      'linux_arm64_ci',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'ci'),
-      api.properties(
-          target_cpu='arm64',
-          is_ci=True,
-          gn_args=['is_component_build=false', 'target_cpu=arm64']),
+    'linux_arm64_ci',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'ci'),
+    api.properties(
+      target_cpu='arm64',
+      is_ci=True,
+      gn_args=['is_component_build=false', 'target_cpu=arm64'],
+    ),
   )
   yield api.test(
-      'linux_arm64_cast_receiver',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          target_cpu='arm64',
-          cast_allow_developer_certificate=True,
-          gn_args=[
-              'cast_allow_developer_certificate=true',
-              'have_ffmpeg=true',
-              'have_libopus=true',
-              'have_libsdl2=true',
-              'have_libvpx=true',
-              'is_component_build=false',
-              'target_cpu=arm64',
-          ],
-      ),
+    'linux_arm64_cast_receiver',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      target_cpu='arm64',
+      cast_allow_developer_certificate=True,
+      gn_args=[
+        'cast_allow_developer_certificate=true',
+        'have_ffmpeg=true',
+        'have_libopus=true',
+        'have_libsdl2=true',
+        'have_libvpx=true',
+        'is_component_build=false',
+        'target_cpu=arm64',
+      ],
+    ),
   )
 
   failed_result = api.swarming.task_result(
-      id='0',
-      name=UNIT_TEST_BINARY_NAME,
-      state=api.swarming.TaskState.COMPLETED,
-      failure=True)
+    id='0',
+    name=UNIT_TEST_BINARY_NAME,
+    state=api.swarming.TaskState.COMPLETED,
+    failure=True,
+  )
   yield api.test(
-      'linux_arm64_with_collect_COMPLETED_and_failed',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          target_cpu='arm64',
-          gn_args=['is_component_build=false', 'target_cpu=arm64']),
-      api.override_step_data('collect swarming tests',
-                             api.swarming.collect([failed_result])),
-      api.expect_status('FAILURE'),
+    'linux_arm64_with_collect_COMPLETED_and_failed',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      target_cpu='arm64',
+      gn_args=['is_component_build=false', 'target_cpu=arm64'],
+    ),
+    api.override_step_data(
+      'collect swarming tests', api.swarming.collect([failed_result])
+    ),
+    api.expect_status('FAILURE'),
   )
 
   timeout_result = api.swarming.task_result(
-      id='0',
-      name=UNIT_TEST_BINARY_NAME,
-      state=api.swarming.TaskState.TIMED_OUT)
+    id='0', name=UNIT_TEST_BINARY_NAME, state=api.swarming.TaskState.TIMED_OUT
+  )
   yield api.test(
-      'linux_arm64_with_collect_TIMED_OUT',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          target_cpu='arm64',
-          gn_args=['is_component_build=false', 'target_cpu=arm64']),
-      api.override_step_data('collect swarming tests',
-                             api.swarming.collect([timeout_result])),
-      api.expect_status('FAILURE'),
+    'linux_arm64_with_collect_TIMED_OUT',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      target_cpu='arm64',
+      gn_args=['is_component_build=false', 'target_cpu=arm64'],
+    ),
+    api.override_step_data(
+      'collect swarming tests', api.swarming.collect([timeout_result])
+    ),
+    api.expect_status('FAILURE'),
   )
 
   died_result = api.swarming.task_result(
-      id='0', name=UNIT_TEST_BINARY_NAME, state=api.swarming.TaskState.BOT_DIED)
-  yield api.test(
-      'linux_arm64_with_collect_BOT_DIED',
-      api.platform('linux', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(
-          target_cpu='arm64',
-          gn_args=['is_component_build=false', 'target_cpu=arm64']),
-      api.override_step_data('collect swarming tests',
-                             api.swarming.collect([died_result])),
-      api.expect_status('INFRA_FAILURE'),
+    id='0', name=UNIT_TEST_BINARY_NAME, state=api.swarming.TaskState.BOT_DIED
   )
   yield api.test(
-      'mac_arm64',
-      api.platform('mac', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(target_cpu='arm64', gn_args=['target_cpu=arm64']),
+    'linux_arm64_with_collect_BOT_DIED',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      target_cpu='arm64',
+      gn_args=['is_component_build=false', 'target_cpu=arm64'],
+    ),
+    api.override_step_data(
+      'collect swarming tests', api.swarming.collect([died_result])
+    ),
+    api.expect_status('INFRA_FAILURE'),
   )
   yield api.test(
-      'win_x64',
-      api.platform('win', 64),
-      api.buildbucket.try_build('openscreen', 'try'),
-      api.properties(),
+    'mac_arm64',
+    api.platform('mac', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(target_cpu='arm64', gn_args=['target_cpu=arm64']),
+  )
+  yield api.test(
+    'win_x64',
+    api.platform('win', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(),
   )

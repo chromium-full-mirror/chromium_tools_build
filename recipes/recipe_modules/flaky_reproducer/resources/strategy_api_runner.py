@@ -14,8 +14,9 @@ from libs.test_binary import BaseTestBinary
 from libs.strategies import strategies, ReproducingStep
 
 
-def choose_strategies(test_binary: BaseTestBinary,
-                      result_summary: BaseResultSummary, test_name: str):
+def choose_strategies(
+  test_binary: BaseTestBinary, result_summary: BaseResultSummary, test_name: str
+):
   """Chooses the strategies that be applied to the test.
 
   Return:
@@ -30,7 +31,8 @@ def choose_strategies(test_binary: BaseTestBinary,
 
 
 def choose_best_reproducing_step(
-    reproducing_steps: typing.List[ReproducingStep]):
+  reproducing_steps: typing.List[ReproducingStep],
+):
   """Chooses the best ReproducingStep produced by the strategies."""
   best_step = None
   for step in reproducing_steps:
@@ -40,9 +42,11 @@ def choose_best_reproducing_step(
     return best_step.to_jsonish()
 
 
-def count_reproduced_failures(test_name: str,
-                              result_summaries: typing.List[BaseResultSummary],
-                              original_result_summary: BaseResultSummary):
+def count_reproduced_failures(
+  test_name: str,
+  result_summaries: typing.List[BaseResultSummary],
+  original_result_summary: BaseResultSummary,
+):
   failing_sample = original_result_summary.get_failing_sample(test_name)
   cnt = 0
   for result_summary in result_summaries:
@@ -54,8 +58,9 @@ def count_reproduced_failures(test_name: str,
 
 
 def summarize_reproducing_steps(
-    reproducing_step: ReproducingStep,
-    all_reproducing_steps: typing.List[ReproducingStep]):
+  reproducing_step: ReproducingStep,
+  all_reproducing_steps: typing.List[ReproducingStep],
+):
   """Format reproducing_steps as human readable message."""
   summary_header = ''
   summary = []
@@ -76,13 +81,15 @@ def summarize_reproducing_steps(
     summary.append("\nIt's verified with following strategies:  ")
     for step in all_reproducing_steps:
       if step.debug_info.get('task_ui_link'):
-        message = "[{0} strategy]({1})".format(step.strategy,
-                                               step.debug_info['task_ui_link'])
+        message = "[{0} strategy]({1})".format(
+          step.strategy, step.debug_info['task_ui_link']
+        )
       else:
         message = "{0} strategy".format(step.strategy)
       if step.reproduced_cnt:
         message += " reproduced {0} times ({1:.1f}%)".format(
-            step.reproduced_cnt, step.reproducing_rate * 100)
+          step.reproduced_cnt, step.reproducing_rate * 100
+        )
       else:
         message += " not reproduced"
       # Adding tailing '  ' to force line break for markdown.
@@ -92,10 +99,10 @@ def summarize_reproducing_steps(
 
 
 methods = {
-    'choose_strategies': choose_strategies,
-    'choose_best_reproducing_step': choose_best_reproducing_step,
-    'count_reproduced_failures': count_reproduced_failures,
-    'summarize_reproducing_steps': summarize_reproducing_steps,
+  'choose_strategies': choose_strategies,
+  'choose_best_reproducing_step': choose_best_reproducing_step,
+  'count_reproduced_failures': count_reproduced_failures,
+  'summarize_reproducing_steps': summarize_reproducing_steps,
 }
 
 if __name__ == '__main__':

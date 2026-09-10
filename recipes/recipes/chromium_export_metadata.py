@@ -16,8 +16,6 @@ See more on forms in
 https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/tools/dirmd/proto/mapping.proto
 """
 
-
-
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
@@ -26,10 +24,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import bot_update, depot_tools, gclient
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    step,
+  buildbucket,
+  context,
+  path,
+  step,
 )
 
 
@@ -48,6 +46,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
+
 
 DEST_BUCKET = 'chrome-metadata'
 DEST_BUCKET_LEGACY = 'chromium-owners'
@@ -70,7 +69,9 @@ def RunSteps(api: DEPS):
   build_dir = api.chromium.default_build_dir(source_dir)
   api.chromium.runhooks(source_dir, build_dir)
 
-  api.step('dirmd chromium-update', [
+  api.step(
+    'dirmd chromium-update',
+    [
       source_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',
       '-chromium-checkout',
@@ -79,13 +80,16 @@ def RunSteps(api: DEPS):
       DEST_BUCKET,
       '-bucket-legacy',
       DEST_BUCKET_LEGACY,
-  ])
+    ],
+  )
 
   # Use a separate command for bq write so that failures here won't affect
   # updating cloud storage.
   # TODO(crbug.com/1285078) merge steps.
   bb_git_commit = api.buildbucket.gitiles_commit
-  api.step('dirmd chromium-update bq write', [
+  api.step(
+    'dirmd chromium-update bq write',
+    [
       source_dir.joinpath('third_party', 'depot_tools', 'dirmd'),
       'chromium-update',
       '-chromium-checkout',
@@ -100,7 +104,8 @@ def RunSteps(api: DEPS):
       bb_git_commit.ref,
       '-revision',
       bb_git_commit.id,
-  ])
+    ],
+  )
 
 
 def GenTests(api: TEST_DEPS):

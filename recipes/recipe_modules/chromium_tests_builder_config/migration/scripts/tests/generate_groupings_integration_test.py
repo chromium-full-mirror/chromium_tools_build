@@ -13,7 +13,8 @@ import tempfile
 import unittest
 
 _SCRIPT = os.path.normpath(
-    os.path.join(__file__, '..', '..', 'generate_groupings.py'))
+  os.path.join(__file__, '..', '..', 'generate_groupings.py')
+)
 
 
 def _execute_generate_groupings(*args):
@@ -22,7 +23,6 @@ def _execute_generate_groupings(*args):
 
 
 class GenerateGroupingsIntegrationTest(unittest.TestCase):
-
   def test_generate_groupings(self):
     with tempfile.TemporaryDirectory() as d:
       try:
@@ -35,64 +35,75 @@ class GenerateGroupingsIntegrationTest(unittest.TestCase):
         data = json.load(f)
       self.maxDiff = None
       self.assertEqual(
-          data, {
-              'migration.testing:foo': {
-                  'builders': [
-                      'migration.testing:foo', 'migration.testing:foo-x-tests',
-                      'migration.testing:foo-y-tests',
-                      'tryserver.migration.testing:foo'
-                  ],
-              },
-              'migration.testing:foo-x-tests': {
-                  'builders': [
-                      'migration.testing:foo', 'migration.testing:foo-x-tests',
-                      'migration.testing:foo-y-tests',
-                      'tryserver.migration.testing:foo'
-                  ],
-              },
-              'migration.testing:foo-y-tests': {
-                  'builders': [
-                      'migration.testing:foo', 'migration.testing:foo-x-tests',
-                      'migration.testing:foo-y-tests',
-                      'tryserver.migration.testing:foo'
-                  ],
-              },
-              'tryserver.migration.testing:foo': {
-                  'builders': [
-                      'migration.testing:foo', 'migration.testing:foo-x-tests',
-                      'migration.testing:foo-y-tests',
-                      'tryserver.migration.testing:foo'
-                  ],
-              },
-              'migration.testing:bar': {
-                  'builders': [
-                      'migration.testing:bar', 'migration.testing:bar-tests',
-                      'tryserver.migration.testing:bar'
-                  ],
-              },
-              'migration.testing:bar-tests': {
-                  'builders': [
-                      'migration.testing:bar', 'migration.testing:bar-tests',
-                      'tryserver.migration.testing:bar'
-                  ],
-              },
-              'tryserver.migration.testing:bar': {
-                  'builders': [
-                      'migration.testing:bar', 'migration.testing:bar-tests',
-                      'tryserver.migration.testing:bar'
-                  ],
-              },
-          })
+        data,
+        {
+          'migration.testing:foo': {
+            'builders': [
+              'migration.testing:foo',
+              'migration.testing:foo-x-tests',
+              'migration.testing:foo-y-tests',
+              'tryserver.migration.testing:foo',
+            ],
+          },
+          'migration.testing:foo-x-tests': {
+            'builders': [
+              'migration.testing:foo',
+              'migration.testing:foo-x-tests',
+              'migration.testing:foo-y-tests',
+              'tryserver.migration.testing:foo',
+            ],
+          },
+          'migration.testing:foo-y-tests': {
+            'builders': [
+              'migration.testing:foo',
+              'migration.testing:foo-x-tests',
+              'migration.testing:foo-y-tests',
+              'tryserver.migration.testing:foo',
+            ],
+          },
+          'tryserver.migration.testing:foo': {
+            'builders': [
+              'migration.testing:foo',
+              'migration.testing:foo-x-tests',
+              'migration.testing:foo-y-tests',
+              'tryserver.migration.testing:foo',
+            ],
+          },
+          'migration.testing:bar': {
+            'builders': [
+              'migration.testing:bar',
+              'migration.testing:bar-tests',
+              'tryserver.migration.testing:bar',
+            ],
+          },
+          'migration.testing:bar-tests': {
+            'builders': [
+              'migration.testing:bar',
+              'migration.testing:bar-tests',
+              'tryserver.migration.testing:bar',
+            ],
+          },
+          'tryserver.migration.testing:bar': {
+            'builders': [
+              'migration.testing:bar',
+              'migration.testing:bar-tests',
+              'tryserver.migration.testing:bar',
+            ],
+          },
+        },
+      )
 
   def test_validate_groupings(self):
     with tempfile.TemporaryDirectory() as d:
       with self.assertRaises(subprocess.CalledProcessError) as caught:
-        _execute_generate_groupings('--groupings-dir', d, 'migration-testing',
-                                    '--validate')
+        _execute_generate_groupings(
+          '--groupings-dir', d, 'migration-testing', '--validate'
+        )
 
       self.assertIn(
-          'The following groupings files need regeneration: migration-testing',
-          caught.exception.output)
+        'The following groupings files need regeneration: migration-testing',
+        caught.exception.output,
+      )
 
 
 if __name__ == '__main__':

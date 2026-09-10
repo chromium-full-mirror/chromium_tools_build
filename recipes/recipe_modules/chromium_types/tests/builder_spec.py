@@ -24,23 +24,25 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   builder_spec = BuilderSpec.create(
-      chromium_config='hello',
-      chromium_apply_config=['a', 'b', 'c'],
-      chromium_config_kwargs={
-          'varname': 100,
-      },
-      clobber=True,
+    chromium_config='hello',
+    chromium_apply_config=['a', 'b', 'c'],
+    chromium_config_kwargs={
+      'varname': 100,
+    },
+    clobber=True,
   )
   api.assertions.assertEqual(builder_spec.chromium_config, 'hello')
-  api.assertions.assertEqual(builder_spec.chromium_apply_config,
-                             ('a', 'b', 'c'))
-  api.assertions.assertEqual(builder_spec.chromium_config_kwargs,
-                             FrozenDict({'varname': 100}))
+  api.assertions.assertEqual(
+    builder_spec.chromium_apply_config, ('a', 'b', 'c')
+  )
+  api.assertions.assertEqual(
+    builder_spec.chromium_config_kwargs, FrozenDict({'varname': 100})
+  )
   api.assertions.assertEqual(builder_spec.clobber, True)
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

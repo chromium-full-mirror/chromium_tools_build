@@ -29,13 +29,11 @@ def RunSteps(api: DEPS):
 
   @attrs()
   class FakeTestSpec(steps.TestSpec):
-
     @property
     def test_class(self):
       return FakeTest
 
   class FakeTest(steps.Test):
-
     @property
     def locality(self) -> steps.TestLocality:
       return steps.TestLocality.LOCAL
@@ -56,7 +54,6 @@ def RunSteps(api: DEPS):
       return [f'{suffix}-notrun-failure']
 
   class WrapperSpec(steps.TestWrapperSpec):
-
     @property
     def test_wrapper_class(self):
       return Wrapper
@@ -77,27 +74,33 @@ def RunSteps(api: DEPS):
 
   for check_flakiness_for_new_tests in (True, False):
     spec = WrapperSpec.create(
-        FakeTestSpec.create(
-            'fake-test',
-            check_flakiness_for_new_tests=check_flakiness_for_new_tests))
+      FakeTestSpec.create(
+        'fake-test', check_flakiness_for_new_tests=check_flakiness_for_new_tests
+      )
+    )
     test = spec.get_test(api.chromium_tests)
-    api.assertions.assertEqual(test.check_flakiness_for_new_tests,
-                               check_flakiness_for_new_tests)
+    api.assertions.assertEqual(
+      test.check_flakiness_for_new_tests, check_flakiness_for_new_tests
+    )
 
   api.assertions.assertCountEqual(
-      test.notrun_failures('foo'), ['foo-notrun-failure'])
+    test.notrun_failures('foo'), ['foo-notrun-failure']
+  )
 
   test.add_known_luci_analysis_flaky_failures(
-      ['known-flaky-failure-1', 'known-flaky-failure-2'])
+    ['known-flaky-failure-1', 'known-flaky-failure-2']
+  )
   api.assertions.assertCountEqual(
-      test.known_luci_analysis_flaky_failures,
-      ['known-flaky-failure-1', 'known-flaky-failure-2'])
+    test.known_luci_analysis_flaky_failures,
+    ['known-flaky-failure-1', 'known-flaky-failure-2'],
+  )
 
   test.add_weak_luci_analysis_flaky_failure('weak-flaky-failure-1')
   test.add_weak_luci_analysis_flaky_failure('weak-flaky-failure-2')
   api.assertions.assertCountEqual(
-      test.weak_luci_analysis_flaky_failures,
-      ['weak-flaky-failure-1', 'weak-flaky-failure-2'])
+    test.weak_luci_analysis_flaky_failures,
+    ['weak-flaky-failure-1', 'weak-flaky-failure-2'],
+  )
 
   test.raw_cmd = 'fake-raw-cmd'
   api.assertions.assertEqual(test.raw_cmd, 'fake-raw-cmd')
@@ -108,6 +111,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

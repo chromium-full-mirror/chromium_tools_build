@@ -28,19 +28,31 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = source_dir / 'out/Release'
   api.chromium.mb_isolate_everything(
-      source_dir,
-      build_dir,
-      chromium_types.BuilderId.create_for_group('test-group', 'test-builder'),
+    source_dir,
+    build_dir,
+    chromium_types.BuilderId.create_for_group('test-group', 'test-builder'),
   )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.StepCommandRE, 'generate .isolate files', [
-          'python3', '-u', r'.*/tools/mb/mb\.py', 'isolate-everything', '-m',
-          'test-group', '-b', 'test-builder', '--config-file',
-          r'.*/tools/mb/mb_config\.pyl', r'\[CACHE\]/builder/src/out/Release'
-      ]),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(
+      post_process.StepCommandRE,
+      'generate .isolate files',
+      [
+        'python3',
+        '-u',
+        r'.*/tools/mb/mb\.py',
+        'isolate-everything',
+        '-m',
+        'test-group',
+        '-b',
+        'test-builder',
+        '--config-file',
+        r'.*/tools/mb/mb_config\.pyl',
+        r'\[CACHE\]/builder/src/out/Release',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )

@@ -97,19 +97,28 @@ class TestResult:
       This is an optional field and used by parallel strategy.
 
   """
-  __slots__ = ('test_name', 'expected', 'status', 'primary_error_message',
-               'start_time', 'duration', 'batch_id', 'thread_id')
+
+  __slots__ = (
+    'test_name',
+    'expected',
+    'status',
+    'primary_error_message',
+    'start_time',
+    'duration',
+    'batch_id',
+    'thread_id',
+  )
 
   def __init__(
-      self,
-      test_name,
-      expected=False,
-      status=TestStatus.STATUS_UNSPECIFIED,
-      primary_error_message=None,
-      start_time=None,
-      duration=None,
-      batch_id=None,
-      thread_id=None,
+    self,
+    test_name,
+    expected=False,
+    status=TestStatus.STATUS_UNSPECIFIED,
+    primary_error_message=None,
+    start_time=None,
+    duration=None,
+    batch_id=None,
+    thread_id=None,
   ):
     self.test_name = test_name
     self.expected = expected
@@ -125,9 +134,9 @@ class TestResult:
 
   def __repr__(self):
     return "{0}({1}) - {2}".format(
-        self.status.name,
-        'expected' if self.expected else 'unexpected',
-        self.test_name,
+      self.status.name,
+      'expected' if self.expected else 'unexpected',
+      self.test_name,
     )
 
   def similar_with(self, other):
@@ -201,8 +210,10 @@ class BaseResultSummary:
     """
     # Python sort is stable, if result doesn't have start_time, the sorted
     # result should keep the same.
-    return sorted([r for r in self if r.test_name == test_name],
-                  key=lambda r: r.start_time or 0)
+    return sorted(
+      [r for r in self if r.test_name == test_name],
+      key=lambda r: r.start_time or 0,
+    )
 
   def get_failing_sample(self, test_name, default=UnexpectedTestResult):
     """Get an unexpected sample for |test_name|, or |default| if not found."""

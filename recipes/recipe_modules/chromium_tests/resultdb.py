@@ -7,8 +7,13 @@ import attr
 
 from recipe_engine.config_types import Path
 from recipe_engine.util import Placeholder
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum, mapping,
-                                             sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  enum,
+  mapping,
+  sequence,
+)
 
 
 @attrs()
@@ -63,11 +68,13 @@ class ResultDB:
       read. The filename after removing ".jsonpb" and the file content will be
       added as a key-value pair to the invocation's extended_properties map.
   """
+
   enable = attrib(bool, default=True)
   has_native_resultdb_integration = attrib(bool, default=False)
   result_format = attrib(
-      enum(['gtest', 'json', 'single', 'tast', 'gtest_json', 'native']),
-      default=None)
+    enum(['gtest', 'json', 'single', 'tast', 'gtest_json', 'native']),
+    default=None,
+  )
   test_id_as_test_location = attrib(bool, default=False)
   test_location_base = attrib(str, default=None)
   base_tags = attrib(sequence[tuple], default=None)
@@ -77,8 +84,9 @@ class ResultDB:
   module_name = attrib(str, default='')
   module_scheme = attrib(str, default='')
   result_file = attrib(str, default='${ISOLATED_OUTDIR}/output.json')
-  artifact_directory = attrib((str, Placeholder, Path),
-                              default='${ISOLATED_OUTDIR}')
+  artifact_directory = attrib(
+    (str, Placeholder, Path), default='${ISOLATED_OUTDIR}'
+  )
   location_tags_file = attrib(str, default=None)
   exonerate_unexpected_pass = attrib(bool, default=True)
   include = attrib(bool, default=False)
@@ -130,14 +138,16 @@ class ResultDB:
     """
     return f'{bucket}:{builder_name}'
 
-  def wrap(self,
-           api,
-           cmd,
-           step_name=None,
-           base_variant=None,
-           base_tags=None,
-           require_build_inv=True,
-           **kwargs):
+  def wrap(
+    self,
+    api,
+    cmd,
+    step_name=None,
+    base_variant=None,
+    base_tags=None,
+    require_build_inv=True,
+    **kwargs,
+  ):
     """Wraps the cmd with ResultSink and result_adapter, if conditions are met.
 
     This function enables resultdb for a given command by wrapping it with
@@ -168,26 +178,32 @@ class ResultDB:
       # the result_sink info from the current LUCI_CONTEXT. This can happen if
       # the test runs locally and so would inherit the build's LUCI_CONTEXT,
       # which very likely does have result_sink info attached.
-      return ['vpython3',
-              api.chromium_tests.resource('reset_luci_context.py')] + cmd
+      return [
+        'vpython3',
+        api.chromium_tests.resource('reset_luci_context.py'),
+      ] + cmd
 
-    in_rdb_exp = ('chromium_tests.resultdb_module'
-                  in api.buildbucket.build.input.experiments)
+    in_rdb_exp = (
+      'chromium_tests.resultdb_module'
+      in api.buildbucket.build.input.experiments
+    )
     # wrap it with result_adapter
     if not configs.has_native_resultdb_integration and configs.result_format:
-      exe = configs.result_adapter_path + ('.exe'
-                                           if api.platform.is_win else '')
+      exe = configs.result_adapter_path + (
+        '.exe' if api.platform.is_win else ''
+      )
       result_adapter = [
-          exe,
-          configs.result_format,
-          '-result-file',
-          configs.result_file,
+        exe,
+        configs.result_format,
+        '-result-file',
+        configs.result_file,
       ]
-      if (in_rdb_exp and configs.module_scheme and
-          configs.result_format == 'json'):
+      if (
+        in_rdb_exp and configs.module_scheme and configs.result_format == 'json'
+      ):
         result_adapter += [
-            '-scheme',
-            configs.module_scheme,
+          '-scheme',
+          configs.module_scheme,
         ]
 
       if configs.artifact_directory:
@@ -209,7 +225,8 @@ class ResultDB:
 
     if not configs.baseline_id and api.buildbucket:
       baseline_id = self.generate_baseline_id(
-          api.buildbucket.build.builder.bucket, api.buildbucket.builder_name)
+        api.buildbucket.build.builder.bucket, api.buildbucket.builder_name
+      )
       configs = attr.evolve(configs, baseline_id=baseline_id)
 
     test_id_prefix = configs.test_id_prefix
@@ -225,29 +242,31 @@ class ResultDB:
 
     # wrap it with rdb-stream
     return api.resultdb.wrap(
-        cmd,
-        base_tags=list(tags),
-        base_variant=var,
-        coerce_negative_duration=configs.coerce_negative_duration,
-        test_id_prefix=test_id_prefix,
-        previous_test_id_prefix=previous_test_id_prefix,
-        module_name=module_name,
-        module_scheme=module_scheme,
-        test_location_base=configs.test_location_base,
-        location_tags_file=configs.location_tags_file,
-        require_build_inv=require_build_inv,
-        exonerate_unexpected_pass=configs.exonerate_unexpected_pass,
-        include=configs.include,
-        inherit_sources=True,
-        baseline_id=configs.baseline_id,
-        inv_extended_properties_dir=configs.inv_extended_properties_dir,
+      cmd,
+      base_tags=list(tags),
+      base_variant=var,
+      coerce_negative_duration=configs.coerce_negative_duration,
+      test_id_prefix=test_id_prefix,
+      previous_test_id_prefix=previous_test_id_prefix,
+      module_name=module_name,
+      module_scheme=module_scheme,
+      test_location_base=configs.test_location_base,
+      location_tags_file=configs.location_tags_file,
+      require_build_inv=require_build_inv,
+      exonerate_unexpected_pass=configs.exonerate_unexpected_pass,
+      include=configs.include,
+      inherit_sources=True,
+      baseline_id=configs.baseline_id,
+      inv_extended_properties_dir=configs.inv_extended_properties_dir,
     )
 
   def unwrap(self, api, cmd: list[str]) -> list[str]:
     """Reverses the wrap command"""
 
     cmd = api.resultdb.unwrap(cmd)
-    if (cmd[0] != self.result_adapter_path and
-        cmd[0] != self.result_adapter_path + '.exe'):
+    if (
+      cmd[0] != self.result_adapter_path
+      and cmd[0] != self.result_adapter_path + '.exe'
+    ):
       return cmd
-    return cmd[cmd.index('--') + 1:]
+    return cmd[cmd.index('--') + 1 :]

@@ -36,10 +36,10 @@ import gemini_client
 
 def load_prepared_commits(input_file: Path) -> list[dict]:
   """
-    Loads prepared commit documents from a pickle file.
-    Returns:
-        List of document dictionaries with 'message', 'cleaned_message', 'commits'.
-    """
+  Loads prepared commit documents from a pickle file.
+  Returns:
+      List of document dictionaries with 'message', 'cleaned_message', 'commits'.
+  """
   print(f"Loading prepared commits from {input_file}...")
   try:
     with open(input_file, 'rb') as f:
@@ -55,24 +55,26 @@ def load_prepared_commits(input_file: Path) -> list[dict]:
     sys.exit(1)
 
 
-def generate_embeddings_batch(messages: list[str],
-                              client: genai.Client,
-                              model_name: str,
-                              output_dimensionality: int,
-                              batch_size: int = 100,
-                              max_retries: int = 5) -> np.ndarray:
+def generate_embeddings_batch(
+  messages: list[str],
+  client: genai.Client,
+  model_name: str,
+  output_dimensionality: int,
+  batch_size: int = 100,
+  max_retries: int = 5,
+) -> np.ndarray:
   """
-    Generates embeddings for a list of text messages using the Gemini API.
-    Args:
-        messages: List of text strings to embed
-        client: Initialized Gemini API client
-        model_name: Name of the embedding model to use
-        output_dimensionality: Target dimension size (e.g., 768)
-        batch_size: Number of messages to send per API call
-        max_retries: Maximum number of retry attempts per batch
-    Returns:
-        Numpy array of embeddings with shape (len(messages), embedding_dim)
-    """
+  Generates embeddings for a list of text messages using the Gemini API.
+  Args:
+      messages: List of text strings to embed
+      client: Initialized Gemini API client
+      model_name: Name of the embedding model to use
+      output_dimensionality: Target dimension size (e.g., 768)
+      batch_size: Number of messages to send per API call
+      max_retries: Maximum number of retry attempts per batch
+  Returns:
+      Numpy array of embeddings with shape (len(messages), embedding_dim)
+  """
   embeddings = []
   total_batches = (len(messages) + batch_size - 1) // batch_size
 
@@ -80,7 +82,7 @@ def generate_embeddings_batch(messages: list[str],
     current_batch_idx = i // batch_size + 1
     print(f"Processing batch {current_batch_idx}/{total_batches}...", end='\r')
 
-    batch = messages[i:i + batch_size]
+    batch = messages[i : i + batch_size]
 
     # Truncate messages to API limit (2MB ~ 2,097,152 chars)
     batch = [m[:2097152] for m in batch]
@@ -89,11 +91,12 @@ def generate_embeddings_batch(messages: list[str],
     for retry in range(max_retries):
       try:
         result = client.models.embed_content(
-            model=model_name,
-            contents=batch,
-            config=types.EmbedContentConfig(
-                task_type="CLUSTERING",
-                output_dimensionality=output_dimensionality))
+          model=model_name,
+          contents=batch,
+          config=types.EmbedContentConfig(
+            task_type="CLUSTERING", output_dimensionality=output_dimensionality
+          ),
+        )
         embeddings.extend([e.values for e in result.embeddings])
         break
       except Exception as e:
@@ -101,37 +104,42 @@ def generate_embeddings_batch(messages: list[str],
           wait_time = 20 * (retry + 1)  # Exponential-ish backoff
           print(f"\nAPI error: {e}")
           print(
-              f"Retrying batch in {wait_time}s (attempt {retry + 2}/{max_retries})..."
+            f"Retrying batch in {wait_time}s (attempt {retry + 2}/{max_retries})..."
           )
           time.sleep(wait_time)
         else:
           print(
-              f"\nFailed to generate embeddings after {max_retries} attempts.",
-              file=sys.stderr)
+            f"\nFailed to generate embeddings after {max_retries} attempts.",
+            file=sys.stderr,
+          )
           raise
 
   print("")  # Clear line after loop
   return np.array(embeddings)
 
 
-def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
-                              client: genai.Client, model_name: str,
-                              output_dimensionality: int) -> np.ndarray:
+def get_embeddings_with_cache(
+  messages: list[str],
+  cache_dir: Path,
+  client: genai.Client,
+  model_name: str,
+  output_dimensionality: int,
+) -> np.ndarray:
   """
-    Gets embeddings for messages, using a 1-to-1 cache for each message.
+  Gets embeddings for messages, using a 1-to-1 cache for each message.
 
-    Each message is hashed (SHA256) and cached individually. This allows
-    for efficient reuse when processing overlapping datasets.
+  Each message is hashed (SHA256) and cached individually. This allows
+  for efficient reuse when processing overlapping datasets.
 
-    Args:
-        messages: List of text strings to embed
-        cache_dir: Directory to store cached embeddings
-        client: Initialized Gemini API client
-        model_name: Name of the embedding model used for caching
-        output_dimensionality: Target dimension size (e.g., 768)
-    Returns:
-        Numpy array of embeddings with shape (len(messages), embedding_dim)
-    """
+  Args:
+      messages: List of text strings to embed
+      cache_dir: Directory to store cached embeddings
+      client: Initialized Gemini API client
+      model_name: Name of the embedding model used for caching
+      output_dimensionality: Target dimension size (e.g., 768)
+  Returns:
+      Numpy array of embeddings with shape (len(messages), embedding_dim)
+  """
   embeddings_cache_dir = cache_dir / "embeddings"
   embeddings_cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -154,8 +162,9 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
         all_embeddings[i] = np.load(cache_file)
       except Exception as e:
         print(
-            f"\nWarning: Could not load cached embedding {cache_file}: {e}",
-            file=sys.stderr)
+          f"\nWarning: Could not load cached embedding {cache_file}: {e}",
+          file=sys.stderr,
+        )
         messages_to_embed.append(message)
         indices_to_embed.append(i)
     else:
@@ -163,15 +172,15 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
       indices_to_embed.append(i)
 
   print(
-      f"Cache check complete. Found {len(messages) - len(messages_to_embed)} cached items."
+    f"Cache check complete. Found {len(messages) - len(messages_to_embed)} cached items."
   )
 
   # Generate embeddings for cache misses
   if messages_to_embed:
     print(f"Generating embeddings for {len(messages_to_embed)} new messages...")
-    new_embeddings = generate_embeddings_batch(messages_to_embed, client,
-                                               model_name,
-                                               output_dimensionality)
+    new_embeddings = generate_embeddings_batch(
+      messages_to_embed, client, model_name, output_dimensionality
+    )
 
     # Store new embeddings in cache and result array
     print("Saving new embeddings to cache...")
@@ -181,8 +190,9 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
 
       # Save to cache
       message_to_cache = messages_to_embed[i]
-      cache_key_input = message_to_cache + model_name + str(
-          output_dimensionality)
+      cache_key_input = (
+        message_to_cache + model_name + str(output_dimensionality)
+      )
       message_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
       cache_file = embeddings_cache_dir / f"{message_hash}.npy"
 
@@ -190,8 +200,9 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
         np.save(cache_file, embedding)
       except IOError as e:
         print(
-            f"\nWarning: Could not cache embedding {cache_file}: {e}",
-            file=sys.stderr)
+          f"\nWarning: Could not cache embedding {cache_file}: {e}",
+          file=sys.stderr,
+        )
   else:
     print("All embeddings found in cache!")
 
@@ -201,40 +212,48 @@ def get_embeddings_with_cache(messages: list[str], cache_dir: Path,
 def main():
   """Main function to orchestrate embedding generation."""
   parser = argparse.ArgumentParser(
-      description="Generate embeddings for prepared commit documents.",
-      formatter_class=argparse.RawTextHelpFormatter)
+    description="Generate embeddings for prepared commit documents.",
+    formatter_class=argparse.RawTextHelpFormatter,
+  )
   parser.add_argument(
-      "input_file", type=str, help="Path to the prepared commits pickle file.")
+    "input_file", type=str, help="Path to the prepared commits pickle file."
+  )
   parser.add_argument(
-      "--output-file",
-      type=str,
-      required=True,
-      help="Path to save the embeddings NPZ file.")
+    "--output-file",
+    type=str,
+    required=True,
+    help="Path to save the embeddings NPZ file.",
+  )
   parser.add_argument(
-      "--embedding-model",
-      type=str,
-      default="gemini-embedding-001",
-      help="Name of the Gemini model (default: gemini-embedding-001).")
+    "--embedding-model",
+    type=str,
+    default="gemini-embedding-001",
+    help="Name of the Gemini model (default: gemini-embedding-001).",
+  )
   parser.add_argument(
-      "--output-dimensionality",
-      type=int,
-      default=768,
-      help="Dimension size of the output embeddings (default: 768).")
+    "--output-dimensionality",
+    type=int,
+    default=768,
+    help="Dimension size of the output embeddings (default: 768).",
+  )
   parser.add_argument(
-      "--cache-dir",
-      type=str,
-      default="./.embedding_cache",
-      help="Directory to store cached embeddings.")
+    "--cache-dir",
+    type=str,
+    default="./.embedding_cache",
+    help="Directory to store cached embeddings.",
+  )
   parser.add_argument(
-      "--batch-size",
-      type=int,
-      default=100,
-      help="Number of messages to send per API call (default: 100).")
+    "--batch-size",
+    type=int,
+    default=100,
+    help="Number of messages to send per API call (default: 100).",
+  )
   parser.add_argument(
-      "--limit",
-      type=int,
-      default=None,
-      help="Limit number of documents to embed (for testing).")
+    "--limit",
+    type=int,
+    default=None,
+    help="Limit number of documents to embed (for testing).",
+  )
 
   args = parser.parse_args()
 
@@ -258,7 +277,7 @@ def main():
   # Apply limit if specified
   if args.limit:
     print(f"Limiting to first {args.limit} documents.")
-    documents = documents[:args.limit]
+    documents = documents[: args.limit]
 
   # Extract messages to embed
   message_field = 'cleaned_message'
@@ -266,21 +285,27 @@ def main():
     messages = [doc[message_field] for doc in documents]
   except KeyError:
     print(
-        f"Error: The key '{message_field}' was not found in one or more documents.",
-        file=sys.stderr)
+      f"Error: The key '{message_field}' was not found in one or more documents.",
+      file=sys.stderr,
+    )
     print(
-        "Ensureyour input pickle file contains prepared documents with 'cleaned_message'.",
-        file=sys.stderr)
+      "Ensureyour input pickle file contains prepared documents with 'cleaned_message'.",
+      file=sys.stderr,
+    )
     sys.exit(1)
 
   print(
-      f"\nEmbedding {len(messages)} documents using model '{args.embedding_model}' with dimension {args.output_dimensionality}..."
+    f"\nEmbedding {len(messages)} documents using model '{args.embedding_model}' with dimension {args.output_dimensionality}..."
   )
 
   # Generate embeddings with caching
-  embeddings = get_embeddings_with_cache(messages, cache_dir, client,
-                                         args.embedding_model,
-                                         args.output_dimensionality)
+  embeddings = get_embeddings_with_cache(
+    messages,
+    cache_dir,
+    client,
+    args.embedding_model,
+    args.output_dimensionality,
+  )
 
   print(f"\nGenerated embeddings with shape: {embeddings.shape}")
 
@@ -290,22 +315,22 @@ def main():
 
   # Create metadata
   metadata = {
-      'model': args.embedding_model,
-      'task_type': 'CLUSTERING',
-      'num_documents': len(documents),
-      'embedding_dim': embeddings.shape[1],
-      'generated_at': datetime.now().isoformat(),
-      'message_field': message_field,
-      'source_file': str(input_file)
+    'model': args.embedding_model,
+    'task_type': 'CLUSTERING',
+    'num_documents': len(documents),
+    'embedding_dim': embeddings.shape[1],
+    'generated_at': datetime.now().isoformat(),
+    'message_field': message_field,
+    'source_file': str(input_file),
   }
 
   try:
     # Save as NPZ file
     np.savez_compressed(
-        output_path,
-        embeddings=embeddings,
-        doc_indices=np.arange(len(documents)),
-        metadata=np.array([metadata], dtype=object)  # Wrap in array for NPZ
+      output_path,
+      embeddings=embeddings,
+      doc_indices=np.arange(len(documents)),
+      metadata=np.array([metadata], dtype=object),  # Wrap in array for NPZ
     )
 
     print(f"\nSuccessfully saved embeddings to {output_path}")

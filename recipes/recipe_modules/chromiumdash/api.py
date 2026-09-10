@@ -10,7 +10,6 @@ from recipe_engine import recipe_api
 
 
 class ChromiumDashApi(recipe_api.RecipeApi):
-
   URL = 'https://chromiumdash.appspot.com'
   RELEASE_ENDPOINT = 'fetch_releases'
   COMMIT_ENDPOINT = 'fetch_commits'
@@ -18,8 +17,9 @@ class ChromiumDashApi(recipe_api.RecipeApi):
   RELEASE_CHANNELS = ('Beta', 'Stable', 'Dev', 'Canary', 'Extended')
   VALID_PLATFORMS = ('Android', 'Mac', 'Linux', 'Windows', 'iOS')
 
-  def _get_json(self, endpoint, url_args, step_name=None,
-                default_test_data=None):
+  def _get_json(
+    self, endpoint, url_args, step_name=None, default_test_data=None
+  ):
     """Helper method to fetch json data from chromiumdash.
 
     Args:
@@ -30,10 +30,15 @@ class ChromiumDashApi(recipe_api.RecipeApi):
 
     Returns: Response from the chromiumdash endpoint in JSON format."""
 
-    url = (self.m.url.join(self.URL, endpoint) +
-           ('?' + self.m.url.urlencode(url_args)) if url_args else '')
+    url = (
+      self.m.url.join(self.URL, endpoint)
+      + ('?' + self.m.url.urlencode(url_args))
+      if url_args
+      else ''
+    )
     return self.m.url.get_json(
-        url, step_name=step_name, default_test_data=default_test_data).output
+      url, step_name=step_name, default_test_data=default_test_data
+    ).output
 
   def fetch_commit_info(self, commit_hash, step_name=None):
     """Fetch commit information from chromiumdash.
@@ -43,11 +48,17 @@ class ChromiumDashApi(recipe_api.RecipeApi):
 
     Returns: Response containing commit information."""
 
-    default_test_data = {'deployment': {'beta': '84.0.4107.90'},
-                         'repo': 'chromium', 'commit_type': 'commit'}
+    default_test_data = {
+      'deployment': {'beta': '84.0.4107.90'},
+      'repo': 'chromium',
+      'commit_type': 'commit',
+    }
     return self._get_json(
-        self.COMMIT_ENDPOINT, {'commit': commit_hash},
-        step_name, default_test_data)
+      self.COMMIT_ENDPOINT,
+      {'commit': commit_hash},
+      step_name,
+      default_test_data,
+    )
 
   def releases(self, platform, release_channel, num, step_name=None):
     """Fetch releases from chromiumdash.
@@ -65,25 +76,28 @@ class ChromiumDashApi(recipe_api.RecipeApi):
     Returns: Response from the fetch_releases endpoint of chromiumdash."""
 
     assert platform in self.VALID_PLATFORMS, (
-        'Platform %r is not a valid platform in ChromiumDash' % platform)
+      'Platform %r is not a valid platform in ChromiumDash' % platform
+    )
     assert release_channel in self.RELEASE_CHANNELS, (
-        'Channel %r is not a valid release channel in ChromiumDash' %
-        release_channel)
+      'Channel %r is not a valid release channel in ChromiumDash'
+      % release_channel
+    )
     assert num >= 0, 'Cannot request a negative amount of milestones'
 
     default_test_data = [
-        {'version': '87.0.4280.60', 'hashes': {'chromium': str(i)}}
-        for i in range(num)]
+      {'version': '87.0.4280.60', 'hashes': {'chromium': str(i)}}
+      for i in range(num)
+    ]
     return self._get_json(
-        self.RELEASE_ENDPOINT,
-        {'platform': platform, 'channel': release_channel, 'num': num},
-        step_name, default_test_data)
+      self.RELEASE_ENDPOINT,
+      {'platform': platform, 'channel': release_channel, 'num': num},
+      step_name,
+      default_test_data,
+    )
 
-  def milestones(self,
-                 num,
-                 step_name=None,
-                 only_branched=False,
-                 only_active=False):
+  def milestones(
+    self, num, step_name=None, only_branched=False, only_active=False
+  ):
     """Fetch milestones from chromiumdash.
 
     Args:
@@ -96,12 +110,14 @@ class ChromiumDashApi(recipe_api.RecipeApi):
     """
 
     default_test_data = [
-        {'chromium_branch': str(4324 + i), 'milestone': 88 + i}
-        for i in range(num)]
+      {'chromium_branch': str(4324 + i), 'milestone': 88 + i}
+      for i in range(num)
+    ]
     args = {'num': num}
     if only_branched:
       args.update({'only_branched': 'true'})
     if only_active:
       args.update({'only_active': 'true'})
     return self._get_json(
-        self.MILESTONE_ENDPOINT, args, step_name, default_test_data)
+      self.MILESTONE_ENDPOINT, args, step_name, default_test_data
+    )

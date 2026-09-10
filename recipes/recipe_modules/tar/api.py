@@ -12,11 +12,13 @@ from recipe_engine import recipe_api
 class TarApi(recipe_api.RecipeApi):
   """Provides steps to tar and untar files."""
 
-  def make_package(self,
-                   root: str,
-                   output: str,
-                   compression: Optional[str] = None,
-                   compression_level: Optional[int] = None) -> 'TarPackage':
+  def make_package(
+    self,
+    root: str,
+    output: str,
+    compression: Optional[str] = None,
+    compression_level: Optional[int] = None,
+  ) -> 'TarPackage':
     """Returns TarPackage object that can be used to compress a set of files.
 
     Usage:
@@ -73,9 +75,10 @@ class TarApi(recipe_api.RecipeApi):
       'quiet': quiet,
     }
     self.m.step(
-        name=step_name,
-        cmd=['python3', self.resource('untar.py')],
-        stdin=self.m.json.input(script_input))
+      name=step_name,
+      cmd=['python3', self.resource('untar.py')],
+      stdin=self.m.json.input(script_input),
+    )
 
 
 class TarPackage:
@@ -105,11 +108,9 @@ class TarPackage:
       archive_name: name of the file in the archive, if non-None
     """
     assert self._root in path.parents, path
-    self._entries.append({
-        'type': 'file',
-        'path': str(path),
-        'archive_name': archive_name
-    })
+    self._entries.append(
+      {'type': 'file', 'path': str(path), 'archive_name': archive_name}
+    )
 
   def add_directory(self, path):
     """Stages a directory with all its content to be added to the package.
@@ -119,23 +120,26 @@ class TarPackage:
     """
     # TODO(phosek): Implement 'exclude' filter.
     assert self._root in path.parents or path == self._root, path
-    self._entries.append({
+    self._entries.append(
+      {
         'type': 'dir',
         'path': str(path),
-    })
+      }
+    )
 
   def tar(self, step_name):
     """Step to tar all staged files."""
     script_input = {
-        'entries': self._entries,
-        'output': str(self._output),
-        'compression': str(self._compression or ''),
-        'root': str(self._root),
-        'compression_level': self._compression_level,
+      'entries': self._entries,
+      'output': str(self._output),
+      'compression': str(self._compression or ''),
+      'root': str(self._root),
+      'compression_level': self._compression_level,
     }
     step_result = self._module.m.step(
-        name=step_name,
-        cmd=['python3', self._module.resource('tar.py')],
-        stdin=self._module.m.json.input(script_input))
+      name=step_name,
+      cmd=['python3', self._module.resource('tar.py')],
+      stdin=self._module.m.json.input(script_input),
+    )
     self._module.m.path.mock_add_paths(self._output)
     return step_result

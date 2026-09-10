@@ -10,11 +10,11 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import git
 from RECIPE_MODULES.recipe_engine import (
-    path,
-    properties,
-    raw_io,
-    step,
-    swarming,
+  path,
+  properties,
+  raw_io,
+  step,
+  swarming,
 )
 
 
@@ -26,5 +26,6 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   step: step.API
   swarming: swarming.API
+
 
 from .api import SwarmingClientApi as API

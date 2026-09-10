@@ -32,11 +32,11 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   # TODO(https://crbug.com/336441276): Read list of trybots from V8.
   trybots = [
-      (
-          api.buildbucket.build.builder.project,
-          api.buildbucket.build.builder.bucket,
-          'v8_linux_noi18n_rel',
-      ),
+    (
+      api.buildbucket.build.builder.project,
+      api.buildbucket.build.builder.bucket,
+      'v8_linux_noi18n_rel',
+    ),
   ]
 
   result, _ = api.chromium_mega_cq.trigger_and_collect_bots(trybots)
@@ -46,7 +46,7 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'basic',
-      api.buildbucket.try_build(),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.buildbucket.try_build(),
+    api.post_process(post_process.DropExpectation),
   )

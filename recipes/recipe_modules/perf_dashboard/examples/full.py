@@ -12,11 +12,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import builder_group, perf_dashboard
 from RECIPE_MODULES.recipe_engine import (
-    json,
-    path,
-    platform,
-    properties,
-    step,
+  json,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -37,6 +37,7 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
 
+
 # To run, pass these options into properties:
 # bot_id="multivm-windows-release",
 # buildername="multivm-windows-perf-be",
@@ -44,13 +45,15 @@ class TEST_DEPS(RecipeTestApi):
 
 
 def RunSteps(api: DEPS):
-  s1 = api.perf_dashboard.get_skeleton_point('sunspider/string-unpack-code/ref',
-                                             33241, '18.5')
+  s1 = api.perf_dashboard.get_skeleton_point(
+    'sunspider/string-unpack-code/ref', 33241, '18.5'
+  )
   s1['supplemental_columns'] = {'d_supplemental': '167808'}
   s1['error'] = '0.5'
   s1['units'] = 'ms'
-  s2 = api.perf_dashboard.get_skeleton_point('sunspider/string-unpack-code',
-                                             33241, '18.4')
+  s2 = api.perf_dashboard.get_skeleton_point(
+    'sunspider/string-unpack-code', 33241, '18.4'
+  )
   s2['supplemental_columns'] = {'d_supplemental': '167808'}
   s2['error'] = '0.4898'
   s2['units'] = 'ms'
@@ -59,10 +62,10 @@ def RunSteps(api: DEPS):
   api.perf_dashboard.add_point([s1, s2])
 
   api.perf_dashboard.add_dashboard_link(
-      api.step.active_result.presentation,
-      'sunspider/string-unpack-code',
-      33241,
-      bot='bot_name',
+    api.step.active_result.presentation,
+    'sunspider/string-unpack-code',
+    33241,
+    bot='bot_name',
   )
 
 
@@ -70,12 +73,13 @@ def GenTests(api: TEST_DEPS):
   for platform in ('linux', 'win', 'mac'):
     for staging in (True, False):
       yield api.test(
-          platform + ('-staging' if staging else ''),
-          api.platform.name(platform),
-          api.builder_group.for_current('client.dart.fyi'),
-          api.properties(
-              bot_id='multivm-windows-release',
-              buildername='multivm-windows-perf-be',
-              buildnumber=75,
-              staging=staging),
+        platform + ('-staging' if staging else ''),
+        api.platform.name(platform),
+        api.builder_group.for_current('client.dart.fyi'),
+        api.properties(
+          bot_id='multivm-windows-release',
+          buildername='multivm-windows-perf-be',
+          buildnumber=75,
+          staging=staging,
+        ),
       )

@@ -10,19 +10,19 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import (
-    git,
-    tryserver,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -40,6 +40,7 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   raw_io: raw_io.API
   step: step.API
+
 
 from .api import FilterApi as API
 from .test_api import FilterTestApi as TEST_API

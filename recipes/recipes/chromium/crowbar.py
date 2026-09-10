@@ -44,9 +44,10 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
   step: step.TEST_API
 
+
 # Path to git repos (including submodules) to find Crowbar packages.
 _REPO_PATHS = [
-    'src',
+  'src',
 ]
 
 
@@ -62,21 +63,22 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'ci build',
-      api.chromium.ci_build(
-          builder_group='chromium.linux',
-          builder='Linux Builder',
-      ),
-      api.step_data(
-          'Find Crowbar Packages',
-          api.raw_io.stream_output_text('foo/crowbar.txtpb\n', stream='stdout'),
-      ),
-      api.step_data(
-          'build packages',
-          api.step.sub_build(build_pb2.Build(status=common_pb.SUCCESS)),
-      ),
-      api.post_process(post_process.StepCommandContains, 'build packages',
-                       ['foo']),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'ci build',
+    api.chromium.ci_build(
+      builder_group='chromium.linux',
+      builder='Linux Builder',
+    ),
+    api.step_data(
+      'Find Crowbar Packages',
+      api.raw_io.stream_output_text('foo/crowbar.txtpb\n', stream='stdout'),
+    ),
+    api.step_data(
+      'build packages',
+      api.step.sub_build(build_pb2.Build(status=common_pb.SUCCESS)),
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'build packages', ['foo']
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )

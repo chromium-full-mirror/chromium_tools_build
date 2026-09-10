@@ -26,8 +26,9 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   default_adb_path = api.adb.default_adb_path(source_dir)
   api.assertions.assertEqual(
-      default_adb_path,
-      source_dir / 'third_party/android_sdk/public/platform-tools/adb')
+    default_adb_path,
+    source_dir / 'third_party/android_sdk/public/platform-tools/adb',
+  )
 
   api.adb.root_devices(source_dir / 'custom/adb/path')
 

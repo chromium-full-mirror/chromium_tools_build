@@ -16,9 +16,11 @@ def libyuv(c):
   s.deps_file = 'DEPS'
   c.got_revision_mapping['src'] = 'got_revision'
 
+
 @CONFIG_CTX(includes=['libyuv', 'android'])
 def libyuv_android(_):
   pass
+
 
 @CONFIG_CTX(includes=['libyuv'])
 def libyuv_ios(c):

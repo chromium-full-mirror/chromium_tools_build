@@ -14,11 +14,18 @@ from .builder_db import BuilderDatabase
 from .try_spec import TryDatabase, ALWAYS, NEVER
 
 from RECIPE_MODULES.build.chromium_types import BuilderId
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             enum, mapping, sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  cached_property,
+  enum,
+  mapping,
+  sequence,
+)
 
-from PB.go.chromium.org.luci.buildbucket.proto import (builder_common as
-                                                       builder_common_pb)
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builder_common as builder_common_pb,
+)
 
 
 class BuilderConfigException(Exception):
@@ -55,7 +62,8 @@ class _BuilderSpecProperty:
     if len(values) != 1:
       message = ['Inconsistent value for {!r}:'.format(self._attr)]
       message.extend(
-          '{!r}: {!r}'.format(k, v) for k, v in per_builder_values.items())
+        '{!r}: {!r}'.format(k, v) for k, v in per_builder_values.items()
+      )
       raise ValueError('\n  '.join(message))
     return values[0]
 
@@ -104,23 +112,23 @@ class BuildbucketBuilderId:
   @classmethod
   def from_proto(cls, proto: builder_common_pb.BuilderID):
     return cls(
-        project=proto.project,
-        bucket=proto.bucket,
-        builder=proto.builder,
+      project=proto.project,
+      bucket=proto.bucket,
+      builder=proto.builder,
     )
 
   def to_proto(self) -> builder_common_pb.BuilderID:
     return builder_common_pb.BuilderID(
-        project=self.project,
-        bucket=self.bucket,
-        builder=self.builder,
+      project=self.project,
+      bucket=self.bucket,
+      builder=self.builder,
     )
 
 
 @delegate_to_builder_spec(BuilderSpec)
 @attrs()
 class BuilderConfig:
-  """"Static" configuration for a builder.
+  """ "Static" configuration for a builder.
 
   BuilderConfig provides access to information defined entirely in
   recipes; for a given recipe version BuilderConfig information will be
@@ -150,7 +158,8 @@ class BuilderConfig:
   # A mapping of chromium BuilderId to BuildbucketBuilderId. This will
   # only be populated for src-side builder configs
   _bb_builder_id_by_builder_id = attrib(
-      mapping[BuilderId, BuildbucketBuilderId], default={})
+    mapping[BuilderId, BuildbucketBuilderId], default={}
+  )
 
   # The try builders that mirror the builder that this BuilderConfig
   # wraps
@@ -189,12 +198,14 @@ class BuilderConfig:
   regression_test_selection = attrib(enum([ALWAYS, NEVER]), default=NEVER)
 
   @classmethod
-  def create(cls,
-             builder_db,
-             builder_ids,
-             builder_ids_in_scope_for_testing=None,
-             step_api=None,
-             **kwargs):
+  def create(
+    cls,
+    builder_db,
+    builder_ids,
+    builder_ids_in_scope_for_testing=None,
+    step_api=None,
+    **kwargs,
+  ):
     """Create a BuilderConfig instance.
 
     Args:
@@ -233,11 +244,14 @@ class BuilderConfig:
       for b in itertools.chain(builder_ids, builder_ids_in_scope_for_testing):
         if not b.group in builder_db.builders_by_group:
           raise BuilderConfigException(
-              "No configuration present for group '{}'".format(b.group))
+            "No configuration present for group '{}'".format(b.group)
+          )
         if not b in builder_db:
           raise BuilderConfigException(
-              "No configuration present for builder '{}' in group '{}'".format(
-                  b.builder, b.group))
+            "No configuration present for builder '{}' in group '{}'".format(
+              b.builder, b.group
+            )
+          )
     except BuilderConfigException as e:
       if step_api is not None:
         result = step_api(str(e), [])
@@ -247,19 +261,22 @@ class BuilderConfig:
       raise
 
     return cls(
-        builder_db,
-        builder_ids=builder_ids,
-        builder_ids_in_scope_for_testing=builder_ids_in_scope_for_testing,
-        **kwargs)
+      builder_db,
+      builder_ids=builder_ids,
+      builder_ids_in_scope_for_testing=builder_ids_in_scope_for_testing,
+      **kwargs,
+    )
 
   @classmethod
-  def lookup(cls,
-             builder_id,
-             builder_db,
-             try_db=None,
-             use_try_db=True,
-             step_api=None,
-             default_retry_failed_shards=True):
+  def lookup(
+    cls,
+    builder_id,
+    builder_db,
+    try_db=None,
+    use_try_db=True,
+    step_api=None,
+    default_retry_failed_shards=True,
+  ):
     """Create a BuilderConfig by looking up a builder.
 
     Args:
@@ -289,10 +306,11 @@ class BuilderConfig:
         builder and step_api is not None.
     """
     assert isinstance(builder_db, BuilderDatabase), (
-        'Expected BuilderDatabase for builder_db, got {}'.format(
-            type(builder_db)))
-    assert try_db is None or isinstance(try_db, TryDatabase), \
-        'Expected TryDatabase for try_db, got {}'.format(type(try_db))
+      'Expected BuilderDatabase for builder_db, got {}'.format(type(builder_db))
+    )
+    assert try_db is None or isinstance(try_db, TryDatabase), (
+      'Expected TryDatabase for try_db, got {}'.format(type(try_db))
+    )
 
     kwargs = {}
 
@@ -310,22 +328,27 @@ class BuilderConfig:
           for mirror in spec.mirrors:
             if builder_id in (mirror.builder_id, mirror.tester_id):
               return True
-            if (spec.include_all_triggered_testers and
-                builder_id in builder_db.builder_graph[mirror.builder_id]):
+            if (
+              spec.include_all_triggered_testers
+              and builder_id in builder_db.builder_graph[mirror.builder_id]
+            ):
               return True
           return False
 
-        kwargs['mirroring_try_builders'] = sorted([
-            try_id for try_id, spec in try_db.items()
+        kwargs['mirroring_try_builders'] = sorted(
+          [
+            try_id
+            for try_id, spec in try_db.items()
             if is_builder_mirrored(spec)
-        ])
+          ]
+        )
     else:
       try_spec_kwargs = attr.asdict(try_spec, recurse=False)
       mirrors = try_spec_kwargs.pop('mirrors')
       kwargs.update(try_spec_kwargs)
       kwargs['builder_ids'] = {m.builder_id for m in mirrors}
       kwargs['builder_ids_in_scope_for_testing'] = {
-          m.tester_id for m in mirrors if m.tester_id
+        m.tester_id for m in mirrors if m.tester_id
       }
 
     # Create the builder config first to ensure all of the necessary builders
@@ -343,25 +366,29 @@ class BuilderConfig:
           if b in builder_config.builder_ids:
             if builder_spec.execution_mode != COMPILE_AND_TEST:
               raise BuilderConfigException(
-                  "try builder '{}' specifies '{}' as a builder,"
-                  ' but it has execution mode {}, it must be {}'.format(
-                      builder_id, b, builder_spec.execution_mode,
-                      COMPILE_AND_TEST))
+                "try builder '{}' specifies '{}' as a builder,"
+                ' but it has execution mode {}, it must be {}'.format(
+                  builder_id, b, builder_spec.execution_mode, COMPILE_AND_TEST
+                )
+              )
           # This branch will be executed for builders that are specified as
           # testers in the try mirrors
           else:
             if builder_spec.execution_mode != TEST:
               raise BuilderConfigException(
-                  "try builder '{}' specifies '{}' as a tester,"
-                  ' but it has execution mode {}, it must be {}'.format(
-                      builder_id, b, builder_spec.execution_mode, TEST))
+                "try builder '{}' specifies '{}' as a tester,"
+                ' but it has execution mode {}, it must be {}'.format(
+                  builder_id, b, builder_spec.execution_mode, TEST
+                )
+              )
     except BuilderConfigException as e:
       if step_api is not None:
         step_api.empty(
-            str(e),
-            status=step_api.EXCEPTION,
-            log_name='details',
-            log_text=traceback.format_exc())
+          str(e),
+          status=step_api.EXCEPTION,
+          log_name='details',
+          log_text=traceback.format_exc(),
+        )
       raise
 
     return builder_config
@@ -376,8 +403,8 @@ class BuilderConfig:
     return ids
 
   def get_buildbucket_builder_id(
-      self,
-      builder_id: BuilderId,
+    self,
+    builder_id: BuilderId,
   ) -> BuildbucketBuilderId:
     """Get the BuildbucketBuilderId for a chromium BuilderId.
 
@@ -391,6 +418,7 @@ class BuilderConfig:
 
   @cached_property
   def targets_spec_files(self):
-    groups = set(builder_id.group
-                 for builder_id in self.builder_ids_in_scope_for_testing)
+    groups = set(
+      builder_id.group for builder_id in self.builder_ids_in_scope_for_testing
+    )
     return {g: '{}.json'.format(g) for g in groups}

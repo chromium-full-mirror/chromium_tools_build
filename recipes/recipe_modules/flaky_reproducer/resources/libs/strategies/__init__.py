@@ -11,7 +11,7 @@ from .parallel_strategy import ParallelStrategy
 from .repeat_strategy import RepeatStrategy
 
 strategies = {
-    BatchStrategy.name: BatchStrategy,
-    ParallelStrategy.name: ParallelStrategy,
-    RepeatStrategy.name: RepeatStrategy,
+  BatchStrategy.name: BatchStrategy,
+  ParallelStrategy.name: ParallelStrategy,
+  RepeatStrategy.name: RepeatStrategy,
 }

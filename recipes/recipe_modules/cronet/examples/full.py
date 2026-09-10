@@ -14,10 +14,10 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_android,
-    cronet,
-    siso,
+  chromium,
+  chromium_android,
+  cronet,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import bot_update, gclient
 from RECIPE_MODULES.recipe_engine import buildbucket, properties, runtime
@@ -44,35 +44,38 @@ class TEST_DEPS(RecipeTestApi):
   runtime: runtime.TEST_API
   siso: siso.TEST_API
 
-BUILDERS = freeze({
+
+BUILDERS = freeze(
+  {
     'local_test': {
-        'kwargs': {
-            'BUILD_CONFIG': 'Debug',
-            'TARGET_ARCH': 'arm',
-            'TARGET_BITS': 32,
-            'TARGET_PLATFORM': 'android',
-        },
-        'use_remoteexec': False,
+      'kwargs': {
+        'BUILD_CONFIG': 'Debug',
+        'TARGET_ARCH': 'arm',
+        'TARGET_BITS': 32,
+        'TARGET_PLATFORM': 'android',
+      },
+      'use_remoteexec': False,
     },
     'gn_test': {
-        'kwargs': {
-            'BUILD_CONFIG': 'Debug',
-            'TARGET_ARCH': 'arm',
-            'TARGET_BITS': 32,
-            'TARGET_PLATFORM': 'android',
-        },
-        'chromium_apply_config': ['gn'],
+      'kwargs': {
+        'BUILD_CONFIG': 'Debug',
+        'TARGET_ARCH': 'arm',
+        'TARGET_BITS': 32,
+        'TARGET_PLATFORM': 'android',
+      },
+      'chromium_apply_config': ['gn'],
     },
     'mb_test': {
-        'kwargs': {
-            'BUILD_CONFIG': 'Release',
-            'TARGET_ARCH': 'arm',
-            'TARGET_BITS': 32,
-            'TARGET_PLATFORM': 'android',
-        },
-        'chromium_apply_config': ['mb'],
+      'kwargs': {
+        'BUILD_CONFIG': 'Release',
+        'TARGET_ARCH': 'arm',
+        'TARGET_BITS': 32,
+        'TARGET_PLATFORM': 'android',
+      },
+      'chromium_apply_config': ['mb'],
     },
-})
+  }
+)
 
 
 def RunSteps(api: DEPS):
@@ -111,38 +114,38 @@ def GenTests(api: TEST_DEPS):
       if is_experimental:
         test_name += '_experimental'
       yield api.test(
-          test_name,
-          api.siso.properties(),
-          api.chromium.ci_build(
-              builder_group='fake-group',
-              builder=builder,
-          ),
-          api.runtime(is_experimental=is_experimental),
+        test_name,
+        api.siso.properties(),
+        api.chromium.ci_build(
+          builder_group='fake-group',
+          builder=builder,
+        ),
+        api.runtime(is_experimental=is_experimental),
       )
 
   # Do these proerties actually ever get set anymore?
   yield api.test(
-      'optional_properties',
-      api.siso.properties(),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='local_test',
-          revision='a' * 40,
-      ),
-      api.properties(
-          git_revision='a' * 40,
-          got_revision_cp=api.bot_update.gen_commit_position('src'),
-      ),
+    'optional_properties',
+    api.siso.properties(),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='local_test',
+      revision='a' * 40,
+    ),
+    api.properties(
+      git_revision='a' * 40,
+      got_revision_cp=api.bot_update.gen_commit_position('src'),
+    ),
   )
 
   yield api.test(
-      'compile_failure',
-      api.siso.properties(),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='local_test',
-      ),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'compile_failure',
+    api.siso.properties(),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='local_test',
+    ),
+    api.step_data('compile', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

@@ -17,7 +17,6 @@ from recipes import runisolatedtest
 
 
 class TestAll(unittest.TestCase):
-
   def setUp(self):
     super().setUp()
     self._run_command = runisolatedtest.run_command
@@ -35,62 +34,60 @@ class TestAll(unittest.TestCase):
     isolated = exe + '.isolate'
 
     data = {
-        'version': '1.0',
-        'command': [
-            '../testing/test_env.py', r'..\out\Release/browser_test.exe'
-        ],
-        'files': {r'out\Release\testdata': {}},
-        'variables': {
-            'EXECUTABLE_SUFFIX': '.exe', 'OS': 'win',
-            'PRODUCT_DIR': '../out/Release'
-        },
+      'version': '1.0',
+      'command': ['../testing/test_env.py', r'..\out\Release/browser_test.exe'],
+      'files': {r'out\Release\testdata': {}},
+      'variables': {
+        'EXECUTABLE_SUFFIX': '.exe',
+        'OS': 'win',
+        'PRODUCT_DIR': '../out/Release',
+      },
     }
     with open(isolated, 'w') as f:
       json.dump(data, f)
 
     sample_line = [
-        '--test_name',
-        'base_unittests',
-        '--builder_name',
-        "Linux Tests",
-        '--checkout_dir',
-        'build/',
-        exe,
-        '--',
-        '/usr/bin/python',
-        'build/src/out/../tools/sharding_supervisor/sharding_supervisor.py',
-        '--no-color',
-        '--retry-failed',
-        'build/src/out/Release/base_unittests',
-        '--gtest_print_time',
-        '--gtest_output=xml:build/gtest-results/base_unittests.xml',
-        '--gtest_filter=Junk',
+      '--test_name',
+      'base_unittests',
+      '--builder_name',
+      "Linux Tests",
+      '--checkout_dir',
+      'build/',
+      exe,
+      '--',
+      '/usr/bin/python',
+      'build/src/out/../tools/sharding_supervisor/sharding_supervisor.py',
+      '--no-color',
+      '--retry-failed',
+      'build/src/out/Release/base_unittests',
+      '--gtest_print_time',
+      '--gtest_output=xml:build/gtest-results/base_unittests.xml',
+      '--gtest_filter=Junk',
     ]
     expected = [
-        [
-            'build/src/tools/luci-go/isolate',
-            'run',
-            '-isolate',
-            isolated,
-            '-verbose',
-            '--',
-            '--no-cr',
-            '--gtest_output=xml:build/gtest-results/base_unittests.xml',
-            '--gtest_filter=Junk',
-        ],
+      [
+        'build/src/tools/luci-go/isolate',
+        'run',
+        '-isolate',
+        isolated,
+        '-verbose',
+        '--',
+        '--no-cr',
+        '--gtest_output=xml:build/gtest-results/base_unittests.xml',
+        '--gtest_filter=Junk',
+      ],
     ]
     res = runisolatedtest.main(sample_line)
 
     expected_data = {
-        'version': '1.0',
-        'command': [
-            '../testing/test_env.py', r'..\out\Release/browser_test.exe'
-        ],
-        'files': {r'out\Release\testdata': {}},
-        'variables': {
-            'EXECUTABLE_SUFFIX': '.exe', 'OS': 'win',
-            'PRODUCT_DIR': '../out/Release'
-        },
+      'version': '1.0',
+      'command': ['../testing/test_env.py', r'..\out\Release/browser_test.exe'],
+      'files': {r'out\Release\testdata': {}},
+      'variables': {
+        'EXECUTABLE_SUFFIX': '.exe',
+        'OS': 'win',
+        'PRODUCT_DIR': '../out/Release',
+      },
     }
     with open(isolated) as f:
       converted_data = json.load(f)

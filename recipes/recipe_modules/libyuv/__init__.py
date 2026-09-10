@@ -9,29 +9,29 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    archive,
-    builder_group,
-    chromium,
-    chromium_android,
-    chromium_checkout,
-    chromium_tests,
+  archive,
+  builder_group,
+  chromium,
+  chromium_android,
+  chromium_checkout,
+  chromium_tests,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    osx_sdk,
-    tryserver,
+  bot_update,
+  gclient,
+  osx_sdk,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    defer,
-    file,
-    platform,
-    properties,
-    runtime,
-    scheduler,
-    step,
+  buildbucket,
+  context,
+  defer,
+  file,
+  platform,
+  properties,
+  runtime,
+  scheduler,
+  step,
 )
 
 

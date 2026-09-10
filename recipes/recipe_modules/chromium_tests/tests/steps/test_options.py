@@ -26,8 +26,8 @@ def RunSteps(api: DEPS):
   with api.assertions.assertRaises(ValueError) as caught:
     steps.TestOptionFlags.create(filter_flag='--filter-flag')
   api.assertions.assertEqual(
-      str(caught.exception),
-      "'filter_delimiter' must be set if 'filter_flag' is")
+    str(caught.exception), "'filter_delimiter' must be set if 'filter_flag' is"
+  )
 
   # Options for running with no tests to retry should equal the input options
   options = steps.TestOptions.create()
@@ -37,8 +37,9 @@ def RunSteps(api: DEPS):
   # Options for running a large number of tests to retry should equal
   # the input options
   options = steps.TestOptions.create()
-  new_options = options.for_running('suffix',
-                                    ['test{}'.format(x) for x in range(200)])
+  new_options = options.for_running(
+    'suffix', ['test{}'.format(x) for x in range(200)]
+  )
   api.assertions.assertEqual(new_options, options)
 
   # Options for running a small number of tests for 'without patch'
@@ -46,12 +47,13 @@ def RunSteps(api: DEPS):
   options = steps.TestOptions.create()
   new_options = options.for_running('without patch', ['test0'])
   api.assertions.assertEqual(
-      new_options,
-      steps.TestOptions.create(
-          repeat_count=steps.REPEAT_COUNT_FOR_FAILING_TESTS,
-          retry_limit=0,
-          force_independent_tests=True,
-      ))
+    new_options,
+    steps.TestOptions.create(
+      repeat_count=steps.REPEAT_COUNT_FOR_FAILING_TESTS,
+      retry_limit=0,
+      force_independent_tests=True,
+    ),
+  )
 
   # Options for running a small number of tests for other suffixes should equal
   # the input options
@@ -61,7 +63,9 @@ def RunSteps(api: DEPS):
 
   # Options with non-None repeat count for running a small number of tests for
   # 'without patch' suffix should equal the input options
-  options = steps.TestOptions.create(repeat_count=3,)
+  options = steps.TestOptions.create(
+    repeat_count=3,
+  )
   new_options = options.for_running('without patch', ['test0'])
   api.assertions.assertEqual(new_options, options)
 
@@ -69,13 +73,15 @@ def RunSteps(api: DEPS):
   options = steps.TestOptions.create()
   new_options = options.for_running('retry shards', ['test0'])
   api.assertions.assertEqual(
-      new_options,
-      steps.TestOptions.create(
-          retry_limit=steps.RETRY_LIMIT_FOR_CI_RETRY_SHARDS,))
+    new_options,
+    steps.TestOptions.create(
+      retry_limit=steps.RETRY_LIMIT_FOR_CI_RETRY_SHARDS,
+    ),
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

@@ -12,7 +12,6 @@ from RECIPE_MODULES.build import chromium_types
 
 
 class FinditApi(recipe_api.RecipeApi):
-
   def get_builder_config(self, target_builder_id):
     """Returns the builder config for a target builder.
 
@@ -22,18 +21,23 @@ class FinditApi(recipe_api.RecipeApi):
     testing.
     """
     _, builder_config = self.m.chromium_tests_builder_config.lookup_builder(
-        target_builder_id)
+      target_builder_id
+    )
     # The builder config doesn't match the target builder. This shouldn't
     # happen. If this does occur, it indicates there's a problem with the
     # properties that are being set by the findit app and/or there is a problem
     # in the src-side properties generation.
-    if (len(builder_config.builder_ids) != 1 or
-        builder_config.builder_ids[0] != target_builder_id):
+    if (
+      len(builder_config.builder_ids) != 1
+      or builder_config.builder_ids[0] != target_builder_id
+    ):
       self.m.step.empty(
-          'invalid target builder',
-          status=self.m.step.INFRA_FAILURE,
-          step_text='Expected config for [{}], got config for {}'.format(
-              target_builder_id, list(builder_config.builder_ids)))
+        'invalid target builder',
+        status=self.m.step.INFRA_FAILURE,
+        step_text='Expected config for [{}], got config for {}'.format(
+          target_builder_id, list(builder_config.builder_ids)
+        ),
+      )
     target_builder_spec = builder_config.builder_db[target_builder_id]
 
     # If the builder is not a tester, return the builder config as-is.
@@ -44,11 +48,12 @@ class FinditApi(recipe_api.RecipeApi):
     # for its parent, with the builder itself be the only builder in scope for
     # testing.
     builder_id = chromium_types.BuilderId.create_for_group(
-        target_builder_spec.parent_builder_group or target_builder_id.group,
-        target_builder_spec.parent_buildername)
+      target_builder_spec.parent_builder_group or target_builder_id.group,
+      target_builder_spec.parent_buildername,
+    )
     return attr.evolve(
-        builder_config,
-        builder_ids=[builder_id],
-        builder_ids_in_scope_for_testing=[target_builder_id],
-        include_all_triggered_testers=False,
+      builder_config,
+      builder_ids=[builder_id],
+      builder_ids_in_scope_for_testing=[target_builder_id],
+      include_all_triggered_testers=False,
     )

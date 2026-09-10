@@ -12,9 +12,15 @@ import platform
 import subprocess
 
 
-def _call_cov_tool(cov_tool_path, profile_input_file_path,
-                   report_output_dir_path, compilation_dir_path, binaries,
-                   sources, arch):
+def _call_cov_tool(
+  cov_tool_path,
+  profile_input_file_path,
+  report_output_dir_path,
+  compilation_dir_path,
+  binaries,
+  sources,
+  arch,
+):
   """Calls the llvm-cov tool.
 
   Args:
@@ -37,11 +43,11 @@ def _call_cov_tool(cov_tool_path, profile_input_file_path,
 
   try:
     subprocess_cmd = [
-        cov_tool_path,
-        'show',
-        '-format=html',
-        '-output-dir=' + report_output_dir_path,
-        '-compilation-dir=' + compilation_dir_path,
+      cov_tool_path,
+      'show',
+      '-format=html',
+      '-output-dir=' + report_output_dir_path,
+      '-compilation-dir=' + compilation_dir_path,
     ]
 
     if arch:
@@ -77,13 +83,15 @@ def _call_cov_tool(cov_tool_path, profile_input_file_path,
   logging.info('Report created in: "%s".', report_output_dir_path)
 
 
-def generate_report(llvm_cov,
-                    profdata_path,
-                    report_directory,
-                    compilation_directory,
-                    binaries,
-                    sources=None,
-                    arch=None):
+def generate_report(
+  llvm_cov,
+  profdata_path,
+  report_directory,
+  compilation_directory,
+  binaries,
+  sources=None,
+  arch=None,
+):
   """Generates an html report for profile data using llvm-cov.
 
   Args:
@@ -97,5 +105,12 @@ def generate_report(llvm_cov,
         report, includes all if not specified.
     arch (str): Binary architechture. Consumed by llvm command.
   """
-  _call_cov_tool(llvm_cov, profdata_path, report_directory,
-                 compilation_directory, binaries, sources, arch)
+  _call_cov_tool(
+    llvm_cov,
+    profdata_path,
+    report_directory,
+    compilation_directory,
+    binaries,
+    sources,
+    arch,
+  )

@@ -9,13 +9,13 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    json,
-    led,
-    path,
-    properties,
-    resultdb,
-    step,
+  buildbucket,
+  json,
+  led,
+  path,
+  properties,
+  resultdb,
+  step,
 )
 
 
@@ -28,5 +28,6 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   resultdb: resultdb.API
   step: step.API
+
 
 from .api import ReproInstructionsApi as API

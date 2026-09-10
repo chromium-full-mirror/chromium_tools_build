@@ -16,13 +16,13 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
-    cas,
-    context,
-    file,
-    path,
-    platform,
-    step,
-    url,
+  cas,
+  context,
+  file,
+  path,
+  platform,
+  step,
+  url,
 )
 
 
@@ -49,6 +49,8 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   step: step.TEST_API
   url: url.TEST_API
+
+
 CFT_LKGR_URL = 'https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions-with-downloads.json'
 ALLOWED_CFT_BUCKET = 'chrome-for-testing-public'
 ALLOWED_CFT_HOST = 'storage.googleapis.com'
@@ -70,13 +72,18 @@ def RunSteps(api: DEPS):
   try:
     # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
     if not api.platform.is_win:
-      api.step('Run Unit Tests', [
+      api.step(
+        'Run Unit Tests',
+        [
           'vpython3',
           'crossbench/tests/crossbench/runner.py',
           f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
-      ])
+        ],
+      )
 
-    api.step('Run End2End Tests', [
+    api.step(
+      'Run End2End Tests',
+      [
         'vpython3',
         '-Xutf8',
         'crossbench/tests/end2end/runner.py',
@@ -86,7 +93,8 @@ def RunSteps(api: DEPS):
         f'--cas-archive={cas_archive}',
         f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
         '--ignore-tests=android',
-    ])
+      ],
+    )
   finally:
     api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
 
@@ -94,152 +102,166 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
   yield api.test('basic')
   yield api.test(
-      'win-intel',
-      api.platform('win', 64),
-      api.platform.arch('intel'),
+    'win-intel',
+    api.platform('win', 64),
+    api.platform.arch('intel'),
   )
   yield api.test(
-      'linux-intel-64',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
+    'linux-intel-64',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
   )
   yield api.test(
-      'linux-intel-32',
-      api.platform('linux', 32),
-      api.platform.arch('intel'),
-      api.expect_exception('NotImplementedError'),
+    'linux-intel-32',
+    api.platform('linux', 32),
+    api.platform.arch('intel'),
+    api.expect_exception('NotImplementedError'),
   )
   yield api.test(
-      'mac-intel-64',
-      api.platform('mac', 64),
-      api.platform.arch('intel'),
+    'mac-intel-64',
+    api.platform('mac', 64),
+    api.platform.arch('intel'),
   )
   yield api.test(
-      'mac-arm-64',
-      api.platform('mac', 64),
-      api.platform.arch('arm'),
+    'mac-arm-64',
+    api.platform('mac', 64),
+    api.platform.arch('arm'),
   )
   yield api.test(
-      'using-cache',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.path.exists(
-          api.path.cache_dir /
-          f'builder/chrome/Stable/{MOCK_VER}/chrome/chrome-linux64/chrome',),
+    'using-cache',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.path.exists(
+      api.path.cache_dir
+      / f'builder/chrome/Stable/{MOCK_VER}/chrome/chrome-linux64/chrome',
+    ),
   )
   yield api.test(
-      'poc-poisoned-cft-manifest-untrusted-bucket',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.url.json(
-          'Get the latest Chrome Stable binary URL to download', {
-              'channels': {
-                  'Stable': {
-                      'version': '131.0.6778.204',
-                      'downloads': {
-                          'chrome': [{
-                              'platform': 'linux64',
-                              'url':
-                                  'https://storage.googleapis.com/'
-                                  'attacker-controlled-public-bucket/'
-                                  '131.0.6778.204/linux64/chrome-linux64.zip',
-                          }],
-                      },
-                  },
-              },
-          }),
-      api.expect_exception('ValueError'),
+    'poc-poisoned-cft-manifest-untrusted-bucket',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.url.json(
+      'Get the latest Chrome Stable binary URL to download',
+      {
+        'channels': {
+          'Stable': {
+            'version': '131.0.6778.204',
+            'downloads': {
+              'chrome': [
+                {
+                  'platform': 'linux64',
+                  'url': 'https://storage.googleapis.com/'
+                  'attacker-controlled-public-bucket/'
+                  '131.0.6778.204/linux64/chrome-linux64.zip',
+                }
+              ],
+            },
+          },
+        },
+      },
+    ),
+    api.expect_exception('ValueError'),
   )
   yield api.test(
-      'poc-poisoned-cft-manifest-untrusted-host',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.url.json(
-          'Get the latest Chrome Stable binary URL to download', {
-              'channels': {
-                  'Stable': {
-                      'version': '131.0.6778.204',
-                      'downloads': {
-                          'chrome': [{
-                              'platform': 'linux64',
-                              'url':
-                                  'https://evil.com/chrome-for-testing-public/'
-                                  '131.0.6778.204/linux64/chrome-linux64.zip',
-                          }],
-                      },
-                  },
-              },
-          }),
-      api.expect_exception('ValueError'),
+    'poc-poisoned-cft-manifest-untrusted-host',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.url.json(
+      'Get the latest Chrome Stable binary URL to download',
+      {
+        'channels': {
+          'Stable': {
+            'version': '131.0.6778.204',
+            'downloads': {
+              'chrome': [
+                {
+                  'platform': 'linux64',
+                  'url': 'https://evil.com/chrome-for-testing-public/'
+                  '131.0.6778.204/linux64/chrome-linux64.zip',
+                }
+              ],
+            },
+          },
+        },
+      },
+    ),
+    api.expect_exception('ValueError'),
   )
   yield api.test(
-      'poc-poisoned-cft-manifest-missing-platform',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.url.json(
-          'Get the latest Chrome Stable binary URL to download', {
-              'channels': {
-                  'Stable': {
-                      'version': '131.0.6778.204',
-                      'downloads': {
-                          'chrome': [{
-                              'platform': 'win64',
-                              'url': 'https://storage.googleapis.com/'
-                                     'chrome-for-testing-public/'
-                                     '131.0.6778.204/win64/chrome-win64.zip',
-                          }],
-                      },
-                  },
-              },
-          }),
-      api.expect_exception('ValueError'),
+    'poc-poisoned-cft-manifest-missing-platform',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.url.json(
+      'Get the latest Chrome Stable binary URL to download',
+      {
+        'channels': {
+          'Stable': {
+            'version': '131.0.6778.204',
+            'downloads': {
+              'chrome': [
+                {
+                  'platform': 'win64',
+                  'url': 'https://storage.googleapis.com/'
+                  'chrome-for-testing-public/'
+                  '131.0.6778.204/win64/chrome-win64.zip',
+                }
+              ],
+            },
+          },
+        },
+      },
+    ),
+    api.expect_exception('ValueError'),
   )
   yield api.test(
-      'poc-poisoned-cft-manifest-invalid-version',
-      api.platform('linux', 64),
-      api.platform.arch('intel'),
-      api.url.json(
-          'Get the latest Chrome Stable binary URL to download', {
-              'channels': {
-                  'Stable': {
-                      'version': 'invalid_version',
-                      'downloads': {
-                          'chrome': [{
-                              'platform': 'linux64',
-                              'url':
-                                  'https://storage.googleapis.com/'
-                                  'chrome-for-testing-public/'
-                                  '131.0.6778.204/linux64/chrome-linux64.zip',
-                          }],
-                      },
-                  },
-              },
-          }),
-      api.expect_exception('ValueError'),
+    'poc-poisoned-cft-manifest-invalid-version',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.url.json(
+      'Get the latest Chrome Stable binary URL to download',
+      {
+        'channels': {
+          'Stable': {
+            'version': 'invalid_version',
+            'downloads': {
+              'chrome': [
+                {
+                  'platform': 'linux64',
+                  'url': 'https://storage.googleapis.com/'
+                  'chrome-for-testing-public/'
+                  '131.0.6778.204/linux64/chrome-linux64.zip',
+                }
+              ],
+            },
+          },
+        },
+      },
+    ),
+    api.expect_exception('ValueError'),
   )
 
 
 CHROME_CONFIG = {
-    ('mac', 'arm', 64): {
-        'cft_platform': 'mac-arm64',
-        'chrome_archive_path': 'chrome-mac-arm64/Google Chrome for Testing.app',
-        'driver_archive_path': 'chromedriver-mac-arm64/chromedriver'
-    },
-    ('mac', 'intel', 64): {
-        'cft_platform': 'mac-x64',
-        'chrome_archive_path': 'chrome-mac-x64/Google Chrome for Testing.app',
-        'driver_archive_path': 'chromedriver-mac-x64/chromedriver'
-    },
-    ('linux', 'intel', 64): {
-        'cft_platform': 'linux64',
-        'chrome_archive_path': 'chrome-linux64/chrome',
-        'driver_archive_path': 'chromedriver-linux64/chromedriver'
-    },
-    ('win', 'intel', 64): {
-        'cft_platform': 'win64',
-        'chrome_archive_path': 'chrome-win64/chrome.exe',
-        'driver_archive_path': 'chromedriver-win64/chromedriver.exe'
-    },
+  ('mac', 'arm', 64): {
+    'cft_platform': 'mac-arm64',
+    'chrome_archive_path': 'chrome-mac-arm64/Google Chrome for Testing.app',
+    'driver_archive_path': 'chromedriver-mac-arm64/chromedriver',
+  },
+  ('mac', 'intel', 64): {
+    'cft_platform': 'mac-x64',
+    'chrome_archive_path': 'chrome-mac-x64/Google Chrome for Testing.app',
+    'driver_archive_path': 'chromedriver-mac-x64/chromedriver',
+  },
+  ('linux', 'intel', 64): {
+    'cft_platform': 'linux64',
+    'chrome_archive_path': 'chrome-linux64/chrome',
+    'driver_archive_path': 'chromedriver-linux64/chromedriver',
+  },
+  ('win', 'intel', 64): {
+    'cft_platform': 'win64',
+    'chrome_archive_path': 'chrome-win64/chrome.exe',
+    'driver_archive_path': 'chromedriver-win64/chromedriver.exe',
+  },
 }
 
 
@@ -252,45 +274,53 @@ def _validate_cft_url(url, expected_version, expected_platform, binary_name):
   parsed = urlparse(url)
   if parsed.scheme != 'https' or parsed.netloc != ALLOWED_CFT_HOST:
     raise ValueError(
-        f'Untrusted CFT URL {url!r}: expected https://{ALLOWED_CFT_HOST}/...')
+      f'Untrusted CFT URL {url!r}: expected https://{ALLOWED_CFT_HOST}/...'
+    )
   expected_zip = f'{binary_name}-{expected_platform}.zip'
   expected_path = f'/{ALLOWED_CFT_BUCKET}/{expected_version}/{expected_platform}/{expected_zip}'
   if parsed.path != expected_path:
     raise ValueError(
-        f'Untrusted CFT URL path {parsed.path!r} in {url!r}: expected {expected_path!r}'
+      f'Untrusted CFT URL path {parsed.path!r} in {url!r}: expected {expected_path!r}'
     )
 
 
 def download_chrome(api: DEPS, channel):
   channel_info = api.url.get_json(
-      CFT_LKGR_URL,
-      step_name=f'Get the latest Chrome {channel} binary URL to download',
-      default_test_data={
-          'channels': {
-              'Stable': {
-                  'version': MOCK_VER,
-                  'downloads': {
-                      'chrome': [{
-                          'platform': 'linux64',
-                          'url': f'{MOCK_URL}/linux64/chrome-linux64.zip'
-                      }, {
-                          'platform': 'mac-arm64',
-                          'url': f'{MOCK_URL}/mac-arm64/chrome-mac-arm64.zip'
-                      }, {
-                          'platform': 'mac-x64',
-                          'url': f'{MOCK_URL}/mac-x64/chrome-mac-x64.zip'
-                      }, {
-                          'platform': 'win64',
-                          'url': f'{MOCK_URL}/win64/chrome-win64.zip'
-                      }]
-                  }
-              }
-          }
-      }).output['channels'][channel]
+    CFT_LKGR_URL,
+    step_name=f'Get the latest Chrome {channel} binary URL to download',
+    default_test_data={
+      'channels': {
+        'Stable': {
+          'version': MOCK_VER,
+          'downloads': {
+            'chrome': [
+              {
+                'platform': 'linux64',
+                'url': f'{MOCK_URL}/linux64/chrome-linux64.zip',
+              },
+              {
+                'platform': 'mac-arm64',
+                'url': f'{MOCK_URL}/mac-arm64/chrome-mac-arm64.zip',
+              },
+              {
+                'platform': 'mac-x64',
+                'url': f'{MOCK_URL}/mac-x64/chrome-mac-x64.zip',
+              },
+              {
+                'platform': 'win64',
+                'url': f'{MOCK_URL}/win64/chrome-win64.zip',
+              },
+            ]
+          },
+        }
+      }
+    },
+  ).output['channels'][channel]
   version = channel_info['version']
   _validate_cft_version(version)
-  chrome_dir = api.path.cache_dir.joinpath('builder', 'chrome', channel,
-                                           version)
+  chrome_dir = api.path.cache_dir.joinpath(
+    'builder', 'chrome', channel, version
+  )
   api.file.ensure_directory('Init cache if not exists', chrome_dir)
   with api.context(cwd=chrome_dir):
     chrome_output_path = chrome_dir / 'chrome'
@@ -309,7 +339,8 @@ def download_chrome(api: DEPS, channel):
       urls = [x['url'] for x in downloads if x['platform'] == cft_platform]
       if not urls:
         raise ValueError(
-            f'No CFT download URL found for platform {cft_platform!r}')
+          f'No CFT download URL found for platform {cft_platform!r}'
+        )
       url = urls[0]
       _validate_cft_url(url, version, cft_platform, 'chrome')
 

@@ -12,9 +12,9 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    path,
-    properties,
-    step,
+  path,
+  properties,
+  step,
 )
 
 
@@ -23,7 +23,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   properties: properties.API
   step: step.API
-
 
 
 from .api import DevInfraApi as API

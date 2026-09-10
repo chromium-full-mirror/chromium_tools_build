@@ -12,13 +12,9 @@ GERRIT_BASE_URL = 'https://chromium-review.googlesource.com'
 
 
 class CLManager:
-
-  def __init__(self,
-               api,
-               source_dir,
-               bugs,
-               gerrit_base_url=GERRIT_BASE_URL,
-               cc=None):
+  def __init__(
+    self, api, source_dir, bugs, gerrit_base_url=GERRIT_BASE_URL, cc=None
+  ):
     self.api = api
     self.source_dir = source_dir
     self.bugs = bugs
@@ -36,10 +32,10 @@ class CLManager:
     # Check for a difference. If no deps changed, the diff is empty.
     with self.api.context(cwd=self.source_dir):
       step_result = self.api.git(
-          'status',
-          '-s',
-          '-uno',
-          stdout=self.api.raw_io.output_text(),
+        'status',
+        '-s',
+        '-uno',
+        stdout=self.api.raw_io.output_text(),
       )
     diff = step_result.stdout.strip()
     step_result.presentation.logs['diff'] = diff.splitlines()
@@ -59,16 +55,17 @@ class CLManager:
 
     kwargs = {'stdout': self.api.raw_io.output_text()}
     with self.api.context(
-        cwd=self.source_dir,
-        env_prefixes={'PATH': [self.api.v8.depot_tools_path(self.source_dir)]}):
+      cwd=self.source_dir,
+      env_prefixes={'PATH': [self.api.v8.depot_tools_path(self.source_dir)]},
+    ):
       self.api.git(*args, **kwargs)
       self.api.git('show')
       upload_args = [
-          'cl',
-          'upload',
-          '-f',
-          '--bypass-hooks',
-          '--send-mail',
+        'cl',
+        'upload',
+        '-f',
+        '--bypass-hooks',
+        '--send-mail',
       ]
 
       if self.bugs is not None:
@@ -78,7 +75,8 @@ class CLManager:
 
       upload_args.extend(upload_flags)
       step_result = self.api.git(
-          *upload_args, stdout=self.api.raw_io.output_text())
+        *upload_args, stdout=self.api.raw_io.output_text()
+      )
 
       # Extract the cl link from stdout
       cl_link = re.search(r'https:\/\/.*\/\+\/\d+', step_result.stdout).group(0)
@@ -87,15 +85,15 @@ class CLManager:
 
   def _find_cls(self, subject):
     cls = self.api.gerrit.get_changes(
-        self.gerrit_base_url,
-        query_params=[
-            ('project', commons.get_project_name(self.api)),
-            ('owner', self.api.v8_auto_roller.service_account),
-            ('status', 'open'),
-            ('subject', f'"{subject}"'),
-        ],
-        limit=20,
-        step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
+      self.gerrit_base_url,
+      query_params=[
+        ('project', commons.get_project_name(self.api)),
+        ('owner', self.api.v8_auto_roller.service_account),
+        ('status', 'open'),
+        ('subject', f'"{subject}"'),
+      ],
+      limit=20,
+      step_test_data=self.api.gerrit.test_api.get_empty_changes_response_data,
     )
     # Querying gerrit with a subject is not exact, so filter the results for
     # precise match.
@@ -104,9 +102,9 @@ class CLManager:
 
   def _abandon_cl(self, cl):
     self.api.gerrit.abandon_change(
-        self.gerrit_base_url,
-        cl['_number'],
-        'stale roll',
+      self.gerrit_base_url,
+      cl['_number'],
+      'stale roll',
     )
     step_result = self.api.step('Previous roll failed', cmd=None)
     step_result.presentation.step_text = 'Notify sheriffs!'
@@ -121,7 +119,6 @@ class CLManager:
 
 
 class PatchPriorityCLManager(CLManager):
-
   def __init__(self, api, source_dir, bugs, cc):
     super().__init__(api, source_dir, bugs, cc=cc)
 
@@ -136,10 +133,11 @@ class PatchPriorityCLManager(CLManager):
         create_new_cl = False
         self.api.step.empty(f'CL {cl["_number"]} was modified.')
         self.api.gerrit.add_message(
-            host=self.gerrit_base_url,
-            change=cl['_number'],
-            message='The auto-roller is blocked by this manually patched CL. '
-            'To continue, land or abandon this CL. If a fresh roll is '
-            'needed, abandon this one and restart the roller.',
-            automatic_attention_set_update=True)
+          host=self.gerrit_base_url,
+          change=cl['_number'],
+          message='The auto-roller is blocked by this manually patched CL. '
+          'To continue, land or abandon this CL. If a fresh roll is '
+          'needed, abandon this one and restart the roller.',
+          automatic_attention_set_update=True,
+        )
     return create_new_cl

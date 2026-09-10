@@ -23,7 +23,6 @@ TASK_BATCH_SIZE = 300
 
 
 class TasksToCollect:
-
   @classmethod
   def read_from_file(cls, filename):
     with open(filename) as f:
@@ -62,8 +61,8 @@ class TasksToCollect:
   def task_batches(self):
     tasks = self.unfinished_tasks
     return [
-        tasks[idx:idx+TASK_BATCH_SIZE]
-        for idx in range(0, len(tasks), TASK_BATCH_SIZE)
+      tasks[idx : idx + TASK_BATCH_SIZE]
+      for idx in range(0, len(tasks), TASK_BATCH_SIZE)
     ]
 
   def swarming_prpc_json(self, task_batch):
@@ -83,25 +82,36 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--swarming-server', required=True)
   parser.add_argument('--verbose', action='store_true')
-  parser.add_argument('--output-json', required=True,
-                      help='Where to output information about the results of '
-                      'running this script. Will have two keys: \'attempts\', '
-                      'which is the number of times we polled the swarming '
-                      'server, and \'sets\', which is a list of finished '
-                      'swarming task sets.')
-  parser.add_argument('--attempts', default=0, type=int,
-                      help='Number of times this script has tried to get'
-                      ' results from the swarming server. Used to keep state'
-                      ' across runs to not reset the exponential backoff.')
-  parser.add_argument('--input-json', required=True,
-                      help='List of sets of tasks. Each set of tasks is assumed'
-                      ' to all be shards of the same root task.')
+  parser.add_argument(
+    '--output-json',
+    required=True,
+    help='Where to output information about the results of '
+    'running this script. Will have two keys: \'attempts\', '
+    'which is the number of times we polled the swarming '
+    'server, and \'sets\', which is a list of finished '
+    'swarming task sets.',
+  )
+  parser.add_argument(
+    '--attempts',
+    default=0,
+    type=int,
+    help='Number of times this script has tried to get'
+    ' results from the swarming server. Used to keep state'
+    ' across runs to not reset the exponential backoff.',
+  )
+  parser.add_argument(
+    '--input-json',
+    required=True,
+    help='List of sets of tasks. Each set of tasks is assumed'
+    ' to all be shards of the same root task.',
+  )
 
   args = parser.parse_args(argv[1:])
 
   logging.basicConfig(
-      level=logging.DEBUG if args.verbose else logging.ERROR,
-      format='%(asctime)s - %(name)s: [%(levelname)s] %(message)s')
+    level=logging.DEBUG if args.verbose else logging.ERROR,
+    format='%(asctime)s - %(name)s: [%(levelname)s] %(message)s',
+  )
 
   tasks = TasksToCollect.read_from_file(args.input_json)
 
@@ -122,19 +132,24 @@ def real_main(tasks, attempts, swarming_server):
       if swarming_server.startswith("https://"):
         swarming_server = swarming_server[8:]
       cmd = [
-          'prpc', 'call', swarming_server, 'swarming.v2.Tasks.ListTaskStates'
+        'prpc',
+        'call',
+        swarming_server,
+        'swarming.v2.Tasks.ListTaskStates',
       ]
 
       logging.info('prpc cmd: %s, stdin: %s', ' '.join(cmd), tasks_json)
       p = subprocess.Popen(
-          cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True)
+        cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE, text=True
+      )
       out, err = p.communicate(tasks_json)
       if err:
         logging.warning('prpc call cmd had error: %s', err)
         return 1, None
       if p.returncode != 0:
-        logging.warning('prpc call cmd had non-zero return code: %s',
-                        p.returncode)
+        logging.warning(
+          'prpc call cmd had non-zero return code: %s', p.returncode
+        )
         return 1, None
 
       tasks.process_result(json.loads(out), len(task_batch))
@@ -155,9 +170,10 @@ def real_main(tasks, attempts, swarming_server):
     time.sleep(time_to_sleep_sec)
 
   return 0, {
-      'sets': tasks.finished_task_sets,
-      'attempts': attempts,
+    'sets': tasks.finished_task_sets,
+    'attempts': attempts,
   }
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv))

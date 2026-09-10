@@ -7,8 +7,9 @@ from __future__ import annotations
 from recipe_engine import post_process
 from recipe_engine.recipe_api import Property
 
-from PB.go.chromium.org.luci.buildbucket.proto \
-    import builder_common as builder_common_pb
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builder_common as builder_common_pb,
+)
 
 from dataclasses import dataclass
 
@@ -31,8 +32,9 @@ class TEST_DEPS(RecipeTestApi):
   chromium_polymorphic: chromium_polymorphic.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'expected': Property(),
+  'expected': Property(),
 }
 
 
@@ -44,18 +46,19 @@ def RunSteps(api: DEPS, expected):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium_polymorphic.triggered_properties(
-          project='fake-project',
-          bucket='fake-bucket',
-          builder='fake-builder',
-          builder_group='fake-group',
-      ),
-      api.properties(
-          expected=dict(
-              project='fake-project',
-              bucket='fake-bucket',
-              builder='fake-builder',
-          )),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium_polymorphic.triggered_properties(
+      project='fake-project',
+      bucket='fake-bucket',
+      builder='fake-builder',
+      builder_group='fake-group',
+    ),
+    api.properties(
+      expected=dict(
+        project='fake-project',
+        bucket='fake-bucket',
+        builder='fake-builder',
+      )
+    ),
+    api.post_process(post_process.DropExpectation),
   )

@@ -12,15 +12,15 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_checkout
 from RECIPE_MODULES.depot_tools import gclient, gerrit, tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    raw_io,
-    step,
-    tricium,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  raw_io,
+  step,
+  tricium,
 )
 
 
@@ -55,22 +55,28 @@ class TEST_DEPS(RecipeTestApi):
 
 
 class _ChangeDetails:
-
   def __init__(self, api: DEPS):
     changes = api.gerrit.get_changes(
-        'https://%s' % api.tryserver.gerrit_change.host,
-        query_params=[('change', str(api.tryserver.gerrit_change.change))],
-        o_params=[
-            'CURRENT_REVISION', 'ALL_COMMITS', 'DETAILED_LABELS',
-            'DETAILED_ACCOUNTS'
-        ],
-        limit=1)
+      'https://%s' % api.tryserver.gerrit_change.host,
+      query_params=[('change', str(api.tryserver.gerrit_change.change))],
+      o_params=[
+        'CURRENT_REVISION',
+        'ALL_COMMITS',
+        'DETAILED_LABELS',
+        'DETAILED_ACCOUNTS',
+      ],
+      limit=1,
+    )
 
     if not changes:
       raise api.step.InfraFailure(
-          'Error querying for CL details: host:%r change:%r; patchset:%r' %
-          (api.tryserver.gerrit_change.host, api.tryserver.gerrit_change.change,
-           api.tryserver.gerrit_change.patchset))
+        'Error querying for CL details: host:%r change:%r; patchset:%r'
+        % (
+          api.tryserver.gerrit_change.host,
+          api.tryserver.gerrit_change.change,
+          api.tryserver.gerrit_change.patchset,
+        )
+      )
 
     change = changes[0]
 
@@ -102,18 +108,22 @@ def _RunUntracedMemberAnalyzer(api: DEPS, src_dir, affected):
           with api.step.nest('generate_tricium_comment'):
             category = 'Oilpan'
             oilpan_email = 'oilpan-reviews@chromium.org'
-            message = 'Please CC {0} if you are adding new UntracedMember.' \
-                      .format(oilpan_email)
+            message = (
+              'Please CC {0} if you are adding new UntracedMember.'.format(
+                oilpan_email
+              )
+            )
             src_dir = api.chromium_checkout.source_dir
             relpath = api.path.relpath(path, start=src_dir)
             api.tricium.add_comment(
-                category,
-                message,
-                relpath,
-                start_line=(line + 1),
-                end_line=(line + 1),
-                start_char=pos,
-                end_char=(pos + len(target)))
+              category,
+              message,
+              relpath,
+              start_line=(line + 1),
+              end_line=(line + 1),
+              start_char=pos,
+              end_char=(pos + len(target)),
+            )
           # Providing just one comment is enough to get author's attention.
           return
 
@@ -145,14 +155,15 @@ def RunSteps(api: DEPS):
     with api.context(cwd=src_dir):
       src_file_suffixes = {'.cc', '.cpp', '.cxx', '.c', '.h', '.hpp'}
       affected = [
-          src_dir / f
-          for f in api.chromium_checkout.get_files_affected_by_patch()
-          if api.path.exists(src_dir /
-                             f) and api.path.splitext(f)[1] in src_file_suffixes
+        src_dir / f
+        for f in api.chromium_checkout.get_files_affected_by_patch()
+        if api.path.exists(src_dir / f)
+        and api.path.splitext(f)[1] in src_file_suffixes
       ]
       if not affected:
         api.step.empty(
-            'no_cc_files_changed', step_text='No C/C++ files changed')
+          'no_cc_files_changed', step_text='No C/C++ files changed'
+        )
         return
 
       with api.step.nest('oilpan_analyzer'):
@@ -163,114 +174,136 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
 
-  def build_with_patch(affected_files,
-                       cc,
-                       fake_file_content='',
-                       is_revert=False):
+  def build_with_patch(
+    affected_files, cc, fake_file_content='', is_revert=False
+  ):
     subject = 'Revert foo' if is_revert else 'foo'
     subject += '\nTriciumTest'
-    test_data = sum([
+    test_data = sum(
+      [
         api.chromium.try_build(),
         api.platform('linux', 64),
         api.override_step_data(
-            'gerrit changes',
-            api.json.output([{
+          'gerrit changes',
+          api.json.output(
+            [
+              {
                 'subject': subject,
                 'reviewers': {
-                    'REVIEWER': [{
-                        "_account_id": 1227909,
-                        'name': 'Yuki Yamada',
-                        'email': 'yukiy@chromium.org'
-                    }],
-                    'CC': cc
-                }
-            }])),
-    ], api.empty_test_data())
+                  'REVIEWER': [
+                    {
+                      "_account_id": 1227909,
+                      'name': 'Yuki Yamada',
+                      'email': 'yukiy@chromium.org',
+                    }
+                  ],
+                  'CC': cc,
+                },
+              }
+            ]
+          ),
+        ),
+      ],
+      api.empty_test_data(),
+    )
 
     if affected_files:
-      test_data += api.path.exists(*[
+      test_data += api.path.exists(
+        *[
           api.path.cache_dir.joinpath('builder', 'src', x)
           for x in affected_files
-      ])
+        ]
+      )
       test_data += api.step_data(
-          'git diff to analyze patch',
-          api.raw_io.stream_output('\n'.join(affected_files)))
+        'git diff to analyze patch',
+        api.raw_io.stream_output('\n'.join(affected_files)),
+      )
 
     if fake_file_content:
-      test_data += api.step_data('oilpan_analyzer.untraced_member.read_file',
-                                 api.file.read_text(fake_file_content))
+      test_data += api.step_data(
+        'oilpan_analyzer.untraced_member.read_file',
+        api.file.read_text(fake_file_content),
+      )
 
     return test_data
 
   yield api.test(
-      'infra_failure',
-      build_with_patch(affected_files=[], cc=[]),
-      api.override_step_data('gerrit changes', api.json.output([])),
-      api.post_process(post_process.DoesNotRun,
-                       'oilpan_analyzer.untraced_member'),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'infra_failure',
+    build_with_patch(affected_files=[], cc=[]),
+    api.override_step_data('gerrit changes', api.json.output([])),
+    api.post_process(
+      post_process.DoesNotRun, 'oilpan_analyzer.untraced_member'
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'skip_reverted_cl',
-      build_with_patch(affected_files=[], cc=[], is_revert=True),
-      api.post_process(post_process.DoesNotRun,
-                       'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.DropExpectation),
+    'skip_reverted_cl',
+    build_with_patch(affected_files=[], cc=[], is_revert=True),
+    api.post_process(
+      post_process.DoesNotRun, 'oilpan_analyzer.untraced_member'
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'already_in_cc',
-      build_with_patch(
-          affected_files=[], cc=[{
-              'email': 'oilpan-reviews@chromium.org'
-          }]),
-      api.post_process(post_process.DoesNotRun,
-                       'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StepSuccess, 'already_in_cc'),
-      api.post_process(post_process.DropExpectation),
+    'already_in_cc',
+    build_with_patch(
+      affected_files=[], cc=[{'email': 'oilpan-reviews@chromium.org'}]
+    ),
+    api.post_process(
+      post_process.DoesNotRun, 'oilpan_analyzer.untraced_member'
+    ),
+    api.post_process(post_process.StepSuccess, 'already_in_cc'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no_files',
-      build_with_patch(affected_files=[], cc=[]),
-      api.post_process(post_process.DoesNotRun,
-                       'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
-      api.post_process(post_process.DropExpectation),
+    'no_files',
+    build_with_patch(affected_files=[], cc=[]),
+    api.post_process(
+      post_process.DoesNotRun, 'oilpan_analyzer.untraced_member'
+    ),
+    api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no_cc_files',
-      build_with_patch(affected_files=['path/to/some/file.txt'], cc=[]),
-      api.post_process(post_process.DoesNotRun,
-                       'oilpan_analyzer.untraced_member'),
-      api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
-      api.post_process(post_process.DropExpectation),
+    'no_cc_files',
+    build_with_patch(affected_files=['path/to/some/file.txt'], cc=[]),
+    api.post_process(
+      post_process.DoesNotRun, 'oilpan_analyzer.untraced_member'
+    ),
+    api.post_process(post_process.StepSuccess, 'no_cc_files_changed'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'not_adding_untraced_member',
-      build_with_patch(
-          affected_files=['path/to/some/file.cc'],
-          cc=[],
-          fake_file_content='aaa\nbbb'),
-      api.post_process(post_process.MustRun, 'oilpan_analyzer.untraced_member'),
-      api.post_process(
-          post_process.DoesNotRun,
-          'oilpan_analyzer.untraced_member.generate_tricium_comment'),
-      api.post_process(post_process.DropExpectation),
+    'not_adding_untraced_member',
+    build_with_patch(
+      affected_files=['path/to/some/file.cc'],
+      cc=[],
+      fake_file_content='aaa\nbbb',
+    ),
+    api.post_process(post_process.MustRun, 'oilpan_analyzer.untraced_member'),
+    api.post_process(
+      post_process.DoesNotRun,
+      'oilpan_analyzer.untraced_member.generate_tricium_comment',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'adding_untraced_member_without_oilpan_reviews',
-      build_with_patch(
-          affected_files=['add_untraced_member.cc'],
-          cc=[],
-          fake_file_content='aaa\nbbb\nUntracedMember'),
-      api.post_process(
-          post_process.MustRun,
-          'oilpan_analyzer.untraced_member.generate_tricium_comment'),
-      api.post_process(post_process.DropExpectation),
+    'adding_untraced_member_without_oilpan_reviews',
+    build_with_patch(
+      affected_files=['add_untraced_member.cc'],
+      cc=[],
+      fake_file_content='aaa\nbbb\nUntracedMember',
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'oilpan_analyzer.untraced_member.generate_tricium_comment',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

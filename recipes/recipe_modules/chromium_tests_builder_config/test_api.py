@@ -11,18 +11,27 @@ from recipe_engine import recipe_test_api
 from RECIPE_MODULES.build.attr_utils import attrs, attrib, enum
 from RECIPE_MODULES.build.chromium_types import BuilderId
 
-from PB.go.chromium.org.luci.buildbucket.proto \
-  import builder_common as builder_common_pb
-from PB.recipe_modules.build.chromium_tests_builder_config import (properties as
-                                                                   properties_pb
-                                                                  )
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builder_common as builder_common_pb,
+)
+from PB.recipe_modules.build.chromium_tests_builder_config import (
+  properties as properties_pb,
+)
 
-from . import (builders, trybots, BuilderConfig, BuilderDatabase, BuilderSpec,
-               TryDatabase, ALWAYS, NEVER)
+from . import (
+  builders,
+  trybots,
+  BuilderConfig,
+  BuilderDatabase,
+  BuilderSpec,
+  TryDatabase,
+  ALWAYS,
+  NEVER,
+)
 
 _DEFAULT_SPEC = BuilderSpec.create(
-    gclient_config='chromium',
-    chromium_config='chromium',
+  gclient_config='chromium',
+  chromium_config='chromium',
 )
 
 _ExecutionMode = properties_pb.BuilderSpec.ExecutionMode
@@ -53,9 +62,10 @@ class BuilderDetails:
   builder_spec = attrib(BuilderSpec, default=_DEFAULT_SPEC)
 
   def __attrs_post_init__(self):
-    assert (self.builder_spec.chromium_config is not None and
-            self.builder_spec.gclient_config is not None
-           ), 'builder_spec must set both chromium_config and gclient_config'
+    assert (
+      self.builder_spec.chromium_config is not None
+      and self.builder_spec.gclient_config is not None
+    ), 'builder_spec must set both chromium_config and gclient_config'
 
   # Private fields, controlled by the properties assemblers and cannot be
   # set by the caller
@@ -64,7 +74,6 @@ class BuilderDetails:
 
 
 class _PropertiesAssembler:
-
   def __init__(self):
     self._builder_entries = []
     self._builder_ids = []
@@ -73,29 +82,32 @@ class _PropertiesAssembler:
 
   def assemble(self, **kwargs):
     return properties_pb.InputProperties(
-        builder_config=properties_pb.BuilderConfig(
-            builder_db=properties_pb.BuilderDatabase(
-                entries=self._builder_entries),
-            builder_ids=self._builder_ids,
-            builder_ids_in_scope_for_testing=(
-                self._builder_ids_in_scope_for_testing),
-            targets_spec_directory=self._targets_spec_directory,
-            **kwargs))
+      builder_config=properties_pb.BuilderConfig(
+        builder_db=properties_pb.BuilderDatabase(entries=self._builder_entries),
+        builder_ids=self._builder_ids,
+        builder_ids_in_scope_for_testing=(
+          self._builder_ids_in_scope_for_testing
+        ),
+        targets_spec_directory=self._targets_spec_directory,
+        **kwargs,
+      )
+    )
 
   def add_builder(self, details):
     builder_id = builder_common_pb.BuilderID(
-        project=details.project,
-        bucket=details.bucket,
-        builder=details.builder,
+      project=details.project,
+      bucket=details.bucket,
+      builder=details.builder,
     )
 
     builder_spec = self._get_builder_spec(details)
 
     self._builder_entries.append(
-        properties_pb.BuilderDatabase.Entry(
-            builder_id=builder_id,
-            builder_spec=builder_spec,
-        ))
+      properties_pb.BuilderDatabase.Entry(
+        builder_id=builder_id,
+        builder_spec=builder_spec,
+      )
+    )
 
     return builder_id
 
@@ -112,71 +124,56 @@ class _PropertiesAssembler:
     builder_spec = details.builder_spec
 
     kwargs = {
-        'builder_group':
-            details.builder_group,
-        'execution_mode':
-            details.execution_mode,
-        'parent':
-            details.parent,
-        'legacy_gclient_config':
-            self._get_legacy_gclient_config(builder_spec),
-        'legacy_chromium_config':
-            self._get_legacy_chromium_config(builder_spec),
-        'legacy_android_config':
-            self._get_legacy_android_config(builder_spec),
-        'android_version_file':
-            builder_spec.android_version,
-        'clobber':
-            builder_spec.clobber,
-        'no_history':
-            builder_spec.no_history,
-        'shallow':
-            builder_spec.shallow,
-        'mb_phase_for_tests':
-            builder_spec.mb_phase_for_tests,
-        'run_tests_serially':
-            builder_spec.serialize_tests,
-        'expose_trigger_properties':
-            builder_spec.expose_trigger_properties,
-        'skylab_upload_location':
-            self._get_skylab_upload_location(builder_spec),
-        'clusterfuzz_archive':
-            self._get_clusterfuzz_archive(builder_spec),
-        'perf_isolate_upload':
-            builder_spec.perf_isolate_upload,
+      'builder_group': details.builder_group,
+      'execution_mode': details.execution_mode,
+      'parent': details.parent,
+      'legacy_gclient_config': self._get_legacy_gclient_config(builder_spec),
+      'legacy_chromium_config': self._get_legacy_chromium_config(builder_spec),
+      'legacy_android_config': self._get_legacy_android_config(builder_spec),
+      'android_version_file': builder_spec.android_version,
+      'clobber': builder_spec.clobber,
+      'no_history': builder_spec.no_history,
+      'shallow': builder_spec.shallow,
+      'mb_phase_for_tests': builder_spec.mb_phase_for_tests,
+      'run_tests_serially': builder_spec.serialize_tests,
+      'expose_trigger_properties': builder_spec.expose_trigger_properties,
+      'skylab_upload_location': self._get_skylab_upload_location(builder_spec),
+      'clusterfuzz_archive': self._get_clusterfuzz_archive(builder_spec),
+      'perf_isolate_upload': builder_spec.perf_isolate_upload,
     }
 
     return properties_pb.BuilderSpec(
-        **{k: v for k, v in kwargs.items() if v is not None})
+      **{k: v for k, v in kwargs.items() if v is not None}
+    )
 
   @staticmethod
   def _get_legacy_gclient_config(builder_spec):
     return properties_pb.BuilderSpec.LegacyGclientRecipeModuleConfig(
-        config=builder_spec.gclient_config,
-        apply_configs=builder_spec.gclient_apply_config,
+      config=builder_spec.gclient_config,
+      apply_configs=builder_spec.gclient_apply_config,
     )
 
   @staticmethod
   def _get_legacy_chromium_config(builder_spec):
     kwargs = {
-        'config': builder_spec.chromium_config,
-        'apply_configs': builder_spec.chromium_apply_config,
+      'config': builder_spec.chromium_config,
+      'apply_configs': builder_spec.chromium_apply_config,
     }
     for a in (
-        'BUILD_CONFIG',
-        'HOST_PLATFORM',
-        'TARGET_ARCH',
-        'TARGET_BITS',
-        'TARGET_PLATFORM',
+      'BUILD_CONFIG',
+      'HOST_PLATFORM',
+      'TARGET_ARCH',
+      'TARGET_BITS',
+      'TARGET_PLATFORM',
     ):
       if a in builder_spec.chromium_config_kwargs:
-        kwargs[a.lower()] = (builder_spec.chromium_config_kwargs[a])
+        kwargs[a.lower()] = builder_spec.chromium_config_kwargs[a]
     for a in (
-        'TARGET_CROS_BOARDS',
-        'CROS_BOARDS_WITH_QEMU_IMAGES',
+      'TARGET_CROS_BOARDS',
+      'CROS_BOARDS_WITH_QEMU_IMAGES',
     ):
       if a in builder_spec.chromium_config_kwargs:
-        kwargs[a.lower()] = (builder_spec.chromium_config_kwargs[a].split(':'))
+        kwargs[a.lower()] = builder_spec.chromium_config_kwargs[a].split(':')
     return properties_pb.BuilderSpec.LegacyChromiumRecipeModuleConfig(**kwargs)
 
   @staticmethod
@@ -193,9 +190,9 @@ class _PropertiesAssembler:
   @staticmethod
   def _get_skylab_upload_location(builder_spec):
     kwargs = {}
-    for (src, dst) in (
-        ('skylab_gs_bucket', 'gs_bucket'),
-        ('skylab_gs_extra', 'gs_extra'),
+    for src, dst in (
+      ('skylab_gs_bucket', 'gs_bucket'),
+      ('skylab_gs_extra', 'gs_extra'),
     ):
       val = getattr(builder_spec, src)
       if val is not None:
@@ -209,14 +206,14 @@ class _PropertiesAssembler:
     if not builder_spec.cf_archive_build:
       return None
     kwargs = {}
-    for (src, dst) in (
-        ('cf_gs_bucket', 'gs_bucket'),
-        ('cf_gs_acl', 'gs_acl'),
-        ('cf_archive_name', 'archive_name_prefix'),
-        ('cf_archive_path', 'archive_path'),
-        ('cf_use_archive_path', 'use_archive_path'),
-        ('cf_archive_subdir_suffix', 'archive_subdir'),
-        ('cf_archive_schema_version', 'archive_schema_version'),
+    for src, dst in (
+      ('cf_gs_bucket', 'gs_bucket'),
+      ('cf_gs_acl', 'gs_acl'),
+      ('cf_archive_name', 'archive_name_prefix'),
+      ('cf_archive_path', 'archive_path'),
+      ('cf_use_archive_path', 'use_archive_path'),
+      ('cf_archive_subdir_suffix', 'archive_subdir'),
+      ('cf_archive_schema_version', 'archive_schema_version'),
     ):
       val = getattr(builder_spec, src)
       if val is not None:
@@ -225,9 +222,9 @@ class _PropertiesAssembler:
 
 
 class _CiBuilderPropertiesAssembler:
-
-  def __init__(self, props_assembler, builder_id, builder_spec,
-               retry_failed_shards):
+  def __init__(
+    self, props_assembler, builder_id, builder_spec, retry_failed_shards
+  ):
     self._props_assembler = props_assembler
     self._builder_id = builder_id
     self._builder_spec = builder_spec
@@ -239,25 +236,30 @@ class _CiBuilderPropertiesAssembler:
     props_assembler = _PropertiesAssembler()
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(
-        execution_mode=_ExecutionMode.COMPILE_AND_TEST, parent=None, **kwargs)
+      execution_mode=_ExecutionMode.COMPILE_AND_TEST, parent=None, **kwargs
+    )
     builder_id = props_assembler.add_builder(details)
     props_assembler.add_builder_id(builder_id)
-    return cls(props_assembler, builder_id, details.builder_spec,
-               retry_failed_shards)
+    return cls(
+      props_assembler, builder_id, details.builder_spec, retry_failed_shards
+    )
 
   def with_tester(self, **kwargs):
     kwargs.setdefault('builder_spec', self._builder_spec)
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(
-        execution_mode=_ExecutionMode.TEST, parent=self._builder_id, **kwargs)
+      execution_mode=_ExecutionMode.TEST, parent=self._builder_id, **kwargs
+    )
     tester_id = self._props_assembler.add_builder(details)
     self._props_assembler.add_builder_id_in_scope_for_testing(tester_id)
     return self
 
   def with_mirroring_builder(self, builder_group, builder):
     self._mirroring_builders.append(
-        properties_pb.BuilderConfig.BuilderGroupAndName(
-            group=builder_group, builder=builder))
+      properties_pb.BuilderConfig.BuilderGroupAndName(
+        group=builder_group, builder=builder
+      )
+    )
     return self
 
   def with_targets_spec_directory(self, targets_spec_directory: str):
@@ -266,14 +268,19 @@ class _CiBuilderPropertiesAssembler:
 
   def assemble(self):
     return self._props_assembler.assemble(
-        mirroring_builder_group_and_names=self._mirroring_builders,
-        retry_failed_shards=self._retry_failed_shards)
+      mirroring_builder_group_and_names=self._mirroring_builders,
+      retry_failed_shards=self._retry_failed_shards,
+    )
 
 
 class _CiTesterPropertiesAssembler:
-
-  def __init__(self, props_assembler, tester_details, retry_failed_shards,
-               retry_invalid_shards):
+  def __init__(
+    self,
+    props_assembler,
+    tester_details,
+    retry_failed_shards,
+    retry_invalid_shards,
+  ):
     self._props_assembler = props_assembler
     self._tester_details = tester_details
     self._parent_details = None
@@ -281,16 +288,15 @@ class _CiTesterPropertiesAssembler:
     self._retry_invalid_shards = retry_invalid_shards
 
   @classmethod
-  def create(cls,
-             *,
-             retry_failed_shards=False,
-             retry_invalid_shards=False,
-             **kwargs):
+  def create(
+    cls, *, retry_failed_shards=False, retry_invalid_shards=False, **kwargs
+  ):
     props_assembler = _PropertiesAssembler()
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(execution_mode=_ExecutionMode.TEST, **kwargs)
-    return cls(props_assembler, details, retry_failed_shards,
-               retry_invalid_shards)
+    return cls(
+      props_assembler, details, retry_failed_shards, retry_invalid_shards
+    )
 
   def with_parent(self, **kwargs):
     if self._parent_details is not None:
@@ -299,7 +305,8 @@ class _CiTesterPropertiesAssembler:
     kwargs.setdefault('builder_spec', self._tester_details.builder_spec)
     kwargs.setdefault('bucket', 'ci')
     details = BuilderDetails(
-        execution_mode=_ExecutionMode.COMPILE_AND_TEST, **kwargs)
+      execution_mode=_ExecutionMode.COMPILE_AND_TEST, **kwargs
+    )
     builder_id = self._props_assembler.add_builder(details)
     self._parent_details = details
 
@@ -318,18 +325,18 @@ class _CiTesterPropertiesAssembler:
     if self._parent_details is None:
       raise TypeError('`with_parent` must be called before calling `assemble`')
     return self._props_assembler.assemble(
-        retry_failed_shards=self._retry_failed_shards,
-        retry_invalid_shards=self._retry_invalid_shards)
+      retry_failed_shards=self._retry_failed_shards,
+      retry_invalid_shards=self._retry_invalid_shards,
+    )
 
 
 _RTS_CONDITION_MAP = {
-    NEVER: properties_pb.BuilderConfig.RtsConfig.Condition.NEVER,
-    ALWAYS: properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS,
+  NEVER: properties_pb.BuilderConfig.RtsConfig.Condition.NEVER,
+  ALWAYS: properties_pb.BuilderConfig.RtsConfig.Condition.ALWAYS,
 }
 
 
 class _TryBuilderPropertiesAssembler:
-
   def __init__(self, props_assembler, builder_config_kwargs):
     self._props_assembler = props_assembler
     # ID and spec of the most recently added builder
@@ -338,13 +345,15 @@ class _TryBuilderPropertiesAssembler:
     self._builder_config_kwargs = builder_config_kwargs
 
   @classmethod
-  def create(cls,
-             is_compile_only=False,
-             analyze_names=None,
-             additional_exclusions=None,
-             retry_failed_shards=True,
-             retry_without_patch=True,
-             regression_test_selection=None):
+  def create(
+    cls,
+    is_compile_only=False,
+    analyze_names=None,
+    additional_exclusions=None,
+    retry_failed_shards=True,
+    retry_without_patch=True,
+    regression_test_selection=None,
+  ):
     props_assembler = _PropertiesAssembler()
 
     builder_config_kwargs = {}
@@ -360,7 +369,8 @@ class _TryBuilderPropertiesAssembler:
       builder_config_kwargs['retry_without_patch'] = False
     if regression_test_selection:
       rts_config = properties_pb.BuilderConfig.RtsConfig(
-          condition=_RTS_CONDITION_MAP[regression_test_selection])
+        condition=_RTS_CONDITION_MAP[regression_test_selection]
+      )
       builder_config_kwargs['rts_config'] = rts_config
 
     return cls(props_assembler, builder_config_kwargs)
@@ -369,7 +379,8 @@ class _TryBuilderPropertiesAssembler:
     kwargs.setdefault('bucket', 'ci')
     kwargs.setdefault('builder_spec', self._builder_spec)
     details = BuilderDetails(
-        execution_mode=_ExecutionMode.COMPILE_AND_TEST, parent=None, **kwargs)
+      execution_mode=_ExecutionMode.COMPILE_AND_TEST, parent=None, **kwargs
+    )
 
     builder_id = self._props_assembler.add_builder(details)
     self._props_assembler.add_builder_id(builder_id)
@@ -381,13 +392,16 @@ class _TryBuilderPropertiesAssembler:
 
   def with_mirrored_tester(self, **kwargs):
     if self._builder_id is None:
-      raise TypeError('`with_mirrored_builder` must be called'
-                      ' before calling `with_mirrored_tester`')
+      raise TypeError(
+        '`with_mirrored_builder` must be called'
+        ' before calling `with_mirrored_tester`'
+      )
 
     kwargs.setdefault('bucket', 'ci')
     kwargs.setdefault('builder_spec', self._builder_spec)
     details = BuilderDetails(
-        execution_mode=_ExecutionMode.TEST, parent=self._builder_id, **kwargs)
+      execution_mode=_ExecutionMode.TEST, parent=self._builder_id, **kwargs
+    )
 
     tester_id = self._props_assembler.add_builder(details)
     self._props_assembler.add_builder_id_in_scope_for_testing(tester_id)
@@ -401,16 +415,17 @@ class _TryBuilderPropertiesAssembler:
   def assemble(self):
     if self._builder_id is None:
       raise TypeError(
-          '`with_mirrored_builder` must be called before calling `assemble`')
+        '`with_mirrored_builder` must be called before calling `assemble`'
+      )
     return self._props_assembler.assemble(**self._builder_config_kwargs)
 
 
 class ChromiumTestsBuilderConfigApi(recipe_test_api.RecipeTestApi):
-
   def properties(self, properties):
     assert isinstance(properties, properties_pb.InputProperties)
     return self.m.properties(
-        **{'$build/chromium_tests_builder_config': properties})
+      **{'$build/chromium_tests_builder_config': properties}
+    )
 
   @staticmethod
   def properties_assembler_for_ci_builder(**kwargs):
@@ -482,13 +497,14 @@ class ChromiumTestsBuilderConfigApi(recipe_test_api.RecipeTestApi):
       builder_db = kwargs.pop('builder_db')
       if use_try_db:
         assert 'try_db' in kwargs, (
-            'If using try_db, '
-            'try_db must be specified when specifying builder_db')
+          'If using try_db, try_db must be specified when specifying builder_db'
+        )
       try_db = kwargs.pop('try_db', None) or TryDatabase.create({})
 
     else:
       assert not 'try_db' in kwargs, (
-          'Cannot specify try_db without specifying builder_db')
+        'Cannot specify try_db without specifying builder_db'
+      )
       builder_db = builders.BUILDERS
       try_db = trybots.TRYBOTS
 
@@ -500,20 +516,23 @@ class ChromiumTestsBuilderConfigApi(recipe_test_api.RecipeTestApi):
     builder_id = self._get_builder_id(**kwargs)
     builder_db, try_db, use_try_db, kwargs = self._get_databases(**kwargs)
 
-    builder_config = BuilderConfig.lookup(builder_id, builder_db,
-                                          try_db if use_try_db else None)
+    builder_config = BuilderConfig.lookup(
+      builder_id, builder_db, try_db if use_try_db else None
+    )
 
     test_data = sum(
-        [
-            self.databases(builder_db, try_db),
-            self.m.platform(
-                # For some reason, pylint doesn't think BuilderConfig has these
-                # attributes
-                # pylint: disable=no-member
-                builder_config.simulation_platform or 'linux',
-                builder_config.chromium_config_kwargs.get('TARGET_BITS', 64)),
-        ],
-        self.empty_test_data())
+      [
+        self.databases(builder_db, try_db),
+        self.m.platform(
+          # For some reason, pylint doesn't think BuilderConfig has these
+          # attributes
+          # pylint: disable=no-member
+          builder_config.simulation_platform or 'linux',
+          builder_config.chromium_config_kwargs.get('TARGET_BITS', 64),
+        ),
+      ],
+      self.empty_test_data(),
+    )
 
     return test_data, kwargs
 

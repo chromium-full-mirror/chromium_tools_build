@@ -67,7 +67,7 @@ def parse_added_line_num_from_unified_diff(diff_lines):
 
     # E.g. '+++ b/test_file.txt'
     if line.startswith('+++ b/'):
-      current_file = line[len('+++ b/'):]
+      current_file = line[len('+++ b/') :]
       current_base_line_num = None
       current_offset = None
       continue
@@ -81,8 +81,9 @@ def parse_added_line_num_from_unified_diff(diff_lines):
       matched = _DIFF_RANGE_HEADER_REGEX.match(line)
       if not matched:
         raise RuntimeError(
-            'This script doesn\'t understand the diff section header: "%s".' %
-            line)
+          'This script doesn\'t understand the diff section header: "%s".'
+          % line
+        )
 
       current_base_line_num = int(matched.group(3))
       current_offset = 0
@@ -123,16 +124,22 @@ def generate_line_number_mapping(diff_lines, from_file_lines, to_file_lines):
   from_file_lines.insert(0, 'Manually padded line')
   to_file_lines.insert(0, 'Manually padded line')
 
-  def _verify_and_add_unchanged_line(from_file_line_num, from_file_lines,
-                                     to_file_line_num, to_file_lines,
-                                     line_num_mapping):
+  def _verify_and_add_unchanged_line(
+    from_file_line_num,
+    from_file_lines,
+    to_file_line_num,
+    to_file_lines,
+    line_num_mapping,
+  ):
     from_file_line = from_file_lines[from_file_line_num]
     to_file_line = to_file_lines[to_file_line_num]
     try:
       assert from_file_line == to_file_line
     except AssertionError:
-      logging.error('Unexpected line difference between %s and %s' %
-                    (from_file_line, to_file_line))
+      logging.error(
+        'Unexpected line difference between %s and %s'
+        % (from_file_line, to_file_line)
+      )
       logging.error(diff_lines)
       raise
     line_num_mapping[from_file_line_num] = (to_file_line_num, to_file_line)
@@ -143,7 +150,8 @@ def generate_line_number_mapping(diff_lines, from_file_lines, to_file_lines):
   for line in diff_lines:
     # E.g. '--- file1.txt 2019-02-02 17:51:49.000000000 -0800'
     if line.startswith(_DIFF_FROM_FILE_PREFIX) or line.startswith(
-        _DIFF_TO_FILE_PREFIX):
+      _DIFF_TO_FILE_PREFIX
+    ):
       continue
 
     # E.g. '@@ -1,3 +1,3 @@''
@@ -151,18 +159,24 @@ def generate_line_number_mapping(diff_lines, from_file_lines, to_file_lines):
       matched = _DIFF_RANGE_HEADER_REGEX.match(line)
       if not matched:
         raise RuntimeError(
-            'This script doesn\'t understand the diff section header: "%s".' %
-            line)
+          'This script doesn\'t understand the diff section header: "%s".'
+          % line
+        )
 
       from_file_diff_section_line_num = int(matched.group(1))
       to_file_diff_section_line_num = int(matched.group(3))
-      assert (from_file_diff_section_line_num -
-              from_file_line_num == to_file_diff_section_line_num -
-              to_file_line_num), 'Inconsistent number of unchanged lines'
+      assert (
+        from_file_diff_section_line_num - from_file_line_num
+        == to_file_diff_section_line_num - to_file_line_num
+      ), 'Inconsistent number of unchanged lines'
       while from_file_line_num < from_file_diff_section_line_num:
-        _verify_and_add_unchanged_line(from_file_line_num, from_file_lines,
-                                       to_file_line_num, to_file_lines,
-                                       line_num_mapping)
+        _verify_and_add_unchanged_line(
+          from_file_line_num,
+          from_file_lines,
+          to_file_line_num,
+          to_file_lines,
+          line_num_mapping,
+        )
         from_file_line_num += 1
         to_file_line_num += 1
 
@@ -170,9 +184,13 @@ def generate_line_number_mapping(diff_lines, from_file_lines, to_file_lines):
 
     # E.g. ' unchanged line'.
     if line.startswith(_DIFF_WHITESPACE_LINE_PREFIX):
-      _verify_and_add_unchanged_line(from_file_line_num, from_file_lines,
-                                     to_file_line_num, to_file_lines,
-                                     line_num_mapping)
+      _verify_and_add_unchanged_line(
+        from_file_line_num,
+        from_file_lines,
+        to_file_line_num,
+        to_file_lines,
+        line_num_mapping,
+      )
       from_file_line_num += 1
       to_file_line_num += 1
       continue
@@ -187,17 +205,24 @@ def generate_line_number_mapping(diff_lines, from_file_lines, to_file_lines):
       to_file_line_num += 1
       continue
 
-  assert (len(from_file_lines) - from_file_line_num == len(to_file_lines) -
-          to_file_line_num
-         ), 'Inconsistent number of unchanged lines at the end of the files'
+  assert (
+    len(from_file_lines) - from_file_line_num
+    == len(to_file_lines) - to_file_line_num
+  ), 'Inconsistent number of unchanged lines at the end of the files'
   while from_file_line_num < len(from_file_lines):
-    _verify_and_add_unchanged_line(from_file_line_num, from_file_lines,
-                                   to_file_line_num, to_file_lines,
-                                   line_num_mapping)
+    _verify_and_add_unchanged_line(
+      from_file_line_num,
+      from_file_lines,
+      to_file_line_num,
+      to_file_lines,
+      line_num_mapping,
+    )
     from_file_line_num += 1
     to_file_line_num += 1
 
   assert 0 in line_num_mapping and line_num_mapping[0] == (
-      0, 'Manually padded line'), 'A manually padded line is expected to exist'
+    0,
+    'Manually padded line',
+  ), 'A manually padded line is expected to exist'
   del line_num_mapping[0]
   return line_num_mapping

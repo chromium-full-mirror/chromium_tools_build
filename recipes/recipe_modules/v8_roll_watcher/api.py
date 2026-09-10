@@ -15,7 +15,6 @@ from PB.recipe_engine.result import RawResult
 
 
 class V8RollWatcherApi(recipe_api.RecipeApi):
-
   def process_rollers(self, roller_configs):
     rollers = [commons.Roller(r, self.m) for r in roller_configs]
     with self.m.depot_tools.on_path():
@@ -48,10 +47,10 @@ def run_failure_recovery(api, roller, cl):
 
 def find_recovery_fn(name):
   return {
-      'just_fail': commons.just_fail,
-      'just_pass': commons.just_pass,
-      'mark_as_reported': commons.mark_as_reported,
-      'try_update_screenshots': devtools_recovery.try_update_screenshots,
-      'apply_screenshot_patches': devtools_recovery.apply_screenshot_patches,
-      'test262_update_status_file': test262_recovery.test262_update_status_file,
+    'just_fail': commons.just_fail,
+    'just_pass': commons.just_pass,
+    'mark_as_reported': commons.mark_as_reported,
+    'try_update_screenshots': devtools_recovery.try_update_screenshots,
+    'apply_screenshot_patches': devtools_recovery.apply_screenshot_patches,
+    'test262_update_status_file': test262_recovery.test262_update_status_file,
   }[name]

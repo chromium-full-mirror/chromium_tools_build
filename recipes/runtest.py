@@ -38,11 +38,11 @@ sys.path.insert(0, os.path.abspath('src/tools/python'))
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(
-    0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'scripts'))
+  0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'scripts'))
 )
 sys.path.insert(
-    0,
-    THIS_DIR,
+  0,
+  THIS_DIR,
 )
 
 from common import chromium_utils
@@ -80,13 +80,15 @@ def _LaunchDBus():
   Returns:
     True if it actually spawned DBus.
   """
-  if (platform.uname()[0].lower() == 'linux' and
-      'DBUS_SESSION_BUS_ADDRESS' not in os.environ):
+  if (
+    platform.uname()[0].lower() == 'linux'
+    and 'DBUS_SESSION_BUS_ADDRESS' not in os.environ
+  ):
     try:
       print('DBUS_SESSION_BUS_ADDRESS env var not found, starting dbus-launch')
-      dbus_output = subprocess.check_output(['dbus-launch'],
-                                            universal_newlines=True
-                                           ).split('\n')
+      dbus_output = subprocess.check_output(
+        ['dbus-launch'], universal_newlines=True
+      ).split('\n')
       for line in dbus_output:
         m = re.match(r'([^=]+)\=(.+)', line)
         if m:
@@ -125,7 +127,7 @@ def _ShutdownDBus():
 
 
 def _RunGTestCommand(
-    options, command, extra_env, log_processor=None, pipes=None
+  options, command, extra_env, log_processor=None, pipes=None
 ):
   """Runs a test, printing and possibly processing the output.
 
@@ -156,7 +158,7 @@ def _RunGTestCommand(
   parser_func = log_processor.ProcessLine if log_processor else None
 
   result = chromium_utils.RunCommand(
-      command, pipes=pipes, parser_func=parser_func, env=env
+    command, pipes=pipes, parser_func=parser_func, env=env
   )
 
   return result
@@ -173,7 +175,7 @@ def _BuildTestBinaryCommand(test_exe_path, options):
     A command, represented as a list of command parts.
   """
   command = [
-      test_exe_path,
+    test_exe_path,
   ]
 
   if options.parse_gtest_output:
@@ -213,14 +215,14 @@ def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
   """
   run_isolated_test = os.path.join(BASE_DIR, 'runisolatedtest.py')
   isolate_command = [
-      sys.executable,
-      run_isolated_test,
-      '--test_name',
-      options.test_type,
-      '--builder_name',
-      options.builder_name,
-      '--checkout_dir',
-      os.path.dirname(os.path.dirname(os.path.dirname(build_dir))),
+    sys.executable,
+    run_isolated_test,
+    '--test_name',
+    options.test_type,
+    '--builder_name',
+    options.builder_name,
+    '--checkout_dir',
+    os.path.dirname(os.path.dirname(os.path.dirname(build_dir))),
   ]
   isolate_command += [test_exe_path, '--'] + command
 
@@ -229,7 +231,7 @@ def _GenerateRunIsolatedCommand(build_dir, test_exe_path, options, command):
 
 def _GetSanitizerSymbolizeCommand(strip_path_prefix=None, json_file_name=None):
   script_path = os.path.abspath(
-      os.path.join('src', 'tools', 'valgrind', 'asan', 'asan_symbolize.py')
+    os.path.join('src', 'tools', 'valgrind', 'asan', 'asan_symbolize.py')
   )
   command = [sys.executable, script_path]
   if strip_path_prefix:
@@ -267,8 +269,11 @@ def _report_outcome(test_name, exit_code, log_processor):
   status = SUCCESS
 
   if exit_code == SUCCESS:
-    if (log_processor.ParsingErrors() or log_processor.FailedTests() or
-        log_processor.MemoryToolReportHashes()):
+    if (
+      log_processor.ParsingErrors()
+      or log_processor.FailedTests()
+      or log_processor.MemoryToolReportHashes()
+    ):
       status = WARNINGS
   elif exit_code == bot_utils.WARNING_EXIT_CODE:
     status = WARNINGS
@@ -319,13 +324,13 @@ def _MainMac(options, args, extra_env):
   try:
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output
+        options.test_launcher_summary_output
       )
       command.append('--test-launcher-summary-output=%s' % json_file_name)
     elif options.test_launcher_summary_output:
       command.append(
-          '--test-launcher-summary-output=%s' %
-          (options.test_launcher_summary_output)
+        '--test-launcher-summary-output=%s'
+        % (options.test_launcher_summary_output)
       )
 
     pipes = []
@@ -333,10 +338,10 @@ def _MainMac(options, args, extra_env):
       pipes = [_GetSanitizerSymbolizeCommand()]
 
     command = _GenerateRunIsolatedCommand(
-        build_dir, test_exe_path, options, command
+      build_dir, test_exe_path, options, command
     )
     result = _RunGTestCommand(
-        options, command, extra_env, pipes=pipes, log_processor=log_processor
+      options, command, extra_env, pipes=pipes, log_processor=log_processor
     )
   finally:
     if _UsingGtestJson(options):
@@ -383,8 +388,8 @@ def _MainIOS(options, args, extra_env):
     # on the iphone simulator.
     test_name = args[0]
     print(
-        'Can\'t parse test name, device, and iOS version. '
-        'Running %s on %s %s' % (test_name, device, ios_version)
+      'Can\'t parse test name, device, and iOS version. '
+      'Running %s on %s %s' % (test_name, device, ios_version)
     )
 
   # Build the args for invoking iossim, which will install the app on the
@@ -395,8 +400,17 @@ def _MainIOS(options, args, extra_env):
   test_exe_path = os.path.join(build_dir, 'iossim')
   tmpdir = tempfile.mkdtemp()
   command = [
-      test_exe_path, '-d', device, '-s', ios_version, '-t', '120', '-u', tmpdir,
-      app_exe_path, '--'
+    test_exe_path,
+    '-d',
+    device,
+    '-s',
+    ios_version,
+    '-t',
+    '120',
+    '-u',
+    tmpdir,
+    app_exe_path,
+    '--',
   ]
   command.extend(args[1:])
 
@@ -481,8 +495,11 @@ def _MainLinux(options, args, extra_env):
     # a lot of incomplete stack traces in the reports.
     extra_env['LD_LIBRARY_PATH'] += '/usr/lib/x86_64-linux-gnu/debug:'
 
-  extra_env['LD_LIBRARY_PATH'
-           ] += '%s:%s/lib:%s/lib.target' % (build_dir, build_dir, build_dir)
+  extra_env['LD_LIBRARY_PATH'] += '%s:%s/lib:%s/lib.target' % (
+    build_dir,
+    build_dir,
+    build_dir,
+  )
 
   if options.run_python_script:
     command = [sys.executable, test_exe]
@@ -501,36 +518,37 @@ def _MainLinux(options, args, extra_env):
     # for these two steps. See
     # https://code.google.com/p/chromium/issues/detail?id=179814
     start_xvfb = (
-        options.xvfb or 'layout_test_wrapper' in test_exe or
-        'devtools_perf_test_wrapper' in test_exe
+      options.xvfb
+      or 'layout_test_wrapper' in test_exe
+      or 'devtools_perf_test_wrapper' in test_exe
     )
     if start_xvfb:
       xvfb.StartVirtualX(build_dir)
 
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output
+        options.test_launcher_summary_output
       )
       command.append('--test-launcher-summary-output=%s' % json_file_name)
     elif options.test_launcher_summary_output:
       command.append(
-          '--test-launcher-summary-output=%s' %
-          (options.test_launcher_summary_output)
+        '--test-launcher-summary-output=%s'
+        % (options.test_launcher_summary_output)
       )
 
     pipes = []
     # See the comment in main() regarding offline symbolization.
     if options.use_symbolization_script:
       symbolize_command = _GetSanitizerSymbolizeCommand(
-          strip_path_prefix=options.strip_path_prefix
+        strip_path_prefix=options.strip_path_prefix
       )
       pipes = [symbolize_command]
 
     command = _GenerateRunIsolatedCommand(
-        build_dir, test_exe_path, options, command
+      build_dir, test_exe_path, options, command
     )
     result = _RunGTestCommand(
-        options, command, extra_env, pipes=pipes, log_processor=log_processor
+      options, command, extra_env, pipes=pipes, log_processor=log_processor
     )
   finally:
     if start_xvfb:
@@ -588,17 +606,17 @@ def _MainWin(options, args, extra_env):
   try:
     if _UsingGtestJson(options):
       json_file_name = log_processor.PrepareJSONFile(
-          options.test_launcher_summary_output
+        options.test_launcher_summary_output
       )
       command.append('--test-launcher-summary-output=%s' % json_file_name)
     elif options.test_launcher_summary_output:
       command.append(
-          '--test-launcher-summary-output=%s' %
-          (options.test_launcher_summary_output)
+        '--test-launcher-summary-output=%s'
+        % (options.test_launcher_summary_output)
       )
 
     command = _GenerateRunIsolatedCommand(
-        build_dir, test_exe_path, options, command
+      build_dir, test_exe_path, options, command
     )
     result = _RunGTestCommand(options, command, extra_env, log_processor)
   finally:
@@ -632,24 +650,31 @@ def _MainAndroid(options, args, extra_env):
     return _MainLinux(options, args, extra_env)
 
   raise Exception(
-      'runtest.py without --run-python-script not supported for '
-      'Android'
+    'runtest.py without --run-python-script not supported for Android'
   )
 
 
 def _ConfigureSanitizerTools(options, args, extra_env):
-  if (options.enable_asan or options.enable_tsan or options.enable_msan or
-      options.enable_lsan):
+  if (
+    options.enable_asan
+    or options.enable_tsan
+    or options.enable_msan
+    or options.enable_lsan
+  ):
     # Instruct GTK to use malloc while running ASan, TSan, MSan or LSan tests.
     extra_env['G_SLICE'] = 'always-malloc'
     extra_env['NSS_DISABLE_ARENA_FREE_LIST'] = '1'
     extra_env['NSS_DISABLE_UNLOAD'] = '1'
 
   symbolizer_path = os.path.abspath(
-      os.path.join(
-          'src', 'third_party', 'llvm-build', 'Release+Asserts', 'bin',
-          'llvm-symbolizer'
-      )
+    os.path.join(
+      'src',
+      'third_party',
+      'llvm-build',
+      'Release+Asserts',
+      'bin',
+      'llvm-symbolizer',
+    )
   )
   disable_sandbox_flag = '--no-sandbox'
   if args and 'layout_test_wrapper' in args[0]:
@@ -664,9 +689,9 @@ def _ConfigureSanitizerTools(options, args, extra_env):
     # symbolization. In fact, they need symbolization to be able to apply
     # suppressions.
     symbolization_options = [
-        'symbolize=1',
-        'external_symbolizer_path=%s' % symbolizer_path,
-        'strip_path_prefix=%s' % options.strip_path_prefix
+      'symbolize=1',
+      'external_symbolizer_path=%s' % symbolizer_path,
+      'strip_path_prefix=%s' % options.strip_path_prefix,
     ]
   elif options.enable_asan or options.enable_msan:
     # ASan and MSan use a script for offline symbolization.
@@ -734,94 +759,87 @@ def main():
 
   option_parser.add_option('--build-dir', help='Path to the build dir.')
   option_parser.add_option(
-      '--test-platform', help='Platform to test on, e.g. ios-simulator'
+    '--test-platform', help='Platform to test on, e.g. ios-simulator'
   )
   option_parser.add_option(
-      '--run-python-script',
-      action='store_true',
-      default=False,
-      help='treat first argument as a python script'
-      'to run.'
+    '--run-python-script',
+    action='store_true',
+    default=False,
+    help='treat first argument as a python scriptto run.',
   )
   option_parser.add_option(
-      '--xvfb',
-      action='store_true',
-      dest='xvfb',
-      default=True,
-      help='Start virtual X server on Linux.'
+    '--xvfb',
+    action='store_true',
+    dest='xvfb',
+    default=True,
+    help='Start virtual X server on Linux.',
   )
   option_parser.add_option(
-      '--no-xvfb',
-      action='store_false',
-      dest='xvfb',
-      help='Do not start virtual X server on Linux.'
+    '--no-xvfb',
+    action='store_false',
+    dest='xvfb',
+    help='Do not start virtual X server on Linux.',
   )
   option_parser.add_option(
-      '--builder-group',
-      default=None,
-      help='The group of the builder running this script.'
+    '--builder-group',
+    default=None,
+    help='The group of the builder running this script.',
   )
   option_parser.add_option(
-      '--builder-name',
-      default=None,
-      help='The name of the builder running this script.'
+    '--builder-name',
+    default=None,
+    help='The name of the builder running this script.',
   )
   option_parser.add_option(
-      '--build-number',
-      default=None,
-      help=('The build number of the builder running'
-            'this script.')
+    '--build-number',
+    default=None,
+    help=('The build number of the builder runningthis script.'),
   )
   option_parser.add_option(
-      '--test-type',
-      default='',
-      help='The test name that identifies the test, '
-      'e.g. \'unit-tests\''
+    '--test-type',
+    default='',
+    help='The test name that identifies the test, e.g. \'unit-tests\'',
   )
   option_parser.add_option(
-      '--parse-gtest-output',
-      default=False,
-      action='store_true',
-      help='Parse the gtest JSON output.'
+    '--parse-gtest-output',
+    default=False,
+    action='store_true',
+    help='Parse the gtest JSON output.',
   )
   option_parser.add_option(
-      '--enable-asan',
-      action='store_true',
-      default=False,
-      help='Enable fast memory error detection '
-      '(AddressSanitizer).'
+    '--enable-asan',
+    action='store_true',
+    default=False,
+    help='Enable fast memory error detection (AddressSanitizer).',
   )
   option_parser.add_option(
-      '--enable-lsan',
-      action='store_true',
-      default=False,
-      help='Enable memory leak detection (LeakSanitizer).'
+    '--enable-lsan',
+    action='store_true',
+    default=False,
+    help='Enable memory leak detection (LeakSanitizer).',
   )
   option_parser.add_option(
-      '--enable-msan',
-      action='store_true',
-      default=False,
-      help='Enable uninitialized memory reads detection '
-      '(MemorySanitizer).'
+    '--enable-msan',
+    action='store_true',
+    default=False,
+    help='Enable uninitialized memory reads detection (MemorySanitizer).',
   )
   option_parser.add_option(
-      '--enable-tsan',
-      action='store_true',
-      default=False,
-      help='Enable data race detection '
-      '(ThreadSanitizer).'
+    '--enable-tsan',
+    action='store_true',
+    default=False,
+    help='Enable data race detection (ThreadSanitizer).',
   )
   option_parser.add_option(
-      '--strip-path-prefix',
-      default='build/src/out/Release/../../',
-      help='Source paths in stack traces will be stripped '
-      'of prefixes ending with this substring. This '
-      'option is used by sanitizer tools.'
+    '--strip-path-prefix',
+    default='build/src/out/Release/../../',
+    help='Source paths in stack traces will be stripped '
+    'of prefixes ending with this substring. This '
+    'option is used by sanitizer tools.',
   )
   option_parser.add_option(
-      '--test-launcher-summary-output',
-      help='Path to test results file with all the info '
-      'from the test launcher'
+    '--test-launcher-summary-output',
+    help='Path to test results file with all the info from the test launcher',
   )
 
   options, args = option_parser.parse_args()
@@ -831,10 +849,9 @@ def main():
   # Initialize logging.
   log_level = logging.INFO
   logging.basicConfig(
-      level=log_level,
-      format='%(asctime)s %(filename)s:%(lineno)-3d'
-      ' %(levelname)s %(message)s',
-      datefmt='%y%m%d %H:%M:%S'
+    level=log_level,
+    format='%(asctime)s %(filename)s:%(lineno)-3d %(levelname)s %(message)s',
+    datefmt='%y%m%d %H:%M:%S',
   )
   logging.basicConfig(level=logging.DEBUG)
   logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
@@ -877,19 +894,19 @@ def main():
     new_temp_files = _GetTempCount()
     if temp_files > new_temp_files:
       print(
-          'Confused: %d files were deleted from %s during the test run' %
-          (temp_files - new_temp_files, tempfile.gettempdir()),
-          file=sys.stderr
+        'Confused: %d files were deleted from %s during the test run'
+        % (temp_files - new_temp_files, tempfile.gettempdir()),
+        file=sys.stderr,
       )
     elif temp_files < new_temp_files:
       print(
-          '%d new files were left in %s: Fix the tests to clean up themselves.'
-          % (new_temp_files - temp_files, tempfile.gettempdir()),
-          file=sys.stderr
+        '%d new files were left in %s: Fix the tests to clean up themselves.'
+        % (new_temp_files - temp_files, tempfile.gettempdir()),
+        file=sys.stderr,
       )
       # TODO(maruel): Make it an error soon. Not yet since I want to iron
       # out all the remaining cases before.
-      #result = 1
+      # result = 1
     return result
   finally:
     if did_launch_dbus:

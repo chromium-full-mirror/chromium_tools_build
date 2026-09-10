@@ -71,10 +71,10 @@ class UnionFind:
 
 def load_commit_data(input_dir: Path) -> list[dict]:
   """
-    Loads all commit data (message, files, lines) from JSON files in a directory.
-    Returns:
-        List of commit dictionaries with hash, message, files, date, author, metadata.
-    """
+  Loads all commit data (message, files, lines) from JSON files in a directory.
+  Returns:
+      List of commit dictionaries with hash, message, files, date, author, metadata.
+  """
   commit_data = []
   json_files = list(input_dir.rglob('*.json'))
   print(f"Found {len(json_files)} commit files to process.")
@@ -87,44 +87,48 @@ def load_commit_data(input_dir: Path) -> list[dict]:
       # Validate required fields
       if not all(key in data for key in ['message', 'files', 'date', 'author']):
         print(
-            f"Warning: {file_path} missing required fields. Skipping.",
-            file=sys.stderr)
+          f"Warning: {file_path} missing required fields. Skipping.",
+          file=sys.stderr,
+        )
         continue
 
       if not data['message']:
         print(
-            f"Warning: {file_path} has empty message. Skipping.",
-            file=sys.stderr)
+          f"Warning: {file_path} has empty message. Skipping.", file=sys.stderr
+        )
         continue
 
-      commit_data.append({
+      commit_data.append(
+        {
           "hash": file_path.stem,
           "message": data['message'],
           "files": data['files'],
           "date": data['date'],
           "author": data['author'],
-          "metadata": data.get('metadata', {})
-      })
+          "metadata": data.get('metadata', {}),
+        }
+      )
     except (json.JSONDecodeError, IOError) as e:
       print(
-          f"Warning: Could not read or parse {file_path}. Skipping. Error: {e}",
-          file=sys.stderr)
+        f"Warning: Could not read or parse {file_path}. Skipping. Error: {e}",
+        file=sys.stderr,
+      )
 
   return commit_data
 
 
 def pre_cluster_by_bug_id(all_commits: list[dict]) -> list[dict]:
   """
-    Groups commits that share common bug IDs into single documents.
+  Groups commits that share common bug IDs into single documents.
 
-    Uses Union-Find to efficiently group commits that share any bug IDs.
-    Each group becomes a single document for embedding.
+  Uses Union-Find to efficiently group commits that share any bug IDs.
+  Each group becomes a single document for embedding.
 
-    Returns:
-        List of document dictionaries, each containing:
-        - message: Concatenated messages for embedding
-        - commits: List of original commit objects
-    """
+  Returns:
+      List of document dictionaries, each containing:
+      - message: Concatenated messages for embedding
+      - commits: List of original commit objects
+  """
   print("Pre-clustering commits by shared bug IDs...")
 
   # Build a mapping from bug IDs to commit indices
@@ -158,26 +162,26 @@ def pre_cluster_by_bug_id(all_commits: list[dict]) -> list[dict]:
     # Concatenate messages for the embedding model
     concatenated_message = "\n---\n".join(c['message'] for c in group_commits)
 
-    output_documents.append({
-        "message": concatenated_message,
-        "commits": group_commits
-    })
+    output_documents.append(
+      {"message": concatenated_message, "commits": group_commits}
+    )
 
   print(
-      f"Pre-clustering reduced {len(all_commits)} commits to {len(output_documents)} documents."
+    f"Pre-clustering reduced {len(all_commits)} commits to {len(output_documents)} documents."
   )
   return output_documents
 
 
 def clean_commit_messages(documents: list[dict]) -> list[dict]:
   """
-    Removes common patterns from commit messages that don't add semantic value.
-    Patterns removed: "reason", "reverts", "revert", "relands", "reland", "reapply", "commit"
-    (case-insensitive)
-    """
+  Removes common patterns from commit messages that don't add semantic value.
+  Patterns removed: "reason", "reverts", "revert", "relands", "reland", "reapply", "commit"
+  (case-insensitive)
+  """
   print("Cleaning commit messages...")
-  pattern = re.compile(r"reason|reverts|revert|relands|reland|reapply|commit",
-                       re.IGNORECASE)
+  pattern = re.compile(
+    r"reason|reverts|revert|relands|reland|reapply|commit", re.IGNORECASE
+  )
 
   for doc in documents:
     doc['cleaned_message'] = pattern.sub("", doc['message'])
@@ -188,22 +192,26 @@ def clean_commit_messages(documents: list[dict]) -> list[dict]:
 def main():
   """Main function to orchestrate commit preparation."""
   parser = argparse.ArgumentParser(
-      description="Prepare and pre-cluster commit data for topic analysis.",
-      formatter_class=argparse.RawTextHelpFormatter)
+    description="Prepare and pre-cluster commit data for topic analysis.",
+    formatter_class=argparse.RawTextHelpFormatter,
+  )
   parser.add_argument(
-      "input_dir",
-      type=str,
-      help="Directory containing the commit detail JSON files.")
+    "input_dir",
+    type=str,
+    help="Directory containing the commit detail JSON files.",
+  )
   parser.add_argument(
-      "--output-file",
-      type=str,
-      required=True,
-      help="Path to save the prepared commits pickle file.")
+    "--output-file",
+    type=str,
+    required=True,
+    help="Path to save the prepared commits pickle file.",
+  )
   parser.add_argument(
-      "--limit",
-      type=int,
-      default=None,
-      help="Limit the number of commits to process (for testing).")
+    "--limit",
+    type=int,
+    default=None,
+    help="Limit the number of commits to process (for testing).",
+  )
 
   args = parser.parse_args()
 
@@ -211,12 +219,13 @@ def main():
   input_dir = Path(args.input_dir).resolve()
   if not input_dir.exists():
     print(
-        f"Error: Input directory '{input_dir}' does not exist.",
-        file=sys.stderr)
+      f"Error: Input directory '{input_dir}' does not exist.", file=sys.stderr
+    )
     sys.exit(1)
   if not input_dir.is_dir():
     print(
-        f"Error: Input path '{input_dir}' is not a directory.", file=sys.stderr)
+      f"Error: Input path '{input_dir}' is not a directory.", file=sys.stderr
+    )
     sys.exit(1)
 
   # Load commit data
@@ -233,7 +242,7 @@ def main():
   # Apply limit if specified
   if args.limit:
     print(f"Limiting to the {args.limit} most recent commits.")
-    all_commits = all_commits[:args.limit]
+    all_commits = all_commits[: args.limit]
 
   # Pre-cluster by bug ID
   documents = pre_cluster_by_bug_id(all_commits)
@@ -250,10 +259,10 @@ def main():
       pickle.dump(documents, f, protocol=pickle.HIGHEST_PROTOCOL)
 
     print(
-        f"\nSuccessfully saved {len(documents)} prepared documents to {output_path}"
+      f"\nSuccessfully saved {len(documents)} prepared documents to {output_path}"
     )
     print(
-        f"Total commits represented: {sum(len(doc['commits']) for doc in documents)}"
+      f"Total commits represented: {sum(len(doc['commits']) for doc in documents)}"
     )
 
   except IOError as e:

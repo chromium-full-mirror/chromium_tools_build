@@ -36,27 +36,37 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = source_dir / 'out/Release'
   api.chromium_android.run_test_suite(
-      source_dir, build_dir, 'test_suite', shard_timeout=1200)
+    source_dir, build_dir, 'test_suite', shard_timeout=1200
+  )
   api.chromium_android.run_test_suite(
-      source_dir,
-      build_dir,
-      'test_suite-with-rdb',
-      resultdb=ResultDB.create(enable=True))
+    source_dir,
+    build_dir,
+    'test_suite-with-rdb',
+    resultdb=ResultDB.create(enable=True),
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.try_build(),
-      api.post_process(StepCommandContains, 'test_suite', [
-          '-t',
-          '1200',
-      ]),
-      api.post_process(StepCommandContains, 'test_suite-with-rdb', [
-          'rdb',
-          'stream',
-          '-tag',
-          'step_name:test_suite-with-rdb',
-      ]),
-      api.post_process(DropExpectation),
+    'basic',
+    api.buildbucket.try_build(),
+    api.post_process(
+      StepCommandContains,
+      'test_suite',
+      [
+        '-t',
+        '1200',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'test_suite-with-rdb',
+      [
+        'rdb',
+        'stream',
+        '-tag',
+        'step_name:test_suite-with-rdb',
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

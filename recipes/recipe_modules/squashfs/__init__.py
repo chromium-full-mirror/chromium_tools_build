@@ -9,10 +9,10 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    path,
-    platform,
-    step,
+  cipd,
+  path,
+  platform,
+  step,
 )
 
 
@@ -22,5 +22,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   platform: platform.API
   step: step.API
+
 
 from .api import SquashfsApi as API

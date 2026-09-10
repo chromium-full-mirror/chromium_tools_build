@@ -16,23 +16,18 @@ def _migration_testing_spec(**kwargs):
 # These builders don't actually exist, the configs are created to provide a
 # known set of configs for integration testing the migration tracking scripts
 SPEC = {
-    'foo':
-        _migration_testing_spec(),
-    'foo-x-tests':
-        _migration_testing_spec(
-            execution_mode=builder_spec.TEST,
-            parent_buildername='foo',
-        ),
-    'foo-y-tests':
-        _migration_testing_spec(
-            execution_mode=builder_spec.TEST,
-            parent_buildername='foo',
-        ),
-    'bar':
-        _migration_testing_spec(),
-    'bar-tests':
-        _migration_testing_spec(
-            execution_mode=builder_spec.TEST,
-            parent_buildername='bar',
-        ),
+  'foo': _migration_testing_spec(),
+  'foo-x-tests': _migration_testing_spec(
+    execution_mode=builder_spec.TEST,
+    parent_buildername='foo',
+  ),
+  'foo-y-tests': _migration_testing_spec(
+    execution_mode=builder_spec.TEST,
+    parent_buildername='foo',
+  ),
+  'bar': _migration_testing_spec(),
+  'bar-tests': _migration_testing_spec(
+    execution_mode=builder_spec.TEST,
+    parent_buildername='bar',
+  ),
 }

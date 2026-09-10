@@ -12,12 +12,12 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.depot_tools import bot_update, gclient, osx_sdk
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    platform,
-    properties,
-    step,
+  buildbucket,
+  context,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -47,9 +47,9 @@ def RunSteps(api: DEPS):
 
   # Configure gclient to fetch Dawn, bazel and CMake (clang toolchain).
   api.gclient.c.solutions[0].custom_vars = {
-      'dawn_root': 'dawn',
-      'fetch_bazel': 'True',
-      'fetch_cmake': 'True',
+    'dawn_root': 'dawn',
+    'fetch_bazel': 'True',
+    'fetch_cmake': 'True',
   }
 
   # Ensure checkout and run hooks.
@@ -66,9 +66,9 @@ def RunSteps(api: DEPS):
 
   # Build Tint using tools/bazelisk.
   bazel_args = [
-      bazelisk,
-      'build',
-      '--compilation_mode=%s' % compilation_mode,
+    bazelisk,
+    'build',
+    '--compilation_mode=%s' % compilation_mode,
   ]
 
   # On Mac, use minimum necessary version that will enable C++20 APIs.
@@ -76,20 +76,24 @@ def RunSteps(api: DEPS):
     bazel_args.append('--macos_minimum_os=12.0')
 
   # Build all bazel targets.
-  bazel_args.extend([
+  bazel_args.extend(
+    [
       '//src/tint/...',
       '//src/utils/...',
       '//test/tint/...',
       '//:includes',
-  ])
+    ]
+  )
 
   # On Linux, enforce using the hermetic Clang compiler.
   env = {}
   if api.platform.is_linux:
-    clang_path = source_dir.joinpath('third_party', 'llvm-build',
-                                     'Release+Asserts', 'bin', 'clang')
-    clang_xx_path = source_dir.joinpath('third_party', 'llvm-build',
-                                        'Release+Asserts', 'bin', 'clang++')
+    clang_path = source_dir.joinpath(
+      'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'clang'
+    )
+    clang_xx_path = source_dir.joinpath(
+      'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'clang++'
+    )
     env['CC'] = str(clang_path)
     env['CXX'] = str(clang_xx_path)
 
@@ -102,35 +106,35 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'linux_rel',
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn',
-          builder='dawn-linux-x64-bazel-rel',
-          git_repo='https://dawn.googlesource.com/dawn',
-      ),
-      api.properties(debug=False),
-      api.post_process(post_process.StepSuccess, 'bazel build all'),
+    'linux_rel',
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn',
+      builder='dawn-linux-x64-bazel-rel',
+      git_repo='https://dawn.googlesource.com/dawn',
+    ),
+    api.properties(debug=False),
+    api.post_process(post_process.StepSuccess, 'bazel build all'),
   )
   yield api.test(
-      'linux_dbg',
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn',
-          builder='dawn-linux-x64-bazel-dbg',
-          git_repo='https://dawn.googlesource.com/dawn',
-      ),
-      api.properties(debug=True),
-      api.post_process(post_process.StepSuccess, 'bazel build all'),
+    'linux_dbg',
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn',
+      builder='dawn-linux-x64-bazel-dbg',
+      git_repo='https://dawn.googlesource.com/dawn',
+    ),
+    api.properties(debug=True),
+    api.post_process(post_process.StepSuccess, 'bazel build all'),
   )
   yield api.test(
-      'mac_rel',
-      api.platform('mac', 64),
-      api.buildbucket.ci_build(
-          project='dawn',
-          builder='dawn-mac-arm64-bazel-rel',
-          git_repo='https://dawn.googlesource.com/dawn',
-      ),
-      api.properties(debug=False),
-      api.post_process(post_process.StepSuccess, 'bazel build all'),
+    'mac_rel',
+    api.platform('mac', 64),
+    api.buildbucket.ci_build(
+      project='dawn',
+      builder='dawn-mac-arm64-bazel-rel',
+      git_repo='https://dawn.googlesource.com/dawn',
+    ),
+    api.properties(debug=False),
+    api.post_process(post_process.StepSuccess, 'bazel build all'),
   )

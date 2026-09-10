@@ -29,8 +29,8 @@ _log = logging.getLogger("collect_v8_task")
 logging.basicConfig()
 _log.setLevel(logging.INFO)
 
-class BadShards:
 
+class BadShards:
   def __init__(self):
     self.missing = set()
     self.incomplete = set()
@@ -52,7 +52,6 @@ class BadShards:
 
 
 class AggregatedResults:
-
   def __init__(self, top_tests_cutoff):
     self.max_rss_tests = []
     self.max_vms_tests = []
@@ -72,19 +71,19 @@ class AggregatedResults:
   def as_json(self, tags):
     def sorted_tests(test_list, key):
       result = sorted(test_list, key=lambda t: t[key], reverse=True)
-      return result[:self.top_tests_cutoff]
+      return result[: self.top_tests_cutoff]
+
     return {
-        'max_rss_tests': sorted_tests(self.max_rss_tests, 'max_rss'),
-        'max_vms_tests': sorted_tests(self.max_vms_tests, 'max_vms'),
-        'slowest_tests': sorted_tests(self.slowest_tests, 'duration'),
-        'results': self.results,
-        'tags': sorted(tags),
-        'test_total': self.test_total,
+      'max_rss_tests': sorted_tests(self.max_rss_tests, 'max_rss'),
+      'max_vms_tests': sorted_tests(self.max_vms_tests, 'max_vms'),
+      'slowest_tests': sorted_tests(self.slowest_tests, 'duration'),
+      'results': self.results,
+      'tags': sorted(tags),
+      'test_total': self.test_total,
     }
 
 
 class TaskCollector:
-
   def __init__(self):
     self.warnings = []
 
@@ -103,10 +102,10 @@ class TaskCollector:
     except (IOError, ValueError):
       _log.error('summary.json is missing or can not be read')
       self.emit_warning(
-          'summary.json is missing or can not be read',
-          'Something is seriously wrong with swarming_client/ or the bot.')
+        'summary.json is missing or can not be read',
+        'Something is seriously wrong with swarming_client/ or the bot.',
+      )
       return None
-
 
   def merge_shard_results(self, output_dir, shards, options):
     """Reads JSON test output from all shards and combines them into one.
@@ -146,7 +145,8 @@ class TaskCollector:
         _log.error('shard %d failed with exit code %d' % (index, exit_code))
         bad_shards.add_incomplete(index)
       json_data = self.load_shard_json(
-          output_dir, result['task_id'], 'output.json')
+        output_dir, result['task_id'], 'output.json'
+      )
       if json_data:
         # The happy case. We have results, also after sigterm.
         aggregated_results.append(json_data)
@@ -164,11 +164,11 @@ class TaskCollector:
       _log.error('Some shards did not complete: %s', bad_shards.as_str())
       tags.add('UNRELIABLE_RESULTS')
       as_str = bad_shards.as_str()
-      self.emit_warning('some shards did not complete: %s' % as_str,
-                   MISSING_SHARDS_MSG % as_str)
+      self.emit_warning(
+        'some shards did not complete: %s' % as_str, MISSING_SHARDS_MSG % as_str
+      )
 
     return aggregated_results.as_json(tags)
-
 
   def merge_test_results(self, output_dir, shards, options):
     _log.info('Merging test results')
@@ -176,24 +176,29 @@ class TaskCollector:
       merged_data = self.merge_shard_results(output_dir, shards, options)
       f.write(json.dumps(merged_data, separators=(',', ':')).encode('utf-8'))
 
-
   def merge_coverage_data(self, output_dir, shards, options):
     # Merge coverage data if specified.
     _log.info('Merging coverage data')
     if options.coverage_dir:
       for index, result in enumerate(shards):
         _log.info('Merging coverage data of shard %d' % index)
-        exit_code = subprocess.call([
-            sys.executable, '-u', options.sancov_merger, '--coverage-dir',
-            options.coverage_dir, '--swarming-output-dir',
-            os.path.join(output_dir, result['task_id'])
-        ])
+        exit_code = subprocess.call(
+          [
+            sys.executable,
+            '-u',
+            options.sancov_merger,
+            '--coverage-dir',
+            options.coverage_dir,
+            '--swarming-output-dir',
+            os.path.join(output_dir, result['task_id']),
+          ]
+        )
         if exit_code:
           _log.error('error when merging coverage data of shard %d' % index)
           _log.error('exit code: %d' % exit_code)
           self.emit_warning(
-              'error when merging coverage data of shard %d' % index)
-
+            'error when merging coverage data of shard %d' % index
+          )
 
   def load_shard_json(self, output_dir, task_id, file_name):
     """Reads JSON output of a single shard."""
@@ -206,31 +211,32 @@ class TaskCollector:
       print('Missing or invalid v8 JSON file: %s' % path, file=sys.stderr)
       return None
 
-
   def swarming_cmd(self, swarming_args, options):
     # Prepare a directory to store JSON files fetched from isolate.
     task_output_dir = tempfile.mkdtemp(
-        suffix='_swarming', dir=options.temp_root_dir)
+      suffix='_swarming', dir=options.temp_root_dir
+    )
     # Start building the command line for swarming.py.
     cmd = [
-        'swarming',
+      'swarming',
     ]
 
     cmd.extend(swarming_args)
-    cmd.extend([
+    cmd.extend(
+      [
         '-output-dir',
         task_output_dir,
         '-task-summary-json',
         os.path.join(task_output_dir, 'summary.json'),
-    ])
+      ]
+    )
     return cmd, task_output_dir
-
 
   def parse_args(self, args):
     # Split |args| into options for shim and options for swarming.py script.
     if '--' in args:
       index = args.index('--')
-      shim_args, swarming_args = args[:index], args[index + 1:]
+      shim_args, swarming_args = args[:index], args[index + 1 :]
     else:
       shim_args, swarming_args = args, []
 
@@ -251,7 +257,6 @@ class TaskCollector:
       parser.error('--sancov-merger is required for merging coverage data')
 
     return options, swarming_args
-
 
   def run(self, args):
     _log.info('Running task collector')
@@ -274,7 +279,8 @@ class TaskCollector:
       except Exception:
         _log.error('Failed to process v8 output JSON', exc_info=True)
         self.emit_warning(
-            'failed to process v8 output JSON', traceback.format_exc())
+          'failed to process v8 output JSON', traceback.format_exc()
+        )
 
     finally:
       _log.info('Cleaning up output directory %s', output_dir)

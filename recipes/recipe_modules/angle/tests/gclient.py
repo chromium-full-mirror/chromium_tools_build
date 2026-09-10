@@ -27,8 +27,9 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 TEST_CONFIGS = [
-    'angle',
+  'angle',
 ]
 
 
@@ -42,17 +43,17 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'angle_android',
-      api.properties(apply_gclient_config='angle_android'),
-      api.post_process(post_process.DropExpectation),
+    'angle_android',
+    api.properties(apply_gclient_config='angle_android'),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'angle_nointernal',
-      api.properties(apply_gclient_config='angle_nointernal'),
-      api.post_process(post_process.DropExpectation),
+    'angle_nointernal',
+    api.properties(apply_gclient_config='angle_nointernal'),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'angle_no_extra_traces',
-      api.properties(apply_gclient_config='angle_no_extra_traces'),
-      api.post_process(post_process.DropExpectation),
+    'angle_no_extra_traces',
+    api.properties(apply_gclient_config='angle_no_extra_traces'),
+    api.post_process(post_process.DropExpectation),
   )

@@ -18,17 +18,20 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
-    '--build-dir',
-    required=True,
-    help='Path to a directory to search for *.isolate files')
+  '--build-dir',
+  required=True,
+  help='Path to a directory to search for *.isolate files',
+)
 parser.add_argument(
-    '--output-json', required=True, help='File to dump JSON results into.')
+  '--output-json', required=True, help='File to dump JSON results into.'
+)
 parser.add_argument(
-    '--rts-model',
-    action='store_true',
-    default=False,
-    required=False,
-    help='Find any rts command lines instead.')
+  '--rts-model',
+  action='store_true',
+  default=False,
+  required=False,
+  help='Find any rts command lines instead.',
+)
 args = parser.parse_args()
 
 command_line_map = {}

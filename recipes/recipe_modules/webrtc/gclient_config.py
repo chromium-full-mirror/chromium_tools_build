@@ -10,6 +10,7 @@ from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 def WebRTCGitURL(_c, *pieces):
   return '/'.join(('https://webrtc.googlesource.com',) + pieces)
 
+
 @CONFIG_CTX(includes=['_webrtc'])
 def webrtc(_):
   pass
@@ -27,11 +28,13 @@ def webrtc_ios(c):
   c.target_os.add('mac')
   c.target_os.add('ios')
 
+
 @CONFIG_CTX(includes=['webrtc'])
 def webrtc_linux_mac_crosscompile_arm64(c):
   # Compiling webrtc on Linux for mac requires fetching mac dependencies.
   c.target_os.add('mac')
   c.target_cpu.add('arm64')
+
 
 @CONFIG_CTX(includes=['webrtc'])
 def webrtc_use_clang_coverage(c):

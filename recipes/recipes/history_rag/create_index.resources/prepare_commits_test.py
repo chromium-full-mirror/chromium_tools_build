@@ -16,7 +16,6 @@ import prepare_commits
 
 
 class TestUnionFind(unittest.TestCase):
-
   def test_union_find_basics(self):
     # Test logic for 5 elements: 0, 1, 2, 3, 4
     uf = prepare_commits.UnionFind(5)
@@ -53,27 +52,20 @@ class TestUnionFind(unittest.TestCase):
 
 
 class TestCleaning(unittest.TestCase):
-
   def test_clean_commit_messages(self):
-    input_docs = [{
-        "message": "Revert 'Fix bug' because of reason X",
-        "commits": []
-    }, {
-        "message": "Reland: Add feature Y",
-        "commits": []
-    }, {
-        "message": "Commit message clean",
-        "commits": []
-    }, {
-        "message": "This REVERTS everything",
-        "commits": []
-    }]
+    input_docs = [
+      {"message": "Revert 'Fix bug' because of reason X", "commits": []},
+      {"message": "Reland: Add feature Y", "commits": []},
+      {"message": "Commit message clean", "commits": []},
+      {"message": "This REVERTS everything", "commits": []},
+    ]
 
     cleaned = prepare_commits.clean_commit_messages(input_docs)
 
     # "Revert", "reason" removed
-    self.assertEqual(cleaned[0]['cleaned_message'].strip(),
-                     "'Fix bug' because of  X")
+    self.assertEqual(
+      cleaned[0]['cleaned_message'].strip(), "'Fix bug' because of  X"
+    )
     # "Reland" removed
     self.assertEqual(cleaned[1]['cleaned_message'].strip(), ": Add feature Y")
     # "Commit" removed
@@ -83,49 +75,28 @@ class TestCleaning(unittest.TestCase):
 
 
 class TestClustering(unittest.TestCase):
-
   def setUp(self):
     self.base_commit = {
-        "hash": "hash",
-        "message": "msg",
-        "files": {},
-        "date": "2025-01-01",
-        "author": "me",
-        "metadata": {}
+      "hash": "hash",
+      "message": "msg",
+      "files": {},
+      "date": "2025-01-01",
+      "author": "me",
+      "metadata": {},
     }
 
   def test_clustering_no_shared_bugs(self):
     commits = [
-        {
-            **self.base_commit, "hash": "1",
-            "metadata": {
-                "Bug": ["100"]
-            }
-        },
-        {
-            **self.base_commit, "hash": "2",
-            "metadata": {
-                "Bug": ["200"]
-            }
-        },
+      {**self.base_commit, "hash": "1", "metadata": {"Bug": ["100"]}},
+      {**self.base_commit, "hash": "2", "metadata": {"Bug": ["200"]}},
     ]
     docs = prepare_commits.pre_cluster_by_bug_id(commits)
     self.assertEqual(len(docs), 2)
 
   def test_clustering_direct_share(self):
     commits = [
-        {
-            **self.base_commit, "hash": "1",
-            "metadata": {
-                "Bug": ["100"]
-            }
-        },
-        {
-            **self.base_commit, "hash": "2",
-            "metadata": {
-                "Bug": ["100"]
-            }
-        },
+      {**self.base_commit, "hash": "1", "metadata": {"Bug": ["100"]}},
+      {**self.base_commit, "hash": "2", "metadata": {"Bug": ["100"]}},
     ]
     docs = prepare_commits.pre_cluster_by_bug_id(commits)
     self.assertEqual(len(docs), 1)
@@ -136,24 +107,9 @@ class TestClustering(unittest.TestCase):
     # Commit 2 has Bug 200
     # Commit 3 has Bug 100 AND 200 (Connecting 1 and 2)
     commits = [
-        {
-            **self.base_commit, "hash": "1",
-            "metadata": {
-                "Bug": ["100"]
-            }
-        },
-        {
-            **self.base_commit, "hash": "2",
-            "metadata": {
-                "Bug": ["200"]
-            }
-        },
-        {
-            **self.base_commit, "hash": "3",
-            "metadata": {
-                "Bug": ["100", "200"]
-            }
-        },
+      {**self.base_commit, "hash": "1", "metadata": {"Bug": ["100"]}},
+      {**self.base_commit, "hash": "2", "metadata": {"Bug": ["200"]}},
+      {**self.base_commit, "hash": "3", "metadata": {"Bug": ["100", "200"]}},
     ]
     docs = prepare_commits.pre_cluster_by_bug_id(commits)
     self.assertEqual(len(docs), 1)
@@ -162,25 +118,14 @@ class TestClustering(unittest.TestCase):
   def test_clustering_handles_bug_vs_BUG(self):
     # Test normalization of "Bug" vs "BUG=" keys
     commits = [
-        {
-            **self.base_commit, "hash": "1",
-            "metadata": {
-                "Bug": ["123"]
-            }
-        },
-        {
-            **self.base_commit, "hash": "2",
-            "metadata": {
-                "BUG=": ["123"]
-            }
-        },
+      {**self.base_commit, "hash": "1", "metadata": {"Bug": ["123"]}},
+      {**self.base_commit, "hash": "2", "metadata": {"BUG=": ["123"]}},
     ]
     docs = prepare_commits.pre_cluster_by_bug_id(commits)
     self.assertEqual(len(docs), 1)
 
 
 class TestFileIO(unittest.TestCase):
-
   def setUp(self):
     self.test_dir = tempfile.mkdtemp()
     self.input_path = Path(self.test_dir)
@@ -191,13 +136,11 @@ class TestFileIO(unittest.TestCase):
   def test_load_commit_data_success(self):
     # Create a valid json file
     data = {
-        "message": "Test Message",
-        "files": {
-            "a.py": []
-        },
-        "date": "2025-01-01",
-        "author": "user@google.com",
-        "metadata": {}
+      "message": "Test Message",
+      "files": {"a.py": []},
+      "date": "2025-01-01",
+      "author": "user@google.com",
+      "metadata": {},
     }
     with open(self.input_path / "valid.json", 'w', encoding='utf-8') as f:
       json.dump(data, f)
@@ -232,7 +175,6 @@ class TestFileIO(unittest.TestCase):
 
 
 class TestIntegration(unittest.TestCase):
-
   def setUp(self):
     # Use mkdtemp instead of TemporaryDirectory to avoid Pylint R1732
     # (consider-using-with) since we need to persist it for the tests
@@ -246,31 +188,25 @@ class TestIntegration(unittest.TestCase):
     # Two commits sharing bug 100 -> 1 document
     # One commit with unique bug -> 1 document
     c1 = {
-        "message": "Fix bug 100",
-        "files": {},
-        "date": "2025-01-02",
-        "author": "a",
-        "metadata": {
-            "Bug": ["100"]
-        }
+      "message": "Fix bug 100",
+      "files": {},
+      "date": "2025-01-02",
+      "author": "a",
+      "metadata": {"Bug": ["100"]},
     }
     c2 = {
-        "message": "Revert fix 100",
-        "files": {},
-        "date": "2025-01-03",
-        "author": "b",
-        "metadata": {
-            "Bug": ["100"]
-        }
+      "message": "Revert fix 100",
+      "files": {},
+      "date": "2025-01-03",
+      "author": "b",
+      "metadata": {"Bug": ["100"]},
     }
     c3 = {
-        "message": "Feature 200",
-        "files": {},
-        "date": "2025-01-01",
-        "author": "c",
-        "metadata": {
-            "Bug": ["200"]
-        }
+      "message": "Feature 200",
+      "files": {},
+      "date": "2025-01-01",
+      "author": "c",
+      "metadata": {"Bug": ["200"]},
     }
 
     with open(self.input_dir / "c1.json", 'w', encoding='utf-8') as f:
@@ -285,9 +221,10 @@ class TestIntegration(unittest.TestCase):
 
   def test_main_flow(self):
     test_args = [
-        "prepare_commits.py",
-        str(self.input_dir), "--output-file",
-        str(self.output_file)
+      "prepare_commits.py",
+      str(self.input_dir),
+      "--output-file",
+      str(self.output_file),
     ]
 
     with patch.object(sys, 'argv', test_args):
@@ -312,9 +249,12 @@ class TestIntegration(unittest.TestCase):
 
   def test_main_limit_argument(self):
     test_args = [
-        "prepare_commits.py",
-        str(self.input_dir), "--output-file",
-        str(self.output_file), "--limit", "1"
+      "prepare_commits.py",
+      str(self.input_dir),
+      "--output-file",
+      str(self.output_file),
+      "--limit",
+      "1",
     ]
 
     with patch.object(sys, 'argv', test_args):

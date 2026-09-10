@@ -15,7 +15,11 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import chromium, chromium_tests, chromium_tests_builder_config
+from RECIPE_MODULES.build import (
+  chromium,
+  chromium_tests,
+  chromium_tests_builder_config,
+)
 from RECIPE_MODULES.depot_tools import gclient
 from RECIPE_MODULES.recipe_engine import assertions, platform, properties
 
@@ -38,9 +42,10 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'test_only': Property(kind=bool, default=None),
-    'expected_gclient_vars': Property(kind=Dict(), default={}),
+  'test_only': Property(kind=bool, default=None),
+  'expected_gclient_vars': Property(kind=Dict(), default={}),
 }
 
 
@@ -58,146 +63,156 @@ def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
   yield api.test(
-      'android_apply_config',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          android_config='base_config',
-                          chromium_config='main_builder',
-                          chromium_apply_config=['mb'],
-                          chromium_config_kwargs={
-                              'BUILD_CONFIG': 'Debug',
-                              'TARGET_ARCH': 'arm',
-                              'TARGET_BITS': 32,
-                              'TARGET_PLATFORM': 'android',
-                          },
-                          gclient_config='chromium',
-                          android_apply_config=['use_devil_provision'],
-                      ),
+    'android_apply_config',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              android_config='base_config',
+              chromium_config='main_builder',
+              chromium_apply_config=['mb'],
+              chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
+                'TARGET_ARCH': 'arm',
+                'TARGET_BITS': 32,
+                'TARGET_PLATFORM': 'android',
               },
-          })),
-      api.post_process(post_process.DropExpectation),
+              gclient_config='chromium',
+              android_apply_config=['use_devil_provision'],
+            ),
+          },
+        }
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'target-cros-boards',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM': 'chromeos',
-                              'TARGET_CROS_BOARDS': 'fake-board',
-                          },
-                      ),
+    'target-cros-boards',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'chromeos',
+                'TARGET_CROS_BOARDS': 'fake-board',
               },
-          })),
-      api.post_process(post_process.DropExpectation),
+            ),
+          },
+        }
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'cros-boards-with-vm-optimized-qemu-images',
-      api.properties(
-          expected_gclient_vars={
-              'cros_boards_with_qemu_images': 'amd64-generic-vm'
-          },),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM':
-                                  'chromeos',
-                              'CROS_BOARDS_WITH_QEMU_IMAGES':
-                                  'amd64-generic-vm',
-                          },
-                      ),
+    'cros-boards-with-vm-optimized-qemu-images',
+    api.properties(
+      expected_gclient_vars={
+        'cros_boards_with_qemu_images': 'amd64-generic-vm'
+      },
+    ),
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'chromeos',
+                'CROS_BOARDS_WITH_QEMU_IMAGES': 'amd64-generic-vm',
               },
-          })),
-      api.post_process(post_process.DropExpectation),
+            ),
+          },
+        }
+      ),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'target-platform-incompatible-with-host-platform',
-      api.platform('linux', 64),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  chromium_config_kwargs={
-                      'TARGET_PLATFORM': 'ios',
-                  },
-              ),
-          ).assemble()),
-      api.expect_exception('BadConf'),
-      api.post_process(post_process.DropExpectation),
+    'target-platform-incompatible-with-host-platform',
+    api.platform('linux', 64),
+    api.chromium.generic_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-tester',
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+          chromium_config_kwargs={
+            'TARGET_PLATFORM': 'ios',
+          },
+        ),
+      ).assemble()
+    ),
+    api.expect_exception('BadConf'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'tester-target-platform-incompatible-with-host-platform',
-      api.platform('linux', 64),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  chromium_config_kwargs={
-                      'TARGET_PLATFORM': 'mac',
-                  },
-              ),
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.post_process(post_process.DropExpectation),
+    'tester-target-platform-incompatible-with-host-platform',
+    api.platform('linux', 64),
+    api.chromium.generic_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_tester(
+        builder_group='fake-group',
+        builder='fake-tester',
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+          chromium_config_kwargs={
+            'TARGET_PLATFORM': 'mac',
+          },
+        ),
+      )
+      .with_parent(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'test-only-override',
-      api.platform('linux', 64),
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-                  chromium_config_kwargs={
-                      'TARGET_PLATFORM': 'mac',
-                  },
-              ),
-          ).assemble()),
-      api.properties(test_only=True),
-      api.post_process(post_process.DropExpectation),
+    'test-only-override',
+    api.platform('linux', 64),
+    api.chromium.generic_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+          chromium_config_kwargs={
+            'TARGET_PLATFORM': 'mac',
+          },
+        ),
+      ).assemble()
+    ),
+    api.properties(test_only=True),
+    api.post_process(post_process.DropExpectation),
   )

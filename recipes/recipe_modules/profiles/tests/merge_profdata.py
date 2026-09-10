@@ -26,20 +26,23 @@ class DEPS(RecipeScriptApi):
 def RunSteps(api: DEPS):
   api.profiles.source_dir = api.path.cleanup_dir
   assert api.profiles.llvm_profdata_exec == api.profiles.source_dir.joinpath(
-      'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata')
+    'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata'
+  )
   new_path = '/some/other/path/llvm-profdata'
   api.profiles.llvm_profdata_exec = new_path
   assert api.profiles.llvm_profdata_exec == new_path
   weights = {'weight': 2}
   api.profiles.merge_profdata(
-      'some_artifact', '.*', sparse=True, weights=weights)
+    'some_artifact', '.*', sparse=True, weights=weights
+  )
 
 
 def GenTests(api: RecipeTestApi):
 
   yield api.test(
-      'basic',
-      api.post_process(post_process.MustRun,
-                       'merge all profile files into a single .profdata'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(
+      post_process.MustRun, 'merge all profile files into a single .profdata'
+    ),
+    api.post_process(post_process.DropExpectation),
   )

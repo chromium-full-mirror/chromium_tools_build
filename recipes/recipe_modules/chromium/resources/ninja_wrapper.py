@@ -38,6 +38,7 @@ The wrapper writes detailed info in JSON format:
 from __future__ import annotations
 
 from gevent import monkey
+
 monkey.patch_all()
 
 import argparse
@@ -61,8 +62,12 @@ _NODE_LABEL_RE = re.compile(r'^"([^"]+)" \[label="([^"]+)"\]$')
 _EDGE_LABEL_RE = re.compile(r'^"([^"]+)" \[label="([^"]+)", shape=ellipse\]$')
 # The first capturing group matches input node id, while the second matches
 # output edge id. If non-capturing group matches, it means node is order-only.
-_NODE_EDGE_RE = re.compile((r'^"([^"]+)" -> "([^"]+)" '
-                            r'\[arrowhead=none(?: style=(dotted))?\]$'))
+_NODE_EDGE_RE = re.compile(
+  (
+    r'^"([^"]+)" -> "([^"]+)" '
+    r'\[arrowhead=none(?: style=(dotted))?\]$'
+  )
+)
 # The first capturing group matches input edge id, while the second matches
 # output node id. This match happens when node has multiple input nodes.
 _EDGE_NODE_RE = re.compile(r'^"([^"]+)" -> "([^"]+)"$')
@@ -70,9 +75,13 @@ _EDGE_NODE_RE = re.compile(r'^"([^"]+)" -> "([^"]+)"$')
 # node id, and the thrid matches edge's rule name. This match happens when
 # edge has only one input node and output node.
 _NODE_NODE_RE = re.compile(r'^"([^"]+)" -> "([^"]+)" \[label="([^"]+)"\]$')
-_GRAPH_IGNORED_LINES = ['digraph ninja {', 'rankdir="LR"',
-                        'edge [fontsize=10]',
-                        'node [fontsize=10, shape=box, height=0.25]', '}']
+_GRAPH_IGNORED_LINES = [
+  'digraph ninja {',
+  'rankdir="LR"',
+  'edge [fontsize=10]',
+  'node [fontsize=10, shape=box, height=0.25]',
+  '}',
+]
 
 _RULE_RE = re.compile(r'^\[\d+/\d+\] (\S+)')
 _FAILED_RE = re.compile(r'^FAILED: (.*)$')
@@ -80,8 +89,8 @@ _FAILED_END_RE = re.compile(r'^ninja: build stopped:.*')
 
 _TIME_CMD = '/usr/bin/time'
 
-class WarningCollector:
 
+class WarningCollector:
   def __init__(self):
     self._warnings = []
 
@@ -107,20 +116,23 @@ def prune_virtual_env():
   # Look for "activate_this.py" in this path, which is installed by VirtualEnv.
   # This mechanism is used by vpython as well to sanitize VirtualEnvs from
   # $PATH.
-  os.environ['PATH'] = os.pathsep.join([
-    p for p in os.environ.get('PATH', '').split(os.pathsep)
-    if not os.path.isfile(os.path.join(p, 'activate_this.py'))
-  ])
+  os.environ['PATH'] = os.pathsep.join(
+    [
+      p
+      for p in os.environ.get('PATH', '').split(os.pathsep)
+      if not os.path.isfile(os.path.join(p, 'activate_this.py'))
+    ]
+  )
 
 
 def run_ninja_tool(ninja_cmd, warning_collector):
   data = ''
   try:
     data = subprocess.check_output(
-        ninja_cmd, stderr=subprocess.STDOUT, universal_newlines=True)
+      ninja_cmd, stderr=subprocess.STDOUT, universal_newlines=True
+    )
   except Exception as e:
-    warning_collector.add(
-        'Exception occurs when running ninja tool: %r' % e)
+    warning_collector.add('Exception occurs when running ninja tool: %r' % e)
   return data
 
 
@@ -155,11 +167,11 @@ class Graph:
     self.node_name_dict = {}
     self.edge_dict = {}
     self.recorders = [
-        (_NODE_LABEL_RE, self._record_node_label),
-        (_EDGE_LABEL_RE, self._record_edge_label),
-        (_EDGE_NODE_RE, self._record_edge_node),
-        (_NODE_EDGE_RE, self._record_node_edge),
-        (_NODE_NODE_RE, self._record_node_node),
+      (_NODE_LABEL_RE, self._record_node_label),
+      (_EDGE_LABEL_RE, self._record_edge_label),
+      (_EDGE_NODE_RE, self._record_edge_node),
+      (_NODE_EDGE_RE, self._record_node_edge),
+      (_NODE_NODE_RE, self._record_node_node),
     ]
     self.warning_collector = warning_collector
 
@@ -183,8 +195,9 @@ class Graph:
       output_node.input_edge = edge
     else:
       self.warning_collector.add(
-          'Edge id does not exist in graph when calling '
-          '_recording_edge_node func: %r' % edge_id)
+        'Edge id does not exist in graph when calling '
+        '_recording_edge_node func: %r' % edge_id
+      )
 
   def _record_node_edge(self, node_id, edge_id, order_only):
     """Records node's output edge and edge's input node."""
@@ -198,8 +211,9 @@ class Graph:
         edge.normal_input_nodes.append(input_node)
     else:
       self.warning_collector.add(
-          'Edge id does not exist in graph when calling '
-          '_recording_node_edge func: %r' % edge_id)
+        'Edge id does not exist in graph when calling '
+        '_recording_node_edge func: %r' % edge_id
+      )
 
   def _record_node_node(self, node_input_id, node_output_id, edge_rule):
     """Records edge's rule name and its single input and output node."""
@@ -231,7 +245,8 @@ class Graph:
       if not match:
         if line not in _GRAPH_IGNORED_LINES:
           warning_collector.add(
-              'Unknown line when parsing graph output: %r' % line)
+            'Unknown line when parsing graph output: %r' % line
+          )
     return graph
 
   def get_root_deps(self, node_names):
@@ -242,8 +257,9 @@ class Graph:
       node = self.node_name_dict.get(node_name)
       if not node:
         self.warning_collector.add(
-            'Node name does not exist in graph when calling '
-            'get_root_deps func: %r' % node_name)
+          'Node name does not exist in graph when calling '
+          'get_root_deps func: %r' % node_name
+        )
         continue
       if not node.input_edge:
         # The node itself is root node.
@@ -306,10 +322,11 @@ def parse_ninja_deps(ninja_deps_output, warning_collector):
       deps_num = int(deps_num)
       if not index + deps_num <= total_length:
         warning_collector.add(
-            'Expect %d deps, but %d line(s) left.'
-            % (deps_num, (total_length-index)))
+          'Expect %d deps, but %d line(s) left.'
+          % (deps_num, (total_length - index))
+        )
       deps_info = DepsInfo()
-      for dep in lines[index:index + deps_num]:
+      for dep in lines[index : index + deps_num]:
         dep = dep.strip()
         if not dep:
           warning_collector.add('Unexpected empty deps line')
@@ -329,7 +346,8 @@ def parse_ninja_deps(ninja_deps_output, warning_collector):
         deps[failed_node] = deps_info
       else:
         warning_collector.add(
-            'Unknown line when parsing deps output: %r' % line)
+          'Unknown line when parsing deps output: %r' % line
+        )
   return deps
 
 
@@ -348,8 +366,8 @@ class NinjaBuildOutputStreamingParser:
     line = line.strip()
     if self._failure_begins and self._last_target:
       if not _RULE_RE.match(line) and not _FAILED_END_RE.match(line):
-        self._last_target['output'] += line +'\n'
-        self.failure_outputs += line +'\n'
+        self._last_target['output'] += line + '\n'
+        self.failure_outputs += line + '\n'
       else:
         # Output of failed edge ends, save its info.
         self._failure_begins = False
@@ -367,21 +385,21 @@ class NinjaBuildOutputStreamingParser:
           nodes = failed_nodes_match.group(1)
           # TODO(yichunli): Update split function, if ninja gets updated
           # and separates nodes by other delimiters rather than space.
-          target['output_nodes'] = [node for node in
-                                    nodes.split(' ') if node]
+          target['output_nodes'] = [node for node in nodes.split(' ') if node]
           target['output'] = ''
           target['dependencies'] = []
           self._last_target = target
-          self.failure_outputs += self._last_line + '\n' + line +'\n'
+          self.failure_outputs += self._last_line + '\n' + line + '\n'
         else:
           self._warning_collector.add(
-              'Unknown line when parsing ninja '
-              'stdout: %r' % self._last_line)
+            'Unknown line when parsing ninja stdout: %r' % self._last_line
+          )
     self._last_line = line
 
 
-def get_detailed_info(ninja_path, build_path, failed_target_list,
-                      warning_collector):
+def get_detailed_info(
+  ninja_path, build_path, failed_target_list, warning_collector
+):
   """Gets detailed compile failure information from ninja stdout.
 
   Args:
@@ -414,8 +432,7 @@ def get_detailed_info(ninja_path, build_path, failed_target_list,
       failed_nodes.extend(target['output_nodes'])
   if failed_nodes:
     failed_nodes = list(set(failed_nodes))
-    deps_command = [ninja_path, '-C', build_path,
-                    '-t', 'deps'] + failed_nodes
+    deps_command = [ninja_path, '-C', build_path, '-t', 'deps'] + failed_nodes
     ninja_deps_output = run_ninja_tool(deps_command, warning_collector)
     deps_dict = parse_ninja_deps(ninja_deps_output, warning_collector)
     auto_generated_deps = []
@@ -423,8 +440,13 @@ def get_detailed_info(ninja_path, build_path, failed_target_list,
       auto_generated_deps.extend(deps.auto_generated_deps)
     graph_dict = collections.defaultdict(list)
     if auto_generated_deps:
-      graph_command = [ninja_path, '-C', build_path,
-                       '-t', 'graph'] + auto_generated_deps
+      graph_command = [
+        ninja_path,
+        '-C',
+        build_path,
+        '-t',
+        'graph',
+      ] + auto_generated_deps
       ninja_graph_output = run_ninja_tool(graph_command, warning_collector)
       graph = Graph.build_graph(ninja_graph_output, warning_collector)
       graph_dict = graph.get_root_deps(auto_generated_deps)
@@ -443,30 +465,42 @@ def parse_args(args):
   """Parse arguments."""
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '-o', '--ninja_info_output', help='Optional. Save result in file.')
+    '-o', '--ninja_info_output', help='Optional. Save result in file.'
+  )
   parser.add_argument(
-      'ninja_cmd',
-      nargs='+',
-      help=('Ninja build command, e.g., '
-            '/absolute/path/to/ninja -C build/path build_target'))
+    'ninja_cmd',
+    nargs='+',
+    help=(
+      'Ninja build command, e.g., '
+      '/absolute/path/to/ninja -C build/path build_target'
+    ),
+  )
   parser.add_argument(
-      '--failure_output', help='Save output of failed build edges in file.')
+    '--failure_output', help='Save output of failed build edges in file.'
+  )
   parser.add_argument(
-      '--no_prune_venv',
-      action='store_true',
-      help=('Don\'t prune the virtual environment when calling ninja. '
-            'This is a hack; don\'t use this unless you talk '
-            'to infra-dev@chromium.org'))
+    '--no_prune_venv',
+    action='store_true',
+    help=(
+      'Don\'t prune the virtual environment when calling ninja. '
+      'This is a hack; don\'t use this unless you talk '
+      'to infra-dev@chromium.org'
+    ),
+  )
   parser.add_argument(
-      '-t',
-      '--io_timeout',
-      default=60 * 60 * 2,
-      type=float,
-      help=('Seconds to wait for new output from ninja before killing it. '
-            '0 = let ninja run forever'))
+    '-t',
+    '--io_timeout',
+    default=60 * 60 * 2,
+    type=float,
+    help=(
+      'Seconds to wait for new output from ninja before killing it. '
+      '0 = let ninja run forever'
+    ),
+  )
   parser.add_argument(
-      '--resource_usage_output_file',
-      help='Measure resources used to run command and save result in a file.')
+    '--resource_usage_output_file',
+    help='Measure resources used to run command and save result in a file.',
+  )
 
   options = parser.parse_args(args)
   return options
@@ -510,15 +544,16 @@ def main(argv):
 
   if options.resource_usage_output_file:
     ninja_cmd = [
-        _TIME_CMD, '--format={"ru_utime": %U}', '-o',
-        options.resource_usage_output_file
+      _TIME_CMD,
+      '--format={"ru_utime": %U}',
+      '-o',
+      options.resource_usage_output_file,
     ] + ninja_cmd
 
   if not options.ninja_info_output and options.io_timeout <= 0:
     # Options are set such that we don't need to intercept the stdout
     popen = subprocess.Popen(ninja_cmd, universal_newlines=True)
     return popen.wait()
-
 
   popen = subprocess.Popen(ninja_cmd, stdout=subprocess.PIPE, text=False)
 
@@ -538,7 +573,8 @@ def main(argv):
     """
     try:
       return gevent.spawn(popen.stdout.readline).get(
-          block=True, timeout=options.io_timeout)
+        block=True, timeout=options.io_timeout
+      )
     except gevent.Timeout:
       return None
 
@@ -561,7 +597,7 @@ def main(argv):
     i = 0
     while i < len(stdout_bytes) - 2:
       if stdout_bytes[i] == ord('\\') and stdout_bytes[i + 1] > 127:
-        del stdout_bytes[i:i + 1]
+        del stdout_bytes[i : i + 1]
       else:
         i += 1
 
@@ -584,8 +620,10 @@ def main(argv):
 
   if timed_out:
     # Give user feedback
-    message = ('ninja_wrapper.py: Ninja command timed out due to not receiving '
-               'output for {} seconds.\n'.format(options.io_timeout))
+    message = (
+      'ninja_wrapper.py: Ninja command timed out due to not receiving '
+      'output for {} seconds.\n'.format(options.io_timeout)
+    )
     print(message)
 
     if options.failure_output:
@@ -610,9 +648,9 @@ def main(argv):
   if return_code and options.ninja_info_output:
     ninja_path = ninja_cmd[0]
     build_path = get_ninja_build_path(ninja_cmd)
-    data = get_detailed_info(ninja_path, build_path,
-                             ninja_parser.failed_target_list,
-                             warning_collector)
+    data = get_detailed_info(
+      ninja_path, build_path, ninja_parser.failed_target_list, warning_collector
+    )
     data['warnings'] = warning_collector.get()
     with open(options.ninja_info_output, 'w') as fw:
       json.dump(data, fw)
@@ -622,8 +660,9 @@ def main(argv):
         if ninja_parser.failure_outputs:
           fw.write(ninja_parser.failure_outputs)
         else:
-          fw.write("Unrecognized failures, "
-                   "please check the original stdout instead.")
+          fw.write(
+            "Unrecognized failures, please check the original stdout instead."
+          )
 
   return return_code
 

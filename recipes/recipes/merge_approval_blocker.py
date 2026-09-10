@@ -8,6 +8,7 @@ If CL needs to be cherry-picked to the relevant release branch, it should
 be merge approved in related bug with value `approved-{branch-num}` in
 custom field `merge`. More info in go/merge-approval-block.
 """
+
 import re
 
 from recipe_engine import post_process, recipe_api
@@ -39,8 +40,8 @@ class TEST_DEPS(RecipeTestApi):
 
 
 def get_cl_description(
-    api: DEPS,
-    properties: InputProperties,
+  api: DEPS,
+  properties: InputProperties,
 ) -> str:
   """Return CL description from gerrit API
 
@@ -56,9 +57,9 @@ def get_cl_description(
   # instead of api.gerrit.get_change_description.
   # description = api.tryserver.get_change_description()
   description = api.gerrit.get_change_description(
-      properties.host,
-      properties.change,
-      properties.patchset,
+    properties.host,
+    properties.change,
+    properties.patchset,
   )
   return description
 
@@ -84,8 +85,8 @@ def get_bug_ids(text: str) -> list[int]:
 
 
 def get_branch(
-    api: DEPS,
-    properties: InputProperties,
+  api: DEPS,
+  properties: InputProperties,
 ) -> str:
   """Return branch from the CL
 
@@ -101,9 +102,9 @@ def get_branch(
   # instead of api.gerrit.get_revision_info.
   # branch = api.tryserver.gerrit_change_target_ref
   branch = api.gerrit.get_revision_info(
-      properties.host,
-      properties.change,
-      properties.patchset,
+    properties.host,
+    properties.change,
+    properties.patchset,
   ).get('branch', '')
   return branch
 
@@ -112,8 +113,8 @@ def get_branch(
 def RunSteps(api: DEPS, properties):
   description = get_cl_description(api, properties)
   api.step(
-      'Get CL Description',
-      ['echo', description],
+    'Get CL Description',
+    ['echo', description],
   )
 
   with api.step.nest('Get Bug IDs'):
@@ -125,38 +126,39 @@ def RunSteps(api: DEPS, properties):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'exist_cl_description',
-      api.properties(
-          host='https://chromium-review.googlesource.com',
-          change=5772719,
-          patchset=2,
+    'exist_cl_description',
+    api.properties(
+      host='https://chromium-review.googlesource.com',
+      change=5772719,
+      patchset=2,
+    ),
+    api.step_data(
+      'gerrit changes',
+      api.gerrit.get_one_change_response_data(
+        revisions={
+          '184ebe53805e102605d11f6b143486d15c23a09c': {
+            '_number': '2',
+            'commit': {
+              'message': 'Bug: 123456',
+            },
+          },
+        },
       ),
-      api.step_data(
-          'gerrit changes',
-          api.gerrit.get_one_change_response_data(
-              revisions={
-                  '184ebe53805e102605d11f6b143486d15c23a09c': {
-                      '_number': '2',
-                      'commit': {
-                          'message': 'Bug: 123456',
-                      },
-                  },
-              },),
-      ),
-      api.post_process(
-          post_process.StepCommandRE,
-          'Get CL Description',
-          ['echo', 'Bug: 123456'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(
+      post_process.StepCommandRE,
+      'Get CL Description',
+      ['echo', 'Bug: 123456'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no_cl_description',
-      api.properties(
-          host='https://chromium-review.googlesource.com',
-          change=1,
-          patchset=1,
-      ),
-      api.post_process(post_process.DropExpectation),
+    'no_cl_description',
+    api.properties(
+      host='https://chromium-review.googlesource.com',
+      change=1,
+      patchset=1,
+    ),
+    api.post_process(post_process.DropExpectation),
   )

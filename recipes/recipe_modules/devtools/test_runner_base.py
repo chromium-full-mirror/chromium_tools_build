@@ -15,8 +15,8 @@ FLAKE_DETECTION_OPTION = '--repeat=10'
 FLAKE_DETECTION_SKIPPED_TESTS_FOOTER = 'Skip-Flake-Detection'
 FLAKE_DETECTION_SKIPPED_TESTS_PATTERN_FOOTER = 'Skip-Flake-Detection-Pattern'
 
-class DevToolsTests(ABC):
 
+class DevToolsTests(ABC):
   def __init__(self, api, trigger, builder_config, coverage, step_name):
     self.api = api
     self.sw_trigger = trigger
@@ -59,14 +59,15 @@ class DevToolsTests(ABC):
 
       futures_api = getattr(self.api, 'futures', self.api.devtools.m.futures)
       shard_futures = [
-          futures_api.spawn(_collect_shard, i, task)
-          for i, task in enumerate(self.tasks)
+        futures_api.spawn(_collect_shard, i, task)
+        for i, task in enumerate(self.tasks)
       ]
       for future in shard_futures:
         step, is_valid, i = future.result()
         if not is_valid:
           results.add_infra_failure(
-              f'Infra Failure in {self.step_name} (shard #{i})')
+            f'Infra Failure in {self.step_name} (shard #{i})'
+          )
         elif step.presentation.status != self.api.step.SUCCESS:
           results.add_test_failure(f'Failure in {self.step_name} (shard #{i})')
 
@@ -79,7 +80,7 @@ class DevToolsTests(ABC):
     self.is_flake_exoneration = True
 
     self.extra_args = [
-        '--retries=5',
+      '--retries=5',
     ]
     self.exoneration_tests = sorted(test_names)
 
@@ -92,19 +93,20 @@ class DevToolsTests(ABC):
   def trigger(self, run_phase='default'):
     with self.api.step.nest(f'Trigger {self.step_name}'):
       self.tasks = self.sw_trigger.trigger(
-          step_name=self.step_name,
-          output_dir=self.output_dir,
-          test_type_tag=self.test_type_tag,
-          run_phase=run_phase,
-          commands=self.commands(),
-          env=self.construct_env(),
+        step_name=self.step_name,
+        output_dir=self.output_dir,
+        test_type_tag=self.test_type_tag,
+        run_phase=run_phase,
+        commands=self.commands(),
+        env=self.construct_env(),
       )
       invocations = [
-          inv for t in self.tasks for inv in t.get_invocation_names()
+        inv for t in self.tasks for inv in t.get_invocation_names()
       ]
       if invocations:
         self.api.resultdb.include_invocations(
-            self.api.resultdb.invocation_ids(invocations))
+          self.api.resultdb.invocation_ids(invocations)
+        )
 
   def process_results(self, coordinator=None):
     with self.api.step.nest(self.step_name):
@@ -114,9 +116,14 @@ class DevToolsTests(ABC):
           self._post_collect()
         except self.api.step.StepFailure:
           new_results.add_infra_failure(
-              f'Failed in post collect for {self.step_name}')
-    if (self.is_flake_exoneration and self.results.exonerable() and
-        new_results.can_exonerate() and self.exoneration_tests):
+            f'Failed in post collect for {self.step_name}'
+          )
+    if (
+      self.is_flake_exoneration
+      and self.results.exonerable()
+      and new_results.can_exonerate()
+      and self.exoneration_tests
+    ):
       new_results.exonerated_failures = list(self.exoneration_tests)
       self.results.task_failures = []
     self.results += new_results
@@ -132,13 +139,13 @@ class DevToolsTests(ABC):
 
   def run_tests_command(self, test_list):
     command = [
-        self.api.path.join('third_party', 'node', 'node.py'),
-        '--output',
-        f'out/{self.builder_config}/gen/test/run.js',
-        '--artifacts-dir=${ISOLATED_OUTDIR}',
-        '--skip-ninja',
-        '--verbose=2',
-        '--on-diff=throw',  # only used for screenshots tests; nop for others
+      self.api.path.join('third_party', 'node', 'node.py'),
+      '--output',
+      f'out/{self.builder_config}/gen/test/run.js',
+      '--artifacts-dir=${ISOLATED_OUTDIR}',
+      '--skip-ninja',
+      '--verbose=2',
+      '--on-diff=throw',  # only used for screenshots tests; nop for others
     ]
     if self.coverage:
       command.append('--coverage')
@@ -154,14 +161,9 @@ class DevToolsTests(ABC):
 
 
 class ExonerableTests(DevToolsTests):
-
-  def __init__(self,
-               api,
-               trigger,
-               builder_config,
-               coverage,
-               step_name,
-               shard_count=1):
+  def __init__(
+    self, api, trigger, builder_config, coverage, step_name, shard_count=1
+  ):
     super().__init__(api, trigger, builder_config, coverage, step_name)
     # Used to indicate that no task was triggered; may contain a failure if the
     # reason for not triggering qualifies as such
@@ -198,7 +200,8 @@ class ExonerableTests(DevToolsTests):
       self.skip_exoneration_result = Results()
       self.skip_exoneration_result.add_test_failure('Too many failures')
       self.api.step.empty(
-          f'Too many tests to check for flakes {self.step_name}')
+        f'Too many tests to check for flakes {self.step_name}'
+      )
       return
     self.step_name += ' (rerun)'
     self.prepare_filtered_rerun(owned_tests)
@@ -207,22 +210,22 @@ class ExonerableTests(DevToolsTests):
   def process_exoneration_results(self, test_names, coordinator=None):
     """Processes the results of the exoneration rerun.
 
-      This method is called after the exoneration rerun has completed. An
-      implementation should handle cases where the rerun was skipped
-      (due to no relevant tests or too many initial failures) by adding the skip
-      result to the overall results. Otherwise, it processes the results of
-      the rerun as a normal test run.
+    This method is called after the exoneration rerun has completed. An
+    implementation should handle cases where the rerun was skipped
+    (due to no relevant tests or too many initial failures) by adding the skip
+    result to the overall results. Otherwise, it processes the results of
+    the rerun as a normal test run.
 
-      Args:
-        test_names (dict): A dictionary where:
-          - keys are test type tags (e.g., 'e2e_tests', 'unit_tests').
-          - values are sets of test names (strings) that were initially
-            identified as failing.
-        coordinator: Optional TaskCoordinator for non-blocking task collection.
+    Args:
+      test_names (dict): A dictionary where:
+        - keys are test type tags (e.g., 'e2e_tests', 'unit_tests').
+        - values are sets of test names (strings) that were initially
+          identified as failing.
+      coordinator: Optional TaskCoordinator for non-blocking task collection.
 
-      Returns:
-        None
-      """
+    Returns:
+      None
+    """
     try:
       if self.skip_exoneration_result:
         self.results += self.skip_exoneration_result
@@ -238,15 +241,15 @@ class ExonerableTests(DevToolsTests):
   def trigger_flake_detection(self, test_names):
     """Triggers a rerun of specific tests for flake detection.
 
-      This method is called during the flake detection phase to re-run tests
-      that have been recently added or modified. An implementation should filter
-      the provided `test_names` to include only those relevant to the current
-      test type, and then triggers a new swarming task to re-run them.
+    This method is called during the flake detection phase to re-run tests
+    that have been recently added or modified. An implementation should filter
+    the provided `test_names` to include only those relevant to the current
+    test type, and then triggers a new swarming task to re-run them.
 
-      Args:
-        test_names (list): A list of test names (strings) that are candidates
-          for flake detection.
-      """
+    Args:
+      test_names (list): A list of test names (strings) that are candidates
+        for flake detection.
+    """
     self.tasks = []
     self.is_flake_exoneration = False
     self.owned_new_tests = [test for test in test_names if self.owns_test(test)]
@@ -279,21 +282,25 @@ class ExonerableTests(DevToolsTests):
     self.process_results(coordinator=coordinator)
 
   def sharding_args(self):
-    return [[
-        f'--shard-count={self.shard_count}', f'--shard-number={shard_number+1}',
-        f'--shard-bias={self.shard_bias}'
-    ] for shard_number in range(self.shard_count)]
+    return [
+      [
+        f'--shard-count={self.shard_count}',
+        f'--shard-number={shard_number + 1}',
+        f'--shard-bias={self.shard_bias}',
+      ]
+      for shard_number in range(self.shard_count)
+    ]
 
   def commands(self):
     is_flake_detection_attempt = FLAKE_DETECTION_OPTION in self.extra_args
     if is_flake_detection_attempt:
       return [
-          self.run_tests_command(args + self.owned_new_tests)
-          for args in self.sharding_args()
+        self.run_tests_command(args + self.owned_new_tests)
+        for args in self.sharding_args()
       ]
     if self.is_flake_exoneration:
       return [self.run_tests_command(self.exoneration_tests)]
     return [
-        self.run_tests_command(args + self.test_patterns)
-        for args in self.sharding_args()
+      self.run_tests_command(args + self.test_patterns)
+      for args in self.sharding_args()
     ]

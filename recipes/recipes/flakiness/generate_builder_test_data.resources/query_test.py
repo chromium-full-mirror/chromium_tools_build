@@ -15,21 +15,22 @@ from google.cloud import bigquery
 THIS_DIR = os.path.dirname(__file__)
 
 sys.path.insert(
-    0,
-    os.path.abspath(
-        os.path.join(THIS_DIR, '..', 'generate_builder_test_data.resources')))
+  0,
+  os.path.abspath(
+    os.path.join(THIS_DIR, '..', 'generate_builder_test_data.resources')
+  ),
+)
 
 import query
 
 
 class QueryTest(unittest.TestCase):
-
   def test_args(self):
     output_file = '/some/path/to/file.json'
     builder_args = [
-        'builders',
-        '--output-file',
-        output_file,
+      'builders',
+      '--output-file',
+      output_file,
     ]
 
     res = query.parse_arguments(builder_args)
@@ -40,15 +41,15 @@ class QueryTest(unittest.TestCase):
     project = 'chromium'
     builder_bucket = 'try'
     history_args = [
-        'history',
-        '--export-gs-path',
-        output_gs_path,
-        '--builder',
-        builder,
-        '--project',
-        project,
-        '--builder-bucket',
-        builder_bucket,
+      'history',
+      '--export-gs-path',
+      output_gs_path,
+      '--builder',
+      builder,
+      '--project',
+      project,
+      '--builder-bucket',
+      builder_bucket,
     ]
     res = query.parse_arguments(history_args)
     self.assertEqual(res.export_gs_path, output_gs_path)
@@ -61,9 +62,10 @@ class QueryTest(unittest.TestCase):
     self.assertEqual(res.output_file, output_file)
 
   @mock.patch(
-      'builtins.open',
-      new_callable=mock.mock_open,
-      read_data='{\"foo\":\"bar\"}\n{\"hello\":\"world\"}')
+    'builtins.open',
+    new_callable=mock.mock_open,
+    read_data='{"foo":"bar"}\n{"hello":"world"}',
+  )
   def test_format_file(self, mock_file):
     file = '/some/file.json'
     output_file = '/some/path/to/file.json'
@@ -79,9 +81,9 @@ class QueryTest(unittest.TestCase):
   def test_fetch_builders(self, mock_file, mock_client):
     output_file = '/some/path/to/file.json'
     builder_args = [
-        'builders',
-        '--output-file',
-        output_file,
+      'builders',
+      '--output-file',
+      output_file,
     ]
     args = query.parse_arguments(builder_args)
     query.fetch_builders(mock_client, args)
@@ -96,27 +98,30 @@ class QueryTest(unittest.TestCase):
     project = 'chromium'
     builder_bucket = 'try'
     history_args = [
-        'history',
-        '--export-gs-path',
-        output_gs_path,
-        '--builder',
-        builder,
-        '--project',
-        project,
-        '--builder-bucket',
-        builder_bucket,
+      'history',
+      '--export-gs-path',
+      output_gs_path,
+      '--builder',
+      builder,
+      '--project',
+      project,
+      '--builder-bucket',
+      builder_bucket,
     ]
     args = query.parse_arguments(history_args)
     query.query_test_history(mock_client, args)
 
     job_config = bigquery.job.ExtractJobConfig()
     job_config.destination_format = (
-        bigquery.job.DestinationFormat.NEWLINE_DELIMITED_JSON)
+      bigquery.job.DestinationFormat.NEWLINE_DELIMITED_JSON
+    )
 
     mock_client.query.assert_called_with(
-        query.TEST_HISTORY_QUERY.format(builder, project, builder_bucket))
+      query.TEST_HISTORY_QUERY.format(builder, project, builder_bucket)
+    )
     mock_client.extract_table.assert_called_with(
-        mock.ANY, output_gs_path, job_config=mock.ANY)
+      mock.ANY, output_gs_path, job_config=mock.ANY
+    )
 
 
 if __name__ == '__main__':

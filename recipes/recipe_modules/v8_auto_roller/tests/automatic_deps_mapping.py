@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (DoesNotRun, MustRun, DropExpectation)
+from recipe_engine.post_process import DoesNotRun, MustRun, DropExpectation
 from recipe_engine.recipe_api import Property
 from recipe_engine.config import ConfigGroup, Dict, Single, List
 
@@ -15,15 +15,15 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import v8, v8_auto_roller
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -50,14 +50,14 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   # Add defaults
   autoroller_config = {
-      'show_commit_log': False,
-      'subject': 'Generic deps update',
-      'manual_roll_reviewers': ['maik@example.com'],
+    'show_commit_log': False,
+    'subject': 'Generic deps update',
+    'manual_roll_reviewers': ['maik@example.com'],
   }
 
   update_result = api.v8_auto_roller.setup_target(
-      'v8',
-      'https://chromium.googlesource.com/v8/v8',
+    'v8',
+    'https://chromium.googlesource.com/v8/v8',
   )
   source_dir = update_result.source_root.path
   clm = api.v8_auto_roller.build_cl_manager(source_dir)
@@ -70,17 +70,17 @@ def GenTests(api: TEST_DEPS):
 
   def test(name, chromium_deps, v8_deps, *expectations):
     return api.test(
-        name,
-        api.override_step_data(
-            'Find updated deps.Read v8/DEPS',
-            api.file.read_text(v8_deps),
-        ),
-        api.override_step_data(
-            'Find updated deps.Read src/DEPS',
-            api.file.read_text(chromium_deps),
-        ),
-        *expectations,
-        api.post_process(DropExpectation),
+      name,
+      api.override_step_data(
+        'Find updated deps.Read v8/DEPS',
+        api.file.read_text(v8_deps),
+      ),
+      api.override_step_data(
+        'Find updated deps.Read src/DEPS',
+        api.file.read_text(chromium_deps),
+      ),
+      *expectations,
+      api.post_process(DropExpectation),
     )
 
   # Infer the v8's dependency version for `third_party/icu` from chromium's
@@ -90,9 +90,10 @@ def GenTests(api: TEST_DEPS):
   ie_chromium_deps = 'deps = {"src/3rd_party/icu": "https://chromium.googlesource.com/chromium/deps/icu.git@a622de35ac311c5ad390a7af80724634e5dc61ed"}'
 
   yield test(
-      'automatic_mapping',
-      ie_chromium_deps,
-      ie_v8_deps,
-      api.post_process(MustRun,
-                       'Update trusted deps.gclient setdep third_party_icu'),
+    'automatic_mapping',
+    ie_chromium_deps,
+    ie_v8_deps,
+    api.post_process(
+      MustRun, 'Update trusted deps.gclient setdep third_party_icu'
+    ),
   )

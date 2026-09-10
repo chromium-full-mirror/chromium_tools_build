@@ -27,10 +27,14 @@ def main(argv):
 
   hashes = []
   for alg in HASHING_ALGORITHMS:
-    hashes.append('%s  %s  %s' % (
+    hashes.append(
+      '%s  %s  %s'
+      % (
         alg,
         getattr(hashlib, alg)(file_contents).hexdigest(),
-        os.path.basename(args.input_file.name)))
+        os.path.basename(args.input_file.name),
+      )
+    )
 
   args.output_file.write('\n'.join(hashes) + '\n')
 

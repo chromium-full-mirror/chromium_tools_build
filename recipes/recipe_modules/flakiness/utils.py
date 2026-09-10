@@ -12,7 +12,7 @@ from RECIPE_MODULES.build.chromium_tests import steps
 
 
 # TODO (crbug/1456545) - delete this class once it's not in use.
-class TestDefinition():
+class TestDefinition:
   """A class to contain ResultDB TestReuslt Proto information.
 
   Test ID, variant hash (see go/resultdb-concepts) and whether the test comes
@@ -31,13 +31,15 @@ class TestDefinition():
                  go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
   """
 
-  def __init__(self,
-               test_id,
-               test_name=None,
-               duration_milliseconds=None,
-               test_object=None,
-               variant_hash=None,
-               file_path=None):
+  def __init__(
+    self,
+    test_id,
+    test_name=None,
+    duration_milliseconds=None,
+    test_object=None,
+    variant_hash=None,
+    file_path=None,
+  ):
     """
     Args:
       * test_id: (str) ResultDB test id
@@ -75,10 +77,12 @@ def set_to_string(test_set):
   necessary and preferred to convert to lists of sorted concatenated
   strings.
   """
-  return sorted([
+  return sorted(
+    [
       '_'.join([test_result.test_id, test_result.variant_hash])
       for test_result in test_set
-  ])
+    ]
+  )
 
 
 def get_base_test_name(test_name):
@@ -99,11 +103,13 @@ def get_actual_test_group(test_name, all_suite_test_names):
 
 
 def apply_script_test_filter(test, test_filter, repeat_count):
-  script_args = list([
+  script_args = list(
+    [
       '--gtest_repeat=%s' % str(repeat_count),
       '--gtest_filter=%s' % str(':'.join(test_filter)),
       '--shards=1',
-  ])
+    ]
+  )
   test.spec = attr.evolve(test.spec, script_args=script_args)
   return test
 
@@ -111,7 +117,8 @@ def apply_script_test_filter(test, test_filter, repeat_count):
 def apply_default_test_filter(test, test_filter, repeat_count):
   test_copy = copy.copy(test)
   options = steps.TestOptions.create(
-      test_filter=test_filter, repeat_count=repeat_count, retry_limit=0)
+    test_filter=test_filter, repeat_count=repeat_count, retry_limit=0
+  )
   test_copy.test_options = options
   return test_copy
 
@@ -119,7 +126,8 @@ def apply_default_test_filter(test, test_filter, repeat_count):
 def apply_swarming_shard_test_filter(test, test_filter, shard_runs):
   test_copy = copy.copy(test)
   options = steps.TestOptions.create(
-      test_filter=test_filter, repeat_count=shard_runs, retry_limit=0)
+    test_filter=test_filter, repeat_count=shard_runs, retry_limit=0
+  )
   test_copy.test_options = options
   # we don't use swarming's shard mechanism for endorser runs.
   test_copy.spec = test.spec.with_shards(1)

@@ -31,31 +31,33 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(
-          **{
-              '$build/chromium_3pp': {
-                  'platform': 'linux-amd64',
-                  'package_prefix': 'chromium',
-                  'preprocess': [{
-                      'name':
-                          'third_party/foo',
-                      'cmd': [
-                          '{CHECKOUT}/src/third_party/foo/bar.py',
-                          '--verbose',
-                      ]
-                  }],
-                  'gclient_config': 'chromium',
-                  'gclient_apply_config': ['android'],
-              }
-          }),
-      api.post_process(
-          post_process.MustRun,
-          'Load all packages',
-      ),
-      api.post_process(
-          post_process.MustRun,
-          'Preprocessing third_party/foo',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.properties(
+      **{
+        '$build/chromium_3pp': {
+          'platform': 'linux-amd64',
+          'package_prefix': 'chromium',
+          'preprocess': [
+            {
+              'name': 'third_party/foo',
+              'cmd': [
+                '{CHECKOUT}/src/third_party/foo/bar.py',
+                '--verbose',
+              ],
+            }
+          ],
+          'gclient_config': 'chromium',
+          'gclient_apply_config': ['android'],
+        }
+      }
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'Load all packages',
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'Preprocessing third_party/foo',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

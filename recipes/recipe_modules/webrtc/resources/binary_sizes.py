@@ -3,8 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""A tool to extract size information from a build.
-"""
+"""A tool to extract size information from a build."""
 
 from __future__ import annotations
 
@@ -16,7 +15,8 @@ import subprocess
 import sys
 
 
-READELF_LINE_RE = re.compile(r'''
+READELF_LINE_RE = re.compile(
+  r'''
     ^\s* \[\s*\d+\]  # [Nr]
     \s+  (\.\S*)     # Name
     \s+  \S+         # Type
@@ -24,13 +24,16 @@ READELF_LINE_RE = re.compile(r'''
     \s+  [a-f0-9]+   # Off
     \s+  ([a-f0-9]+) # Size
     \s+  .+$         # (several other columns)
-''', flags=re.VERBOSE | re.MULTILINE)
+''',
+  flags=re.VERBOSE | re.MULTILINE,
+)
 
 
 def _get_elf_section_size_map(path_to_binary):
   """Parse raw readelf output and return a map {section name: size in bytes}."""
-  output = subprocess.check_output(['readelf', '-S', '-W', path_to_binary],
-                                   universal_newlines=True)
+  output = subprocess.check_output(
+    ['readelf', '-S', '-W', path_to_binary], universal_newlines=True
+  )
 
   elf_map = {}
   for m in READELF_LINE_RE.finditer(output):
@@ -65,8 +68,12 @@ def main(argv):
   """Print the size of files specified to it as loose args."""
 
   parser = argparse.ArgumentParser()
-  parser.add_argument('--output', type=argparse.FileType('w'),
-                      default=sys.stdout, help='path to the JSON output file')
+  parser.add_argument(
+    '--output',
+    type=argparse.FileType('w'),
+    default=sys.stdout,
+    help='path to the JSON output file',
+  )
   parser.add_argument('files', nargs='+')
   parser.add_argument('--base-dir', default='.')
 
@@ -79,6 +86,7 @@ def main(argv):
   json.dump(sizes, options.output)
 
   return 0
+
 
 if '__main__' == __name__:
   sys.exit(main(sys.argv[1:]))

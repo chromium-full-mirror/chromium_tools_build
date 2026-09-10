@@ -4,7 +4,12 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import DoesNotRun, DropExpectation, MustRun, StepCommandContains
+from recipe_engine.post_process import (
+  DoesNotRun,
+  DropExpectation,
+  MustRun,
+  StepCommandContains,
+)
 
 from dataclasses import dataclass
 
@@ -24,6 +29,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   file: file.TEST_API
+
 
 DEFAULT_V8_DEPS = """deps = {
   'generic-dep-1': {
@@ -198,14 +204,14 @@ COLLIDING_CHROMIUM_DEPS = """deps = {
 def RunSteps(api: DEPS):
   # Add defaults
   autoroller_config = {
-      'show_commit_log': False,
-      'subject': 'Generic deps update',
-      'manual_roll_reviewers': ['maik@example.com'],
+    'show_commit_log': False,
+    'subject': 'Generic deps update',
+    'manual_roll_reviewers': ['maik@example.com'],
   }
 
   update_result = api.v8_auto_roller.setup_target(
-      'v8',
-      'https://chromium.googlesource.com/v8/v8',
+    'v8',
+    'https://chromium.googlesource.com/v8/v8',
   )
   source_dir = update_result.source_root.path
   clm = api.v8_auto_roller.build_cl_manager(source_dir)
@@ -218,63 +224,70 @@ def GenTests(api: TEST_DEPS):
 
   def test(name, chromium_deps, v8_deps, *expectations):
     return api.test(
-        name,
-        api.override_step_data(
-            'Find updated deps.Read v8/DEPS',
-            api.file.read_text(v8_deps),
-        ),
-        api.override_step_data(
-            'Find updated deps.Read src/DEPS',
-            api.file.read_text(chromium_deps),
-        ),
-        *expectations,
-        api.post_process(DropExpectation),
+      name,
+      api.override_step_data(
+        'Find updated deps.Read v8/DEPS',
+        api.file.read_text(v8_deps),
+      ),
+      api.override_step_data(
+        'Find updated deps.Read src/DEPS',
+        api.file.read_text(chromium_deps),
+      ),
+      *expectations,
+      api.post_process(DropExpectation),
     )
 
   yield test(
-      'update gcs deps',
-      DEFAULT_CHROMIUM_DEPS,
-      DEFAULT_V8_DEPS,
-      api.post_process(MustRun,
-                       'Update trusted deps.gclient setdep generic-dep-1'),
+    'update gcs deps',
+    DEFAULT_CHROMIUM_DEPS,
+    DEFAULT_V8_DEPS,
+    api.post_process(
+      MustRun, 'Update trusted deps.gclient setdep generic-dep-1'
+    ),
   )
 
   yield test(
-      'update clang deps', CLANG_CHROMIUM_DEPS, CLANG_V8_DEPS,
-      api.post_process(
-          StepCommandContains,
-          'Update trusted deps.gclient setdep third_party_llvm-build_Release+Asserts',
-          [
-              'setdep', '-r',
-              'third_party/llvm-build/Release+Asserts@Linux_x64/llvm-code-coverage-llvmorg-19-init-NEWVERSION.tar.xz,sum-3,3,13?Linux_x64/clang-llvmorg-19-init-STABLEVERSION.tar.xz,sum-1,1,11'
-          ],
-      ))
-
-  yield test(
-      'fail to find matching source dep',
-      "deps = {}",
-      DEFAULT_V8_DEPS,
-      api.expect_exception('NotImplementedError'),
+    'update clang deps',
+    CLANG_CHROMIUM_DEPS,
+    CLANG_V8_DEPS,
+    api.post_process(
+      StepCommandContains,
+      'Update trusted deps.gclient setdep third_party_llvm-build_Release+Asserts',
+      [
+        'setdep',
+        '-r',
+        'third_party/llvm-build/Release+Asserts@Linux_x64/llvm-code-coverage-llvmorg-19-init-NEWVERSION.tar.xz,sum-3,3,13?Linux_x64/clang-llvmorg-19-init-STABLEVERSION.tar.xz,sum-1,1,11',
+      ],
+    ),
   )
 
   yield test(
-      'prevent colliding gcs deps',
-      COLLIDING_CHROMIUM_DEPS,
-      COLLIDING_V8_DEPS,
-      api.post_process(
-          StepCommandContains,
-          'Update trusted deps.gclient setdep third_party_llvm-libclang',
-          [
-              'setdep', '-r',
-              'third_party/llvm-libclang@Linux_x64/rust-libclang-NEWVERSION.tar.xz,sum-libclang-new,101,11'
-          ],
-      ),
-      api.post_process(
-          StepCommandContains,
-          'Update trusted deps.gclient setdep third_party_rust-toolchain',
-          [
-              'setdep', '-r',
-              'third_party/rust-toolchain@Linux_x64/rust-toolchain-NEWVERSION.tar.xz,sum-rust-new,201,21'
-          ],
-      ),
+    'fail to find matching source dep',
+    "deps = {}",
+    DEFAULT_V8_DEPS,
+    api.expect_exception('NotImplementedError'),
+  )
+
+  yield test(
+    'prevent colliding gcs deps',
+    COLLIDING_CHROMIUM_DEPS,
+    COLLIDING_V8_DEPS,
+    api.post_process(
+      StepCommandContains,
+      'Update trusted deps.gclient setdep third_party_llvm-libclang',
+      [
+        'setdep',
+        '-r',
+        'third_party/llvm-libclang@Linux_x64/rust-libclang-NEWVERSION.tar.xz,sum-libclang-new,101,11',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'Update trusted deps.gclient setdep third_party_rust-toolchain',
+      [
+        'setdep',
+        '-r',
+        'third_party/rust-toolchain@Linux_x64/rust-toolchain-NEWVERSION.tar.xz,sum-rust-new,201,21',
+      ],
+    ),
   )

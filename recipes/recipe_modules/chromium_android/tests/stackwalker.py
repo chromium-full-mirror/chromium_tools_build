@@ -33,30 +33,30 @@ def RunSteps(api: DEPS):
   api.chromium.set_config('chromium')
   build_dir = api.chromium.default_build_dir(source_dir)
 
-  api.chromium_android.stackwalker(source_dir,
-                                   [build_dir / 'lib.unstripped/libchrome.so'])
+  api.chromium_android.stackwalker(
+    source_dir, [build_dir / 'lib.unstripped/libchrome.so']
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium.ci_build(),
-      api.path.exists(
-          api.path.start_dir /
-          'checkout/out/2796-Linux_Builder/lib.unstripped/libchrome.so',
-          api.path.start_dir /
-          'checkout/out/2796-Linux_Builder/microdump_stackwalk',
-          api.path.start_dir / 'checkout/out/2796-Linux_Builder/dump_syms',
-      ),
-      api.post_process(StepSuccess,
-                       'generate breakpad symbols for libchrome.so'),
-      api.post_process(StepSuccess, 'symbolized breakpad crashes'),
-      api.post_process(DropExpectation),
+    'basic',
+    api.chromium.ci_build(),
+    api.path.exists(
+      api.path.start_dir
+      / 'checkout/out/2796-Linux_Builder/lib.unstripped/libchrome.so',
+      api.path.start_dir
+      / 'checkout/out/2796-Linux_Builder/microdump_stackwalk',
+      api.path.start_dir / 'checkout/out/2796-Linux_Builder/dump_syms',
+    ),
+    api.post_process(StepSuccess, 'generate breakpad symbols for libchrome.so'),
+    api.post_process(StepSuccess, 'symbolized breakpad crashes'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'missing_binaries',
-      api.chromium.ci_build(),
-      api.post_process(StepSuccess, 'skipping stackwalker step'),
-      api.post_process(DropExpectation),
+    'missing_binaries',
+    api.chromium.ci_build(),
+    api.post_process(StepSuccess, 'skipping stackwalker step'),
+    api.post_process(DropExpectation),
   )

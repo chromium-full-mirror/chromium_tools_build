@@ -18,11 +18,11 @@ import sys
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(
-    0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'scripts'))
+  0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'scripts'))
 )
 sys.path.insert(
-    0,
-    THIS_DIR,
+  0,
+  THIS_DIR,
 )
 
 import bot_utils
@@ -46,7 +46,7 @@ def main():
   option_parser = optparse.OptionParser(usage=USAGE)
 
   option_parser.add_option(
-      '--target', default='Release', help='build target (Debug or Release)'
+    '--target', default='Release', help='build target (Debug or Release)'
   )
   option_parser.add_option('--build-dir', help='Chromium build directory')
 

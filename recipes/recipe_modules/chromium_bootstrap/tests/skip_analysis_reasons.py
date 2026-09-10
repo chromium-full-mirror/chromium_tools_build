@@ -36,8 +36,8 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium_bootstrap.properties(skip_analysis_reasons=['foo', 'bar']),
-      api.properties(expected_reasons=['foo', 'bar']),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium_bootstrap.properties(skip_analysis_reasons=['foo', 'bar']),
+    api.properties(expected_reasons=['foo', 'bar']),
+    api.post_process(post_process.DropExpectation),
   )

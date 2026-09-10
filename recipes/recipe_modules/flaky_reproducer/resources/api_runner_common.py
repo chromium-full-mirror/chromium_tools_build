@@ -11,10 +11,15 @@ import json
 
 from typing import Callable, List, get_args, get_origin, get_type_hints
 
-from libs.result_summary import (create_result_summary_from_output_json,
-                                 BaseResultSummary)
-from libs.test_binary import (create_test_binary_from_jsonish, BaseTestBinary,
-                              TaskRequest)
+from libs.result_summary import (
+  create_result_summary_from_output_json,
+  BaseResultSummary,
+)
+from libs.test_binary import (
+  create_test_binary_from_jsonish,
+  BaseTestBinary,
+  TaskRequest,
+)
 from libs.strategies import ReproducingStep
 
 
@@ -40,22 +45,24 @@ def type_ReproducingStep(input_arg):
 
 
 type_mapping = {
-    TaskRequest: type_TaskRequest,
-    BaseTestBinary: type_BaseTestBinary,
-    BaseResultSummary: type_BaseResultSummary,
-    ReproducingStep: type_ReproducingStep,
+  TaskRequest: type_TaskRequest,
+  BaseTestBinary: type_BaseTestBinary,
+  BaseResultSummary: type_BaseResultSummary,
+  ReproducingStep: type_ReproducingStep,
 }
 
 
 def parse_args(args: list[str], methods: dict[str, Callable]):
   parser = argparse.ArgumentParser(
-      description='Flaky reproducer libs API runner. This is to provide an'
-      ' interface bridging recipe and the script running in swarming.')
+    description='Flaky reproducer libs API runner. This is to provide an'
+    ' interface bridging recipe and the script running in swarming.'
+  )
   subparsers = parser.add_subparsers(
-      title='methods',
-      description='Script libs API methods',
-      dest='method',
-      required=True)
+    title='methods',
+    description='Script libs API methods',
+    dest='method',
+    required=True,
+  )
 
   for method, func in methods.items():
     subparser = subparsers.add_parser(method, help=func.__doc__)
@@ -64,8 +71,10 @@ def parse_args(args: list[str], methods: dict[str, Callable]):
     for parameter in method_signature.parameters.values():
       nargs = None
       argument_type = anns[parameter.name]
-      if get_origin(argument_type) == list and len(
-          typ_args := get_args(argument_type)) == 1:
+      if (
+        get_origin(argument_type) == list
+        and len(typ_args := get_args(argument_type)) == 1
+      ):
         nargs = '*'
         argument_type = typ_args[0]
       type_func = type_mapping.get(argument_type, argument_type)

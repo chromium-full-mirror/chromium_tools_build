@@ -26,11 +26,11 @@ class SuiteSafetyDetails(TypedDict, total=False):
 
 
 def evaluate_rts(
-    api: recipe_api.RecipeApi,
-    build_dir: Path,
-    tests: list[steps.Test],
-    banned_suites: set[str],
-    active_suites: set[str],
+  api: recipe_api.RecipeApi,
+  build_dir: Path,
+  tests: list[steps.Test],
+  banned_suites: set[str],
+  active_suites: set[str],
 ) -> None:
   """RTS safety evaluation logic.
 
@@ -52,7 +52,8 @@ def evaluate_rts(
   with api.m.step.nest(step_name) as presentation:
     try:
       evaluation_results, missing_filter_suites = _evaluate_all_tests(
-          api, build_dir, tests, banned_suites, active_suites or set())
+        api, build_dir, tests, banned_suites, active_suites or set()
+      )
       if not evaluation_results:
         step_text = 'No RTS targets had generated filter files or test results.'
         presentation.step_text = step_text
@@ -60,22 +61,28 @@ def evaluate_rts(
         return
 
       summary_data = _calculate_overall_summary(evaluation_results)
-      _present_evaluation_results(api, presentation, evaluation_results,
-                                  summary_data, missing_filter_suites)
+      _present_evaluation_results(
+        api,
+        presentation,
+        evaluation_results,
+        summary_data,
+        missing_filter_suites,
+      )
       presentation.properties['rts_evaluation_status'] = 'SUCCESS'
     except Exception as e:
       presentation.step_text = (
-          f'RTS safety evaluation encountered internal error: {e}')
+        f'RTS safety evaluation encountered internal error: {e}'
+      )
       presentation.properties['rts_evaluation_status'] = 'ERROR'
       presentation.properties['rts_evaluation_error'] = str(e)
 
 
 def _evaluate_all_tests(
-    api: recipe_api.RecipeApi,
-    build_dir: Path,
-    tests: list[steps.Test],
-    banned_suites: set[str],
-    active_suites: set[str],
+  api: recipe_api.RecipeApi,
+  build_dir: Path,
+  tests: list[steps.Test],
+  banned_suites: set[str],
+  active_suites: set[str],
 ) -> tuple[dict[str, SuiteSafetyDetails], list[str]]:
   """Evaluates RTS performance across all given tests."""
   evaluation_results: dict[str, SuiteSafetyDetails] = {}
@@ -102,15 +109,16 @@ def _evaluate_all_tests(
 
 
 def _get_skipped_tests(
-    api: recipe_api.RecipeApi,
-    target_name: str,
-    filter_file_path: Path,
+  api: recipe_api.RecipeApi,
+  target_name: str,
+  filter_file_path: Path,
 ) -> set[str]:
   """Reads the skipped tests from the filter file."""
   filter_content = api.m.file.read_text(
-      'read %s filter file' % target_name,
-      filter_file_path,
-      test_data='-TestName1\n-TestName2')
+    'read %s filter file' % target_name,
+    filter_file_path,
+    test_data='-TestName1\n-TestName2',
+  )
   skipped_tests = set()
   for line in filter_content.splitlines():
     line = line.strip()
@@ -120,10 +128,10 @@ def _get_skipped_tests(
 
 
 def _evaluate_test_suite(
-    test: steps.Test,
-    skipped_tests: set[str],
-    is_banned: bool,
-    is_active: bool,
+  test: steps.Test,
+  skipped_tests: set[str],
+  is_banned: bool,
+  is_active: bool,
 ) -> SuiteSafetyDetails | None:
   """Evaluates RTS performance for a single test."""
   status = test.get_status('with patch')
@@ -131,9 +139,9 @@ def _evaluate_test_suite(
     return None
 
   res: SuiteSafetyDetails = {
-      'test_suite': test.name,
-      'rts_skipped_tests_count': len(skipped_tests),
-      'rts_banned': is_banned,
+    'test_suite': test.name,
+    'rts_skipped_tests_count': len(skipped_tests),
+    'rts_banned': is_banned,
   }
 
   if is_active:
@@ -152,54 +160,62 @@ def _evaluate_test_suite(
 
     res['unexpected_failures_count'] = len(actual_failures)
     caught_failures_list = [
-        name for name in actual_failures if name not in skipped_tests
+      name for name in actual_failures if name not in skipped_tests
     ]
     missed_failures_list = [
-        name for name in actual_failures if name in skipped_tests
+      name for name in actual_failures if name in skipped_tests
     ]
     res['caught_failures_count'] = len(caught_failures_list)
     if missed_failures_list:
       res['missed_failures'] = missed_failures_list[:50]
     res['test_recall_rate'] = (
-        float(len(caught_failures_list)) /
-        len(actual_failures) if actual_failures else 1.0)
+      float(len(caught_failures_list)) / len(actual_failures)
+      if actual_failures
+      else 1.0
+    )
 
   return res
 
 
 def _calculate_overall_summary(
-    evaluation_results: dict[str, SuiteSafetyDetails],) -> dict[str, Any]:
+  evaluation_results: dict[str, SuiteSafetyDetails],
+) -> dict[str, Any]:
   """Calculates overall RTS evaluation summary."""
   results_list = evaluation_results.values()
   total_rts_skipped_tests = sum(
-      res.get('rts_skipped_tests_count', 0)
-      for res in results_list
-      if res.get('actively_filtered', False))
+    res.get('rts_skipped_tests_count', 0)
+    for res in results_list
+    if res.get('actively_filtered', False)
+  )
 
   inactive_results = [
-      res for res in results_list if not res.get('actively_filtered', False)
+    res for res in results_list if not res.get('actively_filtered', False)
   ]
   total_rts_inactive_skipped_tests = sum(
-      res.get('rts_skipped_tests_count', 0) for res in inactive_results)
+    res.get('rts_skipped_tests_count', 0) for res in inactive_results
+  )
   actual_failures = sum(
-      res.get('unexpected_failures_count', 0) for res in inactive_results)
+    res.get('unexpected_failures_count', 0) for res in inactive_results
+  )
   caught_failures = sum(
-      res.get('caught_failures_count', 0) for res in inactive_results)
+    res.get('caught_failures_count', 0) for res in inactive_results
+  )
   has_invalid_suites = any(
-      res.get('is_invalid', False) for res in inactive_results)
+    res.get('is_invalid', False) for res in inactive_results
+  )
 
   has_failures = actual_failures > 0 or has_invalid_suites
 
   summary_data: dict[str, Any] = {
-      'had_unexpected_failures': has_failures,
-      'total_rts_skipped_tests': total_rts_skipped_tests,
-      'total_rts_inactive_skipped_tests': total_rts_inactive_skipped_tests,
+    'had_unexpected_failures': has_failures,
+    'total_rts_skipped_tests': total_rts_skipped_tests,
+    'total_rts_inactive_skipped_tests': total_rts_inactive_skipped_tests,
   }
 
-
   if has_failures:
-    test_recall = (float(caught_failures) /
-                   actual_failures) if actual_failures > 0 else 1.0
+    test_recall = (
+      (float(caught_failures) / actual_failures) if actual_failures > 0 else 1.0
+    )
     builder_recall = 1.0 if (caught_failures > 0 or has_invalid_suites) else 0.0
     summary_data['test_recall_rate'] = test_recall
     summary_data['builder_recall_rate'] = builder_recall
@@ -211,63 +227,73 @@ def _calculate_overall_summary(
 
 
 def _present_evaluation_results(
-    api: recipe_api.RecipeApi,
-    presentation: StepPresentation,
-    evaluation_results: dict[str, SuiteSafetyDetails],
-    summary_data: dict[str, Any],
-    missing_filter_suites: list[str],
+  api: recipe_api.RecipeApi,
+  presentation: StepPresentation,
+  evaluation_results: dict[str, SuiteSafetyDetails],
+  summary_data: dict[str, Any],
+  missing_filter_suites: list[str],
 ) -> None:
   """Presents RTS evaluation results as a step and output properties."""
   total_skipped = summary_data['total_rts_skipped_tests']
-  total_inactive_skipped = summary_data.get('total_rts_inactive_skipped_tests',
-                                            0)
+  total_inactive_skipped = summary_data.get(
+    'total_rts_inactive_skipped_tests', 0
+  )
   results_list = evaluation_results.values()
 
   if summary_data['had_unexpected_failures']:
     test_recall_pct = summary_data['test_recall_rate'] * 100
     builder_recall_pct = summary_data['builder_recall_rate'] * 100
     inactive_results = [
-        res for res in results_list if not res.get('actively_filtered', False)
+      res for res in results_list if not res.get('actively_filtered', False)
     ]
     actual_failures = sum(
-        res.get('unexpected_failures_count', 0) for res in inactive_results)
+      res.get('unexpected_failures_count', 0) for res in inactive_results
+    )
     caught_failures = sum(
-        res.get('caught_failures_count', 0) for res in inactive_results)
+      res.get('caught_failures_count', 0) for res in inactive_results
+    )
     summary_lines = [
-        'RTS Evaluation Summary',
-        'Overall Test Recall: %.2f%% (%d/%d caught)' %
-        (test_recall_pct, caught_failures, actual_failures),
-        'Overall Builder Recall: %.2f%%' % builder_recall_pct,
+      'RTS Evaluation Summary',
+      'Overall Test Recall: %.2f%% (%d/%d caught)'
+      % (test_recall_pct, caught_failures, actual_failures),
+      'Overall Builder Recall: %.2f%%' % builder_recall_pct,
     ]
   else:
     summary_lines = [
-        'RTS Evaluation Summary',
-        'Overall Test Recall: 100.00% (0/0 caught)',
-        'Overall Builder Recall: 100.00%',
+      'RTS Evaluation Summary',
+      'Overall Test Recall: 100.00% (0/0 caught)',
+      'Overall Builder Recall: 100.00%',
     ]
 
   if total_skipped > 0:
     summary_lines.append('Total Tests Skipped by RTS: %d' % total_skipped)
   if total_inactive_skipped > 0:
-    summary_lines.append('Total Inactive Tests Skipped by RTS: %d' %
-                         total_inactive_skipped)
+    summary_lines.append(
+      'Total Inactive Tests Skipped by RTS: %d' % total_inactive_skipped
+    )
 
   if missing_filter_suites:
     summary_lines.append('')
-    summary_lines.append('Missing RTS filter files for: %s' %
-                         ', '.join(sorted(missing_filter_suites)))
+    summary_lines.append(
+      'Missing RTS filter files for: %s'
+      % ', '.join(sorted(missing_filter_suites))
+    )
 
   presentation.step_text = '\n'.join(summary_lines)
 
   suite_safety_details = {
-      name: res
-      for name, res in evaluation_results.items()
-      if (res.get('actively_filtered', False) or res.get(
-          'test_recall_rate', 1.0) < 1.0 or res.get('is_invalid', False))
+    name: res
+    for name, res in evaluation_results.items()
+    if (
+      res.get('actively_filtered', False)
+      or res.get('test_recall_rate', 1.0) < 1.0
+      or res.get('is_invalid', False)
+    )
   }
 
   presentation.properties['rts_safety_summary'] = summary_data
   if suite_safety_details:
     presentation.properties['rts_suite_safety_details'] = suite_safety_details
     presentation.logs['rts_suite_safety_details'] = api.m.json.dumps(
-        suite_safety_details, indent=2).splitlines()
+      suite_safety_details, indent=2
+    ).splitlines()

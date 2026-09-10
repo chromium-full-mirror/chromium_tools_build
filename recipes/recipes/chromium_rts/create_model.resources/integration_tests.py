@@ -24,14 +24,20 @@ def main(raw_args):
   with temp_dir() as out_dir:
     # Mutate the checkout for the minimal amount of time.
     with code_change(args.chromium_checkout):
-      subprocess.check_call([
-        args.rts_exec,
-        'select',
-        '-checkout', args.chromium_checkout, \
-        '-model-dir', args.model_dir,
-        '-target-change-recall', '0.95',
-        '-out', out_dir, \
-      ])
+      subprocess.check_call(
+        [
+          args.rts_exec,
+          'select',
+          '-checkout',
+          args.chromium_checkout,
+          '-model-dir',
+          args.model_dir,
+          '-target-change-recall',
+          '0.95',
+          '-out',
+          out_dir,
+        ]
+      )
 
     count = 0
     with open(os.path.join(out_dir, 'browser_tests.filter')) as f:
@@ -44,14 +50,16 @@ def main(raw_args):
 def parse_args(raw_args):
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--rts-exec', required=True,
-      help='Path to the RTS execuable.')
+    '--rts-exec', required=True, help='Path to the RTS execuable.'
+  )
   parser.add_argument(
-      '--model-dir', required=True,
-      help='Path to the RTS model.')
+    '--model-dir', required=True, help='Path to the RTS model.'
+  )
   parser.add_argument(
-      '--chromium-checkout', required=True,
-      help='Path to the Chromium checkout. Will be mutated')
+    '--chromium-checkout',
+    required=True,
+    help='Path to the Chromium checkout. Will be mutated',
+  )
   return parser.parse_args(raw_args)
 
 
@@ -66,8 +74,14 @@ def temp_dir():
 
 @contextlib.contextmanager
 def code_change(checkout_dir):
-  file_name = os.path.join(checkout_dir, 'chrome', 'browser', 'ui', 'zoom',
-                           'chrome_zoom_level_otr_delegate.cc')
+  file_name = os.path.join(
+    checkout_dir,
+    'chrome',
+    'browser',
+    'ui',
+    'zoom',
+    'chrome_zoom_level_otr_delegate.cc',
+  )
   assert os.path.isfile(file_name), file_name
   add_blank_line(file_name)
   try:

@@ -13,13 +13,16 @@ def ProcessOptions():
   """Process options from command line."""
   argparser = argparse.ArgumentParser(add_help=False)
   argparser.add_argument(
-      '--binary-path', help='Absolute binary path to execute.')
+    '--binary-path', help='Absolute binary path to execute.'
+  )
   argparser.add_argument('--folder', help='Folder to compress')
   argparser.add_argument('--output-file', help='Output file')
   argparser.add_argument(
-      '--compression-algorithm', help='Optional. Set compression algorithm.')
+    '--compression-algorithm', help='Optional. Set compression algorithm.'
+  )
   argparser.add_argument(
-      '--compression-level', help='Optional. Set compression level.')
+    '--compression-level', help='Optional. Set compression level.'
+  )
   argparser.add_argument('--block-size', help='Optional. Set block size.')
   args = argparser.parse_args()
   return args

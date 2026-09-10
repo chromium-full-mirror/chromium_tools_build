@@ -26,7 +26,7 @@ def RunSteps(api: DEPS):
 def GenTests(api: RecipeTestApi):
 
   yield api.test(
-      'basic',
-      api.post_process(post_process.MustRun, 'Finding profile merge errors'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.MustRun, 'Finding profile merge errors'),
+    api.post_process(post_process.DropExpectation),
   )

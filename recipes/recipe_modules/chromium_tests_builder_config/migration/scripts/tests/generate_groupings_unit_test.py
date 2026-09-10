@@ -38,36 +38,40 @@ class ArgumentParser(argparse.ArgumentParser):
 
 
 class GenerateGroupingsUnitTest(TestCase):
-
   def setUp(self):
     self.setUpPyfakefs()
 
   def test_parse_args_empty(self):
-    args = generate_groupings.parse_args(['foo', 'bar', 'baz'],
-                                         parser_type=ArgumentParser)
+    args = generate_groupings.parse_args(
+      ['foo', 'bar', 'baz'], parser_type=ArgumentParser
+    )
 
     self.assertEqual(args.func, generate_groupings.generate_groupings)
-    self.assertEqual(args.groupings_dir,
-                     generate_groupings.DEFAULT_GROUPINGS_DIR)
+    self.assertEqual(
+      args.groupings_dir, generate_groupings.DEFAULT_GROUPINGS_DIR
+    )
     self.assertCountEqual(args.projects, ['foo', 'bar', 'baz'])
 
   def test_parse_args_validate(self):
-    args = generate_groupings.parse_args(['--validate', 'foo'],
-                                         parser_type=ArgumentParser)
+    args = generate_groupings.parse_args(
+      ['--validate', 'foo'], parser_type=ArgumentParser
+    )
 
     self.assertEqual(args.func, generate_groupings.validate_groupings)
 
   def test_parse_args_groupings_dir(self):
     args = generate_groupings.parse_args(
-        ['--groupings-dir', 'fake-groupings-dir', 'foo'],
-        parser_type=ArgumentParser)
+      ['--groupings-dir', 'fake-groupings-dir', 'foo'],
+      parser_type=ArgumentParser,
+    )
 
     self.assertEqual(args.groupings_dir, 'fake-groupings-dir')
 
   def test_generate_groupings(self):
     args = generate_groupings.parse_args(
-        ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
-        parser_type=ArgumentParser)
+      ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
+      parser_type=ArgumentParser,
+    )
     calls = []
 
     def generator(project, output_path):
@@ -75,20 +79,26 @@ class GenerateGroupingsUnitTest(TestCase):
 
     generate_groupings.generate_groupings(args, groupings_generator=generator)
 
-    self.assertCountEqual(calls, [
+    self.assertCountEqual(
+      calls,
+      [
         ('foo', '/fake-groupings-dir/foo.json'),
         ('bar', '/fake-groupings-dir/bar.json'),
         ('baz', '/fake-groupings-dir/baz.json'),
-    ])
+      ],
+    )
 
   def test_validate_groupings_failure(self):
     args = generate_groupings.parse_args(
-        ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
-        parser_type=ArgumentParser)
+      ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
+      parser_type=ArgumentParser,
+    )
     self.fs.create_file(
-        '/fake-groupings-dir/foo.json', contents='"contents for foo"')
+      '/fake-groupings-dir/foo.json', contents='"contents for foo"'
+    )
     self.fs.create_file(
-        '/fake-groupings-dir/bar.json', contents='"old contents for bar"')
+      '/fake-groupings-dir/bar.json', contents='"old contents for bar"'
+    )
 
     def generator(project, output_path):
       with open(output_path, 'w') as f:
@@ -101,14 +111,18 @@ class GenerateGroupingsUnitTest(TestCase):
 
   def test_validate_groupings_success(self):
     args = generate_groupings.parse_args(
-        ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
-        parser_type=ArgumentParser)
+      ['--groupings-dir', '/fake-groupings-dir', 'foo', 'bar', 'baz'],
+      parser_type=ArgumentParser,
+    )
     self.fs.create_file(
-        '/fake-groupings-dir/foo.json', contents='"contents for foo"')
+      '/fake-groupings-dir/foo.json', contents='"contents for foo"'
+    )
     self.fs.create_file(
-        '/fake-groupings-dir/bar.json', contents='"contents for bar"')
+      '/fake-groupings-dir/bar.json', contents='"contents for bar"'
+    )
     self.fs.create_file(
-        '/fake-groupings-dir/baz.json', contents='"contents for baz"')
+      '/fake-groupings-dir/baz.json', contents='"contents for baz"'
+    )
 
     def generator(project, output_path):
       with open(output_path, 'w') as f:

@@ -32,29 +32,37 @@ def parse_args(args=None):
         migrating.
   """
   parser = argparse.ArgumentParser(
-      description=('Produce the starlark to migrate the config '
-                   'for a group of related builders src-side'))
+    description=(
+      'Produce the starlark to migrate the config '
+      'for a group of related builders src-side'
+    )
+  )
 
   parser.add_argument(
-      '--infra-config-dir',
-      help=('Path to the infra/config directory to update.'
-            ' If not set, code snippets will be output to stdout instead.'))
+    '--infra-config-dir',
+    help=(
+      'Path to the infra/config directory to update.'
+      ' If not set, code snippets will be output to stdout instead.'
+    ),
+  )
   parser.add_argument(
-      '--buildozer-binary',
-      help=('The buildozer binary to use.'
-            ' The path can be an absolute or relative path,'
-            ' or a simply the name of the command if it is on PATH.'))
+    '--buildozer-binary',
+    help=(
+      'The buildozer binary to use.'
+      ' The path can be an absolute or relative path,'
+      ' or a simply the name of the command if it is on PATH.'
+    ),
+  )
   parser.add_argument(
-      'builders',
-      nargs='+',
-      help='The builders to migrate, in the form <builder group>:<builder name>'
+    'builders',
+    nargs='+',
+    help='The builders to migrate, in the form <builder group>:<builder name>',
   )
 
   return parser.parse_args(args)
 
 
 class InvalidBuilderError(ValueError):
-
   def __init__(self, invalid_builders):
     super().__init__(invalid_builders)
     self._invalid_builders = tuple(invalid_builders)
@@ -65,14 +73,15 @@ class InvalidBuilderError(ValueError):
 
   def __str__(self):
     invalid_builder_str = ', '.join(
-        repr(b) for b in sorted(self.invalid_builders))
+      repr(b) for b in sorted(self.invalid_builders)
+    )
     return (
-        f'The following builders to migrate are invalid: {invalid_builder_str},'
-        ' they must be in the form <builder group>:<builder name>')
+      f'The following builders to migrate are invalid: {invalid_builder_str},'
+      ' they must be in the form <builder group>:<builder name>'
+    )
 
 
 class MigrationError(Exception):
-
   def __init__(self, reason):
     super().__init__(reason)
     self.reason = reason
@@ -99,31 +108,32 @@ _RECIPES_PY = os.path.normpath(f'{__file__}/../../../../../recipes.py')
 _BUILDOZER_WRAPPER_PY = os.path.normpath(f'{__file__}/../buildozer_wrapper.py')
 
 
-def _run_builder_config_migration_recipe(builders_to_migrate, output_path,
-                                         json_output):
+def _run_builder_config_migration_recipe(
+  builders_to_migrate, output_path, json_output
+):
   properties = {
-      'migration_operation': {
-          'builders_to_migrate': [{
-              'builder_group': group,
-              'builder': name
-          } for (group, name) in builders_to_migrate],
-          'output_path': output_path,
-          'json_output': json_output,
-      },
+    'migration_operation': {
+      'builders_to_migrate': [
+        {'builder_group': group, 'builder': name}
+        for (group, name) in builders_to_migrate
+      ],
+      'output_path': output_path,
+      'json_output': json_output,
+    },
   }
 
   with tempfile.TemporaryDirectory() as d:
     result_json_path = os.path.join(d, 'result.json')
 
     cmd = [
-        sys.executable,
-        _RECIPES_PY,
-        'run',
-        '--output-result-json',
-        result_json_path,
-        '--properties',
-        json.dumps(properties),
-        'chromium/builder_config_migration',
+      sys.executable,
+      _RECIPES_PY,
+      'run',
+      '--output-result-json',
+      result_json_path,
+      '--properties',
+      json.dumps(properties),
+      'chromium/builder_config_migration',
     ]
 
     env = os.environ.copy()
@@ -142,11 +152,11 @@ def _run_builder_config_migration_recipe(builders_to_migrate, output_path,
 
 def _run_buildozer(input_json_path, infra_config_dir, buildozer_binary):
   cmd = [
-      sys.executable,
-      _BUILDOZER_WRAPPER_PY,
-      '--infra-config-dir',
-      infra_config_dir,
-      input_json_path,
+    sys.executable,
+    _BUILDOZER_WRAPPER_PY,
+    '--infra-config-dir',
+    infra_config_dir,
+    input_json_path,
   ]
   if buildozer_binary is not None:
     cmd.extend(['--buildozer-binary', buildozer_binary])
@@ -169,12 +179,14 @@ def main():
         json_output = False
         output_path = os.path.join(d, 'migration.txt')
 
-      _run_builder_config_migration_recipe(builders_to_migrate, output_path,
-                                           json_output)
+      _run_builder_config_migration_recipe(
+        builders_to_migrate, output_path, json_output
+      )
 
       if args.infra_config_dir:
-        _run_buildozer(output_path, args.infra_config_dir,
-                       args.buildozer_binary)
+        _run_buildozer(
+          output_path, args.infra_config_dir, args.buildozer_binary
+        )
       else:
         with open(output_path) as f:
           migration = f.read()

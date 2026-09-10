@@ -53,18 +53,21 @@ class TestMergeDirectories(unittest.TestCase):
     """Test copying new files and directories from B to A."""
     self.create_file(self.dir_b, "file1.txt", "Content from B1")
     self.create_file(
-        os.path.join(self.dir_b, "sub_b"), "file2.txt", "Content from B2")
+      os.path.join(self.dir_b, "sub_b"), "file2.txt", "Content from B2"
+    )
 
     merge_directories(self.dir_a, self.dir_b)
 
     # Check if files were created in A
     self.assertTrue(os.path.exists(os.path.join(self.dir_a, "file1.txt")))
     self.assertTrue(
-        os.path.exists(os.path.join(self.dir_a, "sub_b", "file2.txt")))
+      os.path.exists(os.path.join(self.dir_a, "sub_b", "file2.txt"))
+    )
 
     # Check content of copied file
     with open(
-        os.path.join(self.dir_a, "file1.txt"), 'r', encoding='utf-8') as f:
+      os.path.join(self.dir_a, "file1.txt"), 'r', encoding='utf-8'
+    ) as f:
       self.assertEqual(f.read(), "Content from B1")
 
   # --- Test Case 2: Overwriting Existing Files ---
@@ -92,7 +95,8 @@ class TestMergeDirectories(unittest.TestCase):
     self.create_file(self.dir_a, "unique_a.log", "Only in A")
     # Unique subdirectory in A
     self.create_file(
-        os.path.join(self.dir_a, "sub_a"), "file_a.txt", "In A sub_a")
+      os.path.join(self.dir_a, "sub_a"), "file_a.txt", "In A sub_a"
+    )
 
     # File in B
     self.create_file(self.dir_b, "file_b.txt", "Only in B")
@@ -102,11 +106,13 @@ class TestMergeDirectories(unittest.TestCase):
     # Check that unique A files/dirs still exist
     self.assertTrue(os.path.exists(os.path.join(self.dir_a, "unique_a.log")))
     self.assertTrue(
-        os.path.exists(os.path.join(self.dir_a, "sub_a", "file_a.txt")))
+      os.path.exists(os.path.join(self.dir_a, "sub_a", "file_a.txt"))
+    )
 
     # Check content of unique A file is unchanged
     with open(
-        os.path.join(self.dir_a, "unique_a.log"), 'r', encoding='utf-8') as f:
+      os.path.join(self.dir_a, "unique_a.log"), 'r', encoding='utf-8'
+    ) as f:
       self.assertEqual(f.read(), "Only in A")
 
   # --- Test Case 4: Directory Structure Creation ---
@@ -115,7 +121,8 @@ class TestMergeDirectories(unittest.TestCase):
     """Test that a nested directory structure in B is created in A."""
     nested_path = os.path.join("level1", "level2", "level3")
     self.create_file(
-        os.path.join(self.dir_b, nested_path), "deep_file.json", "Deep content")
+      os.path.join(self.dir_b, nested_path), "deep_file.json", "Deep content"
+    )
 
     merge_directories(self.dir_a, self.dir_b)
 
@@ -129,8 +136,9 @@ class TestMergeDirectories(unittest.TestCase):
   def test_overwrite_read_only_file(self):
     """Test that a read-only file in A is made writable and overwritten."""
     file_name = "read_only_file.txt"
-    dest_path = self.create_file(self.dir_a, file_name,
-                                 "Original protected content")
+    dest_path = self.create_file(
+      self.dir_a, file_name, "Original protected content"
+    )
     source_content = "New, overwritten content"
     self.create_file(self.dir_b, file_name, source_content)
 
@@ -163,7 +171,7 @@ class TestMergeDirectories(unittest.TestCase):
 
     # Check for the expected error message being printed
     mock_print.assert_any_call(
-        f"Error: Destination directory A ('{self.dir_a}') does not exist or is not a directory."
+      f"Error: Destination directory A ('{self.dir_a}') does not exist or is not a directory."
     )
     # Ensure no files were created or modified
     self.assertFalse(os.path.exists(self.dir_a))
@@ -181,7 +189,7 @@ class TestMergeDirectories(unittest.TestCase):
 
     # Check for the expected error message being printed
     mock_print.assert_any_call(
-        f"Error: Source directory B ('{self.dir_b}') does not exist or is not a directory."
+      f"Error: Source directory B ('{self.dir_b}') does not exist or is not a directory."
     )
     # Ensure A's contents are unchanged
     self.assertTrue(os.path.exists(os.path.join(self.dir_a, "only_a.txt")))
@@ -197,7 +205,8 @@ class TestMergeDirectories(unittest.TestCase):
 
     # A should remain unchanged, with no new files added
     self.assertTrue(
-        os.path.exists(os.path.join(self.dir_a, "existing_file.txt")))
+      os.path.exists(os.path.join(self.dir_a, "existing_file.txt"))
+    )
     self.assertEqual(len(os.listdir(self.dir_a)), 1)
 
 

@@ -4,13 +4,20 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (DoesNotRun, DropExpectation, MustRun,
-                                        PropertyEquals, StepCommandContains,
-                                        StepSuccess)
+from recipe_engine.post_process import (
+  DoesNotRun,
+  DropExpectation,
+  MustRun,
+  PropertyEquals,
+  StepCommandContains,
+  StepSuccess,
+)
 from recipe_engine.recipe_api import Property
 
-from RECIPE_MODULES.depot_tools.gclient import (api as gclient, CONFIG_CTX as
-                                                GCLIENT_CONFIG_CTX)
+from RECIPE_MODULES.depot_tools.gclient import (
+  api as gclient,
+  CONFIG_CTX as GCLIENT_CONFIG_CTX,
+)
 
 from dataclasses import dataclass
 
@@ -20,13 +27,13 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium_checkout, siso
 from RECIPE_MODULES.depot_tools import gclient as gclient_module
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    buildbucket,
-    json,
-    path,
-    platform,
-    properties,
-    step,
+  assertions,
+  buildbucket,
+  json,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -53,12 +60,13 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
   siso: siso.TEST_API
 
+
 PROPERTIES = {
-    'ignore_input_commit': Property(kind=bool, default=False),
-    'set_output_commit': Property(kind=bool, default=True),
-    'no_history': Property(kind=bool, default=False),
-    'shallow': Property(kind=bool, default=False),
-    'report_via_property': Property(kind=bool, default=False),
+  'ignore_input_commit': Property(kind=bool, default=False),
+  'set_output_commit': Property(kind=bool, default=True),
+  'no_history': Property(kind=bool, default=False),
+  'shallow': Property(kind=bool, default=False),
+  'report_via_property': Property(kind=bool, default=False),
 }
 
 
@@ -69,8 +77,14 @@ def revision_resolver(c):
   c.revisions['src-internal'] = gclient.RevisionFallbackChain('refs/heads/main')
 
 
-def RunSteps(api: DEPS, ignore_input_commit, set_output_commit, no_history,
-             shallow, report_via_property):
+def RunSteps(
+  api: DEPS,
+  ignore_input_commit,
+  set_output_commit,
+  no_history,
+  shallow,
+  report_via_property,
+):
   with api.assertions.assertRaisesRegexp(ValueError, 'checkout_dir is not set'):
     _ = api.chromium_checkout.checkout_dir
   with api.assertions.assertRaisesRegexp(ValueError, 'source_dir is not set'):
@@ -79,24 +93,28 @@ def RunSteps(api: DEPS, ignore_input_commit, set_output_commit, no_history,
   api.gclient.set_config(api.properties.get('gclient_config', 'chromium'))
 
   api.chromium_checkout.ensure_checkout(
-      ignore_input_commit=ignore_input_commit,
-      set_output_commit=set_output_commit,
-      patch=False,
-      suffix='foo',
-      no_history=no_history,
-      shallow=shallow)
+    ignore_input_commit=ignore_input_commit,
+    set_output_commit=set_output_commit,
+    patch=False,
+    suffix='foo',
+    no_history=no_history,
+    shallow=shallow,
+  )
 
   api.step('details', [])
   if api.properties.get('test_with_submodules'):
     submodule_result = (
-        api.chromium_checkout.get_files_affected_by_patch_with_submodules(
-            report_via_property=report_via_property))
+      api.chromium_checkout.get_files_affected_by_patch_with_submodules(
+        report_via_property=report_via_property
+      )
+    )
     files = submodule_result.affected_files
   else:
     files = api.chromium_checkout.get_files_affected_by_patch(
-        report_via_property=report_via_property)
+      report_via_property=report_via_property
+    )
   api.step.active_result.presentation.logs['details'] = [
-      'affected_files: %r' % (files,),
+    'affected_files: %r' % (files,),
   ]
 
   # Checking out again is fine if the checkout_dir and source_dir are the same
@@ -105,44 +123,48 @@ def RunSteps(api: DEPS, ignore_input_commit, set_output_commit, no_history,
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'full_ci',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(DropExpectation),
+    'full_ci',
+    api.platform('linux', 64),
+    api.buildbucket.generic_build(),
+    api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'full_ci_submodules',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.properties(test_with_submodules=True),
-      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(DropExpectation),
+    'full_ci_submodules',
+    api.platform('linux', 64),
+    api.buildbucket.generic_build(),
+    api.properties(test_with_submodules=True),
+    api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(DropExpectation),
   )
 
   def verify_rbe_instance(check, steps, expected):
     gclient_config = api.json.loads(steps["gclient config"].logs["config"])
-    check(gclient_config["solutions"][0]["custom_vars"]["rbe_instance"] ==
-          expected)
-    check(gclient_config["solutions"][0]["custom_vars"]
-          ["download_remoteexec_cfg"] == 'True')
+    check(
+      gclient_config["solutions"][0]["custom_vars"]["rbe_instance"] == expected
+    )
+    check(
+      gclient_config["solutions"][0]["custom_vars"]["download_remoteexec_cfg"]
+      == 'True'
+    )
 
   yield api.test(
-      'siso_enabled',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.siso.properties(project='someproj'),
-      api.post_check(verify_rbe_instance,
-                     'projects/someproj/instances/default_instance'),
-      api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(DropExpectation),
+    'siso_enabled',
+    api.platform('linux', 64),
+    api.buildbucket.generic_build(),
+    api.siso.properties(project='someproj'),
+    api.post_check(
+      verify_rbe_instance, 'projects/someproj/instances/default_instance'
+    ),
+    api.post_process(DoesNotRun, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(DropExpectation),
   )
 
   def verify_checkout_dir(check, step_odict, expected_path):
@@ -151,30 +173,32 @@ def GenTests(api: TEST_DEPS):
     check(step.cwd == expected_path)
 
   yield api.test(
-      'win_try',
-      api.buildbucket.try_build(),
-      api.platform('win', 64),
-      api.post_check(verify_checkout_dir,
-                     api.chromium_checkout.default_checkout_dir / 'src'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(StepSuccess, 'git diff to analyze patch'),
-      api.post_process(DropExpectation),
+    'win_try',
+    api.buildbucket.try_build(),
+    api.platform('win', 64),
+    api.post_check(
+      verify_checkout_dir, api.chromium_checkout.default_checkout_dir / 'src'
+    ),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(StepSuccess, 'git diff to analyze patch'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'linux_try',
-      api.buildbucket.try_build(),
-      api.platform('linux', 64),
-      api.post_check(verify_checkout_dir,
-                     api.chromium_checkout.default_checkout_dir / 'src'),
-      api.post_process(DoesNotRun, 'taskkill'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(StepSuccess, 'git diff to analyze patch'),
-      api.post_process(DropExpectation),
+    'linux_try',
+    api.buildbucket.try_build(),
+    api.platform('linux', 64),
+    api.post_check(
+      verify_checkout_dir, api.chromium_checkout.default_checkout_dir / 'src'
+    ),
+    api.post_process(DoesNotRun, 'taskkill'),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(StepSuccess, 'git diff to analyze patch'),
+    api.post_process(DropExpectation),
   )
 
   def verify_revision_resolver_in_log(check, steps, expected):
@@ -182,110 +206,115 @@ def GenTests(api: TEST_DEPS):
     check(gclient_config["revisions"]["src-internal"] == expected)
 
   yield api.test(
-      'revision-resolver',
-      api.properties(
-          gclient_config='revision_resolver', set_output_commit=False),
-      api.post_check(verify_revision_resolver_in_log,
-                     "*RevisionFallbackChain*"),
-      api.post_process(DropExpectation),
+    'revision-resolver',
+    api.properties(gclient_config='revision_resolver', set_output_commit=False),
+    api.post_check(verify_revision_resolver_in_log, "*RevisionFallbackChain*"),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'no-output-commit',
-      api.buildbucket.try_build(),
-      api.platform('linux', 64),
-      api.properties(ignore_input_commit=True, set_output_commit=False),
-      api.post_check(verify_checkout_dir,
-                     api.chromium_checkout.default_checkout_dir / 'src'),
-      api.post_process(DoesNotRun, 'taskkill'),
-      api.post_process(StepSuccess, 'gclient config'),
-      api.post_process(StepSuccess, 'gerrit fetch current CL info'),
-      api.post_process(StepSuccess, 'bot_update'),
-      api.post_process(StepSuccess, 'git diff to analyze patch'),
-      api.post_process(DropExpectation),
+    'no-output-commit',
+    api.buildbucket.try_build(),
+    api.platform('linux', 64),
+    api.properties(ignore_input_commit=True, set_output_commit=False),
+    api.post_check(
+      verify_checkout_dir, api.chromium_checkout.default_checkout_dir / 'src'
+    ),
+    api.post_process(DoesNotRun, 'taskkill'),
+    api.post_process(StepSuccess, 'gclient config'),
+    api.post_process(StepSuccess, 'gerrit fetch current CL info'),
+    api.post_process(StepSuccess, 'bot_update'),
+    api.post_process(StepSuccess, 'git diff to analyze patch'),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'output_commit_tag',
-      api.buildbucket.try_build(
-          git_repo='https://chromium.googlesource.com/chromium/src.git',
-          git_ref='refs/tags/100.0.0000.0',
-          revision='1234567890'),
-      api.platform('linux', 64),
-      api.properties(set_output_commit=True),
-      api.post_process(
-          PropertyEquals,
-          '$recipe_engine/buildbucket/output_gitiles_commit',
-          {
-              'host': 'chromium.googlesource.com',
-              'id': '1234567890',
-              'project': 'chromium/src',
-              'ref': 'refs/tags/100.0.0000.0'
+    'output_commit_tag',
+    api.buildbucket.try_build(
+      git_repo='https://chromium.googlesource.com/chromium/src.git',
+      git_ref='refs/tags/100.0.0000.0',
+      revision='1234567890',
+    ),
+    api.platform('linux', 64),
+    api.properties(set_output_commit=True),
+    api.post_process(
+      PropertyEquals,
+      '$recipe_engine/buildbucket/output_gitiles_commit',
+      {
+        'host': 'chromium.googlesource.com',
+        'id': '1234567890',
+        'project': 'chromium/src',
+        'ref': 'refs/tags/100.0.0000.0',
+      },
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'rdb_missing_commit_info',
+    api.buildbucket.try_build(),
+    api.step_data(
+      'bot_update (without patch) - foo',
+      api.json.output(
+        {
+          'did_run': True,
+          "manifest": {
+            'src': {
+              'repository': 'https://chromium.googlesource.com/chromium/src.git',
+              'revision': '',
+            }
           },
+          'patch_root': None,
+          'properties': {
+            'got_revision': '',
+            'got_revision_cp': 'refs/heads/main@{#1234567890}',
+          },
+          'root': 'src',
+          'step_text': 'text',
+        }
       ),
-      api.post_process(DropExpectation),
+    ),
+    api.platform('linux', 64),
+    api.post_process(
+      MustRun,
+      'set rdb sources.missing gitiles commit info',
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'rdb_missing_commit_info',
-      api.buildbucket.try_build(),
-      api.step_data(
-          'bot_update (without patch) - foo',
-          api.json.output({
-              'did_run': True,
-              "manifest": {
-                  'src': {
-                      'repository':
-                          'https://chromium.googlesource.com/chromium/src.git',
-                      'revision':
-                          ''
-                  }
-              },
-              'patch_root': None,
-              'properties': {
-                  'got_revision': '',
-                  'got_revision_cp': 'refs/heads/main@{#1234567890}',
-              },
-              'root': 'src',
-              'step_text': 'text'
-          })),
-      api.platform('linux', 64),
-      api.post_process(
-          MustRun,
-          'set rdb sources.missing gitiles commit info',
-      ),
-      api.post_process(DropExpectation),
+    'no_history',
+    api.platform('linux', 64),
+    api.buildbucket.generic_build(),
+    api.properties(no_history=True),
+    api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+    api.post_process(
+      StepCommandContains, 'bot_update (without patch) - foo', '--no-history'
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'no_history',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.properties(no_history=True),
-      api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
-      api.post_process(StepCommandContains, 'bot_update (without patch) - foo',
-                       '--no-history'),
-      api.post_process(DropExpectation),
+    'shallow',
+    api.platform('linux', 64),
+    api.buildbucket.generic_build(),
+    api.properties(shallow=True),
+    api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+    api.post_process(
+      StepCommandContains, 'bot_update (without patch) - foo', '--shallow'
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'shallow',
-      api.platform('linux', 64),
-      api.buildbucket.generic_build(),
-      api.properties(shallow=True),
-      api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
-      api.post_process(StepCommandContains, 'bot_update (without patch) - foo',
-                       '--shallow'),
-      api.post_process(DropExpectation),
-  )
-
-  yield api.test(
-      'expand_submodules',
-      api.buildbucket.try_build(
-          experiments=['chromium_checkout.expand_submodules'],),
-      api.platform('linux', 64),
-      api.properties(report_via_property=True, test_with_submodules=True),
-      api.post_process(StepSuccess,
-                       '[Experimental] git diff --raw to analyze patch'),
-      api.post_process(DropExpectation),
+    'expand_submodules',
+    api.buildbucket.try_build(
+      experiments=['chromium_checkout.expand_submodules'],
+    ),
+    api.platform('linux', 64),
+    api.properties(report_via_property=True, test_with_submodules=True),
+    api.post_process(
+      StepSuccess, '[Experimental] git diff --raw to analyze patch'
+    ),
+    api.post_process(DropExpectation),
   )

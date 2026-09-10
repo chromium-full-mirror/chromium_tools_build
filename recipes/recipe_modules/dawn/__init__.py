@@ -8,18 +8,18 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_tests,
-    chromium_tests_builder_config,
+  chromium,
+  chromium_tests,
+  chromium_tests_builder_config,
 )
 from RECIPE_MODULES.depot_tools import (
-    osx_sdk,
-    tryserver,
+  osx_sdk,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    platform,
-    step,
+  cipd,
+  platform,
+  step,
 )
 
 
@@ -33,6 +33,7 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   step: step.API
   tryserver: tryserver.API
+
 
 from .api import DawnApi as API
 from .test_api import DawnTestsApi as TEST_API

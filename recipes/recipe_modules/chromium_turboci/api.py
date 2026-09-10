@@ -14,34 +14,38 @@ from recipe_engine import recipe_api, turboci
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from PB.turboci.data.build.v1.build_check_options import (
-    BuildCheckOptions,
-    Product,
+  BuildCheckOptions,
+  Product,
 )
 from PB.turboci.data.build.v1.build_check_results import BuildCheckResults
 from PB.turboci.data.common.v1.display_message import DisplayMessage
 from PB.turboci.data.chrome.build.v1.analyze_options import AnalyzeOptions
 from PB.turboci.data.chrome.build.v1.analyze_results import AnalyzeResults
 from PB.turboci.data.chrome.build.v1.compile_targets_options import (
-    CompileTargetsOptions,)
+  CompileTargetsOptions,
+)
 from PB.turboci.data.test.v1.test_check_description_option import (
-    TestCheckDescriptionOption,)
+  TestCheckDescriptionOption,
+)
 from PB.turboci.data.test.v1.test_check_summary_result import (
-    TestCheckSummaryResult,)
+  TestCheckSummaryResult,
+)
 from PB.turboci.graph.orchestrator.v1.query import Query
 
 BUILD_CANCELED_SUMMARY = 'Build was canceled.'
 
 
 class ChromiumTurbociApi(recipe_api.RecipeApi):
-
   @contextlib.contextmanager
   def display_turboci_checks(self):
     try:
       yield
     finally:
-      if (not self.m.runtime.in_global_shutdown and
-          'luci.buildbucket.run_in_turboci'
-          in self.m.buildbucket.build.input.experiments):
+      if (
+        not self.m.runtime.in_global_shutdown
+        and 'luci.buildbucket.run_in_turboci'
+        in self.m.buildbucket.build.input.experiments
+      ):
         # Output all checks from the workplan when running in turboci, mainly
         # for inspection purpose.
         # TODO(https://crbug.com/493256377): Remove this step when we have a
@@ -50,21 +54,23 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
         # Use the same turboci query as that in
         # recipes-py/recipe_engine/internal/test/magic_check_fn.py
         workplan = turboci.query_nodes(
-            turboci.make_query(
-                Query.SelectChecks(),
-                Query.CollectChecks(
-                    options=True,
-                    result_data=True,
-                ),
+          turboci.make_query(
+            Query.SelectChecks(),
+            Query.CollectChecks(
+              options=True,
+              result_data=True,
             ),
-            types=('*',)).workplans[0]
+          ),
+          types=('*',),
+        ).workplans[0]
         step_result.presentation.logs['checks'] = json_format.MessageToJson(
-            workplan)
+          workplan
+        )
 
   def ensure_check_id(
-      self,
-      check_id: str,
-      default_check_id_prefix: str,
+    self,
+    check_id: str,
+    default_check_id_prefix: str,
   ) -> str:
     """Ensure a non-empty check ID.
 
@@ -91,12 +97,12 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
     return f'{default_check_id_prefix}-{self.m.uuid.random()}'
 
   def create_build_check(
-      self,
-      build_check_id: str,
-      source_check_id: str,
-      *,
-      create_analyze_check: bool = False,
-      builder_full_name: str = '',
+    self,
+    build_check_id: str,
+    source_check_id: str,
+    *,
+    create_analyze_check: bool = False,
+    builder_full_name: str = '',
   ) -> str:
     """Create a build check.
 
@@ -125,49 +131,55 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
     if create_analyze_check:
       analyze_check_id = f'{build_check_id} analyze'
       checks.append(
-          turboci.check(
-              analyze_check_id,
-              kind='CHECK_KIND_ANALYSIS',
-              # TODO (crbug.com/513249469#comment2): Remove realm after move to
-              # new python helpers.
-              realm='$from_container',
-          ))
+        turboci.check(
+          analyze_check_id,
+          kind='CHECK_KIND_ANALYSIS',
+          # TODO (crbug.com/513249469#comment2): Remove realm after move to
+          # new python helpers.
+          realm='$from_container',
+        )
+      )
       build_check_deps.append(analyze_check_id)
 
     # When the workflows are decomposed, this may need to change to some
     # identity that identifies the configuration across stages rather than a
     # builder name
     builder_full_name = (
-        builder_full_name or self.m.buildbucket.builder_full_name)
+      builder_full_name or self.m.buildbucket.builder_full_name
+    )
     checks.append(
-        turboci.check(
-            build_check_id,
-            kind='CHECK_KIND_BUILD',
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            realm_options=[(
-                '$from_container',
-                BuildCheckOptions(
-                    target=BuildCheckOptions.BuildTarget(
-                        name=builder_full_name,
-                        product=Product.PRODUCT_BROWSER,
-                    )),
-            )],
-            deps=turboci.dep_group(*build_check_deps),
-        ))
+      turboci.check(
+        build_check_id,
+        kind='CHECK_KIND_BUILD',
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        realm_options=[
+          (
+            '$from_container',
+            BuildCheckOptions(
+              target=BuildCheckOptions.BuildTarget(
+                name=builder_full_name,
+                product=Product.PRODUCT_BROWSER,
+              )
+            ),
+          )
+        ],
+        deps=turboci.dep_group(*build_check_deps),
+      )
+    )
 
     turboci.write_nodes(turboci.reason('initializing build check'), *checks)
 
     return analyze_check_id
 
   def prepare_analyze_check(
-      self,
-      analyze_check_id: str,
-      test_targets: Collection[str],
-      additional_compile_targets: Collection[str],
-      analyze_config_names: Collection[str],
-      additional_exclusions: Mapping[str, str],
+    self,
+    analyze_check_id: str,
+    test_targets: Collection[str],
+    additional_compile_targets: Collection[str],
+    analyze_config_names: Collection[str],
+    additional_exclusions: Mapping[str, str],
   ) -> recipe_api.ResultsCallback:
     """Make the analyze check ready to execute analyze.
 
@@ -189,31 +201,33 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
     """
     assert analyze_check_id, 'analyze_check_id'
     turboci.write_nodes(
-        turboci.reason('performing analyze to reduce targets'),
-        turboci.check(
-            analyze_check_id,
-            kind='CHECK_KIND_ANALYSIS',
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            realm_options=[(
-                '$from_container',
-                AnalyzeOptions(
-                    compile_targets=sorted(additional_compile_targets),
-                    test_targets=sorted(test_targets),
-                    analyze_config_path=(self.m.chromium.c.analyze_config_path),
-                    analyze_config_names=analyze_config_names,
-                    additional_exclusions=additional_exclusions,
-                ),
-            )],
-            state='CHECK_STATE_PLANNED',
-        ),
+      turboci.reason('performing analyze to reduce targets'),
+      turboci.check(
+        analyze_check_id,
+        kind='CHECK_KIND_ANALYSIS',
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        realm_options=[
+          (
+            '$from_container',
+            AnalyzeOptions(
+              compile_targets=sorted(additional_compile_targets),
+              test_targets=sorted(test_targets),
+              analyze_config_path=(self.m.chromium.c.analyze_config_path),
+              analyze_config_names=analyze_config_names,
+              additional_exclusions=additional_exclusions,
+            ),
+          )
+        ],
+        state='CHECK_STATE_PLANNED',
+      ),
     )
 
     def results_callback(
-        reason: str,
-        compile_targets: Iterable[str],
-        test_targets: Iterable[str],
+      reason: str,
+      compile_targets: Iterable[str],
+      test_targets: Iterable[str],
     ) -> None:
       """Results callback that will update the analyze check.
 
@@ -221,29 +235,32 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
       and be in state FINAL.
       """
       turboci.write_nodes(
-          turboci.reason(reason),
-          turboci.check(
-              analyze_check_id,
-              # TODO (crbug.com/513249469#comment2): Remove realm after move to
-              # new python helpers.
-              realm='$from_container',
-              realm_results=[(
-                  '$from_container',
-                  AnalyzeResults(
-                      compile_targets=sorted(compile_targets),
-                      test_targets=sorted(test_targets)),
-              )],
-              state='CHECK_STATE_FINAL',
-          ),
+        turboci.reason(reason),
+        turboci.check(
+          analyze_check_id,
+          # TODO (crbug.com/513249469#comment2): Remove realm after move to
+          # new python helpers.
+          realm='$from_container',
+          realm_results=[
+            (
+              '$from_container',
+              AnalyzeResults(
+                compile_targets=sorted(compile_targets),
+                test_targets=sorted(test_targets),
+              ),
+            )
+          ],
+          state='CHECK_STATE_FINAL',
+        ),
       )
 
     return results_callback
 
   def update_build_check_compile_targets(
-      self,
-      build_check_id: str,
-      compile_targets: Iterable[str],
-      reason: str,
+    self,
+    build_check_id: str,
+    compile_targets: Iterable[str],
+    reason: str,
   ) -> None:
     """Update the compile targets on a build check.
 
@@ -257,24 +274,26 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
     """
     assert build_check_id, 'build_check_id'
     turboci.write_nodes(
-        turboci.reason(reason),
-        turboci.check(
-            build_check_id,
-            kind='CHECK_KIND_BUILD',
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            realm_options=[(
-                '$from_container',
-                CompileTargetsOptions(compile_targets=sorted(compile_targets)),
-            )],
-        ),
+      turboci.reason(reason),
+      turboci.check(
+        build_check_id,
+        kind='CHECK_KIND_BUILD',
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        realm_options=[
+          (
+            '$from_container',
+            CompileTargetsOptions(compile_targets=sorted(compile_targets)),
+          )
+        ],
+      ),
     )
 
   def set_build_check_planned(
-      self,
-      build_check_id: str,
-      reason: str,
+    self,
+    build_check_id: str,
+    reason: str,
   ) -> None:
     """Set the build check's state to PLANNED.
 
@@ -291,22 +310,22 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
     """
     assert build_check_id, 'build_check_id'
     turboci.write_nodes(
-        turboci.reason(reason),
-        turboci.check(
-            build_check_id,
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            state='CHECK_STATE_PLANNED',
-        ),
+      turboci.reason(reason),
+      turboci.check(
+        build_check_id,
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        state='CHECK_STATE_PLANNED',
+      ),
     )
 
   def finalize_build_check(
-      self,
-      build_check_id: str,
-      reason: str,
-      *,
-      raw_result: result_pb2.RawResult | None = None,
+    self,
+    build_check_id: str,
+    reason: str,
+    *,
+    raw_result: result_pb2.RawResult | None = None,
   ) -> None:
     """Record the results of a compile.
 
@@ -324,26 +343,28 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
       display_message = None
       if raw_result.summary_markdown:
         display_message = DisplayMessage(
-            message=raw_result.summary_markdown,
-            message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_MARKDOWN,
+          message=raw_result.summary_markdown,
+          message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_MARKDOWN,
         )
-      realm_results.append((
+      realm_results.append(
+        (
           '$from_container',
           BuildCheckResults(
-              success=raw_result.status == common_pb.SUCCESS,
-              display_message=display_message,
+            success=raw_result.status == common_pb.SUCCESS,
+            display_message=display_message,
           ),
-      ))
+        )
+      )
     turboci.write_nodes(
-        turboci.reason(reason),
-        turboci.check(
-            build_check_id,
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            state='CHECK_STATE_FINAL',
-            realm_results=realm_results,
-        ),
+      turboci.reason(reason),
+      turboci.check(
+        build_check_id,
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        state='CHECK_STATE_FINAL',
+        realm_results=realm_results,
+      ),
     )
 
   @staticmethod
@@ -355,51 +376,57 @@ class ChromiumTurbociApi(recipe_api.RecipeApi):
   def create_test_check(self, test_step_name: str) -> None:
     """Create a TurboCI test check for the test suite on a given phase."""
     turboci.write_nodes(
-        turboci.reason(f'Create test {test_step_name}'),
-        turboci.check(
-            self.get_test_check_id(test_step_name),
-            kind='CHECK_KIND_TEST',
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            realm_options=[(
-                '$from_container',
-                TestCheckDescriptionOption(title=test_step_name),
-            )],
-        ))
+      turboci.reason(f'Create test {test_step_name}'),
+      turboci.check(
+        self.get_test_check_id(test_step_name),
+        kind='CHECK_KIND_TEST',
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        realm_options=[
+          (
+            '$from_container',
+            TestCheckDescriptionOption(title=test_step_name),
+          )
+        ],
+      ),
+    )
 
   def set_test_check_planned(self, test_step_name: str) -> None:
     """Set test check's state to PLANNED for a test suite on a given phase."""
     turboci.write_nodes(
-        turboci.reason(f'Trigger test {test_step_name}'),
-        turboci.check(
-            self.get_test_check_id(test_step_name),
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            state='CHECK_STATE_PLANNED',
-        ))
+      turboci.reason(f'Trigger test {test_step_name}'),
+      turboci.check(
+        self.get_test_check_id(test_step_name),
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        state='CHECK_STATE_PLANNED',
+      ),
+    )
 
   def finalize_test_check(
-      self,
-      test_step_name: str,
-      is_success: bool,
-      display_text: str,
+    self,
+    test_step_name: str,
+    is_success: bool,
+    display_text: str,
   ) -> None:
     """Mark test check as FINAL and record the test results."""
     result = TestCheckSummaryResult(
-        success=is_success,
-        display_message=DisplayMessage(
-            message=display_text,
-            message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_HTML,
-        ))
+      success=is_success,
+      display_message=DisplayMessage(
+        message=display_text,
+        message_format=DisplayMessage.MessageFormat.MESSAGE_FORMAT_HTML,
+      ),
+    )
     turboci.write_nodes(
-        turboci.reason(f'Collect results for test {test_step_name}'),
-        turboci.check(
-            self.get_test_check_id(test_step_name),
-            # TODO (crbug.com/513249469#comment2): Remove realm after move to
-            # new python helpers.
-            realm='$from_container',
-            state='CHECK_STATE_FINAL',
-            realm_results=[('$from_container', result)],
-        ))
+      turboci.reason(f'Collect results for test {test_step_name}'),
+      turboci.check(
+        self.get_test_check_id(test_step_name),
+        # TODO (crbug.com/513249469#comment2): Remove realm after move to
+        # new python helpers.
+        realm='$from_container',
+        state='CHECK_STATE_FINAL',
+        realm_results=[('$from_container', result)],
+      ),
+    )

@@ -45,8 +45,9 @@ def RunSteps(api: DEPS):
   api.assertions.assertEqual(empty_spec.chromium_apply_config, ())
 
   spec2 = spec.extend(chromium_apply_config=['baz', 'shaz'])
-  api.assertions.assertEqual(spec2.chromium_apply_config,
-                             ('foo', 'bar', 'baz', 'shaz'))
+  api.assertions.assertEqual(
+    spec2.chromium_apply_config, ('foo', 'bar', 'baz', 'shaz')
+  )
   api.assertions.assertEqual(spec.chromium_apply_config, ('foo', 'bar'))
   api.assertions.assertEqual(empty_spec.chromium_apply_config, ())
 
@@ -54,8 +55,8 @@ def RunSteps(api: DEPS):
 
   # execution_mode validations *************************************************
   tester_spec = builder_spec.BuilderSpec.create(
-      execution_mode=builder_spec.TEST,
-      parent_buildername='fake-parent',
+    execution_mode=builder_spec.TEST,
+    parent_buildername='fake-parent',
   )
 
   # Testers must specify parent
@@ -69,24 +70,24 @@ def RunSteps(api: DEPS):
   api.assertions.assertEqual(str(caught.exception), message)
 
   # Invalid fields for TEST execution_mode
-  message = (
-      "The following fields are ignored unless 'execution_mode' is {!r}: {}"
-      .format(builder_spec.COMPILE_AND_TEST, ['compile_targets']))
+  message = "The following fields are ignored unless 'execution_mode' is {!r}: {}".format(
+    builder_spec.COMPILE_AND_TEST, ['compile_targets']
+  )
   with api.assertions.assertRaises(AssertionError) as caught:
     builder_spec.BuilderSpec.create(
-        execution_mode=builder_spec.TEST,
-        parent_buildername='fake-builder',
-        compile_targets=['foo', 'bar'],
+      execution_mode=builder_spec.TEST,
+      parent_buildername='fake-builder',
+      compile_targets=['foo', 'bar'],
     )
   api.assertions.assertEqual(str(caught.exception), message)
 
   # cf_archive_build validations ***********************************************
   cf_archive_build_spec = builder_spec.BuilderSpec.create(
-      cf_archive_build=True,
-      cf_gs_bucket='bucket',
-      cf_gs_acl='acl',
-      cf_archive_name='archive-name',
-      cf_archive_subdir_suffix='archive-subdir-suffix',
+    cf_archive_build=True,
+    cf_gs_bucket='bucket',
+    cf_gs_acl='acl',
+    cf_archive_name='archive-name',
+    cf_archive_subdir_suffix='archive-subdir-suffix',
   )
 
   # Required field when cf_archive_build is True
@@ -100,31 +101,37 @@ def RunSteps(api: DEPS):
   api.assertions.assertEqual(str(caught.exception), message)
 
   # Invalid fields when cf_archive_build is falsey
-  message = ('The following fields are ignored unless '
-             "'cf_archive_build' is set to True: {}".format([
-                 'cf_gs_bucket', 'cf_archive_name', 'cf_gs_acl',
-                 'cf_archive_subdir_suffix'
-             ]))
+  message = (
+    'The following fields are ignored unless '
+    "'cf_archive_build' is set to True: {}".format(
+      [
+        'cf_gs_bucket',
+        'cf_archive_name',
+        'cf_gs_acl',
+        'cf_archive_subdir_suffix',
+      ]
+    )
+  )
   with api.assertions.assertRaises(AssertionError) as caught:
     builder_spec.BuilderSpec.create(
-        cf_gs_bucket='bucket',
-        cf_gs_acl='acl',
-        cf_archive_name='archive-name',
-        cf_archive_subdir_suffix='archive-subdir-suffix',
+      cf_gs_bucket='bucket',
+      cf_gs_acl='acl',
+      cf_archive_name='archive-name',
+      cf_archive_subdir_suffix='archive-subdir-suffix',
     )
   api.assertions.assertEqual(str(caught.exception), message)
   # use_test_trigger_cas validations *********************************************
   message = 'use_test_trigger_cas can only be True for test-only builders'
   with api.assertions.assertRaises(AssertionError) as caught:
     builder_spec.BuilderSpec.create(
-        execution_mode=builder_spec.COMPILE_AND_TEST,
-        use_test_trigger_cas=True,
+      execution_mode=builder_spec.COMPILE_AND_TEST,
+      use_test_trigger_cas=True,
     )
   api.assertions.assertEqual(str(caught.exception), message)
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

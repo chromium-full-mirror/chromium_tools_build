@@ -14,18 +14,22 @@ import unittest
 import mock
 
 ROOT_DIR = os.path.normpath(os.path.join(__file__, '..', '..', '..', '..'))
-sys.path.extend([
+sys.path.extend(
+  [
     os.path.join(ROOT_DIR, 'scripts'),
-])
+  ]
+)
 
 from common import gtest_utils
 
-FAILURES = ['NavigationControllerTest.Reload',
-            'NavigationControllerTest/SpdyNetworkTransTest.Constructor/0',
-            'BadTest.TimesOut',
-            'MoreBadTest.TimesOutAndFails',
-            'SomeOtherTest.SwitchTypes',
-            'SomeOtherTest.FAILS_ThisTestTimesOut']
+FAILURES = [
+  'NavigationControllerTest.Reload',
+  'NavigationControllerTest/SpdyNetworkTransTest.Constructor/0',
+  'BadTest.TimesOut',
+  'MoreBadTest.TimesOutAndFails',
+  'SomeOtherTest.SwitchTypes',
+  'SomeOtherTest.FAILS_ThisTestTimesOut',
+]
 
 FAILS_FAILURES = ['SomeOtherTest.FAILS_Bar']
 FLAKY_FAILURES = ['SomeOtherTest.FLAKY_Baz']
@@ -64,11 +68,11 @@ Expected: false
 """
 
 TIMEOUT_ERRORS = (
-    f'[61613:263:0531/042613:2887943745568888:ERROR:{_CHECKOUT_PATH}'
-    '/src/chrome/browser/extensions/extension_error_reporter.cc(56)]'
-    ' Extension error: Could not load extension '
-    'from \'extensions/api_test/geolocation/no_permission\'. Manifest file is '
-    'missing or unreadable.'
+  f'[61613:263:0531/042613:2887943745568888:ERROR:{_CHECKOUT_PATH}'
+  '/src/chrome/browser/extensions/extension_error_reporter.cc(56)]'
+  ' Extension error: Could not load extension '
+  'from \'extensions/api_test/geolocation/no_permission\'. Manifest file is '
+  'missing or unreadable.'
 )
 
 MOREBAD_ERRORS = """
@@ -216,7 +220,7 @@ Suppression (error hash=#%(hash)s#):
    Memcheck:Leak
    fun:_Znw*
    fun:_ZN31NavigationControllerTest_Reload8TestBodyEv
-}""" % {'hash' : VALGRIND_HASH}
+}""" % {'hash': VALGRIND_HASH}
 
 TEST_DATA_VALGRIND = """
 [==========] Running 5 tests from 2 test cases.
@@ -255,8 +259,10 @@ ChromeRenderViewTest.FAILS_AllowDOMStorage
 PrerenderBrowserTest.PrerenderHTML5VideoJs
 """
 
-FAILING_TESTS_EXPECTED = ['ChromeRenderViewTest.FAILS_AllowDOMStorage',
-                          'PrerenderBrowserTest.PrerenderHTML5VideoJs']
+FAILING_TESTS_EXPECTED = [
+  'ChromeRenderViewTest.FAILS_AllowDOMStorage',
+  'PrerenderBrowserTest.PrerenderHTML5VideoJs',
+]
 
 
 TEST_DATA_SHARD_0 = f"""\
@@ -450,7 +456,6 @@ End output from shard index 0 (machine tag: swarm12.c, id: swarm12). Return 1
 
 
 class TestGTestLogParserTests(unittest.TestCase):
-
   def testGTestLogParserNoSharing(self):
     # Tests for log parsing without sharding.
     parser = gtest_utils.GTestLogParser()
@@ -461,41 +466,55 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertFalse(parser.RunningTests())
 
     self.assertEqual(sorted(FAILURES), sorted(parser.FailedTests()))
-    self.assertEqual(sorted(FAILURES + FAILS_FAILURES),
-                     sorted(parser.FailedTests(include_fails=True)))
-    self.assertEqual(sorted(FAILURES + FLAKY_FAILURES),
-                     sorted(parser.FailedTests(include_flaky=True)))
-    self.assertEqual(sorted(FAILURES + FAILS_FAILURES + FLAKY_FAILURES),
-        sorted(parser.FailedTests(include_fails=True, include_flaky=True)))
+    self.assertEqual(
+      sorted(FAILURES + FAILS_FAILURES),
+      sorted(parser.FailedTests(include_fails=True)),
+    )
+    self.assertEqual(
+      sorted(FAILURES + FLAKY_FAILURES),
+      sorted(parser.FailedTests(include_flaky=True)),
+    )
+    self.assertEqual(
+      sorted(FAILURES + FAILS_FAILURES + FLAKY_FAILURES),
+      sorted(parser.FailedTests(include_fails=True, include_flaky=True)),
+    )
 
     self.assertEqual(10, parser.DisabledTests())
     self.assertEqual(2, parser.FlakyTests())
 
     test_name = 'NavigationControllerTest.Reload'
-    self.assertEqual('\n'.join(['%s: ' % test_name, RELOAD_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, RELOAD_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
     test_name = 'NavigationControllerTest/SpdyNetworkTransTest.Constructor/0'
-    self.assertEqual('\n'.join(['%s: ' % test_name, SPDY_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, SPDY_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
     test_name = 'SomeOtherTest.SwitchTypes'
-    self.assertEqual('\n'.join(['%s: ' % test_name, SWITCH_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, SWITCH_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
     test_name = 'BadTest.TimesOut'
-    self.assertEqual('\n'.join(['%s: ' % test_name,
-                                TIMEOUT_ERRORS, TIMEOUT_MESSAGE]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, TIMEOUT_ERRORS, TIMEOUT_MESSAGE]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['TIMEOUT'], parser.TriesForTest(test_name))
 
     test_name = 'MoreBadTest.TimesOutAndFails'
-    self.assertEqual('\n'.join(['%s: ' % test_name,
-                                MOREBAD_ERRORS, TIMEOUT_MESSAGE]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, MOREBAD_ERRORS, TIMEOUT_MESSAGE]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['TIMEOUT'], parser.TriesForTest(test_name))
 
     self.assertEqual(['SUCCESS'], parser.TriesForTest('SomeOtherTest.Foo'))
@@ -511,8 +530,10 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(0, parser.FlakyTests())
 
     test_name = 'HunspellTest.Crashes'
-    self.assertEqual('\n'.join(['%s: ' % test_name, 'Did not complete.']),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, 'Did not complete.']),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['UNKNOWN'], parser.TriesForTest(test_name))
 
   def testGTestLogParserSharing(self):
@@ -527,45 +548,55 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertFalse(parser.RunningTests())
 
     self.assertEqual(sorted(FAILURES), sorted(parser.FailedTests()))
-    self.assertEqual(sorted(FAILURES + FAILS_FAILURES),
-                     sorted(parser.FailedTests(include_fails=True)))
-    self.assertEqual(sorted(FAILURES + FLAKY_FAILURES),
-                     sorted(parser.FailedTests(include_flaky=True)))
-    self.assertEqual(sorted(
-        FAILURES + FAILS_FAILURES + FLAKY_FAILURES),
-        sorted(parser.FailedTests(include_fails=True, include_flaky=True)))
+    self.assertEqual(
+      sorted(FAILURES + FAILS_FAILURES),
+      sorted(parser.FailedTests(include_fails=True)),
+    )
+    self.assertEqual(
+      sorted(FAILURES + FLAKY_FAILURES),
+      sorted(parser.FailedTests(include_flaky=True)),
+    )
+    self.assertEqual(
+      sorted(FAILURES + FAILS_FAILURES + FLAKY_FAILURES),
+      sorted(parser.FailedTests(include_fails=True, include_flaky=True)),
+    )
 
     self.assertEqual(10, parser.DisabledTests())
     self.assertEqual(2, parser.FlakyTests())
 
     test_name = 'NavigationControllerTest.Reload'
-    self.assertEqual('\n'.join(['%s: ' % test_name, RELOAD_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, RELOAD_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
-    test_name = (
-        'NavigationControllerTest/SpdyNetworkTransTest.Constructor/0')
-    self.assertEqual('\n'.join(['%s: ' % test_name, SPDY_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    test_name = 'NavigationControllerTest/SpdyNetworkTransTest.Constructor/0'
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, SPDY_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
     test_name = 'SomeOtherTest.SwitchTypes'
-    self.assertEqual('\n'.join(['%s: ' % test_name, SWITCH_ERRORS]),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, SWITCH_ERRORS]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['FAILURE'], parser.TriesForTest(test_name))
 
     test_name = 'BadTest.TimesOut'
     self.assertEqual(
-        '\n'.join(['%s: ' % test_name,
-        TIMEOUT_ERRORS, TIMEOUT_MESSAGE]),
-        '\n'.join(parser.FailureDescription(test_name)))
+      '\n'.join(['%s: ' % test_name, TIMEOUT_ERRORS, TIMEOUT_MESSAGE]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['TIMEOUT'], parser.TriesForTest(test_name))
 
     test_name = 'MoreBadTest.TimesOutAndFails'
     self.assertEqual(
-        '\n'.join(['%s: ' % test_name,
-        MOREBAD_ERRORS, TIMEOUT_MESSAGE]),
-        '\n'.join(parser.FailureDescription(test_name)))
+      '\n'.join(['%s: ' % test_name, MOREBAD_ERRORS, TIMEOUT_MESSAGE]),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['TIMEOUT'], parser.TriesForTest(test_name))
 
     self.assertEqual(['SUCCESS'], parser.TriesForTest('SomeOtherTest.Foo'))
@@ -581,8 +612,10 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(0, parser.FlakyTests())
 
     test_name = 'HunspellTest.Crashes'
-    self.assertEqual('\n'.join(['%s: ' % test_name, 'Did not complete.']),
-                     '\n'.join(parser.FailureDescription(test_name)))
+    self.assertEqual(
+      '\n'.join(['%s: ' % test_name, 'Did not complete.']),
+      '\n'.join(parser.FailureDescription(test_name)),
+    )
     self.assertEqual(['UNKNOWN'], parser.TriesForTest(test_name))
 
   def testGTestLogParserMixedStdout(self):
@@ -597,8 +630,10 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(0, parser.FlakyTests())
     self.assertEqual(['UNKNOWN'], parser.TriesForTest('Crash.Test'))
     self.assertEqual(['TIMEOUT'], parser.TriesForTest('TestFix.TestCase'))
-    self.assertEqual(['SUCCESS'], parser.TriesForTest(
-        'WebSocketHandshakeHandlerSpdy3Test.RequestResponse'))
+    self.assertEqual(
+      ['SUCCESS'],
+      parser.TriesForTest('WebSocketHandshakeHandlerSpdy3Test.RequestResponse'),
+    )
 
   def testGtestLogParserSkipped(self):
     parser = gtest_utils.GTestLogParser()
@@ -611,8 +646,9 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(['ProcessReaderLinux.AbortMessage'], parser.SkippedTests())
     self.assertEqual(0, parser.DisabledTests())
     self.assertEqual(0, parser.FlakyTests())
-    self.assertEqual(['SKIPPED'],
-                     parser.TriesForTest('ProcessReaderLinux.AbortMessage'))
+    self.assertEqual(
+      ['SKIPPED'], parser.TriesForTest('ProcessReaderLinux.AbortMessage')
+    )
 
   def testGTestLogParserValgrind(self):
     parser = gtest_utils.GTestLogParser()
@@ -623,15 +659,15 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertFalse(parser.RunningTests())
     self.assertFalse(parser.FailedTests())
     self.assertEqual([VALGRIND_HASH], parser.MemoryToolReportHashes())
-    self.assertEqual(VALGRIND_REPORT,
-                     '\n'.join(parser.MemoryToolReport(VALGRIND_HASH)))
+    self.assertEqual(
+      VALGRIND_REPORT, '\n'.join(parser.MemoryToolReport(VALGRIND_HASH))
+    )
     self.assertEqual(['SUCCESS'], parser.TriesForTest('HunspellTest.All'))
 
     parser = gtest_utils.GTestLogParser()
     for line in FAILING_TESTS_OUTPUT.splitlines():
       parser.ProcessLine(line)
-    self.assertEqual(FAILING_TESTS_EXPECTED,
-                     parser.FailedTests(True, True))
+    self.assertEqual(FAILING_TESTS_EXPECTED, parser.FailedTests(True, True))
 
   def testRunTestCaseFail(self):
     parser = gtest_utils.GTestLogParser()
@@ -641,13 +677,16 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(0, len(parser.ParsingErrors()))
     self.assertEqual([], parser.RunningTests())
     self.assertEqual(
-        ['SUIDSandboxUITest.testSUIDSandboxEnabled'], parser.FailedTests())
+      ['SUIDSandboxUITest.testSUIDSandboxEnabled'], parser.FailedTests()
+    )
     self.assertEqual(
-        ['SUIDSandboxUITest.testSUIDSandboxEnabled: '],
-        parser.FailureDescription('SUIDSandboxUITest.testSUIDSandboxEnabled'))
+      ['SUIDSandboxUITest.testSUIDSandboxEnabled: '],
+      parser.FailureDescription('SUIDSandboxUITest.testSUIDSandboxEnabled'),
+    )
     self.assertEqual(
-        ['FAILURE'],
-        parser.TriesForTest('SUIDSandboxUITest.testSUIDSandboxEnabled'))
+      ['FAILURE'],
+      parser.TriesForTest('SUIDSandboxUITest.testSUIDSandboxEnabled'),
+    )
 
   def testRunTestCaseTimeout(self):
     parser = gtest_utils.GTestLogParser()
@@ -657,13 +696,16 @@ class TestGTestLogParserTests(unittest.TestCase):
     self.assertEqual(0, len(parser.ParsingErrors()))
     self.assertEqual([], parser.RunningTests())
     self.assertEqual(
-        ['SUIDSandboxUITest.testSUIDSandboxEnabled'], parser.FailedTests())
+      ['SUIDSandboxUITest.testSUIDSandboxEnabled'], parser.FailedTests()
+    )
     self.assertEqual(
-        ['SUIDSandboxUITest.testSUIDSandboxEnabled: ', '(junk)'],
-        parser.FailureDescription('SUIDSandboxUITest.testSUIDSandboxEnabled'))
+      ['SUIDSandboxUITest.testSUIDSandboxEnabled: ', '(junk)'],
+      parser.FailureDescription('SUIDSandboxUITest.testSUIDSandboxEnabled'),
+    )
     self.assertEqual(
-        ['TIMEOUT'],
-        parser.TriesForTest('SUIDSandboxUITest.testSUIDSandboxEnabled'))
+      ['TIMEOUT'],
+      parser.TriesForTest('SUIDSandboxUITest.testSUIDSandboxEnabled'),
+    )
 
   def testRunTestCaseParseSwarm(self):
     parser = gtest_utils.GTestLogParser()
@@ -672,20 +714,20 @@ class TestGTestLogParserTests(unittest.TestCase):
 
     self.assertEqual(0, len(parser.ParsingErrors()))
     self.assertEqual([], parser.RunningTests())
+    self.assertEqual(['PickleTest.EncodeDecode'], parser.FailedTests())
     self.assertEqual(
-        ['PickleTest.EncodeDecode'], parser.FailedTests())
+      [
+        'PickleTest.EncodeDecode: ',
+        '../../base/pickle_unittest.cc:69: Failure',
+        'Value of: false',
+        '  Actual: false',
+        'Expected: true',
+      ],
+      parser.FailureDescription('PickleTest.EncodeDecode'),
+    )
     self.assertEqual(
-        [
-          'PickleTest.EncodeDecode: ',
-          '../../base/pickle_unittest.cc:69: Failure',
-          'Value of: false',
-          '  Actual: false',
-          'Expected: true',
-        ],
-        parser.FailureDescription('PickleTest.EncodeDecode'))
-    self.assertEqual(
-        ['FAILURE'],
-        parser.TriesForTest('PickleTest.EncodeDecode'))
+      ['FAILURE'], parser.TriesForTest('PickleTest.EncodeDecode')
+    )
 
   def testNestedGtests(self):
     parser = gtest_utils.GTestLogParser()
@@ -697,19 +739,22 @@ class TestGTestLogParserTests(unittest.TestCase):
 class TestGTestJSONParserTests(unittest.TestCase):
   def testPassedTests(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{'status': 'SUCCESS', 'output_snippet': ''}],
-          'Test.Two': [{'status': 'SUCCESS', 'output_snippet': ''}],
-          'Test.Three': [{'status': 'SKIPPED', 'output_snippet': ''}],
-        }
-      ]
-    })
-    self.assertEqual(sorted(['Test.One', 'Test.Two', 'Test.Three']),
-                     parser.PassedTests())
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [{'status': 'SUCCESS', 'output_snippet': ''}],
+            'Test.Two': [{'status': 'SUCCESS', 'output_snippet': ''}],
+            'Test.Three': [{'status': 'SKIPPED', 'output_snippet': ''}],
+          }
+        ],
+      }
+    )
+    self.assertEqual(
+      sorted(['Test.One', 'Test.Two', 'Test.Three']), parser.PassedTests()
+    )
     self.assertEqual([], parser.FailedTests())
     self.assertEqual(0, parser.FlakyTests())
     self.assertEqual(0, parser.DisabledTests())
@@ -719,16 +764,18 @@ class TestGTestJSONParserTests(unittest.TestCase):
 
   def testInvalidEscape(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{'status': 'SUCCESS', 'output_snippet': '\\x5'}],
-          'Test.Two': [{'status': 'SUCCESS', 'output_snippet': ''}],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [{'status': 'SUCCESS', 'output_snippet': '\\x5'}],
+            'Test.Two': [{'status': 'SUCCESS', 'output_snippet': ''}],
+          }
+        ],
+      }
+    )
     self.assertEqual(['Test.One', 'Test.Two'], parser.PassedTests())
     self.assertEqual([], parser.FailedTests())
     self.assertEqual(0, parser.FlakyTests())
@@ -738,43 +785,54 @@ class TestGTestJSONParserTests(unittest.TestCase):
 
   def testInvalidEscape_crbug632047(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{
-            'status': 'FAILURE',
-            # Use 'loads' to make sure we get exactly what the parser returns.
-            'output_snippet': json.loads(
-              r'"\tcontent::BrowserMainLoop::PreMainMessageLoopRun ' +
-              r'(C:\\b\\c\\b\\CrWinAsan_dll_\\src\\content\\browser\\' +
-              r'browser_main_loop.cc:1172)\r\n"'),
-          }],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [
+              {
+                'status': 'FAILURE',
+                # Use 'loads' to make sure we get exactly what the parser returns.
+                'output_snippet': json.loads(
+                  r'"\tcontent::BrowserMainLoop::PreMainMessageLoopRun '
+                  + r'(C:\\b\\c\\b\\CrWinAsan_dll_\\src\\content\\browser\\'
+                  + r'browser_main_loop.cc:1172)\r\n"'
+                ),
+              }
+            ],
+          }
+        ],
+      }
+    )
     self.assertEqual(['Test.One'], parser.FailedTests())
     # '\\b' and '\\s' MUST be preserved.
-    self.assertEqual([
-      'Test.One (run #1):',
-      '\tcontent::BrowserMainLoop::PreMainMessageLoopRun '
-          '(C:\\b\\c\\b\\CrWinAsan_dll_\\src\\content\\browser\\'
-          'browser_main_loop.cc:1172)\r',
-      ''], parser.FailureDescription('Test.One'))
+    self.assertEqual(
+      [
+        'Test.One (run #1):',
+        '\tcontent::BrowserMainLoop::PreMainMessageLoopRun '
+        '(C:\\b\\c\\b\\CrWinAsan_dll_\\src\\content\\browser\\'
+        'browser_main_loop.cc:1172)\r',
+        '',
+      ],
+      parser.FailureDescription('Test.One'),
+    )
 
   def testFailedTests(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
-          'Test.Two': [{'status': 'FAILURE', 'output_snippet': ''}],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
+            'Test.Two': [{'status': 'FAILURE', 'output_snippet': ''}],
+          }
+        ],
+      }
+    )
 
     self.assertEqual([], parser.PassedTests())
     self.assertEqual(['Test.One', 'Test.Two'], parser.FailedTests())
@@ -785,19 +843,21 @@ class TestGTestJSONParserTests(unittest.TestCase):
 
   def testFlakyTests(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
-          'Test.Two': [
-            {'status': 'FAILURE', 'output_snippet': ''},
-            {'status': 'SUCCESS', 'output_snippet': ''},
-          ],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
+            'Test.Two': [
+              {'status': 'FAILURE', 'output_snippet': ''},
+              {'status': 'SUCCESS', 'output_snippet': ''},
+            ],
+          }
+        ],
+      }
+    )
 
     self.assertEqual(['Test.Two'], parser.PassedTests())
     self.assertEqual(['Test.One'], parser.FailedTests())
@@ -808,33 +868,35 @@ class TestGTestJSONParserTests(unittest.TestCase):
 
   def testRetriedTests(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [
-            {'status': 'FAILURE', 'output_snippet': ''},
-            {'status': 'FAILURE', 'output_snippet': ''},
-          ],
-          'Test.Two': [
-            {'status': 'FAILURE', 'output_snippet': ''},
-            {'status': 'FAILURE_ON_EXIT', 'output_snippet': ''},
-            {'status': 'CRASH', 'output_snippet': ''},
-            {'status': 'TIMEOUT', 'output_snippet': ''},
-            {'status': 'SKIPPED', 'output_snippet': ''},
-            {'status': 'SUCCESS', 'output_snippet': ''},
-          ],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': [],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [
+              {'status': 'FAILURE', 'output_snippet': ''},
+              {'status': 'FAILURE', 'output_snippet': ''},
+            ],
+            'Test.Two': [
+              {'status': 'FAILURE', 'output_snippet': ''},
+              {'status': 'FAILURE_ON_EXIT', 'output_snippet': ''},
+              {'status': 'CRASH', 'output_snippet': ''},
+              {'status': 'TIMEOUT', 'output_snippet': ''},
+              {'status': 'SKIPPED', 'output_snippet': ''},
+              {'status': 'SUCCESS', 'output_snippet': ''},
+            ],
+          }
+        ],
+      }
+    )
     expected_tries_test_two = [
       'FAILURE',
       'FAILURE_ON_EXIT',
       'CRASH',
       'TIMEOUT',
       'SKIPPED',
-      'SUCCESS'
+      'SUCCESS',
     ]
 
     self.assertEqual(['Test.Two'], parser.PassedTests())
@@ -846,15 +908,17 @@ class TestGTestJSONParserTests(unittest.TestCase):
 
   def testDisabledTests(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': ['Test.Two'],
-      'global_tags': [],
-      'per_iteration_data': [
-        {
-          'Test.One': [{'status': 'SUCCESS', 'output_snippet': ''}],
-        }
-      ]
-    })
+    parser.ProcessJSONData(
+      {
+        'disabled_tests': ['Test.Two'],
+        'global_tags': [],
+        'per_iteration_data': [
+          {
+            'Test.One': [{'status': 'SUCCESS', 'output_snippet': ''}],
+          }
+        ],
+      }
+    )
 
     self.assertEqual(['Test.One'], parser.PassedTests())
     self.assertEqual([], parser.FailedTests())
@@ -880,30 +944,43 @@ class TestGTestJSONParserTests(unittest.TestCase):
     spec_fd.write(TEST_IGNORED_FAILED_TESTS_SPEC)
     spec_fd.close()
 
-    with mock.patch('common.chromium_utils.FindUpward',
-                    new=lambda *_: spec_filename):
+    with mock.patch(
+      'common.chromium_utils.FindUpward', new=lambda *_: spec_filename
+    ):
       parser = gtest_utils.GTestJSONParser()
 
       try:
-        parser.ProcessJSONData({
-          'disabled_tests': ['Test.Six'],
-          'per_iteration_data': [
-            {
-              'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
-              'Test.Two/2': [{'status': 'FAILURE', 'output_snippet': ''}],
-              'Perf/Test.Three': [{'status': 'FAILURE', 'output_snippet': ''}],
-              'Test.Four': [{'status': 'FAILURE', 'output_snippet': ''}],
-              'Test.Five': [{'status': 'FAILURE', 'output_snippet': ''}],
-            }
-          ],
-          'global_tags': ['OS_WIN', 'CPU_64_BITS', 'MODE_RELEASE', 'OTHER_FLAG']
-        }, '/fake/path/to/build')
+        parser.ProcessJSONData(
+          {
+            'disabled_tests': ['Test.Six'],
+            'per_iteration_data': [
+              {
+                'Test.One': [{'status': 'FAILURE', 'output_snippet': ''}],
+                'Test.Two/2': [{'status': 'FAILURE', 'output_snippet': ''}],
+                'Perf/Test.Three': [
+                  {'status': 'FAILURE', 'output_snippet': ''}
+                ],
+                'Test.Four': [{'status': 'FAILURE', 'output_snippet': ''}],
+                'Test.Five': [{'status': 'FAILURE', 'output_snippet': ''}],
+              }
+            ],
+            'global_tags': [
+              'OS_WIN',
+              'CPU_64_BITS',
+              'MODE_RELEASE',
+              'OTHER_FLAG',
+            ],
+          },
+          '/fake/path/to/build',
+        )
       finally:
         os.remove(spec_filename)
 
       self.assertEqual(['Test.Five', 'Test.Four'], parser.FailedTests())
-      self.assertEqual(['Perf/Test.Three', 'Test.One', 'Test.Two/2'],
-                       parser.IgnoredFailedTests())
+      self.assertEqual(
+        ['Perf/Test.Three', 'Test.One', 'Test.Two/2'],
+        parser.IgnoredFailedTests(),
+      )
       self.assertEqual(['FAILURE'], parser.TriesForTest('Test.One'))
       self.assertEqual(['FAILURE'], parser.TriesForTest('Test.Two/2'))
       self.assertEqual(['FAILURE'], parser.TriesForTest('Perf/Test.Three'))
@@ -913,11 +990,10 @@ class TestGTestJSONParserTests(unittest.TestCase):
   # pylint: disable=R0201
   def testDoesNotThrowExceptionOnMissingIgnoredFailedTestsFile(self):
     parser = gtest_utils.GTestJSONParser()
-    parser.ProcessJSONData({
-      'disabled_tests': [],
-      'global_tags': [],
-      'per_iteration_data': []},
-      tempfile.gettempdir())
+    parser.ProcessJSONData(
+      {'disabled_tests': [], 'global_tags': [], 'per_iteration_data': []},
+      tempfile.gettempdir(),
+    )
 
   def testCompressList(self):
     CompressList = gtest_utils.CompressList

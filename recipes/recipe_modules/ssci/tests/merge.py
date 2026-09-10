@@ -15,11 +15,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import ssci
 from RECIPE_MODULES.recipe_engine import (
-    assertions,
-    buildbucket,
-    json,
-    path,
-    properties,
+  assertions,
+  buildbucket,
+  json,
+  path,
+  properties,
 )
 
 
@@ -41,33 +41,49 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   merged = api.ssci.merge_sboms(
-      name="merged",
-      sbom_paths=["path1/path.spdx.json", "path2/path.spdx.json"],
+    name="merged",
+    sbom_paths=["path1/path.spdx.json", "path2/path.spdx.json"],
   )
 
   api.assertions.assertEqual(
-      merged, {
-          "digest": "testhash",
-          "filename": "merged",
-          "sbom_name": "merged.spdx.json",
-          "sbom_path": "[CLEANUP]/tmp_tmp_1/spdx-out.json"
-      })
+    merged,
+    {
+      "digest": "testhash",
+      "filename": "merged",
+      "sbom_name": "merged.spdx.json",
+      "sbom_path": "[CLEANUP]/tmp_tmp_1/spdx-out.json",
+    },
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.ci_build(
-          project='myproject', bucket='mybucket', builder='mybuilder'),
-      api.post_process(
-          StepCommandContains, 'run SSCI SBOM Generator to merge SBOMs', [
-              '-output-file', '[CLEANUP]/tmp_tmp_1/spdx-out.json',
-              '-sbom-generator-version',
-              'vresolved-instance_id-of-prod------------', '-product',
-              'merge..merged', '-product-version', '2d7251', '-platform',
-              'linux_intel64', '-document-path', 'path1/path.spdx.json',
-              '-document-path', 'path2/path.spdx.json'
-          ]),
-      api.override_step_data(
-          'run SSCI SBOM Generator to merge SBOMs',
-          api.json.output(name='[CLEANUP]/tmp_tmp_1/spdx-out.json', data={})))
+    'basic',
+    api.buildbucket.ci_build(
+      project='myproject', bucket='mybucket', builder='mybuilder'
+    ),
+    api.post_process(
+      StepCommandContains,
+      'run SSCI SBOM Generator to merge SBOMs',
+      [
+        '-output-file',
+        '[CLEANUP]/tmp_tmp_1/spdx-out.json',
+        '-sbom-generator-version',
+        'vresolved-instance_id-of-prod------------',
+        '-product',
+        'merge..merged',
+        '-product-version',
+        '2d7251',
+        '-platform',
+        'linux_intel64',
+        '-document-path',
+        'path1/path.spdx.json',
+        '-document-path',
+        'path2/path.spdx.json',
+      ],
+    ),
+    api.override_step_data(
+      'run SSCI SBOM Generator to merge SBOMs',
+      api.json.output(name='[CLEANUP]/tmp_tmp_1/spdx-out.json', data={}),
+    ),
+  )

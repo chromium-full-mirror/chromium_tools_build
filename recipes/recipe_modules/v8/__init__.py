@@ -12,43 +12,43 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    archive,
-    builder_group,
-    chromium,
-    chromiumdash,
-    gn,
-    isolate,
-    perf_dashboard,
-    siso,
-    test_utils,
-    v8_tests,
+  archive,
+  builder_group,
+  chromium,
+  chromiumdash,
+  gn,
+  isolate,
+  perf_dashboard,
+  siso,
+  test_utils,
+  v8_tests,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    gitiles,
-    gsutil,
-    osx_sdk,
-    tryserver,
+  bot_update,
+  gclient,
+  git,
+  gitiles,
+  gsutil,
+  osx_sdk,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    commit_position,
-    context,
-    cv,
-    file,
-    json,
-    led,
-    path,
-    platform,
-    properties,
-    raw_io,
-    runtime,
-    scheduler,
-    step,
-    time,
-    url,
+  buildbucket,
+  commit_position,
+  context,
+  cv,
+  file,
+  json,
+  led,
+  path,
+  platform,
+  properties,
+  raw_io,
+  runtime,
+  scheduler,
+  step,
+  time,
+  url,
 )
 from RECIPE_MODULES.infra import docker
 
@@ -90,19 +90,19 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
   v8_tests: v8_tests.API
 
+
 PROPERTIES = {
-    '$build/v8':
-        Property(
-            help='Properties for the v8 module',
-            param_name='properties',
-            kind=ConfigGroup(
-                # Targets to try to isolate even after compilation errors.
-                always_isolate_targets=List(str),
-                # Whether to use RBE for compilation with the V8 module.
-                use_remoteexec=Single(bool),
-            ),
-            default={},
-        ),
+  '$build/v8': Property(
+    help='Properties for the v8 module',
+    param_name='properties',
+    kind=ConfigGroup(
+      # Targets to try to isolate even after compilation errors.
+      always_isolate_targets=List(str),
+      # Whether to use RBE for compilation with the V8 module.
+      use_remoteexec=Single(bool),
+    ),
+    default={},
+  ),
 }
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).

@@ -32,13 +32,21 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(StepCommandContains, 'provision_devices', [
-          'vpython3',
-          '[CACHE]/builder/src/build/android/provision_devices.py',
-      ]),
-      api.post_process(StepCommandContains, 'provision_devices', [
-          '--emulators',
-      ]),
-      api.post_process(DropExpectation),
+    'basic',
+    api.post_process(
+      StepCommandContains,
+      'provision_devices',
+      [
+        'vpython3',
+        '[CACHE]/builder/src/build/android/provision_devices.py',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'provision_devices',
+      [
+        '--emulators',
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

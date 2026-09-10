@@ -9,24 +9,24 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_orchestrator,
+  chromium,
+  chromium_orchestrator,
 )
 from RECIPE_MODULES.depot_tools import (
-    gerrit,
-    gitiles,
-    tryserver,
+  gerrit,
+  gitiles,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cv,
-    futures,
-    json,
-    led,
-    raw_io,
-    step,
-    swarming,
-    time,
+  buildbucket,
+  cv,
+  futures,
+  json,
+  led,
+  raw_io,
+  step,
+  swarming,
+  time,
 )
 
 
@@ -46,5 +46,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   swarming: swarming.API
   time: time.API
+
 
 from .api import ChromiumMegaCqApi as API

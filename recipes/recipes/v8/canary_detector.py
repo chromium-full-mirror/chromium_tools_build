@@ -19,14 +19,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import builder_group, v8
 from RECIPE_MODULES.depot_tools import bot_update, gclient, git
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -58,6 +58,7 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
   v8: v8.TEST_API
 
+
 DEPS_KEY = 'src/v8'
 REPO = 'https://chromium.googlesource.com/v8/v8'
 
@@ -75,11 +76,11 @@ def GetHeads(api: DEPS, repo):
   """
   with api.context(cwd=api.path.mkdtemp()):
     step_result = api.git(
-        'ls-remote',
-        '--heads',
-        repo,
-        name='git ls-remote --heads %s' % repo,
-        stdout=api.raw_io.output_text(),
+      'ls-remote',
+      '--heads',
+      repo,
+      name='git ls-remote --heads %s' % repo,
+      stdout=api.raw_io.output_text(),
     )
     refs = step_result.stdout.strip().split("\n")
     step_result.presentation.logs['heads'] = refs
@@ -133,39 +134,45 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   def get_remote_refs(canary_rev):
-    return "\n".join([
-        "0eca9b90ee3689f6cbf93e01b5e0fc480175ce42\trefs/heads/9.9.24",
-        "8d84dc03b82aafce14f043b523ea94b14fdf89ca\trefs/heads/9.9.9",
-        "%s\trefs/heads/canary" % canary_rev,
-        "6c30d63ab9c9cfef8dd01cd70406b4f70a2f45e1\trefs/heads/main",
-    ]) + "\n"
+    return (
+      "\n".join(
+        [
+          "0eca9b90ee3689f6cbf93e01b5e0fc480175ce42\trefs/heads/9.9.24",
+          "8d84dc03b82aafce14f043b523ea94b14fdf89ca\trefs/heads/9.9.9",
+          "%s\trefs/heads/canary" % canary_rev,
+          "6c30d63ab9c9cfef8dd01cd70406b4f70a2f45e1\trefs/heads/main",
+        ]
+      )
+      + "\n"
+    )
 
   def generate_test(name, current_canary, *expectations):
     return api.test(
-        name,
-        api.buildbucket.ci_build(
-            project='v8',
-            git_repo=REPO,
-            builder='V8 canary detector',
+      name,
+      api.buildbucket.ci_build(
+        project='v8',
+        git_repo=REPO,
+        builder='V8 canary detector',
+      ),
+      api.override_step_data(
+        'git ls-remote --heads %s' % REPO,
+        api.raw_io.stream_output_text(
+          get_remote_refs(current_canary), stream='stdout'
         ),
-        api.override_step_data(
-            'git ls-remote --heads %s' % REPO,
-            api.raw_io.stream_output_text(
-                get_remote_refs(current_canary), stream='stdout'),
-        ),
-        *expectations,
-        api.post_process(DropExpectation),
+      ),
+      *expectations,
+      api.post_process(DropExpectation),
     )
 
   yield generate_test(
-      'new_canary',
-      '8d84dc03b82aafce14f043b523ea94b14fdf89ca',
-      api.post_process(MustRun, 'git update-ref'),
-      api.post_process(MustRun, 'git push'),
+    'new_canary',
+    '8d84dc03b82aafce14f043b523ea94b14fdf89ca',
+    api.post_process(MustRun, 'git update-ref'),
+    api.post_process(MustRun, 'git push'),
   )
   yield generate_test(
-      'same_canary',
-      '0eca9b90ee3689f6cbf93e01b5e0fc480175ce42',
-      api.post_process(DoesNotRun, 'git update-ref'),
-      api.post_process(DoesNotRun, 'git push'),
+    'same_canary',
+    '0eca9b90ee3689f6cbf93e01b5e0fc480175ce42',
+    api.post_process(DoesNotRun, 'git update-ref'),
+    api.post_process(DoesNotRun, 'git push'),
   )

@@ -18,7 +18,6 @@ from testdata import get_test_path
 
 
 class APIRunnerTest(unittest.TestCase):
-
   def setUp(self):
     pass
 
@@ -27,11 +26,14 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: TaskRequest):
       pass
 
-    args = api_runner_common.parse_args([
+    args = api_runner_common.parse_args(
+      [
         'test_method',
         '--a',
         get_test_path('gtest_task_request.json'),
-    ], {'test_method': test_method})
+      ],
+      {'test_method': test_method},
+    )
     self.assertIsInstance(args.a, TaskRequest)
 
   def test_parse_args_with_test_binary(self):
@@ -39,11 +41,14 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: BaseTestBinary):
       pass
 
-    args = api_runner_common.parse_args([
+    args = api_runner_common.parse_args(
+      [
         'test_method',
         '--a',
         get_test_path('gtest_test_binary.json'),
-    ], {'test_method': test_method})
+      ],
+      {'test_method': test_method},
+    )
     self.assertIsInstance(args.a, BaseTestBinary)
 
   def test_parse_args_with_result_summary(self):
@@ -51,11 +56,14 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: BaseResultSummary):
       pass
 
-    args = api_runner_common.parse_args([
+    args = api_runner_common.parse_args(
+      [
         'test_method',
         '--a',
         get_test_path('gtest_good_output.json'),
-    ], {'test_method': test_method})
+      ],
+      {'test_method': test_method},
+    )
     self.assertIsInstance(args.a, BaseResultSummary)
 
   def test_parse_args_with_reproducing_step(self):
@@ -63,11 +71,14 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: ReproducingStep):
       pass
 
-    args = api_runner_common.parse_args([
+    args = api_runner_common.parse_args(
+      [
         'test_method',
         '--a',
         get_test_path('reproducing_step.json'),
-    ], {'test_method': test_method})
+      ],
+      {'test_method': test_method},
+    )
     self.assertIsInstance(args.a, ReproducingStep)
 
   def test_parse_args_with_list(self):
@@ -75,8 +86,9 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: typing.List[str]):
       pass
 
-    args = api_runner_common.parse_args(['test_method', '--a', 'asdf', 'fdsa'],
-                                        {'test_method': test_method})
+    args = api_runner_common.parse_args(
+      ['test_method', '--a', 'asdf', 'fdsa'], {'test_method': test_method}
+    )
     self.assertListEqual(args.a, ['asdf', 'fdsa'])
 
   @patch('sys.stderr', new_callable=io.StringIO)
@@ -92,10 +104,13 @@ class APIRunnerTest(unittest.TestCase):
       pass
 
     with self.assertRaises(SystemExit):
-      api_runner_common.parse_args([
+      api_runner_common.parse_args(
+        [
           'test_method',
           '--unknown=asdf',
-      ], {'test_method': test_method})
+        ],
+        {'test_method': test_method},
+      )
     self.assertRegexpMatches(mock_stderr.getvalue(), r'unrecognized arguments')
 
   @patch('sys.stderr', new_callable=io.StringIO)
@@ -104,8 +119,9 @@ class APIRunnerTest(unittest.TestCase):
     def test_method(a: str):
       pass
 
-    args = api_runner_common.parse_args(['test_method'],
-                                        {'test_method': test_method})
+    args = api_runner_common.parse_args(
+      ['test_method'], {'test_method': test_method}
+    )
     self.assertIsNone(args.a)
 
   @patch('sys.stderr', new_callable=io.StringIO)
@@ -115,5 +131,6 @@ class APIRunnerTest(unittest.TestCase):
       pass
 
     with self.assertRaises(FileNotFoundError):
-      api_runner_common.parse_args(['test_method', '--a', 'asdf'],
-                                   {'test_method': test_method})
+      api_runner_common.parse_args(
+        ['test_method', '--a', 'asdf'], {'test_method': test_method}
+      )

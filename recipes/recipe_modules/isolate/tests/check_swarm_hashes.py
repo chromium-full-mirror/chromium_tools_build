@@ -32,30 +32,30 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'matching',
-      api.properties(
-          swarm_hashes={
-              'some_target': 'a' * 40,
-              'other_target': 'b' * 40,
-              'another_one': 'c' * 40
-          }),
-      api.post_process(DropExpectation),
+    'matching',
+    api.properties(
+      swarm_hashes={
+        'some_target': 'a' * 40,
+        'other_target': 'b' * 40,
+        'another_one': 'c' * 40,
+      }
+    ),
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'detected',
-      api.post_process(DropExpectation),
+    'detected',
+    api.post_process(DropExpectation),
   )
 
   yield api.test(
-      'missing',
-      api.properties(swarm_hashes={
-          'some_target': 'a' * 40,
-          'another_one': 'c' * 40
-      }),
-      api.post_process(
-          SummaryMarkdown,
-          'Missing isolated target(s) other_target in swarm_hashes'),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(DropExpectation),
+    'missing',
+    api.properties(
+      swarm_hashes={'some_target': 'a' * 40, 'another_one': 'c' * 40}
+    ),
+    api.post_process(
+      SummaryMarkdown, 'Missing isolated target(s) other_target in swarm_hashes'
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(DropExpectation),
   )

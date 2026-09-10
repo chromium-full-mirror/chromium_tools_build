@@ -16,8 +16,9 @@ import sys
 
 
 # TODO(crbug.com/929769): Remove this method when the fix is landed upstream.
-def _get_binaries_with_coverage_data(profdata_path, llvm_cov_path, binaries,
-                                     arch):
+def _get_binaries_with_coverage_data(
+  profdata_path, llvm_cov_path, binaries, arch
+):
   """Gets binaries with valid coverage data.
 
   llvm-cov bails out with error message "No coverage data found" if an included
@@ -34,7 +35,9 @@ def _get_binaries_with_coverage_data(profdata_path, llvm_cov_path, binaries,
   binaries_with_coverage_data = []
   for binary in binaries:
     cmd = [
-        llvm_cov_path, 'export', '-summary-only',
+      llvm_cov_path,
+      'export',
+      '-summary-only',
     ]
     if arch:
       cmd.append('-arch=%s' % arch)
@@ -50,12 +53,15 @@ def _get_binaries_with_coverage_data(profdata_path, llvm_cov_path, binaries,
       logging.error(e.output)
       # On Unix-like platforms, llvm-cov reports 'No coverage data found',
       # but on Windows it reports 'Could not load coverage information'.
-      if e.returncode == 1 and ('no coverage data found' in e.output.lower() or
-                                'could not load coverage information'
-                                in e.output.lower()):
+      if e.returncode == 1 and (
+        'no coverage data found' in e.output.lower()
+        or 'could not load coverage information' in e.output.lower()
+      ):
         logging.warning(
-            '%s does not have coverage data, and will be excluded '
-            'from exporting coverage metadata', binary)
+          '%s does not have coverage data, and will be excluded '
+          'from exporting coverage metadata',
+          binary,
+        )
         continue
 
       raise
@@ -70,30 +76,34 @@ def _parse_args():
   parser.usage = __doc__
 
   parser.add_argument(
-      '--profdata-path',
-      required=True,
-      type=str,
-      help='absolute path to the merged profdata')
+    '--profdata-path',
+    required=True,
+    type=str,
+    help='absolute path to the merged profdata',
+  )
 
   parser.add_argument(
-      '--llvm-cov',
-      required=True,
-      type=str,
-      help='absolute path to llvm-cov executable')
+    '--llvm-cov',
+    required=True,
+    type=str,
+    help='absolute path to llvm-cov executable',
+  )
 
   parser.add_argument(
-      '--output-json',
-      required=True,
-      type=str,
-      help='absoluate path to the file that stores the output, and the format '
-      'is a json list of absolute paths to the binaries with valid coverage '
-      'data')
+    '--output-json',
+    required=True,
+    type=str,
+    help='absoluate path to the file that stores the output, and the format '
+    'is a json list of absolute paths to the binaries with valid coverage '
+    'data',
+  )
 
   parser.add_argument(
-      'binaries',
-      nargs='+',
-      type=str,
-      help='absolute path to binaries to generate the coverage for')
+    'binaries',
+    nargs='+',
+    type=str,
+    help='absolute path to binaries to generate the coverage for',
+  )
 
   parser.add_argument('--arch', type=str, help='architecture of binaries')
 
@@ -103,11 +113,13 @@ def _parse_args():
 def main():
   args = _parse_args()
   assert os.path.isfile(args.profdata_path), (
-      '"%s" profdata file does not exist' % args.profdata_path)
+    '"%s" profdata file does not exist' % args.profdata_path
+  )
   assert os.path.isfile(args.llvm_cov), '"%s" llvm_cov does not exist'
 
   binaries_with_coverage_data = _get_binaries_with_coverage_data(
-      args.profdata_path, args.llvm_cov, args.binaries, args.arch)
+    args.profdata_path, args.llvm_cov, args.binaries, args.arch
+  )
   with open(args.output_json, 'w') as f:
     json.dump(binaries_with_coverage_data, f, separators=(',', ':'))
 

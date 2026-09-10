@@ -4,7 +4,10 @@
 
 from recipe_engine import post_process
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.test_runner_base import DevToolsTests, ExonerableTests
+from RECIPE_MODULES.build.devtools.test_runner_base import (
+  DevToolsTests,
+  ExonerableTests,
+)
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests
 
 from dataclasses import dataclass
@@ -15,14 +18,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_swarming, devtools
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  buildbucket,
+  file,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -57,12 +60,13 @@ def RunSteps(api: DEPS):
   node_mode = api.properties.get('node_mode', False)
   step_name = 'Unit Tests (node)' if node_mode else 'Unit Tests'
   runner = UnitTests(
-      api,
-      trigger,
-      builder_config,
-      coverage=True,
-      step_name=step_name,
-      node_unit_tests=node_mode)
+    api,
+    trigger,
+    builder_config,
+    coverage=True,
+    step_name=step_name,
+    node_unit_tests=node_mode,
+  )
 
   if api.properties.get('initial_failure'):
     runner.results.task_failures = [f'Failure in {step_name} (shard #0)']
@@ -92,94 +96,101 @@ def GenTests(api: TEST_DEPS):
 
   def try_build(builder='linux'):
     return api.buildbucket.try_build(
-        project='devtools',
-        builder=builder,
-        git_repo=git_repo,
-        change_number=91827,
-        patch_set=1)
+      project='devtools',
+      builder=builder,
+      git_repo=git_repo,
+      change_number=91827,
+      patch_set=1,
+    )
 
   yield api.test(
-      'basic',
-      try_build(builder='dtf_linux_rel'),
+    'basic',
+    try_build(builder='dtf_linux_rel'),
   )
   yield api.test('node_mode', try_build(), api.properties(node_mode=True))
 
   # Exoneration with initial task failure
   yield api.test(
-      'exonerate_success',
-      try_build(),
-      api.properties(
-          initial_failure=True,
-          test_names={'unit_tests': ['front_end/foo.test.ts:test1']}),
-      api.post_process(post_process.DropExpectation),
+    'exonerate_success',
+    try_build(),
+    api.properties(
+      initial_failure=True,
+      test_names={'unit_tests': ['front_end/foo.test.ts:test1']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Exoneration in node_mode (had_node_unit_tests)
   yield api.test(
-      'exonerate_node',
-      try_build(),
-      api.properties(
-          node_mode=True,
-          initial_failure=True,
-          test_names={'node_unit_tests': ['front_end/foo.test.ts:test1']}),
-      api.post_process(post_process.DropExpectation),
+    'exonerate_node',
+    try_build(),
+    api.properties(
+      node_mode=True,
+      initial_failure=True,
+      test_names={'node_unit_tests': ['front_end/foo.test.ts:test1']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Exoneration with empty test list (no owned tests)
   yield api.test(
-      'exonerate_empty',
-      try_build(),
-      api.properties(test_names={'other_tag': ['test1']}),
-      api.post_process(
-          post_process.DoesNotRun,
-          ('Trigger Unit Tests (rerun).'
-           '[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'),
+    'exonerate_empty',
+    try_build(),
+    api.properties(test_names={'other_tag': ['test1']}),
+    api.post_process(
+      post_process.DoesNotRun,
+      (
+        'Trigger Unit Tests (rerun).'
+        '[trigger] Unit Tests (rerun) (Shard #0) on Ubuntu-22.04'
       ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Exoneration with too many failures (>20)
   yield api.test(
-      'exonerate_too_many',
-      try_build(),
-      api.properties(
-          test_names={'unit_tests': [f'test_{i}' for i in range(25)]}),
-      api.post_process(post_process.MustRun,
-                       'Too many tests to check for flakes Unit Tests'),
-      api.post_process(post_process.DropExpectation),
-      status='FAILURE',
+    'exonerate_too_many',
+    try_build(),
+    api.properties(test_names={'unit_tests': [f'test_{i}' for i in range(25)]}),
+    api.post_process(
+      post_process.MustRun, 'Too many tests to check for flakes Unit Tests'
+    ),
+    api.post_process(post_process.DropExpectation),
+    status='FAILURE',
   )
 
   # Flake detection in node_mode
   yield api.test(
-      'flake_detection_node',
-      try_build(),
-      api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
-      api.post_process(post_process.DropExpectation),
+    'flake_detection_node',
+    try_build(),
+    api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Flake detection
   yield api.test(
-      'flake_detection',
-      try_build(),
-      api.properties(touched_tests=['front_end/foo.test.ts']),
-      api.post_process(post_process.DropExpectation),
+    'flake_detection',
+    try_build(),
+    api.properties(touched_tests=['front_end/foo.test.ts']),
+    api.post_process(post_process.DropExpectation),
   )
 
   # StepFailure in _post_collect coverage
   yield api.test(
-      'post_collect_step_failure',
-      try_build(builder='dtf_linux_rel'),
-      api.step_data(
-          'Unit Tests.remove coverage files if they exist', retcode=1),
-      api.post_process(post_process.DropExpectation),
-      status='INFRA_FAILURE',
+    'post_collect_step_failure',
+    try_build(builder='dtf_linux_rel'),
+    api.step_data('Unit Tests.remove coverage files if they exist', retcode=1),
+    api.post_process(post_process.DropExpectation),
+    status='INFRA_FAILURE',
   )
 
   def check_flake_detection_args(check, steps):
-    step = steps[(
+    step = steps[
+      (
         'Trigger Unit Tests (node) (flake detection).[trigger] '
-        'Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04')]
+        'Unit Tests (node) (flake detection) (Shard #0) on Ubuntu-22.04'
+      )
+    ]
     cmd_str = ' '.join(str(x) for x in step.cmd)
     check('--node-unit-tests' in cmd_str)
     check('--repeat=10' in cmd_str)
@@ -187,20 +198,21 @@ def GenTests(api: TEST_DEPS):
   # Verifies that flake detection appends to extra_args without dropping
   # existing arguments.
   yield api.test(
-      'flake_detection_preserves_extra_args',
-      try_build(),
-      api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
-      api.post_process(check_flake_detection_args),
-      api.post_process(post_process.DropExpectation),
+    'flake_detection_preserves_extra_args',
+    try_build(),
+    api.properties(node_mode=True, touched_tests=['front_end/foo.test.ts']),
+    api.post_process(check_flake_detection_args),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Verifies that exoneration reruns preserve existing coverage data without overwriting.
   yield api.test(
-      'exoneration_preserves_coverage',
-      try_build(),
-      api.properties(test_names={'unit_tests': ['front_end/foo.test.ts:test']}),
-      api.post_process(
-          post_process.DoesNotRun,
-          'Unit Tests (rerun).remove coverage files if they exist'),
-      api.post_process(post_process.DropExpectation),
+    'exoneration_preserves_coverage',
+    try_build(),
+    api.properties(test_names={'unit_tests': ['front_end/foo.test.ts:test']}),
+    api.post_process(
+      post_process.DoesNotRun,
+      'Unit Tests (rerun).remove coverage files if they exist',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

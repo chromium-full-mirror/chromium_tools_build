@@ -12,14 +12,17 @@ from google.protobuf import json_format
 from recipe_engine import config_types, engine_types, recipe_api
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests import (generators, steps,
-                                                 targets_config as
-                                                 targets_config_module)
+from RECIPE_MODULES.build.chromium_tests import (
+  generators,
+  steps,
+  targets_config as targets_config_module,
+)
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 from PB.recipe_modules.build.chromium_tests_builder_config import (
-    properties as ctbc_properties_pb)
+  properties as ctbc_properties_pb,
+)
 
 _CTBC_PROPERTY = '$build/chromium_tests_builder_config'
 
@@ -33,14 +36,16 @@ def _targets_spec_file_re(builder_config_directory: str) -> re.Pattern:
     path to the directory that contains configs for a single builder
     (not just the targets spec files).
   """
-  return re.compile(f'^({re.escape(builder_config_directory)}/([^/]+)/[^/]+)'
-                    r'/targets/[^/]+\.json')
+  return re.compile(
+    f'^({re.escape(builder_config_directory)}/([^/]+)/[^/]+)'
+    r'/targets/[^/]+\.json'
+  )
 
 
 def _result(
-    status: common_pb.Status,
-    header: str,
-    elements: collections.abc.Iterable[str],
+  status: common_pb.Status,
+  header: str,
+  elements: collections.abc.Iterable[str],
 ) -> result_pb.RawResult:
   summary = [header, '']
   summary.extend('* {}'.format(e) for e in elements)
@@ -48,12 +53,11 @@ def _result(
 
 
 class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
-
   def verify_target_configs(
-      self,
-      gclient_config,
-      builder_config_directory: str,
-      precommit_buckets: collections.abc.Collection[str],
+    self,
+    gclient_config,
+    builder_config_directory: str,
+    precommit_buckets: collections.abc.Collection[str],
   ) -> result_pb.RawResult | None:
     """Verify migrated targets configs.
 
@@ -92,8 +96,10 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
     with self.m.step.nest('determine affected targets spec files'):
       with self.m.context(cwd=patch_dir):
         affected_files = set(
-            self.m.tryserver.get_files_affected_by_patch(
-                '', report_files_via_property='affected_files'))
+          self.m.tryserver.get_files_affected_by_patch(
+            '', report_files_via_property='affected_files'
+          )
+        )
 
     fake_precommit_details = generators.PrecommitDetails()
     precommit_details_by_builder_dir = {}
@@ -107,13 +113,15 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
         # bootstrapped. The latter case should be rare and wouldn't be easy to
         # distinguish, so just assume a deletion and don't try to verify the
         # builder.
-        if (properties_file in affected_files and
-            not self.m.path.exists(patch_dir / properties_file)):
+        if properties_file in affected_files and not self.m.path.exists(
+          patch_dir / properties_file
+        ):
           continue
         bucket = match.group(2)
         builder_dir = patch_dir / builder_dir
         precommit_details_by_builder_dir[builder_dir] = (
-            fake_precommit_details if bucket in precommit_buckets else None)
+          fake_precommit_details if bucket in precommit_buckets else None
+        )
 
     if not precommit_details_by_builder_dir:
       self.m.step.empty('all affected builders are being deleted')
@@ -121,14 +129,16 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
 
     starlark_config_by_builder_dir = {}
     with self.m.step.nest('get patched targets configs'):
-      for builder_dir, precommit_details in (
-          precommit_details_by_builder_dir.items()):
+      for (
+        builder_dir,
+        precommit_details,
+      ) in precommit_details_by_builder_dir.items():
         starlark_config = self._get_starlark_config(
-            builder_dir,
-            patch_dir,
-            source_dir,
-            checkout_root,
-            precommit_details,
+          builder_dir,
+          patch_dir,
+          source_dir,
+          checkout_root,
+          precommit_details,
         )
         if starlark_config:
           starlark_config_by_builder_dir[builder_dir] = starlark_config
@@ -143,32 +153,33 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
     for builder_dir, starlark_config in starlark_config_by_builder_dir.items():
       precommit_details = precommit_details_by_builder_dir[builder_dir]
       if not self._verify_target_configs(
-          builder_dir,
-          patch_dir,
-          source_dir,
-          precommit_details,
-          starlark_config,
+        builder_dir,
+        patch_dir,
+        source_dir,
+        precommit_details,
+        starlark_config,
       ):
         failures.append(builder_dir)
     if failures:
       return _result(
-          status=common_pb.FAILURE,
-          elements=failures,
-          header='verification failed for the following builder directories:')
+        status=common_pb.FAILURE,
+        elements=failures,
+        header='verification failed for the following builder directories:',
+      )
 
   def _get_builder_config(
-      self,
-      builder_dir: config_types.Path,
+    self,
+    builder_dir: config_types.Path,
   ) -> ctbc.BuilderConfig | None:
     properties_json_path = builder_dir / 'properties.json'
     if not self.m.path.exists(properties_json_path):
       return None
 
     properties = self.m.file.read_json(
-        'read properties file',
-        properties_json_path,
-        test_data={},
-        include_log=True,
+      'read properties file',
+      properties_json_path,
+      test_data={},
+      include_log=True,
     )
 
     if _CTBC_PROPERTY not in properties:
@@ -179,64 +190,69 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
     return ctbc.proto.convert_builder_config(ctbc_properties.builder_config)
 
   def _get_targets_config(
-      self,
-      step_name: str,
-      builder_config: ctbc.BuilderConfig,
-      source_dir: config_types.Path,
-      targets_spec_dir: config_types.Path,
-      precommit_details: generators.PrecommitDetails | None,
+    self,
+    step_name: str,
+    builder_config: ctbc.BuilderConfig,
+    source_dir: config_types.Path,
+    targets_spec_dir: config_types.Path,
+    precommit_details: generators.PrecommitDetails | None,
   ) -> targets_config_module.TargetsConfig:
     with self.m.step.nest(step_name):
       return self.m.chromium_tests.create_targets_config(
-          builder_config,
-          got_revisions={},
-          source_dir=source_dir,
-          build_dir=None,
-          targets_spec_dir=targets_spec_dir,
-          precommit_details=precommit_details,
-          scripts_compile_targets_fn=lambda source_dir, build_dir: {},
+        builder_config,
+        got_revisions={},
+        source_dir=source_dir,
+        build_dir=None,
+        targets_spec_dir=targets_spec_dir,
+        precommit_details=precommit_details,
+        scripts_compile_targets_fn=lambda source_dir, build_dir: {},
       )
 
   def _get_starlark_config(
-      self,
-      builder_dir: config_types.Path,
-      patch_dir: config_types.Path,
-      source_dir: config_types.Path,
-      checkout_root: config_types.Path,
-      precommit_details: generators.PrecommitDetails | None,
+    self,
+    builder_dir: config_types.Path,
+    patch_dir: config_types.Path,
+    source_dir: config_types.Path,
+    checkout_root: config_types.Path,
+    precommit_details: generators.PrecommitDetails | None,
   ) -> targets_config_module.TargetsConfig | None:
-    with self.m.step.nest(str(
-        builder_dir.relative_to(patch_dir))) as presentation:
+    with self.m.step.nest(
+      str(builder_dir.relative_to(patch_dir))
+    ) as presentation:
       builder_config = self._get_builder_config(builder_dir)
       if not builder_config:
         skip_reason = (
-            "builder doesn't have bootstrapped builder config, can't verify")
+          "builder doesn't have bootstrapped builder config, can't verify"
+        )
       elif not builder_config.targets_spec_directory:
-        skip_reason = (f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
-                       ' nothing to verify')
+        skip_reason = (
+          f'targets_spec_directory is not set in {_CTBC_PROPERTY},'
+          ' nothing to verify'
+        )
       else:
         targets_spec_dir = source_dir / builder_config.targets_spec_directory
         return self._get_targets_config(
-            'get starlark targets config',
-            builder_config,
-            source_dir,
-            targets_spec_dir,
-            precommit_details,
+          'get starlark targets config',
+          builder_config,
+          source_dir,
+          targets_spec_dir,
+          precommit_details,
         )
 
       presentation.step_text = '\n' + skip_reason
       return None
 
   def _verify_target_configs(
-      self,
-      builder_dir: config_types.Path,
-      patch_dir: config_types.Path,
-      source_dir: config_types.Path,
-      precommit_details: generators.PrecommitDetails | None,
-      starlark_config: targets_config_module.TargetsConfig,
+    self,
+    builder_dir: config_types.Path,
+    patch_dir: config_types.Path,
+    source_dir: config_types.Path,
+    precommit_details: generators.PrecommitDetails | None,
+    starlark_config: targets_config_module.TargetsConfig,
   ) -> bool:
     with self.m.step.nest(
-        f'verify {builder_dir.relative_to(patch_dir)}') as presentation:
+      f'verify {builder_dir.relative_to(patch_dir)}'
+    ) as presentation:
 
       def success(message: str) -> bool:
         presentation.step_text = message
@@ -245,16 +261,17 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       builder_config = self._get_builder_config(builder_dir)
       if not builder_config:
         return success(
-            "builder didn't have bootstrapped builder config without patch,"
-            " can't verify")
+          "builder didn't have bootstrapped builder config without patch,"
+          " can't verify"
+        )
 
       if builder_config.targets_spec_directory:
         return success("builder is already using tests in starlark")
 
       self.m.chromium.verify_config = False
       chromium_config = self.m.chromium.make_config(
-          builder_config.chromium_config,
-          **builder_config.chromium_config_kwargs)
+        builder_config.chromium_config, **builder_config.chromium_config_kwargs
+      )
       for c in builder_config.chromium_apply_config:
         self.m.chromium.apply_config(c, chromium_config)
 
@@ -267,23 +284,26 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       # builder wasn't running tests before and there's no need to verify
       # anything.
       spec_files_exist = [
-          self.m.path.exists(targets_spec_dir / spec_file)
-          for spec_file in builder_config.targets_spec_files.values()
+        self.m.path.exists(targets_spec_dir / spec_file)
+        for spec_file in builder_config.targets_spec_files.values()
       ]
       if not any(spec_files_exist):
-        return success('none of the targets spec files for the builder exists,'
-                       " assuming it hasn't been running tests")
+        return success(
+          'none of the targets spec files for the builder exists,'
+          " assuming it hasn't been running tests"
+        )
       if not all(spec_files_exist):
         raise self.m.step.InfraFailure(
-            'unexpected situation: not all of the targets spec files'
-            f' exist without patch for {builder_dir}')
+          'unexpected situation: not all of the targets spec files'
+          f' exist without patch for {builder_dir}'
+        )
 
       pyl_config = self._get_targets_config(
-          'get pyl targets config',
-          builder_config,
-          source_dir,
-          targets_spec_dir,
-          precommit_details,
+        'get pyl targets config',
+        builder_config,
+        source_dir,
+        targets_spec_dir,
+        precommit_details,
       )
 
       # If the builder isn't building targets or running tests without the patch,
@@ -298,13 +318,14 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       presentation.logs['diff'] = diff
       presentation.status = self.m.step.FAILURE
       presentation.step_text = (
-          "\nbuilder configs differ, see 'diff' log for details")
+        "\nbuilder configs differ, see 'diff' log for details"
+      )
       return False
 
   def _compare_targets_configs(
-      self,
-      pyl_config: targets_config_module.TargetsConfig,
-      starlark_config: targets_config_module.TargetsConfig,
+    self,
+    pyl_config: targets_config_module.TargetsConfig,
+    starlark_config: targets_config_module.TargetsConfig,
   ) -> collections.abc.Sequence[str] | None:
 
     def default_json_conversion(obj: object) -> object:
@@ -318,8 +339,8 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
         # passed to both TargetsConfigs, so just return those
         if isinstance(obj, targets_config_module.TargetsConfig):
           return {
-              str(builder_id): targets
-              for builder_id, targets in d['_targets_by_builder_id'].items()
+            str(builder_id): targets
+            for builder_id, targets in d['_targets_by_builder_id'].items()
           }
 
         if isinstance(obj, steps.AbstractTestSpec):
@@ -345,23 +366,24 @@ class ChromiumTestsTargetsConfigVerifierApi(recipe_api.RecipeApi):
       raise TypeError(f'{obj!r} is not JSON serializable')  # pragma: no cover
 
     def convert_to_json(
-        targets_config: targets_config_module.TargetsConfig,
+      targets_config: targets_config_module.TargetsConfig,
     ) -> collections.abc.Sequence[str]:
       return self.m.json.dumps(
-          targets_config,
-          indent=2,
-          sort_keys=False,
-          default=default_json_conversion,
+        targets_config,
+        indent=2,
+        sort_keys=False,
+        default=default_json_conversion,
       ).splitlines()
 
     pyl_config_json = convert_to_json(pyl_config)
     starlark_config_json = convert_to_json(starlark_config)
 
     return list(
-        difflib.unified_diff(
-            pyl_config_json,
-            starlark_config_json,
-            fromfile='pyl targets config',
-            tofile='starlark targets config',
-            n=max(len(pyl_config_json), len(starlark_config_json)),
-        ))
+      difflib.unified_diff(
+        pyl_config_json,
+        starlark_config_json,
+        fromfile='pyl targets config',
+        tofile='starlark targets config',
+        n=max(len(pyl_config_json), len(starlark_config_json)),
+      )
+    )

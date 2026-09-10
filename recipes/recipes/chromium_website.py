@@ -17,19 +17,19 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    gerrit,
-    tryserver,
+  bot_update,
+  gclient,
+  gerrit,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    properties,
-    raw_io,
-    runtime,
-    step,
+  buildbucket,
+  context,
+  path,
+  properties,
+  raw_io,
+  runtime,
+  step,
 )
 
 
@@ -66,20 +66,23 @@ def RunSteps(api: DEPS):
     api.step('build', [npmw_path, 'build'])
 
     if api.tryserver.is_tryserver:
-      channel_id = 'cl%d-ps%d' % (api.tryserver.gerrit_change.change,
-                                  api.tryserver.gerrit_change.patchset)
+      channel_id = 'cl%d-ps%d' % (
+        api.tryserver.gerrit_change.change,
+        api.tryserver.gerrit_change.patchset,
+      )
       cmd = [npmw_path, 'deploy:preview', channel_id]
     else:
       cmd = [npmw_path, 'deploy:prod']
 
     out = api.step(
-        'deploy', cmd, stdout=api.raw_io.output(add_output_log=True)).stdout
+      'deploy', cmd, stdout=api.raw_io.output(add_output_log=True)
+    ).stdout
     out = out.decode('utf-8').strip()
 
     # pylint: disable=line-too-long
     msg = (
-        "Deployed site but don't know where.\n"
-        "Please [file a bug](http://crbug.com/new?component=1456097&template=1923269)\n"
+      "Deployed site but don't know where.\n"
+      "Please [file a bug](http://crbug.com/new?component=1456097&template=1923269)\n"
     )
     # pylint: enable=line-too-long
 
@@ -95,45 +98,50 @@ def RunSteps(api: DEPS):
 
   if api.tryserver.is_tryserver:
     api.gerrit.add_message(
-        host=f'https://{api.tryserver.gerrit_change.host}',
-        change=api.tryserver.gerrit_change.change,
-        revision=api.tryserver.gerrit_change.patchset,
-        message=msg,
-        automatic_attention_set_update=False)
+      host=f'https://{api.tryserver.gerrit_change.host}',
+      change=api.tryserver.gerrit_change.change,
+      revision=api.tryserver.gerrit_change.patchset,
+      message=msg,
+      automatic_attention_set_update=False,
+    )
 
   return result_pb2.RawResult(
-      status=common_pb.SUCCESS,
-      summary_markdown=msg,
+    status=common_pb.SUCCESS,
+    summary_markdown=msg,
   )
 
 
 def GenTests(api: TEST_DEPS):
   # pylint: disable=line-too-long
   yield api.test(
-      'presubmit',
-      api.buildbucket.try_build(
-          project='chromium-website',
-          bucket='chromium-website/try',
-          builder='chromium-website-try-builder',
-          git_repo='https://chromium.googlesource.com/website.git',
-          change_number=123456,
-          patch_set=7),
-      api.step_data(
-          'deploy',
-          stdout=api.raw_io.output(
-              '\x1B[1mChannel URL:\x1B[22m https://chromium-website-staging-d9f4a-cl123456-ps7.web.app [channel id]\n'
-          )),
-      api.post_process(DropExpectation),
+    'presubmit',
+    api.buildbucket.try_build(
+      project='chromium-website',
+      bucket='chromium-website/try',
+      builder='chromium-website-try-builder',
+      git_repo='https://chromium.googlesource.com/website.git',
+      change_number=123456,
+      patch_set=7,
+    ),
+    api.step_data(
+      'deploy',
+      stdout=api.raw_io.output(
+        '\x1b[1mChannel URL:\x1b[22m https://chromium-website-staging-d9f4a-cl123456-ps7.web.app [channel id]\n'
+      ),
+    ),
+    api.post_process(DropExpectation),
   )
   # pylint: enable=line-too-long
 
   yield api.test(
-      'postsubmit',
-      api.step_data(
-          'deploy',
-          stdout=api.raw_io.output(
-              '\x1B[1m Hosting URL:\x1B[22m https://site.web.app\n')),
-      api.post_process(DropExpectation),
+    'postsubmit',
+    api.step_data(
+      'deploy',
+      stdout=api.raw_io.output(
+        '\x1b[1m Hosting URL:\x1b[22m https://site.web.app\n'
+      ),
+    ),
+    api.post_process(DropExpectation),
   )
 
 

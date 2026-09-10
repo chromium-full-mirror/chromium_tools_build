@@ -7,14 +7,13 @@ from __future__ import annotations
 from .test_runner_base import DevToolsTests
 
 SUITES = [
-    'scripts/eslint_rules/tests/',
-    'scripts/stylelint_rules/tests/',
-    'scripts/build/tests/',
+  'scripts/eslint_rules/tests/',
+  'scripts/stylelint_rules/tests/',
+  'scripts/build/tests/',
 ]
 
 
 class ScriptsTests(DevToolsTests):
-
   def __init__(self, api, trigger, builder_config, step_name, target_os):
     super().__init__(api, trigger, builder_config, False, step_name)
     self.target_os = target_os.lower()
@@ -30,11 +29,11 @@ class ScriptsTests(DevToolsTests):
 
   def commands(self):
     base_command = [
-        self.api.path.join('third_party', 'node', 'node.py'),
-        '--output',
-        'scripts/run_on_target.mjs',
-        f'--target={self.builder_config}',
-        'gen/test/run.js',
-        '--skip-ninja',
+      self.api.path.join('third_party', 'node', 'node.py'),
+      '--output',
+      'scripts/run_on_target.mjs',
+      f'--target={self.builder_config}',
+      'gen/test/run.js',
+      '--skip-ninja',
     ]
     return [base_command + [suite] for suite in SUITES]

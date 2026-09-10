@@ -21,31 +21,31 @@ from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
 from . import types as chromium_swarming
 
 _PER_TARGET_SWARMING_DIMS = collections.defaultdict(
-    dict,
-    {
-        'android': {
-            'cpu': None,
-            'gpu': None,
-            'os': 'Android',
-        },
-        'chromeos': {
-            'cpu': None,
-            'gpu': None,
-            'os': 'ChromeOS',
-        },
+  dict,
+  {
+    'android': {
+      'cpu': None,
+      'gpu': None,
+      'os': 'Android',
     },
+    'chromeos': {
+      'cpu': None,
+      'gpu': None,
+      'os': 'ChromeOS',
+    },
+  },
 )
 
 _BUILDER_GROUP_SWARMING_PRIORITIES = collections.defaultdict(
-    lambda: 25,
-    {
-        'chromium.android.fyi': 35,
-        'chromium.fyi': 35,
-        'chromium.fuchsia.fyi': 35,
-        'chromium.memory.fyi': 35,
-        'client.v8.chromium': 35,
-        'client.v8.fyi': 35,
-    },
+  lambda: 25,
+  {
+    'chromium.android.fyi': 35,
+    'chromium.fyi': 35,
+    'chromium.fuchsia.fyi': 35,
+    'chromium.memory.fyi': 35,
+    'client.v8.chromium': 35,
+    'client.v8.fyi': 35,
+  },
 )
 
 # Path to the location based tags file.
@@ -54,11 +54,18 @@ _LOCATION_TAGS_FILE = '../../testing/location_tags.json'
 # Build properties used by merge scripts.
 # TODO(crbug.com/395081730): Remove all these in favor of real cmd-line args.
 _ALLOWED_BUILD_PROPERTIES = [
-    "builder_group", "build_number", "buildnumber", "builder_name",
-    "buildername", "chromium_revision", "got_revision_cp", "got_v8_revision",
-    "got_webrtc_revision", "got_revision", "perf_dashboard_machine_group"
+  "builder_group",
+  "build_number",
+  "buildnumber",
+  "builder_name",
+  "buildername",
+  "chromium_revision",
+  "got_revision_cp",
+  "got_v8_revision",
+  "got_webrtc_revision",
+  "got_revision",
+  "perf_dashboard_machine_group",
 ]
-
 
 
 def _parse_time(value):
@@ -70,8 +77,13 @@ def _parse_time(value):
   # TODO(jonahhooper) Replace with datetime.fromisoformat when recipe_engine
   # supports python 3.11. See
   # https://chromium-review.googlesource.com/c/infra/luci/recipes-py/+/4973538
-  for fmt in ('%Y-%m-%dT%H:%M:%S.%f', '%Y-%m-%dT%H:%M:%S', '%Y-%m-%d %H:%M:%S',
-              '%Y-%m-%dT%H:%M:%S.%f%z', '%Y-%m-%dT%H:%M:%S%z'):
+  for fmt in (
+    '%Y-%m-%dT%H:%M:%S.%f',
+    '%Y-%m-%dT%H:%M:%S',
+    '%Y-%m-%d %H:%M:%S',
+    '%Y-%m-%dT%H:%M:%S.%f%z',
+    '%Y-%m-%dT%H:%M:%S%z',
+  ):
     try:
       return datetime.datetime.strptime(value, fmt)
     except ValueError:
@@ -83,7 +95,8 @@ def _fmt_time(seconds):
   """Formats some number of seconds into a string. If this is < 60, it will
   render as `NNs`. If it's >= 60 seconds, it will render as 'Xm Xs'."""
   seconds = decimal.Decimal.from_float(seconds).to_integral_value(
-      decimal.ROUND_HALF_UP)
+    decimal.ROUND_HALF_UP
+  )
   mins, seconds = divmod(seconds, 60)
 
   out = ''
@@ -94,7 +107,6 @@ def _fmt_time(seconds):
 
 
 class _ReadOnlyDict(dict):
-
   def __setitem__(self, key, value):
     raise TypeError('ReadOnlyDict is immutable')
 
@@ -138,11 +150,11 @@ class SwarmingApi(recipe_api.RecipeApi):
       'gpu': None,
     }
     # Expirations are set to mildly good values and will be tightened soon.
-    self._default_expiration = 60*60
+    self._default_expiration = 60 * 60
     self._default_env = {}
-    self._default_hard_timeout = 60*60
+    self._default_hard_timeout = 60 * 60
     self._default_idempotent = False
-    self._default_io_timeout = 20*60
+    self._default_io_timeout = 20 * 60
     # The default priority is extremely low and should be increased dependending
     # on the type of task.
     self._default_priority = 200
@@ -167,13 +179,16 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   def initialize(self):
     self.add_default_tag(
-        'build_is_experimental:' + str(self.m.runtime.is_experimental).lower())
+      'build_is_experimental:' + str(self.m.runtime.is_experimental).lower()
+    )
     if self.m.buildbucket.build.builder.builder:
-      self.add_default_tag('project:' +
-                           self.m.buildbucket.build.builder.project)
+      self.add_default_tag(
+        'project:' + self.m.buildbucket.build.builder.project
+      )
       self.add_default_tag('bucket:' + self.m.buildbucket.build.builder.bucket)
-      self.add_default_tag('buildername:' +
-                           self.m.buildbucket.build.builder.builder)
+      self.add_default_tag(
+        'buildername:' + self.m.buildbucket.build.builder.builder
+      )
 
   @recipe_util.returns_placeholder
   def summary(self):
@@ -204,7 +219,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   @default_expiration.setter
   def default_expiration(self, value):
-    assert 30 <= value <= 24*60*60, value
+    assert 30 <= value <= 24 * 60 * 60, value
     self._default_expiration = value
 
   @property
@@ -221,7 +236,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   @default_hard_timeout.setter
   def default_hard_timeout(self, value):
-    assert 30 <= value <= 6*60*60, value
+    assert 30 <= value <= 6 * 60 * 60, value
     self._default_hard_timeout = value
 
   @property
@@ -240,7 +255,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
   @default_io_timeout.setter
   def default_io_timeout(self, value):
-    assert 30 <= value <= 6*60*60, value
+    assert 30 <= value <= 6 * 60 * 60, value
     self._default_io_timeout = value
 
   @property
@@ -374,34 +389,37 @@ class SwarmingApi(recipe_api.RecipeApi):
     path_to_merge_scripts = self.path_to_merge_scripts
     if not path_to_merge_scripts:
       path_to_merge_scripts = self.m.chromium_checkout.source_dir.joinpath(
-          'testing', 'merge_scripts')
+        'testing', 'merge_scripts'
+      )
     return path_to_merge_scripts.joinpath(name)
 
-  def task(self,
-           name=None,
-           test_name=None,
-           build_properties=None,
-           cipd_packages=None,
-           collect_step=None,
-           env=None,
-           env_prefixes=None,
-           extra_args=None,
-           idempotent=None,
-           cas_input_root='',
-           merge=None,
-           named_caches=None,
-           optional_dimensions=None,
-           raw_cmd=None,
-           service_account=None,
-           shards=1,
-           shard_indices=None,
-           task_output_dir=None,
-           task_to_retry=None,
-           trigger_script=None,
-           relative_cwd=None,
-           collect_json_output_override=None,
-           instructions_tag=None,
-           include_utr_instruction=False):
+  def task(
+    self,
+    name=None,
+    test_name=None,
+    build_properties=None,
+    cipd_packages=None,
+    collect_step=None,
+    env=None,
+    env_prefixes=None,
+    extra_args=None,
+    idempotent=None,
+    cas_input_root='',
+    merge=None,
+    named_caches=None,
+    optional_dimensions=None,
+    raw_cmd=None,
+    service_account=None,
+    shards=1,
+    shard_indices=None,
+    task_output_dir=None,
+    task_to_retry=None,
+    trigger_script=None,
+    relative_cwd=None,
+    collect_json_output_override=None,
+    instructions_tag=None,
+    include_utr_instruction=False,
+  ):
     """Returns a new SwarmingTask instance to run an isolated executable on
     Swarming.
 
@@ -480,7 +498,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         ensure_file.add_package(package.name, package.version, package.root)
 
     env_prefixes = {
-      var: list(paths) for var, paths in (env_prefixes or {}).items()}
+      var: list(paths) for var, paths in (env_prefixes or {}).items()
+    }
 
     if idempotent is None:
       idempotent = self.default_idempotent
@@ -495,30 +514,36 @@ class SwarmingApi(recipe_api.RecipeApi):
     builder_id = self.m.buildbucket.build.builder
     if builder_id.bucket and builder_id.project:
       spec_name = '%s.%s:%s' % (
-          builder_id.project, builder_id.bucket, builder_id.builder)
+        builder_id.project,
+        builder_id.bucket,
+        builder_id.builder,
+      )
 
     builder_info = None
     buildername = self.m.buildbucket.builder_name
     if buildername:
       builder_info = (buildername, (self.m.buildbucket.build.number or -1))
 
-    request = (self.m.swarming.task_request().
-      with_name(name or '').
-      with_priority(self.default_priority).
-      with_service_account(service_account or '').
-      with_user(self.default_user or ''))
+    request = (
+      self.m.swarming.task_request()
+      .with_name(name or '')
+      .with_priority(self.default_priority)
+      .with_service_account(service_account or '')
+      .with_user(self.default_user or '')
+    )
 
     req_slice = (
-      request[0].
-      with_cipd_ensure_file(ensure_file).
-      with_command(raw_cmd or []).
-      with_dimensions(**self._default_dimensions).
-      with_env_vars(**init_env.copy()).
-      with_env_prefixes(**env_prefixes).
-      with_execution_timeout_secs(self.default_hard_timeout).
-      with_expiration_secs(self.default_expiration).
-      with_io_timeout_secs(self.default_io_timeout).
-      with_idempotent(idempotent))
+      request[0]
+      .with_cipd_ensure_file(ensure_file)
+      .with_command(raw_cmd or [])
+      .with_dimensions(**self._default_dimensions)
+      .with_env_vars(**init_env.copy())
+      .with_env_prefixes(**env_prefixes)
+      .with_execution_timeout_secs(self.default_hard_timeout)
+      .with_expiration_secs(self.default_expiration)
+      .with_io_timeout_secs(self.default_io_timeout)
+      .with_idempotent(idempotent)
+    )
 
     if cas_input_root:
       req_slice = req_slice.with_cas_input_root(cas_input_root)
@@ -529,56 +554,57 @@ class SwarmingApi(recipe_api.RecipeApi):
     request = request.with_slice(0, req_slice)
 
     return SwarmingTask(
-        server=self.m.swarming.current_server,
-        request=request,
-        builder_info=builder_info,
-        collect_step=collect_step,
-        extra_args=extra_args,
-        named_caches=named_caches,
-        optional_dimensions=optional_dimensions,
-        shard_indices=shard_indices,
-        shards=shards,
-        spec_name=spec_name,
-        task_output_dir=task_output_dir,
-        task_to_retry=task_to_retry,
-        build_properties=build_properties,
-        merge=merge,
-        trigger_script=trigger_script,
-        collect_json_output_override=collect_json_output_override,
-        instructions_tag=instructions_tag,
-        test_name=test_name,
-        include_utr_instruction=include_utr_instruction)
+      server=self.m.swarming.current_server,
+      request=request,
+      builder_info=builder_info,
+      collect_step=collect_step,
+      extra_args=extra_args,
+      named_caches=named_caches,
+      optional_dimensions=optional_dimensions,
+      shard_indices=shard_indices,
+      shards=shards,
+      spec_name=spec_name,
+      task_output_dir=task_output_dir,
+      task_to_retry=task_to_retry,
+      build_properties=build_properties,
+      merge=merge,
+      trigger_script=trigger_script,
+      collect_json_output_override=collect_json_output_override,
+      instructions_tag=instructions_tag,
+      test_name=test_name,
+      include_utr_instruction=include_utr_instruction,
+    )
 
   # TODO: This massive list of args is duplicated with `tasks` above.
   # Both functions should ideally be refactored to take an args
   # dataclass instead.
-  def gtest_task(self,
-                 name: str | None = None,
-                 test_name: str | None = None,
-                 build_properties: dict | None = None,
-                 cipd_packages: list[chromium_swarming.CipdPackage]
-                 | None = None,
-                 collect_step: callable | None = None,
-                 env: dict | None = None,
-                 env_prefixes: dict | None = None,
-                 extra_args: list[str] | None = None,
-                 idempotent: bool | None = None,
-                 cas_input_root: str = '',
-                 merge: chromium_swarming.MergeScript | None = None,
-                 named_caches: dict | None = None,
-                 optional_dimensions: dict | None = None,
-                 raw_cmd: list[str] | None = None,
-                 service_account: str | None = None,
-                 shards: int = 1,
-                 shard_indices: Iterable[int] | None = None,
-                 task_output_dir: Path | None = None,
-                 task_to_retry: SwarmingTask | None = None,
-                 trigger_script: chromium_swarming.TriggerScript | None = None,
-                 relative_cwd: str | None = None,
-                 collect_json_output_override: Path | recipe_util.Placeholder
-                 | None = None,
-                 instructions_tag: str | None = None,
-                 include_utr_instruction: bool = False):
+  def gtest_task(
+    self,
+    name: str | None = None,
+    test_name: str | None = None,
+    build_properties: dict | None = None,
+    cipd_packages: list[chromium_swarming.CipdPackage] | None = None,
+    collect_step: callable | None = None,
+    env: dict | None = None,
+    env_prefixes: dict | None = None,
+    extra_args: list[str] | None = None,
+    idempotent: bool | None = None,
+    cas_input_root: str = '',
+    merge: chromium_swarming.MergeScript | None = None,
+    named_caches: dict | None = None,
+    optional_dimensions: dict | None = None,
+    raw_cmd: list[str] | None = None,
+    service_account: str | None = None,
+    shards: int = 1,
+    shard_indices: Iterable[int] | None = None,
+    task_output_dir: Path | None = None,
+    task_to_retry: SwarmingTask | None = None,
+    trigger_script: chromium_swarming.TriggerScript | None = None,
+    relative_cwd: str | None = None,
+    collect_json_output_override: Path | recipe_util.Placeholder | None = None,
+    instructions_tag: str | None = None,
+    include_utr_instruction: bool = False,
+  ):
     """Returns a new SwarmingTask instance to run an isolated gtest on Swarming.
 
     The implementation uses a test_utils.gtest_results() placeholder to parse
@@ -650,55 +676,60 @@ class SwarmingApi(recipe_api.RecipeApi):
     # to overwrite it.
     sum_arg = '--test-launcher-summary-output=${ISOLATED_OUTDIR}/output.json'
     bad_args = any(
-        x.startswith('--test-launcher-summary-output=') and not x == sum_arg
-        for x in raw_cmd)
+      x.startswith('--test-launcher-summary-output=') and not x == sum_arg
+      for x in raw_cmd
+    )
     if bad_args:
-      raise ValueError('--test-launcher-summary-output should not be used. %s' %
-                       raw_cmd)
+      raise ValueError(
+        '--test-launcher-summary-output should not be used. %s' % raw_cmd
+      )
 
     # Append it. output.json name is expected by collect_task.py.
     if sum_arg not in raw_cmd:
       raw_cmd.append(sum_arg)
 
-    merge = (
-        merge or chromium_swarming.MergeScript.create(
-            script=self.merge_script_path('standard_gtest_merge.py')))
+    merge = merge or chromium_swarming.MergeScript.create(
+      script=self.merge_script_path('standard_gtest_merge.py')
+    )
 
     # Make a task, configure it to be collected through shim script.
     task = self.task(
-        name=name,
-        test_name=test_name,
-        build_properties=build_properties,
-        cipd_packages=cipd_packages,
-        collect_step=collect_step,
-        env=env,
-        env_prefixes=env_prefixes,
-        extra_args=extra_args,
-        idempotent=idempotent,
-        cas_input_root=cas_input_root,
-        merge=merge,
-        named_caches=named_caches,
-        optional_dimensions=optional_dimensions,
-        raw_cmd=raw_cmd,
-        service_account=service_account,
-        shards=shards,
-        shard_indices=shard_indices,
-        task_output_dir=task_output_dir,
-        task_to_retry=task_to_retry,
-        trigger_script=trigger_script,
-        relative_cwd=relative_cwd,
-        collect_json_output_override=collect_json_output_override,
-        instructions_tag=instructions_tag,
-        include_utr_instruction=include_utr_instruction)
+      name=name,
+      test_name=test_name,
+      build_properties=build_properties,
+      cipd_packages=cipd_packages,
+      collect_step=collect_step,
+      env=env,
+      env_prefixes=env_prefixes,
+      extra_args=extra_args,
+      idempotent=idempotent,
+      cas_input_root=cas_input_root,
+      merge=merge,
+      named_caches=named_caches,
+      optional_dimensions=optional_dimensions,
+      raw_cmd=raw_cmd,
+      service_account=service_account,
+      shards=shards,
+      shard_indices=shard_indices,
+      task_output_dir=task_output_dir,
+      task_to_retry=task_to_retry,
+      trigger_script=trigger_script,
+      relative_cwd=relative_cwd,
+      collect_json_output_override=collect_json_output_override,
+      instructions_tag=instructions_tag,
+      include_utr_instruction=include_utr_instruction,
+    )
     return task
 
-  def isolated_script_task(self,
-                           test_name=None,
-                           raw_cmd=None,
-                           relative_cwd=None,
-                           cas_input_root='',
-                           instructions_tag=None,
-                           include_utr_instruction=False):
+  def isolated_script_task(
+    self,
+    test_name=None,
+    raw_cmd=None,
+    relative_cwd=None,
+    cas_input_root='',
+    instructions_tag=None,
+    include_utr_instruction=False,
+  ):
     """Returns a new SwarmingTask to run an isolated script test on Swarming.
 
     At the time of this writting, this code is used by WebRTC and
@@ -714,24 +745,29 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     extra_args = []
     # output.json name is expected by collect_task.py.
-    extra_args.append(_create_output_flag(
-        'isolated-script-test-output', 'output.json'))
+    extra_args.append(
+      _create_output_flag('isolated-script-test-output', 'output.json')
+    )
     # perftest-output.json name is expected by benchmarks generating chartjson
     # or histogram output
-    extra_args.append(_create_output_flag(
-        'isolated-script-test-perf-output',
-        'perftest-output.json'))
+    extra_args.append(
+      _create_output_flag(
+        'isolated-script-test-perf-output', 'perftest-output.json'
+      )
+    )
 
     merge = chromium_swarming.MergeScript.create(
-        script=self.merge_script_path('standard_isolated_script_merge.py'))
+      script=self.merge_script_path('standard_isolated_script_merge.py')
+    )
 
     task = self.task(
-        raw_cmd=raw_cmd,
-        relative_cwd=relative_cwd,
-        cas_input_root=cas_input_root,
-        instructions_tag=instructions_tag,
-        test_name=test_name,
-        include_utr_instruction=include_utr_instruction)
+      raw_cmd=raw_cmd,
+      relative_cwd=relative_cwd,
+      cas_input_root=cas_input_root,
+      instructions_tag=instructions_tag,
+      test_name=test_name,
+      include_utr_instruction=include_utr_instruction,
+    )
     task.extra_args = extra_args
     task.merge = merge
     return task
@@ -756,9 +792,11 @@ class SwarmingApi(recipe_api.RecipeApi):
     """
     assert isinstance(task, SwarmingTask)
     assert 'os' in task.request[0].dimensions, (
-        'All tasks must have an os dimension: %s' % task.request[0].dimensions)
+      'All tasks must have an os dimension: %s' % task.request[0].dimensions
+    )
     assert task.task_name not in self._pending_tasks, (
-        'Triggered same task twice: %s' % task.request.name)
+      'Triggered same task twice: %s' % task.request.name
+    )
 
     # There is a single pending task, regardless of how many shards get
     # triggered.
@@ -770,44 +808,48 @@ class SwarmingApi(recipe_api.RecipeApi):
     # script are starting to diverge. The former requires that all shard indices
     # are simultaneously passed. The go implementation of the latter requires
     # that shard indices are passed one at a time. See https://crbug.com/937927.
-    if (task.trigger_script and
-        task.trigger_script.requires_simultaneous_shard_dispatch):
+    if (
+      task.trigger_script
+      and task.trigger_script.requires_simultaneous_shard_dispatch
+    ):
       script = str(task.trigger_script.script)
       assert not script.endswith('swarming.py'), (
-          'trigger_script[\'script\'] must be a custom script, as %s no longer '
-          'supports \'--shards\'.' % script)
-      self._trigger_all_task_shards(task, task.shard_indices, resultdb,
-                                    **kwargs)
+        'trigger_script[\'script\'] must be a custom script, as %s no longer '
+        'supports \'--shards\'.' % script
+      )
+      self._trigger_all_task_shards(
+        task, task.shard_indices, resultdb, **kwargs
+      )
       return
 
     if task.trigger_script:
       for shard_index in task.shard_indices:
-        step_result, json_output = (
-            self._trigger_task_with_custom_script(task, shard_index, resultdb,
-                                                  **kwargs))
+        step_result, json_output = self._trigger_task_with_custom_script(
+          task, shard_index, resultdb, **kwargs
+        )
 
         for key, value in json_output['tasks'].items():
           tasks[key] = value
 
       if len(tasks) != len(task.shard_indices):  # pragma: no cover
         raise recipe_api.StepFailure(
-            'Wrong number of triggered tasks. Expected: {}. Actual: {}.'.format(
-                len(task.shard_indices), len(tasks)),
-            result=step_result)
+          'Wrong number of triggered tasks. Expected: {}. Actual: {}.'.format(
+            len(task.shard_indices), len(tasks)
+          ),
+          result=step_result,
+        )
     else:
       for shard_index in task.shard_indices:
         metas = self._trigger_task_shard_default(task, shard_index, resultdb)
         for meta in metas:
           tasks[meta.name] = {
-              'task_id': str(meta.id),
-              'shard_index': shard_index,
-              'view_url': meta.task_ui_link,
-              'invocation': meta.invocation,
+            'task_id': str(meta.id),
+            'shard_index': shard_index,
+            'view_url': meta.task_ui_link,
+            'invocation': meta.invocation,
           }
 
-    trigger_output = {
-        'tasks' : tasks
-    }
+    trigger_output = {'tasks': tasks}
     task.raw_trigger_output = trigger_output
 
   def _generate_trigger_task_tags(self, task, task_slice):
@@ -878,7 +920,7 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     # if there are duplicate keys, the last one wins.
     tags_by_key = {
-        pair[0]: pair[1] for pair in map(lambda t: t.split(':', 1), req.tags)
+      pair[0]: pair[1] for pair in map(lambda t: t.split(':', 1), req.tags)
     }
 
     # tags for 'test_suite' and 'stepname' must be present.
@@ -894,13 +936,15 @@ class SwarmingApi(recipe_api.RecipeApi):
       if not task_slice.command:
         continue  # pragma: no cover
       var = {
-          k: v for k, v in [
-              ('device_type', task_slice.dimensions.get('device_type')),
-              ('device_os', task_slice.dimensions.get('device_os')),
-              ('gpu', task_slice.dimensions.get('gpu')),
-              ('os', task_slice.dimensions.get('os')),
-              ('test_suite', test_suite),
-          ] if v
+        k: v
+        for k, v in [
+          ('device_type', task_slice.dimensions.get('device_type')),
+          ('device_os', task_slice.dimensions.get('device_os')),
+          ('gpu', task_slice.dimensions.get('gpu')),
+          ('os', task_slice.dimensions.get('os')),
+          ('test_suite', test_suite),
+        ]
+        if v
       }
       # Adding the var to tryjobs will reset flake-endorser tracking, making
       # it think *all* tests on the CQ are new. So keep it off on try for now.
@@ -910,21 +954,22 @@ class SwarmingApi(recipe_api.RecipeApi):
       if bucket not in ('try', 'try.shadow'):
         var['bucket'] = bucket
       req = req.with_slice(
-          i,
-          task_slice.with_command(
-              resultdb.wrap(
-                  self.m,
-                  task_slice.command,
-                  step_name=step_name,
-                  base_variant=var,
-                  require_build_inv=False,
-                  location_tags_file=_LOCATION_TAGS_FILE,
-              )))
+        i,
+        task_slice.with_command(
+          resultdb.wrap(
+            self.m,
+            task_slice.command,
+            step_name=step_name,
+            base_variant=var,
+            require_build_inv=False,
+            location_tags_file=_LOCATION_TAGS_FILE,
+          )
+        ),
+      )
 
     return req
 
-  def _generate_trigger_task_shard_args(self, task,
-                                        resultdb):
+  def _generate_trigger_task_shard_args(self, task, resultdb):
     """Generates the arguments for triggered shards.
 
     This generates all arguments other than sharding parameters.
@@ -946,7 +991,8 @@ class SwarmingApi(recipe_api.RecipeApi):
       assert len(kv) == 2
       tags[kv[0]].append(kv[1])
     task_request = self._maybe_enable_resultdb_for_task(
-        task.request.with_slice(0, task_slice).with_tags(tags), resultdb)
+      task.request.with_slice(0, task_slice).with_tags(tags), resultdb
+    )
     # refresh task_slice, as _maybe_enable_resultdb_for_task() could modify
     # the first slice.
     task_slice = task_request[0]
@@ -956,35 +1002,40 @@ class SwarmingApi(recipe_api.RecipeApi):
     # TODO(maruel): https://crbug.com/944904
     # Some flags with "--" are read by trigger script too.
     args = [
-        '--swarming',
-        task.server or self.m.swarming.current_server,
-        '--priority',
-        str(task_request.priority),
-        '--task-name',
-        task.task_name,
-        '--dump-json',
-        self.m.json.output(),
-        '--expiration',
-        str(task_slice.expiration_secs),
-        '--io-timeout',
-        str(task_slice.io_timeout_secs),
-        '--hard-timeout',
-        str(task_slice.execution_timeout_secs),
+      '--swarming',
+      task.server or self.m.swarming.current_server,
+      '--priority',
+      str(task_request.priority),
+      '--task-name',
+      task.task_name,
+      '--dump-json',
+      self.m.json.output(),
+      '--expiration',
+      str(task_slice.expiration_secs),
+      '--io-timeout',
+      str(task_slice.io_timeout_secs),
+      '--hard-timeout',
+      str(task_slice.execution_timeout_secs),
     ]
 
     for name, value in sorted(task_slice.dimensions.items()):
-      assert isinstance(value, str), \
-        'dimension %s is not a string: %s' % (name, value)
+      assert isinstance(value, str), 'dimension %s is not a string: %s' % (
+        name,
+        value,
+      )
       args.extend(['--dimension', name, value])
 
     for name, value in sorted(task_slice.env_vars.items()):
-      assert isinstance(value, str), \
-        'env var %s is not a string: %s' % (name, value)
+      assert isinstance(value, str), 'env var %s is not a string: %s' % (
+        name,
+        value,
+      )
       args.extend(['-env', '%s=%s' % (name, value)])
 
     for name, relpath in sorted(task_slice.named_caches.items()):
-      args.extend(['-named-cache',
-                   "%s=%s" % (name, relpath)])  # pragma: no cover
+      args.extend(
+        ['-named-cache', "%s=%s" % (name, relpath)]
+      )  # pragma: no cover
 
     if task_request.service_account:  # pragma: no cover
       args.extend(['--service-account', task_request.service_account])
@@ -1013,12 +1064,15 @@ class SwarmingApi(recipe_api.RecipeApi):
       resultdb_enabled = True
 
     for path, package_list in sorted(
-        task_slice.cipd_ensure_file.packages.items()):
+      task_slice.cipd_ensure_file.packages.items()
+    ):
       for package_name, package_version in package_list:
-        args.extend([
+        args.extend(
+          [
             '-cipd-package',
-            '%s:%s=%s' % (path or '.', package_name, package_version)
-        ])
+            '%s:%s=%s' % (path or '.', package_name, package_version),
+          ]
+        )
 
     if task_slice.env_prefixes:  # pragma: no cover
       for key, paths in sorted(dict(task_slice.env_prefixes).items()):
@@ -1064,48 +1118,57 @@ class SwarmingApi(recipe_api.RecipeApi):
       StepResult from the step.
     """
     script, pre_trigger_args, post_trigger_args, resultdb_enabled = (
-        self._generate_trigger_task_shard_args(task, resultdb))
+      self._generate_trigger_task_shard_args(task, resultdb)
+    )
     assert len(shard_indices) == task.shards, (
-        'The only trigger script that requires all shards to be simultaneously '
-        'triggered is perf_device_trigger.py, and it doesn\'t support multi '
-        'index dispatch')
+      'The only trigger script that requires all shards to be simultaneously '
+      'triggered is perf_device_trigger.py, and it doesn\'t support multi '
+      'index dispatch'
+    )
     assert range(task.shards) == shard_indices, (
-        'The list of shards being dispatched should be the enumeration of '
-        'task.shards.'
+      'The list of shards being dispatched should be the enumeration of '
+      'task.shards.'
     )
     cmd = ['vpython3', script] + pre_trigger_args
     uses_trigger_script = bool(task.trigger_script)
     if task.shards > 1:
-      assert uses_trigger_script, ('--shard won\'t be supported on the default '
-                                   'swarming client (crbug.com/894045)')
+      assert uses_trigger_script, (
+        '--shard won\'t be supported on the default '
+        'swarming client (crbug.com/894045)'
+      )
       cmd += ['--shards', str(task.shards)]
     cmd += post_trigger_args
 
     # The step can fail only on infra failures, so mark it as 'infra_step'.
     step_name_suffix = ' (custom trigger script)' if uses_trigger_script else ''
     step_result = self.m.step(
-        name=self.get_step_name('trigger' + step_name_suffix, task),
-        cmd=cmd,
-        step_test_data=functools.partial(self._gen_trigger_step_test_data, task,
-                                         shard_indices, resultdb_enabled),
-        infra_step=True,
-        **kwargs)
+      name=self.get_step_name('trigger' + step_name_suffix, task),
+      cmd=cmd,
+      step_test_data=functools.partial(
+        self._gen_trigger_step_test_data, task, shard_indices, resultdb_enabled
+      ),
+      infra_step=True,
+      **kwargs,
+    )
 
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
     if test_suite_name and task.include_utr_instruction:
       remote_instruction = get_utr_instruction(
-          'compile-and-test', self.m.buildbucket.build.builder.project,
-          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
-          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
-          [test_suite_name])
+        'compile-and-test',
+        self.m.buildbucket.build.builder.project,
+        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+        [test_suite_name],
+      )
       if remote_instruction:
         instructions = remote_instruction + '<br/>' + instructions
-    step_result.presentation.step_text += (task.text_for_step() + instructions)
+    step_result.presentation.step_text += task.text_for_step() + instructions
 
     if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
+      step_result.presentation.tags['resultdb.instruction.id'] = (
+        task.instructions_tag
+      )
 
     task.raw_trigger_output = step_result.json.output
     links = step_result.presentation.links
@@ -1116,8 +1179,9 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     return step_result
 
-  def _trigger_task_with_custom_script(self, task, shard_index, resultdb,
-                                       **kwargs):
+  def _trigger_task_with_custom_script(
+    self, task, shard_index, resultdb, **kwargs
+  ):
     """Triggers a single shard for a task with custom trigger script.
 
     This uses `swarming.py` and luci-go swarming with manually constructed
@@ -1127,14 +1191,16 @@ class SwarmingApi(recipe_api.RecipeApi):
     Raises:
       InfraFailure if shard cannot be triggered.
     """
-    assert not task.optional_dimensions, \
-        'Use _trigger_task_shard_default() for tasks with optional dimensions.'
+    assert not task.optional_dimensions, (
+      'Use _trigger_task_shard_default() for tasks with optional dimensions.'
+    )
     assert task.trigger_script, 'Only trigger script should use this now'
 
     # TODO(crbug.com/894045): Remove this method once we have fully migrated
     # to use swarming recipe module to trigger tasks.
     script, pre_trigger_args, post_trigger_args, resultdb_enabled = (
-        self._generate_trigger_task_shard_args(task, resultdb))
+      self._generate_trigger_task_shard_args(task, resultdb)
+    )
 
     cmd = ['vpython3', script] + pre_trigger_args
     if task.shards > 1:
@@ -1144,28 +1210,33 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     # The step can fail only on infra failures, so mark it as 'infra_step'.
     step_result = self.m.step(
-        name=self.get_step_name('trigger (custom trigger script)', task),
-        cmd=cmd,
-        step_test_data=functools.partial(self._gen_trigger_step_test_data, task,
-                                         [shard_index], resultdb_enabled),
-        infra_step=True,
-        **kwargs)
+      name=self.get_step_name('trigger (custom trigger script)', task),
+      cmd=cmd,
+      step_test_data=functools.partial(
+        self._gen_trigger_step_test_data, task, [shard_index], resultdb_enabled
+      ),
+      infra_step=True,
+      **kwargs,
+    )
 
     test_suite_name = task.test_suite_name
     instructions = task.get_local_instruction()
     if test_suite_name and task.include_utr_instruction:
       remote_instruction = get_utr_instruction(
-          'compile-and-test', self.m.buildbucket.build.builder.project,
-          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
-          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
-          [test_suite_name])
+        'compile-and-test',
+        self.m.buildbucket.build.builder.project,
+        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+        [test_suite_name],
+      )
       if remote_instruction:
         instructions = remote_instruction + '<br/>' + instructions
-    step_result.presentation.step_text += (task.text_for_step() + instructions)
+    step_result.presentation.step_text += task.text_for_step() + instructions
 
     if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
+      step_result.presentation.tags['resultdb.instruction.id'] = (
+        task.instructions_tag
+      )
 
     # While it might make more sense to update all presentation links in
     # trigger_task(), this is currently not possible. Steps are run in series,
@@ -1200,8 +1271,8 @@ class SwarmingApi(recipe_api.RecipeApi):
       req_slice = req_slice.with_wait_for_capacity(True)
     if task.shards > 1:
       req_slice = req_slice.with_env_vars(
-          GTEST_SHARD_INDEX=str(shard_index),
-          GTEST_TOTAL_SHARDS=str(task.shards),
+        GTEST_SHARD_INDEX=str(shard_index),
+        GTEST_TOTAL_SHARDS=str(task.shards),
       )
     if task.extra_args:
       req_slice = req_slice.with_command(req_slice.command + task.extra_args)
@@ -1211,10 +1282,12 @@ class SwarmingApi(recipe_api.RecipeApi):
       kv = t.split(':', 1)
       assert len(kv) == 2
       tags_dict[kv[0]].append(kv[1])
-    tags_dict.update({
+    tags_dict.update(
+      {
         'shard_index': [str(shard_index)],
         'shard_count': [str(task.shards)],
-    })
+      }
+    )
 
     slices = []
     if task.optional_dimensions:
@@ -1230,7 +1303,8 @@ class SwarmingApi(recipe_api.RecipeApi):
         slices.append(current_slice)
         prev_exp = exp
       req_slice = req_slice.with_expiration_secs(
-          max(0, req_slice.expiration_secs - prev_exp))
+        max(0, req_slice.expiration_secs - prev_exp)
+      )
     slices.append(req_slice)
     req = req.with_slice(0, slices[0])
     for s in slices[1:]:
@@ -1239,10 +1313,10 @@ class SwarmingApi(recipe_api.RecipeApi):
     req = req.with_tags(tags_dict)
     req = self._maybe_enable_resultdb_for_task(req, resultdb)
     return self.m.swarming.trigger(
-        self.get_step_name('trigger', task),
-        [req],
-        self.verbose,
-        server=task.server,
+      self.get_step_name('trigger', task),
+      [req],
+      self.verbose,
+      server=task.server,
     )
 
   def collect_task(self, task, **kwargs):
@@ -1259,8 +1333,8 @@ class SwarmingApi(recipe_api.RecipeApi):
     # TODO(vadimsh): Raise InfraFailure on Swarming failures.
     assert isinstance(task, SwarmingTask)
     assert task.task_name in self._pending_tasks, (
-        'Trying to collect a task that was not triggered: %s' %
-        task.task_name)
+      'Trying to collect a task that was not triggered: %s' % task.task_name
+    )
     self._pending_tasks.remove(task.task_name)
     try:
       return task.collect_step(task, **kwargs)
@@ -1272,25 +1346,28 @@ class SwarmingApi(recipe_api.RecipeApi):
     if not self._shards_durations and not self._deduped_shards_durations:
       return
     stats = [
-        'Total shards: %d' % len(self._shards_durations),
-        'Total deduped shards: %d' % len(self._deduped_shards_durations),
-        '',
+      'Total shards: %d' % len(self._shards_durations),
+      'Total deduped shards: %d' % len(self._deduped_shards_durations),
+      '',
     ]
     total = sum(self._shards_durations)
     total_saved = sum(self._deduped_shards_durations)
-    stats.extend([
+    stats.extend(
+      [
         'Total runtime: %s' % _fmt_time(total),
         'Total saved runtime from deduping: %s' % _fmt_time(total_saved),
-    ])
+      ]
+    )
     detailed_stats = []
     if self._shards_durations:
       mean = total / len(self._shards_durations)
       detailed_stats = stats + [
-          'Min/mean/max: %s / %s / %s' % (
-              _fmt_time(min(self._shards_durations)),
-              _fmt_time(mean),
-              _fmt_time(max(self._shards_durations)),
-          ),
+        'Min/mean/max: %s / %s / %s'
+        % (
+          _fmt_time(min(self._shards_durations)),
+          _fmt_time(mean),
+          _fmt_time(max(self._shards_durations)),
+        ),
       ]
     step_text = self.m.presentation_utils.format_step_text([('Stats', stats)])
     result = self.m.step.empty('Test statistics', step_text=step_text)
@@ -1303,11 +1380,14 @@ class SwarmingApi(recipe_api.RecipeApi):
     shards = step_result.chromium_swarming.summary['shards']
     max_pending = (-1, None)
     ShardStats = collections.namedtuple(
-        'ShardStats', ['duration', 'runtime', 'overhead', 'index'])
+      'ShardStats', ['duration', 'runtime', 'overhead', 'index']
+    )
     max_duration = ShardStats(
-        duration=None, index=-1, runtime=None, overhead=None)
+      duration=None, index=-1, runtime=None, overhead=None
+    )
     min_duration = ShardStats(
-        duration=None, index=None, runtime=None, overhead=None)
+      duration=None, index=None, runtime=None, overhead=None
+    )
     duration_sum = 0
     runtime_sum = 0
     overhead_sum = 0
@@ -1334,48 +1414,68 @@ class SwarmingApi(recipe_api.RecipeApi):
         runtime_sum += runtime
         if max_duration.duration is None or duration > max_duration.duration:
           max_duration = ShardStats(
-              duration=duration, index=i, runtime=runtime, overhead=overhead)
+            duration=duration, index=i, runtime=runtime, overhead=overhead
+          )
         if min_duration.index is None or duration < min_duration.duration:
           min_duration = ShardStats(
-              duration=duration, index=i, runtime=runtime, overhead=overhead)
+            duration=duration, index=i, runtime=runtime, overhead=overhead
+          )
 
     # Only display annotation when pending more than 10 seconds to reduce noise.
     if max_pending[0] > 10:
       prefix = 'P' if len(shards) <= 1 else 'Max p'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_pending[1]
-      step_result.presentation.step_text += (
-          '<br>%sending time: %s%s' %
-          (prefix, _fmt_time(max_pending[0]), suffix))
+      step_result.presentation.step_text += '<br>%sending time: %s%s' % (
+        prefix,
+        _fmt_time(max_pending[0]),
+        suffix,
+      )
 
     if max_duration.duration is not None and max_duration.duration > 0:
       prefix = 'S' if len(shards) <= 1 else 'Max s'
       suffix = '' if len(shards) <= 1 else ' (shard #%d)' % max_duration.index
       step_result.presentation.step_text += (
-          '<br>%shard runtime (%s) + overhead (%s): %s%s' %
-          (prefix, _fmt_time(max_duration.runtime),
-           _fmt_time(max_duration.overhead), _fmt_time(
-               max_duration.duration), suffix))
+        '<br>%shard runtime (%s) + overhead (%s): %s%s'
+        % (
+          prefix,
+          _fmt_time(max_duration.runtime),
+          _fmt_time(max_duration.overhead),
+          _fmt_time(max_duration.duration),
+          suffix,
+        )
+      )
 
     if min_duration.duration is not None and len(shards) > 1:
       step_result.presentation.step_text += (
-          '<br>Min shard runtime (%s) + overhead (%s): %s (shard #%d)' %
-          (_fmt_time(min_duration.runtime), _fmt_time(min_duration.overhead),
-           _fmt_time(min_duration.duration), min_duration.index))
+        '<br>Min shard runtime (%s) + overhead (%s): %s (shard #%d)'
+        % (
+          _fmt_time(min_duration.runtime),
+          _fmt_time(min_duration.overhead),
+          _fmt_time(min_duration.duration),
+          min_duration.index,
+        )
+      )
 
     if len(shards) > 1:
       step_result.presentation.step_text += (
-          '<br>Total shard runtime (%s) + overhead(%s): %s' %
-          (_fmt_time(runtime_sum), _fmt_time(overhead_sum),
-           _fmt_time(duration_sum)))
+        '<br>Total shard runtime (%s) + overhead(%s): %s'
+        % (
+          _fmt_time(runtime_sum),
+          _fmt_time(overhead_sum),
+          _fmt_time(duration_sum),
+        )
+      )
 
-  def get_collect_task_args(self,
-                            merge_script,
-                            merge_arguments,
-                            build_properties,
-                            requests_json,
-                            server=None,
-                            output_json=None,
-                            task_output_dir=None):
+  def get_collect_task_args(
+    self,
+    merge_script,
+    merge_arguments,
+    build_properties,
+    requests_json,
+    server=None,
+    output_json=None,
+    task_output_dir=None,
+  ):
     """Generate the arguments needed to run collect_task.py.
 
     Args:
@@ -1394,26 +1494,27 @@ class SwarmingApi(recipe_api.RecipeApi):
       task_output_dir = self.m.raw_io.output_dir(leak_to=task_output_dir)
 
     task_args = [
-        '--verbose',
-        '-o',
-        output_json or self.m.json.output(),
-        '--task-output-dir',
-        task_output_dir,
+      '--verbose',
+      '-o',
+      output_json or self.m.json.output(),
+      '--task-output-dir',
+      task_output_dir,
     ]
     merge_script_args = [
-        '--merge-script',
-        merge_script,
-        '--merge-script-stdout-file',
-        self.m.raw_io.output(
-            'merge_script_log', add_output_log=True, name='Merge script log'),
-        '--merge-additional-args',
-        self.m.json.dumps(merge_arguments),
+      '--merge-script',
+      merge_script,
+      '--merge-script-stdout-file',
+      self.m.raw_io.output(
+        'merge_script_log', add_output_log=True, name='Merge script log'
+      ),
+      '--merge-additional-args',
+      self.m.json.dumps(merge_arguments),
     ]
     task_args.extend(merge_script_args)
     if build_properties:
       task_args.extend(
-          ['--build-properties',
-           self.m.json.dumps(build_properties)])
+        ['--build-properties', self.m.json.dumps(build_properties)]
+      )
     task_args.extend(['--summary-json-file', self.summary()])
     collect_cmd = ['swarming']
     collect_cmd.extend(self.get_collect_cmd_args(requests_json, server))
@@ -1430,17 +1531,20 @@ class SwarmingApi(recipe_api.RecipeApi):
           task_ids.append(shard_dict['task_id'])
           invocations.append(shard_dict.get('invocation'))
     return self.test_api.canned_summary_output(
-        dispatched_task_step_data,
-        shard_indices=task.shard_indices,
-        task_ids=task_ids,
-        invocations=invocations)
+      dispatched_task_step_data,
+      shard_indices=task.shard_indices,
+      task_ids=task_ids,
+      invocations=invocations,
+    )
 
-  def _default_collect_step(self,
-                            task,
-                            output_placeholder=None,
-                            name=None,
-                            step_test_data=None,
-                            **kwargs):
+  def _default_collect_step(
+    self,
+    task,
+    output_placeholder=None,
+    name=None,
+    step_test_data=None,
+    **kwargs,
+  ):
     """Produces a step that collects the results of a Task object.
 
     A Task object may have triggered multiple swarming tasks.
@@ -1482,28 +1586,32 @@ class SwarmingApi(recipe_api.RecipeApi):
     if task.build_properties:
       build_properties = dict(task.build_properties)
       # Only include properties in the allowlist to trim down the size of build properties blob.
-      build_properties.update((k, v)
-                              for k, v in self.m.properties.thaw().items()
-                              if k in _ALLOWED_BUILD_PROPERTIES)
+      build_properties.update(
+        (k, v)
+        for k, v in self.m.properties.thaw().items()
+        if k in _ALLOWED_BUILD_PROPERTIES
+      )
 
     # This script still exists here, since there are many clients which depend
     # on this module which don't necessarily have a chromium checkout (it's hard
     # to verify they do via expectations). Leave this here for now, since this
     # is a sane default to ship with the module.
     merge = task.merge or chromium_swarming.MergeScript(
-        script=self.resource('noop_merge.py'))
+      script=self.resource('noop_merge.py')
+    )
 
     if task.collect_json_output_override:
       output_placeholder = task.collect_json_output_override
 
     collect_task_args = self.get_collect_task_args(
-        merge_script=merge.script,
-        merge_arguments=merge.args,
-        build_properties=build_properties,
-        requests_json=task.collect_cmd_input(),
-        server=task.server,
-        output_json=output_placeholder,
-        task_output_dir=task.task_output_dir)
+      merge_script=merge.script,
+      merge_arguments=merge.args,
+      build_properties=build_properties,
+      requests_json=task.collect_cmd_input(),
+      server=task.server,
+      output_json=output_placeholder,
+      task_output_dir=task.task_output_dir,
+    )
 
     # The call to collect_task emits two JSON files and one text file:
     #  1) a task summary JSON emitted by swarming
@@ -1513,16 +1621,17 @@ class SwarmingApi(recipe_api.RecipeApi):
     if not step_test_data:
 
       def step_test_data():
-        dispatched_task_placeholder = (
-            self.m.json.test_api.output({}) +
-            self.m.raw_io.test_api.output('Successfully merged all data'))
+        dispatched_task_placeholder = self.m.json.test_api.output(
+          {}
+        ) + self.m.raw_io.test_api.output('Successfully merged all data')
         return self._collect_step_test_data(task, dispatched_task_placeholder)
 
     step_result = self.run_collect_task_script(
-        name=name or self.get_step_name('', task),
-        task_args=collect_task_args,
-        step_test_data=step_test_data,
-        **kwargs)
+      name=name or self.get_step_name('', task),
+      task_args=collect_task_args,
+      step_test_data=step_test_data,
+      **kwargs,
+    )
 
     if self.m.runtime.in_global_shutdown:
       return step_result, False
@@ -1533,23 +1642,30 @@ class SwarmingApi(recipe_api.RecipeApi):
     instructions = task.get_local_instruction()
     if test_suite_name and task.include_utr_instruction:
       remote_instruction = get_utr_instruction(
-          'compile-and-test', self.m.buildbucket.build.builder.project,
-          self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
-          self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
-          [test_suite_name])
+        'compile-and-test',
+        self.m.buildbucket.build.builder.project,
+        self.m.led.shadowed_bucket or self.m.buildbucket.build.builder.bucket,
+        self.m.buildbucket.build.builder.builder.replace('-compilator', ''),
+        [test_suite_name],
+      )
       if remote_instruction:
         instructions = remote_instruction + '<br/>' + instructions
     step_result.presentation.step_text += (
-        task.text_for_step() + '<br/>' + instructions)
+      task.text_for_step() + '<br/>' + instructions
+    )
     self._display_time_stats(step_result)
 
     if task.instructions_tag:
-      step_result.presentation.tags[
-          'resultdb.instruction.id'] = task.instructions_tag
+      step_result.presentation.tags['resultdb.instruction.id'] = (
+        task.instructions_tag
+      )
 
     links = {}
-    if hasattr(step_result, 'json') and hasattr(
-        step_result.json, 'output') and step_result.json.output:
+    if (
+      hasattr(step_result, 'json')
+      and hasattr(step_result.json, 'output')
+      and step_result.json.output
+    ):
       links = step_result.json.output.get('links', {})
     for k, v in links.items():
       step_result.presentation.links[k] = v
@@ -1559,21 +1675,16 @@ class SwarmingApi(recipe_api.RecipeApi):
     with self.m.swarming.on_path():
       with self.m.context(cwd=self.m.path.start_dir):
         cmd = [
-            'python3',
-            self.resource('collect_task.py'),
+          'python3',
+          self.resource('collect_task.py'),
         ]
         cmd += task_args
-        step_result = self.m.step(
-            name,
-            cmd,
-            **kwargs)
+        step_result = self.m.step(name, cmd, **kwargs)
     return step_result
 
-  def wait_for_finished_task_set(self,
-                                 task_sets,
-                                 suffix=None,
-                                 attempts=0,
-                                 server=None):
+  def wait_for_finished_task_set(
+    self, task_sets, suffix=None, attempts=0, server=None
+  ):
     """Waits for a finished set of tasks.
 
     Args:
@@ -1593,28 +1704,31 @@ class SwarmingApi(recipe_api.RecipeApi):
 
     Uses the 'get_states' endpoint on the swarming server."""
     cmd = [
-        'python3',
-        self.resource('wait_for_finished_task_set.py'),
-        '--swarming-server',
-        server or self.m.swarming.current_server,
-        '--output-json',
-        self.m.json.output(),
-        '--input-json',
-        self.m.json.input(task_sets),
-        '--attempts',
-        attempts,
-        '--verbose',
+      'python3',
+      self.resource('wait_for_finished_task_set.py'),
+      '--swarming-server',
+      server or self.m.swarming.current_server,
+      '--output-json',
+      self.m.json.output(),
+      '--input-json',
+      self.m.json.input(task_sets),
+      '--attempts',
+      attempts,
+      '--verbose',
     ]
 
     result = self.m.step(
-        'wait for tasks%s' % (suffix or ''),
-        cmd,
-        step_test_data=lambda: self.m.json.test_api.output(data={
-            'attempts': 0,
-            'sets': task_sets,
-        }))
+      'wait for tasks%s' % (suffix or ''),
+      cmd,
+      step_test_data=lambda: self.m.json.test_api.output(
+        data={
+          'attempts': 0,
+          'sets': task_sets,
+        }
+      ),
+    )
     return [
-        tuple(task_set) for task_set in result.json.output['sets']
+      tuple(task_set) for task_set in result.json.output['sets']
     ], result.json.output['attempts']
 
   def get_step_name(self, prefix, task):
@@ -1636,8 +1750,14 @@ class SwarmingApi(recipe_api.RecipeApi):
     # step names, so substitute that now so it does not cause issues later on.
     task_os = task_os.replace('|', ' or ')
 
-    suffix = ('' if (task_os.lower() == self.m.platform.name.lower() or
-                     task_os in task.request.name) else ' on %s' % task_os)
+    suffix = (
+      ''
+      if (
+        task_os.lower() == self.m.platform.name.lower()
+        or task_os in task.request.name
+      )
+      else ' on %s' % task_os
+    )
     # Note: properly detecting dimensions of the bot the recipe is running
     # on is somewhat non-trivial. It is not safe to assume it uses default
     # or preferred dimensions for its OS. For example, the version of the OS
@@ -1702,19 +1822,28 @@ class SwarmingApi(recipe_api.RecipeApi):
           self._shards_durations.append(shard['duration'])
 
       duration = None
-      has_internal_failure = shard and (shard.get('internal_failure') or
-                                        shard.get('state') == 'BOT_DIED')
-      if (shard and not has_internal_failure and shard.get('completed_ts') and
-          shard.get('started_ts')):
+      has_internal_failure = shard and (
+        shard.get('internal_failure') or shard.get('state') == 'BOT_DIED'
+      )
+      if (
+        shard
+        and not has_internal_failure
+        and shard.get('completed_ts')
+        and shard.get('started_ts')
+      ):
         # Display text for shard duration to reflect runtime + overhead
         delta = _parse_time(shard['completed_ts']) - _parse_time(
-            shard['started_ts'])
+          shard['started_ts']
+        )
         duration = delta.total_seconds()
         runtime = shard.get('duration', duration)
         overhead = duration - runtime
-        display_text = ('shard #%d (runtime (%s) + overhead (%s): %s)' %
-                        (index, _fmt_time(runtime), _fmt_time(overhead),
-                         _fmt_time(duration)))
+        display_text = 'shard #%d (runtime (%s) + overhead (%s): %s)' % (
+          index,
+          _fmt_time(runtime),
+          _fmt_time(overhead),
+          _fmt_time(duration),
+        )
       else:
         display_text = 'shard #%d' % index
 
@@ -1730,12 +1859,12 @@ class SwarmingApi(recipe_api.RecipeApi):
       elif not shard:
         display_text = 'shard #%d failed without producing output.json' % index
         unexpected_errors.append(
-            (index, 'Details unknown (missing shard results)'))
+          (index, 'Details unknown (missing shard results)')
+        )
         failed_shards.append(index)
         has_valid_results = False
       elif has_internal_failure:
-        display_text = (
-          'shard #%d had an internal swarming failure' % index)
+        display_text = 'shard #%d had an internal swarming failure' % index
         # Unfortunately, src/ tests can trigger swarming internal failures.
         # Examples include: macOS tests killing the window server.
         # Since we cannot distinguish between infra failures and test failures,
@@ -1745,26 +1874,30 @@ class SwarmingApi(recipe_api.RecipeApi):
         failed_shards.append(index)
         has_valid_results = False
       elif shard.get('state') in ('EXPIRED', 'NO_RESOURCE'):
-        display_text = (
-          'shard #%d expired, not enough capacity' % index)
+        display_text = 'shard #%d expired, not enough capacity' % index
         expected_errors.append(display_text)
         has_incomplete_shards = True
         failed_shards.append(index)
         has_valid_results = False
       elif shard.get('state') == 'TIMED_OUT':
         if duration is not None:
-          display_text = ('shard #%d timed out after %s' %
-                          (index, _fmt_time(duration)))
+          display_text = 'shard #%d timed out after %s' % (
+            index,
+            _fmt_time(duration),
+          )
         else:
           display_text = (
-              'shard #%d timed out, took too much time to complete' % index)
+            'shard #%d timed out, took too much time to complete' % index
+          )
         expected_errors.append(display_text)
         failed_shards.append(index)
         has_valid_results = False
       elif self._get_exit_code(shard) != 0:
         if duration is not None:
-          display_text = 'shard #%d (failed) (%s)' % (index,
-                                                      _fmt_time(duration))
+          display_text = 'shard #%d (failed) (%s)' % (
+            index,
+            _fmt_time(duration),
+          )
         else:
           display_text = 'shard #%d (failed)' % index
         expected_errors.append(display_text)
@@ -1786,11 +1919,14 @@ class SwarmingApi(recipe_api.RecipeApi):
           if inv_name.startswith('invocations/'):
             inv_name = 'inv/' + inv_name[12:]
           shard_results_url = (
-              'https://luci-milo.appspot.com/ui/%s/test-results' % inv_name)
+            'https://luci-milo.appspot.com/ui/%s/test-results' % inv_name
+          )
           links['shard #%d test results' % index] = shard_results_url
 
       def highlight_error(text):
-        return f'<span style="color: var(--failure-color, #d23a2d)">{text}</span>'
+        return (
+          f'<span style="color: var(--failure-color, #d23a2d)">{text}</span>'
+        )
 
       if index in failed_shards:
         display_text = highlight_error(display_text)
@@ -1808,12 +1944,13 @@ class SwarmingApi(recipe_api.RecipeApi):
       template = 'Shard #%s failed: %s'
       step_result.presentation.status = self.m.step.EXCEPTION
       raise recipe_api.InfraFailure(
-          '\n'.join(template % f for f in unexpected_errors),
-          result=step_result)
+        '\n'.join(template % f for f in unexpected_errors), result=step_result
+      )
 
     if expected_errors:
-      step_result.presentation.status = (self.m.step.EXCEPTION if
-          has_incomplete_shards else self.m.step.FAILURE)
+      step_result.presentation.status = (
+        self.m.step.EXCEPTION if has_incomplete_shards else self.m.step.FAILURE
+      )
 
     return has_valid_results
 
@@ -1822,15 +1959,14 @@ class SwarmingApi(recipe_api.RecipeApi):
     SwarmingTask -> argument list for go swarming command.
     """
     args = [
-        'collect',
-        '-server',
-        server or self.m.swarming.current_server,
-        '-task-summary-python',
-        '-task-output-stdout',
-        self.task_output_stdout,
-
-        # This is necessary not to cause io timeout.
-        '-verbose',
+      'collect',
+      '-server',
+      server or self.m.swarming.current_server,
+      '-task-summary-python',
+      '-task-output-stdout',
+      self.task_output_stdout,
+      # This is necessary not to cause io timeout.
+      '-verbose',
     ]
 
     args.extend(('-requests-json', self.m.json.input(requests_json)))
@@ -1846,30 +1982,31 @@ class SwarmingApi(recipe_api.RecipeApi):
     if task.shards == 1:
       subtasks = [('', 0)]
     else:
-      subtasks = [(':%d:%d' % (task.shards, i), i)
-                  for i in shard_indices]
+      subtasks = [(':%d:%d' % (task.shards, i), i) for i in shard_indices]
     self._task_test_data_id_offset += len(subtasks)
-    tid = lambda i: '1%02d00' % (
-        i + 100*(self._task_test_data_id_offset - len(subtasks)))
+    tid = lambda i: (
+      '1%02d00' % (i + 100 * (self._task_test_data_id_offset - len(subtasks)))
+    )
 
     def entry(suffix, i):
       d = {
-          'task_id': tid(i),
-          'shard_index': i,
-          'view_url': f'{self.m.swarming.current_server}/user/task/{tid(i)}',
+        'task_id': tid(i),
+        'shard_index': i,
+        'view_url': f'{self.m.swarming.current_server}/user/task/{tid(i)}',
       }
       if resultdb_enabled:
         d['invocation'] = f'invocations/{i}'
       return f'{task.task_name}{suffix}', d
 
-    return self.m.json.test_api.output({
+    return self.m.json.test_api.output(
+      {
         'tasks': dict(entry(suffix, i) for suffix, i in subtasks),
-    })
+      }
+    )
 
-  def configure_swarming(self,
-                         precommit,
-                         builder_group=None,
-                         path_to_merge_scripts=None):
+  def configure_swarming(
+    self, precommit, builder_group=None, path_to_merge_scripts=None
+  ):
     """Configures default swarming dimensions and tags.
 
     Uses the 'chromium' global config to determine target platform defaults,
@@ -1911,7 +2048,8 @@ class SwarmingApi(recipe_api.RecipeApi):
 
       if self.m.tryserver.gerrit_change:
         self.add_default_tag(
-            'patch_project:%s' % self.m.tryserver.gerrit_change.project)
+          'patch_project:%s' % self.m.tryserver.gerrit_change.project
+        )
     else:
       self.default_priority = _BUILDER_GROUP_SWARMING_PRIORITIES[builder_group]
       self.add_default_tag('purpose:post-commit')
@@ -1929,28 +2067,29 @@ class SwarmingApi(recipe_api.RecipeApi):
 class SwarmingTask:
   """Definition of a task to run on swarming."""
 
-  def __init__(self,
-               server,
-               request,
-               collect_step,
-               extra_args,
-               shards,
-               shard_indices,
-               spec_name,
-               task_output_dir,
-               build_properties=None,
-               builder_info=None,
-               containment_type=None,
-               merge=None,
-               named_caches=None,
-               optional_dimensions=None,
-               task_to_retry=None,
-               trigger_script=None,
-               collect_json_output_override=None,
-               instructions_tag=None,
-               test_name=None,
-               include_utr_instruction=False):
-
+  def __init__(
+    self,
+    server,
+    request,
+    collect_step,
+    extra_args,
+    shards,
+    shard_indices,
+    spec_name,
+    task_output_dir,
+    build_properties=None,
+    builder_info=None,
+    containment_type=None,
+    merge=None,
+    named_caches=None,
+    optional_dimensions=None,
+    task_to_retry=None,
+    trigger_script=None,
+    collect_json_output_override=None,
+    instructions_tag=None,
+    test_name=None,
+    include_utr_instruction=False,
+  ):
     """Configuration of a swarming task.
 
     Args:
@@ -2029,11 +2168,16 @@ class SwarmingTask:
     task_name_suffix = ''
     if self.builder_info:
       task_name_suffix += '/%s/%s' % (
-        self.builder_info[0], self.builder_info[1])
+        self.builder_info[0],
+        self.builder_info[1],
+      )
 
-    return '%s/%s/%s%s' % (self.request.name, self.request[0].dimensions['os'],
-                           self.request[0].cas_input_root[:10],
-                           task_name_suffix)
+    return '%s/%s/%s%s' % (
+      self.request.name,
+      self.request[0].dimensions['os'],
+      self.request[0].cas_input_root[:10],
+      task_name_suffix,
+    )
 
   @property
   def instructions_tag(self):
@@ -2052,8 +2196,8 @@ class SwarmingTask:
     # JSON results of 'trigger' step converted for luci-go client.
     # This is used for isolated script tasks.
     tasks = sorted(
-        self._raw_trigger_output['tasks'].values(),
-        key=lambda x: x['shard_index'])
+      self._raw_trigger_output['tasks'].values(), key=lambda x: x['shard_index']
+    )
     if self.task_to_retry:
       old_tasks = copy.deepcopy(self.task_to_retry.trigger_output['tasks'])
 
@@ -2064,7 +2208,7 @@ class SwarmingTask:
       tasks = old_tasks.values()
 
     return {
-        'tasks': {task['shard_index']: task for task in tasks},
+      'tasks': {task['shard_index']: task for task in tasks},
     }
 
   @property
@@ -2109,8 +2253,9 @@ class SwarmingTask:
         if d['key'] == 'device_os':
           device_os_values.add(d["value"][-1])
       if device_os_values:
-        lines.append('Run on Device OS(es): %s' %
-                     ', '.join(sorted(device_os_values)))
+        lines.append(
+          'Run on Device OS(es): %s' % ', '.join(sorted(device_os_values))
+        )
       elif dimensions.get('os'):
         lines.append('Run on OS: %r' % dimensions['os'])
     lines.append('')
@@ -2125,10 +2270,12 @@ class SwarmingTask:
         return '"' + s + '"'
       return s
 
-    cmd = ' '.join([
+    cmd = ' '.join(
+      [
         sanitize_arg(arg)
         for arg in (self.base_command + self.extra_args + extra_args)
-    ])
+      ]
+    )
     # The `luci-auth context` bit is used for a small subset of tests that need
     # to make authenticated GS calls. Were a dev to run the test command
     # locally, it'd likely be unneeded since:
@@ -2148,10 +2295,13 @@ class SwarmingTask:
       lines.append('```' + cmd + '```')
       if include_mkdir:
         lines.append(
-            '<br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*')
+          '<br/>*Note: Run* ```mkdir tmp``` *if tmp dir does not exist*'
+        )
     else:
-      lines.append('Test command too long to list. See "shard #0" link below '
-                   'for the full invocation.')
+      lines.append(
+        'Test command too long to list. See "shard #0" link below '
+        'for the full invocation.'
+      )
     lines.append('')
     return '<br/>'.join(lines)
 
@@ -2161,9 +2311,10 @@ class SwarmingTask:
     Intended to be passed as an argument to `swarming collect`.
     """
     return {
-        'tasks': [{
-            'task_id': task['task_id']
-        } for task in self.trigger_output['tasks'].values()]
+      'tasks': [
+        {'task_id': task['task_id']}
+        for task in self.trigger_output['tasks'].values()
+      ]
     }
 
   def get_task_shard_output_dirs(self):

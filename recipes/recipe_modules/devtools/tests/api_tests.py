@@ -14,14 +14,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_swarming, devtools
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  buildbucket,
+  file,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -72,16 +72,17 @@ def GenTests(api: TEST_DEPS):
 
   def try_build(builder='linux'):
     return api.buildbucket.try_build(
-        project='devtools',
-        builder=builder,
-        git_repo=git_repo,
-        change_number=91827,
-        patch_set=1)
+      project='devtools',
+      builder=builder,
+      git_repo=git_repo,
+      change_number=91827,
+      patch_set=1,
+    )
 
   yield api.test('basic', try_build())
   yield api.test(
-      'flake_detection',
-      try_build(),
-      api.properties(touched_tests=['front_end/foo.test.api.ts']),
-      api.post_process(post_process.DropExpectation),
+    'flake_detection',
+    try_build(),
+    api.properties(touched_tests=['front_end/foo.test.api.ts']),
+    api.post_process(post_process.DropExpectation),
   )

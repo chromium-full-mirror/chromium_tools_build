@@ -22,14 +22,17 @@ def CheckGroupings(input_api, output_api):
   script = _path(input_api, 'migration/scripts/generate_groupings.py')
   cmd = [script, '--validate'] + projects_to_migrate
 
-  output = input_api.RunTests([
+  output = input_api.RunTests(
+    [
       input_api.Command(
-          'validate migration groupings files',
-          cmd,
-          kwargs={'stderr': input_api.subprocess.STDOUT},
-          message=output_api.PresubmitError,
-          python3=True),
-  ])
+        'validate migration groupings files',
+        cmd,
+        kwargs={'stderr': input_api.subprocess.STDOUT},
+        message=output_api.PresubmitError,
+        python3=True,
+      ),
+    ]
+  )
 
   if output:
     return output
@@ -53,10 +56,13 @@ def CheckGroupings(input_api, output_api):
   def groupings_file_filter(af):
     if af.Action() in 'AD':
       return False
-    path = input_api.os_path.relpath(af.AbsoluteLocalPath(),
-                                     input_api.PresubmitLocalPath())
-    return (input_api.os_path.dirname(path) == 'migration' and
-            input_api.os_path.splitext(path)[1] == '.json')
+    path = input_api.os_path.relpath(
+      af.AbsoluteLocalPath(), input_api.PresubmitLocalPath()
+    )
+    return (
+      input_api.os_path.dirname(path) == 'migration'
+      and input_api.os_path.splitext(path)[1] == '.json'
+    )
 
   output = []
   for af in input_api.AffectedFiles(file_filter=groupings_file_filter):
@@ -75,8 +81,12 @@ def CheckGroupings(input_api, output_api):
         continue
       bad_builders.append(builder_id)
     if bad_builders:
-      message = [(f'The following added builders in {af.LocalPath()}'
-                  ' should define their configs src-side:')]
+      message = [
+        (
+          f'The following added builders in {af.LocalPath()}'
+          ' should define their configs src-side:'
+        )
+      ]
       message.extend(f'* {b}' for b in sorted(bad_builders))
       output.append(output_api.PresubmitError('\n'.join(message)))
 

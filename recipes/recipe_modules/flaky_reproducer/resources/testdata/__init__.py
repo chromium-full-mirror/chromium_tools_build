@@ -8,9 +8,11 @@ import os
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 
+
 def get_test_path(filename):
   """Return test data filepath"""
   return os.path.join(THIS_DIR, filename)
+
 
 def get_test_data(filename):
   """Return test data as str"""

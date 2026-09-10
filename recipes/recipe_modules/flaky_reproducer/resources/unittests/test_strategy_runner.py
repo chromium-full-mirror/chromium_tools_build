@@ -14,12 +14,11 @@ from testdata import get_test_data
 
 
 class StrategyRunnerTest(unittest.TestCase):
-
   def setUp(self):
     # @patch('builtins.open', ...)
     mock_open_data = {
-        'gtest_test_binary.json': get_test_data('gtest_test_binary.json'),
-        'gtest_good_output.json': get_test_data('gtest_good_output.json'),
+      'gtest_test_binary.json': get_test_data('gtest_test_binary.json'),
+      'gtest_good_output.json': get_test_data('gtest_good_output.json'),
     }
 
     # pylint: disable=redefined-builtin
@@ -37,14 +36,13 @@ class StrategyRunnerTest(unittest.TestCase):
     self.mock_chdir = chdir_patcher.start()
 
   @patch.object(
-      strategy_runner, 'strategies', new={
-          'repeat': None,
-          'batch': None
-      })
+    strategy_runner, 'strategies', new={'repeat': None, 'batch': None}
+  )
   @patch('sys.stderr', new_callable=io.StringIO)
   def test_parse_args(self, mock_stderr):
     args = strategy_runner.parse_args(
-        ['repeat', '--test-binary=foo', '--result-summary=bar', 'foo.bar'])
+      ['repeat', '--test-binary=foo', '--result-summary=bar', 'foo.bar']
+    )
     self.assertEqual(args.strategy, 'repeat')
 
     with self.assertRaises(SystemExit):
@@ -60,10 +58,14 @@ class StrategyRunnerTest(unittest.TestCase):
   def test_main(self, mock_stdout, mock_strategy_run):
     mock_strategy_run.return_value.to_jsonish.return_value = {}
     mock_strategy_run.return_value.debug_info = {}
-    strategy_runner.main([
-        'repeat', '--test-binary=gtest_test_binary.json',
-        '--result-summary=gtest_good_output.json', 'MockUnitTests.FailTest'
-    ])
+    strategy_runner.main(
+      [
+        'repeat',
+        '--test-binary=gtest_test_binary.json',
+        '--result-summary=gtest_good_output.json',
+        'MockUnitTests.FailTest',
+      ]
+    )
     self.mock_chdir.assert_called()
     mock_strategy_run.assert_called()
     stdout = mock_stdout.getvalue()
@@ -75,11 +77,15 @@ class StrategyRunnerTest(unittest.TestCase):
   def test_main_with_output(self, mock_stdout, mock_strategy_run):
     mock_strategy_run.return_value.to_jsonish.return_value = {}
     mock_strategy_run.return_value.debug_info = {}
-    strategy_runner.main([
-        'repeat', '--test-binary=gtest_test_binary.json',
+    strategy_runner.main(
+      [
+        'repeat',
+        '--test-binary=gtest_test_binary.json',
         '--result-summary=gtest_good_output.json',
-        '--output=reproducing_step.json', 'MockUnitTests.FailTest'
-    ])
+        '--output=reproducing_step.json',
+        'MockUnitTests.FailTest',
+      ]
+    )
     mock_strategy_run.assert_called()
     stdout = mock_stdout.getvalue()
     self.assertIn('REPRODUCING_STEP.READABLE_INFO:', stdout)
@@ -88,7 +94,11 @@ class StrategyRunnerTest(unittest.TestCase):
   @patch.object(strategy_runner.strategies['repeat'], 'run')
   def test_main_test_not_found(self, mock_strategy_run):
     with self.assertRaises(LookupError):
-      strategy_runner.main([
-          'repeat', '--test-binary=gtest_test_binary.json',
-          '--result-summary=gtest_good_output.json', 'NotExists.Test'
-      ])
+      strategy_runner.main(
+        [
+          'repeat',
+          '--test-binary=gtest_test_binary.json',
+          '--result-summary=gtest_good_output.json',
+          'NotExists.Test',
+        ]
+      )

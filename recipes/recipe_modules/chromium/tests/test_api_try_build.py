@@ -31,13 +31,14 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   api.assertions.assertNotEqual(
-      len(api.buildbucket.build.input.gerrit_changes), 0)
+    len(api.buildbucket.build.input.gerrit_changes), 0
+  )
   api.assertions.assertEqual(api.builder_group.for_current, 'fake-group')
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium.try_build(builder_group='fake-group'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.try_build(builder_group='fake-group'),
+    api.post_process(post_process.DropExpectation),
   )

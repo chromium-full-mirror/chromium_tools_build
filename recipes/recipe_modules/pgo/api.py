@@ -11,7 +11,6 @@ from recipe_engine.config_types import Path
 
 
 class PgoApi(recipe_api.RecipeApi):
-
   # This is used by main_waterfall_steps.py and trybot_steps.py.
   TEMP_PROFDATA_FILENAME = 'pgo_final_aggregate.profdata'
 
@@ -73,7 +72,8 @@ class PgoApi(recipe_api.RecipeApi):
     ref = self.m.buildbucket.gitiles_commit.ref
     if not ref:
       raise self.m.step.StepFailure(
-          f'Missing ref: {self.m.buildbucket.gitiles_commit}')
+        f'Missing ref: {self.m.buildbucket.gitiles_commit}'
+      )
     # Release ref: refs/branch-heads/4103
     # Main ref: refs/heads/main
     return ref.split('/', 2)[2]
@@ -108,19 +108,21 @@ class PgoApi(recipe_api.RecipeApi):
 
     with self.m.step.nest('searching cros llvm toolchain') as p:
       gn_args = self.m.chromium.mb_lookup(
-          source_dir, builder_id, recursive=True)
+        source_dir, builder_id, recursive=True
+      )
       dict_gn_args = self.m.gn.parse_gn_args(self.m.gn.reformat_args(gn_args))
       # crbug/1417071 - We use cros_target_cxx, but this should be its own
       # llvm-profdata arg at some point instead of deducing it.
       if 'cros_target_cxx' in dict_gn_args:
-        val = dict_gn_args['cros_target_cxx'].strip('\"')
+        val = dict_gn_args['cros_target_cxx'].strip('"')
         target_path = self.m.path.join(
-            self.m.path.dirname(val), 'llvm-profdata')
+          self.m.path.dirname(val), 'llvm-profdata'
+        )
         if self.m.path.exists(target_path):
           self.m.profiles.llvm_profdata_exec = target_path
           p.logs['override llvm-profdata-path'] = (
-              'Detected cros. Overriding llvm-profdata path to %s' %
-              target_path)
+            'Detected cros. Overriding llvm-profdata path to %s' % target_path
+          )
 
   def _get_commit(self, test_data=None):
     """Return the hash of the current commit.
@@ -134,11 +136,16 @@ class PgoApi(recipe_api.RecipeApi):
     step_test_data = None
     if test_data is not None:
       step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)
-    return self.m.git(
+    return (
+      self.m.git(
         'rev-parse',
         'HEAD',
         stdout=self.m.raw_io.output(),
-        step_test_data=step_test_data).stdout.strip().decode('utf-8')
+        step_test_data=step_test_data,
+      )
+      .stdout.strip()
+      .decode('utf-8')
+    )
 
   def _profdata_artifact_name(self, source_dir: Path, sha1: str) -> str:
     """Generate profdata artifact name.
@@ -199,10 +206,10 @@ class PgoApi(recipe_api.RecipeApi):
       # `git show --format=%at -s`, where %at=author date, UNIX timestamp
       timestamp = str(self.m.git.get_timestamp(test_data='1587876258'))
       commit = self._get_commit(
-          test_data=b'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde')
+        test_data=b'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde'
+      )
 
     return profdata_template % (platform, self.branch, timestamp, sha1, commit)
-
 
   def ensure_profdata_files(self, tests):
     """Ensure there is a profdata file generated for each test.
@@ -217,12 +224,15 @@ class PgoApi(recipe_api.RecipeApi):
     failed_benchmarks = []
     missing_files = {}
     with self.m.step.nest(
-        'validate benchmark results and profile data') as presentation:
+      'validate benchmark results and profile data'
+    ) as presentation:
       files = set(
-          self.m.file.listdir(
-              'searching for profdata files',
-              self.m.profiles.profile_dir(),
-              recursive=True))
+        self.m.file.listdir(
+          'searching for profdata files',
+          self.m.profiles.profile_dir(),
+          recursive=True,
+        )
+      )
 
       tests_failing_verification = []
       for test in tests:
@@ -237,8 +247,9 @@ class PgoApi(recipe_api.RecipeApi):
           profdata_filename = test.target_name + '.profdata'
           profdata_path = path / profdata_filename
           # Check that each suffix for this test is valid and has no failures
-          if (not test.has_valid_results(suffix) or
-              test.deterministic_failures(suffix)):
+          if not test.has_valid_results(suffix) or test.deterministic_failures(
+            suffix
+          ):
             # Remove the profile from failed runs so it's never included in
             # the final generated profile.
             self.m.file.remove('Removing %s' % profdata_path, profdata_path)
@@ -260,13 +271,16 @@ class PgoApi(recipe_api.RecipeApi):
       # step status.
       if failed_benchmarks or missing_files:
         presentation.logs['failed_benchmarks'] = failed_benchmarks
-        presentation.logs['missing_files'] = (
-            self.m.json.dumps(missing_files, indent=2))
+        presentation.logs['missing_files'] = self.m.json.dumps(
+          missing_files, indent=2
+        )
 
       if tests_failing_verification:
         failure_msgs = []
-        failure_msgs.append('The following tests failed all runs: **%s**.' %
-                            ', '.join(tests_failing_verification))
+        failure_msgs.append(
+          'The following tests failed all runs: **%s**.'
+          % ', '.join(tests_failing_verification)
+        )
         if failed_benchmarks:
           failure_msgs.append(f'{len(failed_benchmarks)} benchmark(s) failed.')
           for failed_benchmark in failed_benchmarks:
@@ -302,18 +316,21 @@ class PgoApi(recipe_api.RecipeApi):
         weights['speedometer3_benchmark/performance_test_suite.profdata'] = 5
       # Invoke the merge script
       profdata_artifact = self.m.profiles.profile_dir().joinpath(
-          self.TEMP_PROFDATA_FILENAME)
+        self.TEMP_PROFDATA_FILENAME
+      )
       # We want to run llvm-profdata without the --sparse argument.
       # https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
       self.m.profiles.merge_profdata(profdata_artifact, weights=weights)
 
       if not self.m.path.exists(profdata_artifact):
         self.m.step.empty(
-            'No profdata was generated.',
-            status=self.m.step.FAILURE,
-            step_text=(
-                'Verify that the Swarming tasks have '
-                'completed successfully, and have output .profraw files'))
+          'No profdata was generated.',
+          status=self.m.step.FAILURE,
+          step_text=(
+            'Verify that the Swarming tasks have '
+            'completed successfully, and have output .profraw files'
+          ),
+        )
 
       # Check for any merge errors
       self.m.profiles.find_merge_errors()
@@ -322,38 +339,43 @@ class PgoApi(recipe_api.RecipeApi):
         result.presentation.text = 'Found invalid profraw files'
         result.presentation.properties['merge errors'] = result.stdout
         self.m.step.empty(
-            'Failing due to merge errors found alongside invalid profile data.',
-            status=self.m.step.FAILURE,
-            step_text='Please see logs of failed step for details.')
+          'Failing due to merge errors found alongside invalid profile data.',
+          status=self.m.step.FAILURE,
+          step_text='Please see logs of failed step for details.',
+        )
 
       # SHA1 hash content of the profdata is used as part of the naming to
       # make it content-addressed.
       contents = self.m.file.read_raw(
-          'Read profdata content',
-          profdata_artifact,
-          test_data='some_profdata_content')
+        'Read profdata content',
+        profdata_artifact,
+        test_data='some_profdata_content',
+      )
       sha1 = hashlib.sha1(contents).hexdigest()
 
       if self.skip_profile_upload:
         return self.m.step.empty(
-            'Skipping upload to GS for this generated profile as '
-            'skip_profile_upload property is enabled.')
+          'Skipping upload to GS for this generated profile as '
+          'skip_profile_upload property is enabled.'
+        )
 
       # The final profdata artifact name uses the sha1 hash of the contents,
       # so the profdata file is generated first, and then renamed.
       new_filename = self._profdata_artifact_name(source_dir, sha1)
       new_filepath = self.m.profiles.profile_dir().joinpath(new_filename)
-      self.m.file.move('Rename the profdata artifact', profdata_artifact,
-                       new_filepath)
+      self.m.file.move(
+        'Rename the profdata artifact', profdata_artifact, new_filepath
+      )
 
       self._last_uploaded_pgo_filename = new_filename
 
       # Reset profdata_artifact to the updated naming
       self.m.profiles.upload(
-          self.gs_bucket,
-          '%s/%s' % (self.gs_bucket_path, new_filename),
-          new_filepath,
-          args=[
-              '-Z',
-          ],
-          link_name=new_filename)
+        self.gs_bucket,
+        '%s/%s' % (self.gs_bucket_path, new_filename),
+        new_filepath,
+        args=[
+          '-Z',
+        ],
+        link_name=new_filename,
+      )

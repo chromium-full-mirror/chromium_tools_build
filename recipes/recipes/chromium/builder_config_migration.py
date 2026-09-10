@@ -14,7 +14,8 @@ import textwrap
 from recipe_engine import post_process
 
 from PB.recipe_modules.build.chromium_tests_builder_config_migration import (
-    properties as properties_pb)
+  properties as properties_pb,
+)
 
 PROPERTIES = properties_pb.InputProperties
 
@@ -23,14 +24,19 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import chromium_tests_builder_config, chromium_tests_builder_config_migration
+from RECIPE_MODULES.build import (
+  chromium_tests_builder_config,
+  chromium_tests_builder_config_migration,
+)
 from RECIPE_MODULES.recipe_engine import properties
 
 
 @dataclass
 class DEPS(RecipeScriptApi):
   chromium_tests_builder_config: chromium_tests_builder_config.API
-  chromium_tests_builder_config_migration: chromium_tests_builder_config_migration.API
+  chromium_tests_builder_config_migration: (
+    chromium_tests_builder_config_migration.API
+  )
   properties: properties.API
 
 
@@ -41,9 +47,9 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS, properties):
   ctbc_api = api.chromium_tests_builder_config
-  return api.chromium_tests_builder_config_migration(properties,
-                                                     ctbc_api.builder_db,
-                                                     ctbc_api.try_db)
+  return api.chromium_tests_builder_config_migration(
+    properties, ctbc_api.builder_db, ctbc_api.try_db
+  )
 
 
 def GenTests(api: TEST_DEPS):
@@ -105,20 +111,21 @@ def GenTests(api: TEST_DEPS):
       }""")
 
   yield api.test(
-      'groupings',
-      api.properties(
-          groupings_operation={
-              'output_path':
-                  '/fake/output/path',
-              'builder_group_filters': [
-                  {
-                      'builder_group_regex': r'(tryserver\.)?migration(\..+)?',
-                  },
-              ],
-          }),
-      api.post_check(lambda check, steps: \
-          check(expected_groupings in steps['groupings'].cmd)),
-      api.post_process(post_process.DropExpectation),
+    'groupings',
+    api.properties(
+      groupings_operation={
+        'output_path': '/fake/output/path',
+        'builder_group_filters': [
+          {
+            'builder_group_regex': r'(tryserver\.)?migration(\..+)?',
+          },
+        ],
+      }
+    ),
+    api.post_check(
+      lambda check, steps: check(expected_groupings in steps['groupings'].cmd)
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   expected_snippets = textwrap.dedent("""\
@@ -150,16 +157,22 @@ def GenTests(api: TEST_DEPS):
       """)
 
   yield api.test(
-      'migration',
-      api.properties(
-          migration_operation={
-              'builders_to_migrate': [{
-                  'builder_group': 'migration.testing',
-                  'builder': 'bar',
-              }],
-              'output_path': '/fake/output/path',
-          }),
-      api.post_check(lambda check, steps: \
-          check(expected_snippets in steps['src-side snippets'].cmd)),
-      api.post_process(post_process.DropExpectation),
+    'migration',
+    api.properties(
+      migration_operation={
+        'builders_to_migrate': [
+          {
+            'builder_group': 'migration.testing',
+            'builder': 'bar',
+          }
+        ],
+        'output_path': '/fake/output/path',
+      }
+    ),
+    api.post_check(
+      lambda check, steps: check(
+        expected_snippets in steps['src-side snippets'].cmd
+      )
+    ),
+    api.post_process(post_process.DropExpectation),
   )

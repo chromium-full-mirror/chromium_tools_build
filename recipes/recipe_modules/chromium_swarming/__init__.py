@@ -6,36 +6,38 @@ from __future__ import annotations
 
 from .types import CipdPackage, MergeScript, TriggerScript
 
-from PB.recipe_modules.build.chromium_swarming import properties as properties_pb
+from PB.recipe_modules.build.chromium_swarming import (
+  properties as properties_pb,
+)
 
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    chromium_checkout,
-    code_coverage,
-    presentation_utils,
-    repro_instructions,
+  builder_group,
+  chromium,
+  chromium_checkout,
+  code_coverage,
+  presentation_utils,
+  repro_instructions,
 )
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    cipd,
-    context,
-    cv,
-    json,
-    led,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    runtime,
-    step,
-    swarming,
+  buildbucket,
+  cas,
+  cipd,
+  context,
+  cv,
+  json,
+  led,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  runtime,
+  step,
+  swarming,
 )
 
 
@@ -63,6 +65,7 @@ class DEPS(RecipeScriptApi):
   step: step.API
   swarming: swarming.API
   repro_instructions: repro_instructions.API
+
 
 PROPERTIES = properties_pb.InputProperties
 

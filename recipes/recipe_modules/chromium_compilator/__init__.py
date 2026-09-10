@@ -11,36 +11,36 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_rts,
-    chromium_swarming,
-    chromium_tests,
-    chromium_tests_builder_config,
-    chromium_turboci,
-    code_coverage,
-    filter as filter_module,
-    flakiness,
-    isolate,
-    test_utils,
+  chromium,
+  chromium_checkout,
+  chromium_rts,
+  chromium_swarming,
+  chromium_tests,
+  chromium_tests_builder_config,
+  chromium_turboci,
+  code_coverage,
+  filter as filter_module,
+  flakiness,
+  isolate,
+  test_utils,
 )
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    cv,
-    file,
-    json,
-    luci_analysis,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    runtime,
-    step,
-    swarming,
+  buildbucket,
+  cas,
+  context,
+  cv,
+  file,
+  json,
+  luci_analysis,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  runtime,
+  step,
+  swarming,
 )
 
 
@@ -74,7 +74,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   swarming: swarming.API
   test_utils: test_utils.API
-
 
 
 from .api import ChromiumCompilatorApi as API

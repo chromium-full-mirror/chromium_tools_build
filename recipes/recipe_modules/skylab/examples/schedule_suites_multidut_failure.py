@@ -27,6 +27,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
 
 from recipe_engine.recipe_api import Property
@@ -42,25 +43,27 @@ def gen_skylab_test(name, **kwargs):
 
 
 REQUESTS = [
-    gen_skylab_test(
-        'multi_dut_should_provision_browser_files_len_mismatch',
-        autotest_name='tauto.tast',
-        cros_board='eve',
-        cros_img='eve-release/R88-13545.0.0',
-        secondary_cros_board='eve,pixel6',
-        secondary_cros_img='eve-release/R88-13545.0.0,',
-        should_provision_browser_files=[True, False, True]),
-    gen_skylab_test(
-        'multi_dut_secondary_cros_img_len_mismatch',
-        autotest_name='tauto.tast',
-        cros_board='eve',
-        cros_img='eve-release/R88-13545.0.0',
-        secondary_cros_board='eve,pixel6',
-        secondary_cros_img='eve-release/R88-13545.0.0')
+  gen_skylab_test(
+    'multi_dut_should_provision_browser_files_len_mismatch',
+    autotest_name='tauto.tast',
+    cros_board='eve',
+    cros_img='eve-release/R88-13545.0.0',
+    secondary_cros_board='eve,pixel6',
+    secondary_cros_img='eve-release/R88-13545.0.0,',
+    should_provision_browser_files=[True, False, True],
+  ),
+  gen_skylab_test(
+    'multi_dut_secondary_cros_img_len_mismatch',
+    autotest_name='tauto.tast',
+    cros_board='eve',
+    cros_img='eve-release/R88-13545.0.0',
+    secondary_cros_board='eve,pixel6',
+    secondary_cros_img='eve-release/R88-13545.0.0',
+  ),
 ]
 
 PROPERTIES = {
-    'requests': Property(help="Set of requests", default=[]),
+  'requests': Property(help="Set of requests", default=[]),
 }
 
 
@@ -74,26 +77,29 @@ def RunSteps(api: DEPS, requests):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'multi_dut_should_provision_browser_files_len_mismatch',
-      api.properties(requests=REQUESTS[0:1]),
-      api.post_process(post_process.StepFailure,
-                       'schedule skylab test.' + REQUESTS[0].name),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          'Length of should_provision_browser_files must match secondary_cros_board'
-      ),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'multi_dut_should_provision_browser_files_len_mismatch',
+    api.properties(requests=REQUESTS[0:1]),
+    api.post_process(
+      post_process.StepFailure, 'schedule skylab test.' + REQUESTS[0].name
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'Length of should_provision_browser_files must match secondary_cros_board',
+    ),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'multi_dut_secondary_cros_img_len_mismatch',
-      api.properties(requests=REQUESTS[1:2]),
-      api.post_process(post_process.StepFailure,
-                       'schedule skylab test.' + REQUESTS[1].name),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          'Length of secondary_cros_img must match secondary_cros_board'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'multi_dut_secondary_cros_img_len_mismatch',
+    api.properties(requests=REQUESTS[1:2]),
+    api.post_process(
+      post_process.StepFailure, 'schedule skylab test.' + REQUESTS[1].name
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'Length of secondary_cros_img must match secondary_cros_board',
+    ),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )

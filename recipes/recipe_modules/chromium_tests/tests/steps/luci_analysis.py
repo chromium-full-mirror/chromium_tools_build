@@ -27,9 +27,10 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'known_flaky_failures': Property(kind=set),
-    'weak_flaky_failures': Property(kind=set),
+  'known_flaky_failures': Property(kind=set),
+  'weak_flaky_failures': Property(kind=set),
 }
 
 from recipe_engine.recipe_api import Property
@@ -46,17 +47,20 @@ def RunSteps(api: DEPS, known_flaky_failures, weak_flaky_failures):
   for weak_flake in weak_flaky_failures:
     test.add_weak_luci_analysis_flaky_failure(weak_flake)
 
-  api.assertions.assertSetEqual(test.known_luci_analysis_flaky_failures,
-                                known_flaky_failures)
-  api.assertions.assertSetEqual(test.weak_luci_analysis_flaky_failures,
-                                weak_flaky_failures)
+  api.assertions.assertSetEqual(
+    test.known_luci_analysis_flaky_failures, known_flaky_failures
+  )
+  api.assertions.assertSetEqual(
+    test.weak_luci_analysis_flaky_failures, weak_flaky_failures
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(
-          known_flaky_failures={'testA', 'testB'},
-          weak_flaky_failures={'testC', 'testD'}),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.properties(
+      known_flaky_failures={'testA', 'testB'},
+      weak_flaky_failures={'testC', 'testD'},
+    ),
+    api.post_process(post_process.DropExpectation),
   )

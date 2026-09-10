@@ -2,8 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Buildbot recipe to run Dawn's CTS roller tool.
-   It will roll to the latest CTS revision, update expectations to suppress
-   new failures, and upload a CL for review.
+It will roll to the latest CTS revision, update expectations to suppress
+new failures, and upload a CL for review.
 """
 
 from recipe_engine import post_process
@@ -15,20 +15,20 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import dawn
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    gsutil,
+  bot_update,
+  depot_tools,
+  gclient,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    nodejs,
-    path,
-    platform,
-    step,
-    swarming,
+  buildbucket,
+  context,
+  file,
+  nodejs,
+  path,
+  platform,
+  step,
+  swarming,
 )
 
 
@@ -59,6 +59,7 @@ class TEST_DEPS(RecipeTestApi):
   path: path.TEST_API
   platform: platform.TEST_API
 
+
 DAWN_REPO = "https://dawn.googlesource.com/dawn"
 
 
@@ -79,6 +80,7 @@ def _checkout_steps(api: DEPS):
     api.gclient.runhooks()
   return update_result
 
+
 NODEJS_VERSION = '16.13.0'
 
 
@@ -90,7 +92,9 @@ def RunSteps(api: DEPS):
     api.step('npm', ['npm', 'version'])
 
     with api.context(env_prefixes={'PATH': api.dawn.get_go_paths(source_dir)}):
-      api.step('Roll WebGPU CTS', [
+      api.step(
+        'Roll WebGPU CTS',
+        [
           source_dir.joinpath('tools', 'run'),
           'cts',
           'roll',
@@ -98,14 +102,16 @@ def RunSteps(api: DEPS):
           '-parent-swarming-run-id',
           api.swarming.task_id,
           '-send-to-gardener',
-      ])
+        ],
+      )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'cts-roller',
-      api.platform('linux', 64),
-      api.buildbucket.ci_build(
-          project='dawn', builder='linux', git_repo=DAWN_REPO),
-      api.post_process(post_process.DropExpectation),
+    'cts-roller',
+    api.platform('linux', 64),
+    api.buildbucket.ci_build(
+      project='dawn', builder='linux', git_repo=DAWN_REPO
+    ),
+    api.post_process(post_process.DropExpectation),
   )

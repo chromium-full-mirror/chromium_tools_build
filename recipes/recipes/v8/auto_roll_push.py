@@ -10,14 +10,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, v8
 from RECIPE_MODULES.depot_tools import bot_update, gclient
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    properties,
-    raw_io,
-    service_account,
-    step,
-    url,
+  buildbucket,
+  context,
+  path,
+  properties,
+  raw_io,
+  service_account,
+  step,
+  url,
 )
 
 
@@ -44,24 +44,30 @@ def RunSteps(api: DEPS):
   source_dir = update_result.source_root.path
   with api.context(cwd=source_dir, env={'SKIP_GCE_AUTH_FOR_GIT': '1'}):
     safe_buildername = ''.join(
-        c if c.isalnum() else '_' for c in api.buildbucket.builder_name)
+      c if c.isalnum() else '_' for c in api.buildbucket.builder_name
+    )
     push_account = (
-        # TODO(sergiyb): Replace with api.service_account.default().get_email()
-        # when https://crbug.com/846923 is resolved.
-        'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com')
+      # TODO(sergiyb): Replace with api.service_account.default().get_email()
+      # when https://crbug.com/846923 is resolved.
+      'v8-ci-autoroll-builder@chops-service-accounts.iam.gserviceaccount.com'
+    )
     api.v8.python(
-        'push candidate',
-        source_dir.joinpath('tools', 'release', 'auto_push.py'),
-        [
-            '--push', '--author', push_account, '--reviewer', push_account,
-            '--work-dir',
-            api.path.cache_dir.joinpath(safe_buildername, 'workdir')
-        ],
+      'push candidate',
+      source_dir.joinpath('tools', 'release', 'auto_push.py'),
+      [
+        '--push',
+        '--author',
+        push_account,
+        '--reviewer',
+        push_account,
+        '--work-dir',
+        api.path.cache_dir.joinpath(safe_buildername, 'workdir'),
+      ],
     )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'standard',
-      api.expect_status('SUCCESS'),
+    'standard',
+    api.expect_status('SUCCESS'),
   )

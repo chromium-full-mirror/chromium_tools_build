@@ -12,10 +12,10 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
 )
 from RECIPE_MODULES.recipe_engine import path
 
@@ -44,10 +44,10 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'no_build_dir',
-      api.chromium.generic_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'no_build_dir',
+    api.chromium.generic_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

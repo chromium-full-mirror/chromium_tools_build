@@ -12,13 +12,13 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, siso
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    runtime,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  runtime,
 )
 
 
@@ -45,6 +45,7 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
   siso: siso.TEST_API
 
+
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process
 import textwrap
@@ -52,9 +53,10 @@ import textwrap
 
 def RunSteps(api: DEPS):
   api.chromium.set_config(
-      api.properties.get('chromium_config', 'chromium_clang'),
-      TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
-      TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'))
+    api.properties.get('chromium_config', 'chromium_clang'),
+    TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
+    TARGET_CROS_BOARDS=api.properties.get('target_cros_boards'),
+  )
 
   for config in api.properties.get('chromium_apply_config', []):
     api.chromium.apply_config(config)
@@ -63,142 +65,158 @@ def RunSteps(api: DEPS):
   build_dir = source_dir / 'out/Release'
 
   return api.chromium.compile(
-      source_dir,
-      build_dir,
-      targets=api.properties.get('targets'),
-      extra_ninja_args=api.properties.get('extra_ninja_args'),
-      ninja_path=api.properties.get('ninja_path'))
+    source_dir,
+    build_dir,
+    targets=api.properties.get('targets'),
+    extra_ninja_args=api.properties.get('extra_ninja_args'),
+    ninja_path=api.properties.get('ninja_path'),
+  )
 
 
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'basic',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/src/tools/clang/scripts/process_crashreports.py'),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.path.exists(
+      api.path.cache_dir
+      / 'builder/src/tools/clang/scripts/process_crashreports.py'
+    ),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'targets_include_all',
-      api.properties(targets=['foo', 'all', 'bar']),
-      api.post_check(lambda check, steps: \
-                     check('foo' not in steps['compile'].cmd)),
-      api.post_check(lambda check, steps: \
-                     check('all' not in steps['compile'].cmd)),
-      api.post_check(lambda check, steps: \
-                     check('bar' not in steps['compile'].cmd)),
-      api.post_process(post_process.DropExpectation),
+    'targets_include_all',
+    api.properties(targets=['foo', 'all', 'bar']),
+    api.post_check(
+      lambda check, steps: check('foo' not in steps['compile'].cmd)
+    ),
+    api.post_check(
+      lambda check, steps: check('all' not in steps['compile'].cmd)
+    ),
+    api.post_check(
+      lambda check, steps: check('bar' not in steps['compile'].cmd)
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'compile_fail',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.step_data('compile', retcode=1),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/src/tools/clang/scripts/process_crashreports.py'),
-      api.post_process(post_process.TagEquals, 'compile',
-                       'luci-bisection.is_bisectable', 'true'),
-      api.post_process(post_process.MustRun, 'process clang crashes'),
-      api.post_process(post_process.DropExpectation),
-      api.expect_status('FAILURE'),
+    'compile_fail',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.step_data('compile', retcode=1),
+    api.path.exists(
+      api.path.cache_dir
+      / 'builder/src/tools/clang/scripts/process_crashreports.py'
+    ),
+    api.post_process(
+      post_process.TagEquals, 'compile', 'luci-bisection.is_bisectable', 'true'
+    ),
+    api.post_process(post_process.MustRun, 'process clang crashes'),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'infra_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.override_step_data('compile', retcode=2),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'infra_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.override_step_data('compile', retcode=2),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'codesearch',
-      api.properties(chromium_apply_config=['codesearch']),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'codesearch',
+    api.properties(chromium_apply_config=['codesearch']),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'official_win_luci',
-      api.platform('win', 64),
-      api.properties(target_platform='win', chromium_apply_config=['official']),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'official_win_luci',
+    api.platform('win', 64),
+    api.properties(target_platform='win', chromium_apply_config=['official']),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'chromeos',
-      api.properties(
-          target_platform='chromeos', target_cros_boards='x86-generic'),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'chromeos',
+    api.properties(
+      target_platform='chromeos', target_cros_boards='x86-generic'
+    ),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'chromeos_official',
-      api.properties(
-          target_platform='chromeos',
-          target_cros_boards='x86-generic',
-          chromium_apply_config=['official']),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'chromeos_official',
+    api.properties(
+      target_platform='chromeos',
+      target_cros_boards='x86-generic',
+      chromium_apply_config=['official'],
+    ),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'android',
-      api.properties(target_platform='android', chromium_config='android'),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'android',
+    api.properties(target_platform='android', chromium_config='android'),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'clang_tot',
-      api.properties(chromium_apply_config=['clang_tot']),
-      api.post_process(post_process.StepCommandContains, 'clang_revision',
-                       ['--llvm-force-head-revision']),
-      api.post_process(post_process.DropExpectation),
+    'clang_tot',
+    api.properties(chromium_apply_config=['clang_tot']),
+    api.post_process(
+      post_process.StepCommandContains,
+      'clang_revision',
+      ['--llvm-force-head-revision'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_revision',
-      api.properties(chromium_apply_config=['rust']),
-      api.post_process(post_process.StepSuccess, 'rust_revision'),
-      api.post_process(post_process.DropExpectation),
+    'rust_revision',
+    api.properties(chromium_apply_config=['rust']),
+    api.post_process(post_process.StepSuccess, 'rust_revision'),
+    api.post_process(post_process.DropExpectation),
   )
 
-  gomacc_path = ('/b/s/w/ir/cache/goma/client/gomacc '
-        '../../third_party/llvm-build/Release+Asserts/bin/clang++ '
-        'long string of commands\n'
+  gomacc_path = (
+    '/b/s/w/ir/cache/goma/client/gomacc '
+    '../../third_party/llvm-build/Release+Asserts/bin/clang++ '
+    'long string of commands\n'
   )
 
   yield api.test(
-      'compile_failure_summary',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.change_line_limit(50),
-      api.override_step_data(
-          'compile',
-          api.raw_io.output_text(
-              gomacc_path + textwrap.dedent("""
+    'compile_failure_summary',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.change_line_limit(50),
+    api.override_step_data(
+      'compile',
+      api.raw_io.output_text(
+        gomacc_path
+        + textwrap.dedent("""
             [1/1] CXX a.o
             filename:row:col: error: error info
           """).strip(),
-              name='failure_summary'),
-          retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          textwrap.dedent("""
+        name='failure_summary',
+      ),
+      retcode=1,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      textwrap.dedent("""
           #### Step _compile_ failed. Error logs are shown below:
           ```
           /b/s/w/ir/cache/goma/client/gomacc ../../third_par...(too long)
@@ -206,19 +224,21 @@ def GenTests(api: TEST_DEPS):
           filename:row:col: error: error info
           ```
           #### [Click here for more information](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
-          """).strip()),
-      api.post_process(post_process.DropExpectation),
+          """).strip(),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'long_compile_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.change_char_size_limit(350),
-      api.chromium.change_line_limit(50),
-      api.override_step_data(
-          'compile',
-          api.raw_io.output_text(
-              gomacc_path + textwrap.dedent("""
+    'long_compile_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.change_char_size_limit(350),
+    api.chromium.change_line_limit(50),
+    api.override_step_data(
+      'compile',
+      api.raw_io.output_text(
+        gomacc_path
+        + textwrap.dedent("""
           [1/1] CXX a.o
           filename error 1 info
           More stuff that happened in the error
@@ -231,12 +251,14 @@ def GenTests(api: TEST_DEPS):
           More stuff that happened in the error
           filename error 6 info
           """),
-              name='failure_summary'),
-          retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          textwrap.dedent("""
+        name='failure_summary',
+      ),
+      retcode=1,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      textwrap.dedent("""
           #### Step _compile_ failed. Error logs are shown below:
           ```
           /b/s/w/ir/cache/goma/client/gomacc ../../third_par...(too long)
@@ -254,20 +276,22 @@ def GenTests(api: TEST_DEPS):
           ```
           ##### ...The message was too long...
           #### [Click here for more information](https:///logs///+/u/compile/raw_io.output_text_failure_summary_)
-          """).strip()),
-      api.post_process(post_process.DropExpectation),
+          """).strip(),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'noop_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.override_step_data(
-          'compile confirm no-op',
-          stdout=api.raw_io.output_text('ninja explain: dirty')),
-      api.expect_status('FAILURE'),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          textwrap.dedent("""
+    'noop_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.override_step_data(
+      'compile confirm no-op',
+      stdout=api.raw_io.output_text('ninja explain: dirty'),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      textwrap.dedent("""
           #### Step _compile_ failed. Error logs are shown below:
           ```
           Failing build because ninja reported work to do.
@@ -277,162 +301,189 @@ def GenTests(api: TEST_DEPS):
           likely culprit.
           ```
           #### [Click here for more information](https:///logs///+/u/compile_confirm_no-op/stderr)
-          """).strip()),
-      api.post_process(post_process.DropExpectation),
+          """).strip(),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'siso',
-      api.properties(extra_ninja_args=['-j', '100'],),
-      api.chromium.generic_build(builder_group='test_group'),
-      api.siso.properties(),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/src/tools/clang/scripts/process_crashreports.py'),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
-      api.post_process(post_process.DropExpectation),
+    'siso',
+    api.properties(
+      extra_ninja_args=['-j', '100'],
+    ),
+    api.chromium.generic_build(builder_group='test_group'),
+    api.siso.properties(),
+    api.path.exists(
+      api.path.cache_dir
+      / 'builder/src/tools/clang/scripts/process_crashreports.py'
+    ),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'siso_noop_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.siso.properties(),
-      api.path.exists(
-          api.path.cache_dir /
-          'builder/src/tools/clang/scripts/process_crashreports.py'),
-      api.post_process(post_process.StepSuccess, 'compile'),
-      api.step_data(
-          'compile confirm no-op',
-          stdout=api.raw_io.output_text('ninja explain: dirty')),
-      api.post_process(post_process.StepFailure, 'compile confirm no-op'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'siso_noop_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.siso.properties(),
+    api.path.exists(
+      api.path.cache_dir
+      / 'builder/src/tools/clang/scripts/process_crashreports.py'
+    ),
+    api.post_process(post_process.StepSuccess, 'compile'),
+    api.step_data(
+      'compile confirm no-op',
+      stdout=api.raw_io.output_text('ninja explain: dirty'),
+    ),
+    api.post_process(post_process.StepFailure, 'compile confirm no-op'),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   build_dir = api.path.cache_dir / 'builder/src' / 'out/Release'
 
   yield api.test(
-      'warning_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.properties(fail_build_on_clang_warnings=True),
-      api.path.exists(build_dir / 'siso_output'),
-      api.step_data(
-          'check for compile warnings.read siso_output',
-          api.file.read_text('build step: foo\n'
-                             '../../a/b/c.cc:1:2: warning: '
-                             'something bad happened [-Wwarning]\n'
-                             '1 warning generated.\n'
-                             'extra text after clang summary\n')),
-      api.post_process(
-          post_process.StepFailure,
-          'check for compile warnings.scan siso_output for warnings'),
-      api.post_process(
-          post_process.LogDoesNotContain,
-          'check for compile warnings.scan siso_output for warnings', 'stdout',
-          ['extra text after clang summary']),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'warning_failure_long_msg',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.properties(fail_build_on_clang_warnings=True),
-      api.path.exists(build_dir / 'siso_output'),
-      api.step_data(
-          'check for compile warnings.read siso_output',
-          api.file.read_text('build step: foo\n'
-                             '../../a/b/c.cc:1:2: warning: ' +
-                             "long text " * 100 +
-                             'something bad happened [-Wwarning]\n'
-                             '2 warnings generated.')),
-      api.post_process(
-          post_process.StepFailure,
-          'check for compile warnings.scan siso_output for warnings'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'rust_warning_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.properties(fail_build_on_clang_warnings=True),
-      api.path.exists(build_dir / 'siso_output'),
-      api.step_data(
-          'check for compile warnings.read siso_output',
-          api.file.read_text(
-              'stdout:\n'
-              'warning: type `bar` should have an upper camel case name\n'
-              '--> ../../mojo/public/rust/system/message.rs:37:8\n'
-              '...\n'
-              '= note: `#[warn(non_camel_case_types)]` '
-              '(part of `#[warn(nonstandard_style)]`) on by default\n'
-              '1 warning emitted\n'
-              'extra text after rust summary\n')),
-      api.post_process(
-          post_process.StepFailure,
-          'check for compile warnings.scan siso_output for warnings'),
-      api.post_process(
-          post_process.LogDoesNotContain,
-          'check for compile warnings.scan siso_output for warnings', 'stdout',
-          ['extra text after rust summary']),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'lld_warning',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.properties(fail_build_on_clang_warnings=True),
-      api.path.exists(build_dir / 'siso_output'),
-      api.step_data(
-          'check for compile warnings.read siso_output',
-          api.file.read_text(
-              'build step: clang_arm64_link "./clang_arm64/protoc-gen-js"\n'
-              'stderr:\n'
-              'warning: no debug symbols in executable (-arch arm64)\n'
-              'some extra unrelated log output after warning\n')),
-      api.post_process(
-          post_process.StepSuccess,
-          'check for compile warnings.scan siso_output for warnings'),
-      api.expect_status('SUCCESS'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'no_warnings_no_failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.chromium.properties(fail_build_on_clang_warnings=True),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'extra_ninja_args_and_path',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.properties(
-          extra_ninja_args=['-j', '100'],
-          ninja_path='/some/ninja/path',
+    'warning_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.properties(fail_build_on_clang_warnings=True),
+    api.path.exists(build_dir / 'siso_output'),
+    api.step_data(
+      'check for compile warnings.read siso_output',
+      api.file.read_text(
+        'build step: foo\n'
+        '../../a/b/c.cc:1:2: warning: '
+        'something bad happened [-Wwarning]\n'
+        '1 warning generated.\n'
+        'extra text after clang summary\n'
       ),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['-j', '100']),
-      api.post_process(post_process.StepCommandContains, 'compile',
-                       ['/some/ninja/path']),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(
+      post_process.StepFailure,
+      'check for compile warnings.scan siso_output for warnings',
+    ),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'check for compile warnings.scan siso_output for warnings',
+      'stdout',
+      ['extra text after clang summary'],
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'siso infra failure',
-      api.chromium.generic_build(builder_group='test_group'),
-      api.siso.properties(),
-      api.step_data('compile', retcode=1),
-      api.path.exists(build_dir / 'siso_result.json'),
-      api.step_data(
-          'read siso_result.json',
-          api.file.read_json({
-              "infra_failure": True,
-              "message": "too many fallback"
-          })),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'warning_failure_long_msg',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.properties(fail_build_on_clang_warnings=True),
+    api.path.exists(build_dir / 'siso_output'),
+    api.step_data(
+      'check for compile warnings.read siso_output',
+      api.file.read_text(
+        'build step: foo\n'
+        '../../a/b/c.cc:1:2: warning: '
+        + "long text "
+        * 100
+        + 'something bad happened [-Wwarning]\n'
+        '2 warnings generated.'
+      ),
+    ),
+    api.post_process(
+      post_process.StepFailure,
+      'check for compile warnings.scan siso_output for warnings',
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'rust_warning_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.properties(fail_build_on_clang_warnings=True),
+    api.path.exists(build_dir / 'siso_output'),
+    api.step_data(
+      'check for compile warnings.read siso_output',
+      api.file.read_text(
+        'stdout:\n'
+        'warning: type `bar` should have an upper camel case name\n'
+        '--> ../../mojo/public/rust/system/message.rs:37:8\n'
+        '...\n'
+        '= note: `#[warn(non_camel_case_types)]` '
+        '(part of `#[warn(nonstandard_style)]`) on by default\n'
+        '1 warning emitted\n'
+        'extra text after rust summary\n'
+      ),
+    ),
+    api.post_process(
+      post_process.StepFailure,
+      'check for compile warnings.scan siso_output for warnings',
+    ),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'check for compile warnings.scan siso_output for warnings',
+      'stdout',
+      ['extra text after rust summary'],
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'lld_warning',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.properties(fail_build_on_clang_warnings=True),
+    api.path.exists(build_dir / 'siso_output'),
+    api.step_data(
+      'check for compile warnings.read siso_output',
+      api.file.read_text(
+        'build step: clang_arm64_link "./clang_arm64/protoc-gen-js"\n'
+        'stderr:\n'
+        'warning: no debug symbols in executable (-arch arm64)\n'
+        'some extra unrelated log output after warning\n'
+      ),
+    ),
+    api.post_process(
+      post_process.StepSuccess,
+      'check for compile warnings.scan siso_output for warnings',
+    ),
+    api.expect_status('SUCCESS'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'no_warnings_no_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.chromium.properties(fail_build_on_clang_warnings=True),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'extra_ninja_args_and_path',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.properties(
+      extra_ninja_args=['-j', '100'],
+      ninja_path='/some/ninja/path',
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'compile', ['-j', '100']
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'compile', ['/some/ninja/path']
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'siso infra failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.siso.properties(),
+    api.step_data('compile', retcode=1),
+    api.path.exists(build_dir / 'siso_result.json'),
+    api.step_data(
+      'read siso_result.json',
+      api.file.read_json(
+        {"infra_failure": True, "message": "too many fallback"}
+      ),
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

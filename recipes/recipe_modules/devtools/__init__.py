@@ -9,31 +9,31 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_swarming,
-    v8,
-    v8_tests,
+  chromium,
+  chromium_swarming,
+  v8,
+  v8_tests,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    gsutil,
-    tryserver,
+  bot_update,
+  gclient,
+  git,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    context,
-    file,
-    futures,
-    path,
-    platform,
-    raw_io,
-    resultdb,
-    step,
-    swarming,
-    url,
+  buildbucket,
+  cas,
+  context,
+  file,
+  futures,
+  path,
+  platform,
+  raw_io,
+  resultdb,
+  step,
+  swarming,
+  url,
 )
 
 
@@ -60,5 +60,6 @@ class DEPS(RecipeScriptApi):
   futures: futures.API
   v8: v8.API
   v8_tests: v8_tests.API
+
 
 from .api import DevToolsAPI as API

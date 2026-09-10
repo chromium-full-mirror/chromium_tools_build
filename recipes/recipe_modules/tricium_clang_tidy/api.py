@@ -10,7 +10,9 @@ from __future__ import annotations
 
 import collections
 
-from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
+from PB.go.chromium.org.luci.common.proto.findings import (
+  findings as findings_pb,
+)
 from recipe_engine.config_types import Path
 from recipe_engine.recipe_api import RecipeApi
 
@@ -23,11 +25,11 @@ def _is_clang_diagnostic(check_name):
 
 
 _TidyDiagnosticID = collections.namedtuple(
-    '_TidyDiagnosticID', ['message', 'line_number', 'check_name'])
+  '_TidyDiagnosticID', ['message', 'line_number', 'check_name']
+)
 
 
 class _SourceFileComments:
-
   def __init__(self):
     self._source_comments = []
     # _source_comments which have notes that map them back to macros. We have
@@ -47,9 +49,15 @@ class _SourceFileComments:
   def note_tidy_failed(self):
     self._tidy_failed = True
 
-  def add_macro_expanded_tidy_diagnostic(self, message, line_number, check_name,
-                                         suggestions, file_of_expansion,
-                                         line_of_expansion):
+  def add_macro_expanded_tidy_diagnostic(
+    self,
+    message,
+    line_number,
+    check_name,
+    suggestions,
+    file_of_expansion,
+    line_of_expansion,
+  ):
     key = _TidyDiagnosticID(message, line_number, check_name)
     # FIXME(gbiv): Macro suggestions may be tricky. Don't mind them for now.
     _ = suggestions
@@ -60,33 +68,39 @@ class _SourceFileComments:
     # Tricium. One diagnostic can cause a cascade of others, and that's a bad
     # UX.
     assert not _is_clang_diagnostic(check_name), check_name
-    self._source_comments.append((_TidyDiagnosticID(message, line_number,
-                                                    check_name), suggestions))
+    self._source_comments.append(
+      (_TidyDiagnosticID(message, line_number, check_name), suggestions)
+    )
 
   def __iter__(self):
     """Yields comments as (check_name, message, line_num, suggestions) tuples."""
 
     if self._tidy_timed_out:
-      message = ('warning: clang-tidy timed out on this file; issuing '
-                 'diagnostics is impossible.')
+      message = (
+        'warning: clang-tidy timed out on this file; issuing '
+        'diagnostics is impossible.'
+      )
       yield '', message, 0, ()
       return
 
     if not self._source_comments and not self._macro_comments:
       return
 
-
     if self._build_failed:
-      message = ('warning: building this file or its dependencies failed; '
-                 'no diagnostics will be issued. When diagnosing, it\'s '
-                 'normal that the clang-tidy step is green. You need to '
-                 'click through the step output to find the actual error.')
+      message = (
+        'warning: building this file or its dependencies failed; '
+        'no diagnostics will be issued. When diagnosing, it\'s '
+        'normal that the clang-tidy step is green. You need to '
+        'click through the step output to find the actual error.'
+      )
       yield '', message, 0, ()
       return
 
     if self._tidy_failed:
-      message = ('warning: clang-tidy failed on this file; no diagnostics '
-                 'will be issued.')
+      message = (
+        'warning: clang-tidy failed on this file; no diagnostics '
+        'will be issued.'
+      )
       yield '', message, 0, ()
       return
 
@@ -96,16 +110,23 @@ class _SourceFileComments:
         url_path = '%s/%s' % (check_category, check_name)
       else:
         url_path = check_name
-      return (message + ' (https://clang.llvm.org/extra/clang-tidy/checks/'
-              '%s.html)' % url_path)
+      return (
+        message + ' (https://clang.llvm.org/extra/clang-tidy/checks/'
+        '%s.html)' % url_path
+      )
 
     def skip_suffix(check_name):
-      return ('\n\n(Note: You can add '
-              f'`{TriciumClangTidyApi.SKIP_CHECKS_FOOTER_KEY}: {check_name}` '
-              'footer to the CL description to skip the check)')
+      return (
+        '\n\n(Note: You can add '
+        f'`{TriciumClangTidyApi.SKIP_CHECKS_FOOTER_KEY}: {check_name}` '
+        'footer to the CL description to skip the check)'
+      )
 
-    for (message, line_number,
-         check_name), suggestions in self._source_comments:
+    for (
+      message,
+      line_number,
+      check_name,
+    ), suggestions in self._source_comments:
       message = fix_message(message, check_name) + skip_suffix(check_name)
       yield check_name, message, line_number, suggestions
 
@@ -146,10 +167,10 @@ def _parse_tidy_diagnostic(diagnostic, diagnostic_name, is_windows):
   base_file_path = fix_file_path(diagnostic['file_path'])
 
   yield (
-      base_message,
-      base_line_number,
-      base_file_path,
-      diagnostic['expansion_locs'],
+    base_message,
+    base_line_number,
+    base_file_path,
+    diagnostic['expansion_locs'],
   )
 
   # bugprone-use-after-move can be caused either by the addition of a use after
@@ -163,24 +184,29 @@ def _parse_tidy_diagnostic(diagnostic, diagnostic_name, is_windows):
       continue
 
     message = 'A `move` operation occurred here, which caused %r at %s:%d' % (
-        base_message,
-        base_file_path,
-        base_line_number,
+      base_message,
+      base_file_path,
+      base_line_number,
     )
-    yield message, note['line_number'], fix_file_path(
-        note['file_path']), note['expansion_locs']
+    yield (
+      message,
+      note['line_number'],
+      fix_file_path(note['file_path']),
+      note['expansion_locs'],
+    )
 
 
 class TriciumClangTidyApi(RecipeApi):
-
   SKIP_CHECKS_FOOTER_KEY = 'Skip-Clang-Tidy-Checks'
 
-  def lint_source_files(self,
-                        source_dir: Path,
-                        output_dir,
-                        file_paths,
-                        skip_checks: list[str] | None = None,
-                        is_windows: bool = False) -> list[findings_pb.Finding]:
+  def lint_source_files(
+    self,
+    source_dir: Path,
+    output_dir,
+    file_paths,
+    skip_checks: list[str] | None = None,
+    is_windows: bool = False,
+  ) -> list[findings_pb.Finding]:
     """Runs clang-tidy on provided source files in file_paths and returns
     findings.
 
@@ -196,11 +222,13 @@ class TriciumClangTidyApi(RecipeApi):
     """
     src_file_suffixes = {'.cc', '.cpp', '.cxx', '.c', '.h', '.hpp'}
     affected = [
-        f for f in file_paths
-        # Check for removed files.
-        if self.m.path.exists(f) and
-        # Check for non-C/C++ files.
-        self.m.path.splitext(f)[1] in src_file_suffixes
+      f
+      for f in file_paths
+      # Check for removed files.
+      if self.m.path.exists(f)
+      and
+      # Check for non-C/C++ files.
+      self.m.path.splitext(f)[1] in src_file_suffixes
     ]
 
     if not affected:
@@ -209,41 +237,48 @@ class TriciumClangTidyApi(RecipeApi):
     with self.m.step.nest('clang-tidy'):
       with self.m.step.nest('generate-warnings'):
         per_file_comments = self._generate_clang_tidy_comments(
-            source_dir, output_dir, affected, skip_checks, is_windows)
+          source_dir, output_dir, affected, skip_checks, is_windows
+        )
         findings = []
         for file_path, comments in per_file_comments.items():
           for check_name, message, line_number, suggestions in comments:
             # Clang-tidy only gives us one file offset, so we use line comments.
             finding = findings_pb.Finding(
-                category='clang-tidy',
-                location=findings_pb.Location(file_path=file_path),
-                message=f'check: {check_name}\n\n{message}'
-                if check_name else message,
-                severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-                url=self.m.buildbucket.build_url(),
+              category='clang-tidy',
+              location=findings_pb.Location(file_path=file_path),
+              message=f'check: {check_name}\n\n{message}'
+              if check_name
+              else message,
+              severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+              url=self.m.buildbucket.build_url(),
             )
             self.m.findings.populate_source_from_current_build(finding.location)
             if line_number:
               finding.location.range.start_line = line_number
               finding.location.range.end_line = line_number
             if suggestions:
-              finding.fixes.extend([
-                  findings_pb.Fix(replacements=[
+              finding.fixes.extend(
+                [
+                  findings_pb.Fix(
+                    replacements=[
                       findings_pb.Fix.Replacement(
-                          location=findings_pb.Location(
-                              file_path=r['path'],
-                              range=findings_pb.Location.Range(
-                                  start_line=r['start_line'],
-                                  end_line=r['end_line'],
-                                  start_column=r['start_char'],
-                                  end_column=r['end_char'],
-                              ),
+                        location=findings_pb.Location(
+                          file_path=r['path'],
+                          range=findings_pb.Location.Range(
+                            start_line=r['start_line'],
+                            end_line=r['end_line'],
+                            start_column=r['start_char'],
+                            end_column=r['end_char'],
                           ),
-                          new_content=r['replacement'])
+                        ),
+                        new_content=r['replacement'],
+                      )
                       for r in s['replacements']
-                  ])
+                    ]
+                  )
                   for s in suggestions
-              ])
+                ]
+              )
               for f in finding.fixes:
                 for r in f.replacements:
                   self.m.findings.populate_source_from_current_build(r.location)
@@ -251,12 +286,12 @@ class TriciumClangTidyApi(RecipeApi):
         return findings
 
   def _generate_clang_tidy_comments(
-      self,
-      source_dir: Path,
-      output_dir,
-      file_paths,
-      skip_checks,
-      is_windows,
+    self,
+    source_dir: Path,
+    output_dir,
+    file_paths,
+    skip_checks,
+    is_windows,
   ):
     clang_tidy_location = self.m.context.cwd.joinpath(*_clang_tidy_path)
     per_file_comments = collections.defaultdict(_SourceFileComments)
@@ -264,25 +299,26 @@ class TriciumClangTidyApi(RecipeApi):
     warnings_file = self.m.path.cleanup_dir / 'clang_tidy_complaints.yaml'
 
     tricium_clang_tidy_command = [
-        'vpython3',
-        self.resource('tricium_clang_tidy_script.py'),
-        '--out_dir=%s' % output_dir,
-        '--findings_file=%s' % warnings_file,
-        '--clang_tidy_binary=%s' % clang_tidy_location,
-        '--base_path=%s' % self.m.context.cwd,
-        '--remote_jobs=%s' % self.m.siso.remote_jobs,
-        '--verbose',
+      'vpython3',
+      self.resource('tricium_clang_tidy_script.py'),
+      '--out_dir=%s' % output_dir,
+      '--findings_file=%s' % warnings_file,
+      '--clang_tidy_binary=%s' % clang_tidy_location,
+      '--base_path=%s' % self.m.context.cwd,
+      '--remote_jobs=%s' % self.m.siso.remote_jobs,
+      '--verbose',
     ]
 
     if skip_checks:
       tricium_clang_tidy_command.append(
-          f'--tidy_checks={",".join("-"+ check for check in skip_checks)}')
+        f'--tidy_checks={",".join("-" + check for check in skip_checks)}'
+      )
 
     # Specify the path to gn under buildtools explicitly.
     gn_subdir = {
-        'linux': 'linux64',
-        'mac': 'mac',
-        'win': 'win',
+      'linux': 'linux64',
+      'mac': 'mac',
+      'win': 'win',
     }[self.m.platform.name]
     gn_path = self.m.context.cwd.joinpath('buildtools', gn_subdir, 'gn')
     tricium_clang_tidy_command.append('--gn=' + str(gn_path))
@@ -305,8 +341,11 @@ class TriciumClangTidyApi(RecipeApi):
     # contains.
     clang_tidy_output = self.m.file.read_json('read tidy output', warnings_file)
 
-    if clang_tidy_output.get('failed_src_files') or clang_tidy_output.get(
-        'failed_tidy_files') or clang_tidy_output.get('timed_out_src_files'):
+    if (
+      clang_tidy_output.get('failed_src_files')
+      or clang_tidy_output.get('failed_tidy_files')
+      or clang_tidy_output.get('timed_out_src_files')
+    ):
       self.m.step.active_result.presentation.status = 'WARNING'
 
     for file_path in clang_tidy_output.get('failed_src_files', ()):
@@ -320,8 +359,10 @@ class TriciumClangTidyApi(RecipeApi):
 
     for diagnostic in clang_tidy_output.get('diagnostics', ()):
       file_path = fix_file_path(diagnostic['file_path'])
-      assert file_path, ("Empty paths should've been filtered "
-                         "by tricium_clang_tidy: %s" % diagnostic)
+      assert file_path, (
+        "Empty paths should've been filtered "
+        "by tricium_clang_tidy: %s" % diagnostic
+      )
 
       diag_name = diagnostic['diag_name']
       if _is_clang_diagnostic(diag_name):
@@ -329,16 +370,21 @@ class TriciumClangTidyApi(RecipeApi):
 
       tidy_replacements = diagnostic['replacements']
       if tidy_replacements:
-        suggestions = [{
-            'replacements': [{
+        suggestions = [
+          {
+            'replacements': [
+              {
                 'path': file_path,
                 'replacement': x['new_text'],
                 'start_line': x['start_line'],
                 'end_line': x['end_line'],
                 'start_char': x['start_char'],
                 'end_char': x['end_char'],
-            } for x in tidy_replacements],
-        }]
+              }
+              for x in tidy_replacements
+            ],
+          }
+        ]
       else:
         suggestions = ()
 
@@ -350,7 +396,8 @@ class TriciumClangTidyApi(RecipeApi):
       # Because all messages have the same diagnostic, we attach the same set
       # of replacements to each message.
       for message, line, file_path, raw_expansions in _parse_tidy_diagnostic(
-          diagnostic, diag_name, is_windows=is_windows):
+        diagnostic, diag_name, is_windows=is_windows
+      ):
         if raw_expansions:
           # Expansions are emitted by clang-tidy (thus tricium_clang_tidy) such
           # that item [i] "invokes" the expansion of [i+1]. So the last item in
@@ -360,10 +407,11 @@ class TriciumClangTidyApi(RecipeApi):
           # unclear how to do so cleanly.
           fp = fix_file_path(e['file_path'])
           per_file_comments[fp].add_macro_expanded_tidy_diagnostic(
-              message, e['line_number'], diag_name, suggestions, file_path,
-              line)
+            message, e['line_number'], diag_name, suggestions, file_path, line
+          )
         else:
           per_file_comments[file_path].add_tidy_diagnostic(
-              message, line, diag_name, suggestions)
+            message, line, diag_name, suggestions
+          )
 
     return per_file_comments

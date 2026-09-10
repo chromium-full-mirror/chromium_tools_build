@@ -9,10 +9,12 @@ import sys
 
 
 ROOT_DIR = os.path.normpath(os.path.join(__file__, '..', '..', '..'))
-sys.path.extend([
+sys.path.extend(
+  [
     os.path.join(ROOT_DIR, 'recipes'),
     os.path.join(ROOT_DIR, 'scripts'),
-])
+  ]
+)
 
 import extract_build
 import bot_utils
@@ -24,22 +26,21 @@ class MockOptions:
 
 
 class ExtractBuildTest(unittest.TestCase):
-
   def setUp(self):
     self._build_revision = 123
 
   def testGetBuildUrl(self):
     options = MockOptions()
 
-    base_filename, version_suffix = (
-        bot_utils.GetZipFileNames(self._build_revision)
+    base_filename, version_suffix = bot_utils.GetZipFileNames(
+      self._build_revision
     )
 
     gs_url_without_slash = 'gs://foo/Win'
     gs_url_with_slash = 'gs://foo/Win/'
     gs_url_with_filename = 'gs://foo/Win/%s.zip' % base_filename
     expected_gs_url = (
-        gs_url_with_slash + base_filename + version_suffix + '.zip'
+      gs_url_with_slash + base_filename + version_suffix + '.zip'
     )
 
     # Verify that only one slash is added: URL without ending slash.
@@ -57,7 +58,7 @@ class ExtractBuildTest(unittest.TestCase):
     # The versioned_url part of the tuple returned is not tested, since it would
     # just be to copy implementation from extract_build.py into this test.
     url, _archive_name = extract_build.GetBuildUrl(
-        options, build_revision=self._build_revision
+      options, build_revision=self._build_revision
     )
     self.assertEqual(url, expected_url)
 

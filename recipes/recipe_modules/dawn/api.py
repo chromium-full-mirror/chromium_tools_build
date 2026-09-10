@@ -8,7 +8,6 @@ from recipe_engine import recipe_api
 
 
 class DawnApi(recipe_api.RecipeApi):
-
   def _get_builder_id_and_config(self):
     trybots = None
     builders = None
@@ -20,15 +19,18 @@ class DawnApi(recipe_api.RecipeApi):
         trybots = self._test_data['trybots']
 
     builder_id, builder_config = (
-        self.m.chromium_tests_builder_config.lookup_builder(
-            builder_db=builders, try_db=trybots))
+      self.m.chromium_tests_builder_config.lookup_builder(
+        builder_db=builders, try_db=trybots
+      )
+    )
     return builder_id, builder_config
 
   def ci_steps(self):
     builder_id, builder_config = self._get_builder_id_and_config()
     with self.m.osx_sdk('mac'):
       chromium_results = self.m.chromium_tests.main_waterfall_steps(
-          builder_id, builder_config)
+        builder_id, builder_config
+      )
     self._kill_mspdbsrv()
     return chromium_results
 
@@ -38,7 +40,8 @@ class DawnApi(recipe_api.RecipeApi):
     builder_id, builder_config = self._get_builder_id_and_config()
     with self.m.osx_sdk('mac'):
       chromium_results = self.m.chromium_tests.trybot_steps(
-          builder_id, builder_config, files_relative_to='dawn/')
+        builder_id, builder_config, files_relative_to='dawn/'
+      )
     self._kill_mspdbsrv()
     return chromium_results
 
@@ -51,8 +54,9 @@ class DawnApi(recipe_api.RecipeApi):
     Returns:
       A list of paths that should be added to PATH to find Dawn's copy of Go.
     """
-    arch_specific_path = source_dir.joinpath('tools', 'golang',
-                                             self.m.cipd.platform, 'bin')
+    arch_specific_path = source_dir.joinpath(
+      'tools', 'golang', self.m.cipd.platform, 'bin'
+    )
     # Path prior to when Dawn started downloading versions of Go for all
     # architectures.
     old_go_path = source_dir.joinpath('tools', 'golang', 'bin')
@@ -69,8 +73,8 @@ class DawnApi(recipe_api.RecipeApi):
     if not self.m.platform.is_win:
       return
     self.m.step(
-        'Kill mspdbsrv.exe (if running)',
-        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
-        raise_on_failure=False,
-        ok_ret='any',
+      'Kill mspdbsrv.exe (if running)',
+      ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+      raise_on_failure=False,
+      ok_ret='any',
     )

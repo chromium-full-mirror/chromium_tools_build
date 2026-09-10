@@ -12,32 +12,32 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    gn,
-    profiles,
-    siso,
+  chromium,
+  chromium_checkout,
+  gn,
+  profiles,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    git,
-    gsutil,
-    tryserver,
+  gclient,
+  git,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    archive,
-    buildbucket,
-    context,
-    file,
-    json,
-    led,
-    path,
-    platform,
-    properties,
-    raw_io,
-    service_account,
-    step,
-    swarming,
+  archive,
+  buildbucket,
+  context,
+  file,
+  json,
+  led,
+  path,
+  platform,
+  properties,
+  raw_io,
+  service_account,
+  step,
+  swarming,
 )
 from RECIPE_MODULES.infra import zip as zip_module
 
@@ -67,7 +67,6 @@ class DEPS(RecipeScriptApi):
   service_account: service_account.API
   step: step.API
   swarming: swarming.API
-
 
 
 from .api import CodeCoverageApi as API

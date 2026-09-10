@@ -5,9 +5,11 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
-                                                                builder_spec,
-                                                                try_spec)
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+  builder_db,
+  builder_spec,
+  try_spec,
+)
 
 from dataclasses import dataclass
 
@@ -36,49 +38,56 @@ def RunSteps(api: DEPS):
   return api.dawn.try_steps()
 
 
-_TEST_BUILDERS = builder_db.BuilderDatabase.create({
+_TEST_BUILDERS = builder_db.BuilderDatabase.create(
+  {
     'dawn': {
-        'linux':
-            builder_spec.BuilderSpec.create(
-                gclient_config='dawn', chromium_config='dawn_base'),
+      'linux': builder_spec.BuilderSpec.create(
+        gclient_config='dawn', chromium_config='dawn_base'
+      ),
     },
-})
+  }
+)
 
-_TEST_TRYBOTS = try_spec.TryDatabase.create({
+_TEST_TRYBOTS = try_spec.TryDatabase.create(
+  {
     'dawn': {
-        'try-linux':
-            try_spec.TrySpec.create(mirrors=[
-                try_spec.TryMirror.create(
-                    builder_group='dawn',
-                    buildername='linux',
-                ),
-            ]),
+      'try-linux': try_spec.TrySpec.create(
+        mirrors=[
+          try_spec.TryMirror.create(
+            builder_group='dawn',
+            buildername='linux',
+          ),
+        ]
+      ),
     },
-})
+  }
+)
 
 _TEST_SPECS = {
-    'linux': {
-        'gtest_tests': [{
-            'test': 'dawn_unittests',
-            'swarming': {
-                'dimensions': {
-                    'os': 'Ubuntu',
-                    'pool': 'chromium.tests.gpu',
-                },
-            },
-        },],
-    },
+  'linux': {
+    'gtest_tests': [
+      {
+        'test': 'dawn_unittests',
+        'swarming': {
+          'dimensions': {
+            'os': 'Ubuntu',
+            'pool': 'chromium.tests.gpu',
+          },
+        },
+      },
+    ],
+  },
 }
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'linux',
-      api.platform('linux', 64),
-      api.dawn.try_build(builder='try-linux'),
-      api.dawn.builders(_TEST_BUILDERS),
-      api.dawn.trybots(_TEST_TRYBOTS),
-      api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
-      api.post_process(post_process.StepSuccess, 'Test statistics'),
-      api.post_process(post_process.DropExpectation),
+    'linux',
+    api.platform('linux', 64),
+    api.dawn.try_build(builder='try-linux'),
+    api.dawn.builders(_TEST_BUILDERS),
+    api.dawn.trybots(_TEST_TRYBOTS),
+    api.chromium_tests.read_targets_spec('dawn', _TEST_SPECS),
+    api.post_process(post_process.StepSuccess, 'Test statistics'),
+    api.post_process(post_process.DropExpectation),
   )

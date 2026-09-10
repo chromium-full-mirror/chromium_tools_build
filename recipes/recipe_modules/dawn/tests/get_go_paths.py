@@ -37,68 +37,84 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'linux-amd64',
-      api.platform('linux', 64, 'intel'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools/golang/linux-amd64/bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools/golang/bin']),
-      api.post_process(post_process.DropExpectation),
+    'linux-amd64',
+    api.platform('linux', 64, 'intel'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 0', ['tools/golang/linux-amd64/bin']
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools/golang/bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'linux-arm64',
-      api.platform('linux', 64, 'arm'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools/golang/linux-arm64/bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools/golang/bin']),
-      api.post_process(post_process.DropExpectation),
+    'linux-arm64',
+    api.platform('linux', 64, 'arm'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 0', ['tools/golang/linux-arm64/bin']
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools/golang/bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'mac-amd64',
-      api.platform('mac', 64, 'intel'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools/golang/mac-amd64/bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools/golang/bin']),
-      api.post_process(post_process.DropExpectation),
+    'mac-amd64',
+    api.platform('mac', 64, 'intel'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 0', ['tools/golang/mac-amd64/bin']
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools/golang/bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'mac-arm64',
-      api.platform('mac', 64, 'arm'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools/golang/mac-arm64/bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools/golang/bin']),
-      api.post_process(post_process.DropExpectation),
+    'mac-arm64',
+    api.platform('mac', 64, 'arm'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 0', ['tools/golang/mac-arm64/bin']
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools/golang/bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'windows-amd64',
-      api.platform('win', 64, 'intel'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools\\golang\\windows-amd64\\bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools\\golang\\bin']),
-      api.post_process(post_process.DropExpectation),
+    'windows-amd64',
+    api.platform('win', 64, 'intel'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains,
+      'Path 0',
+      ['tools\\golang\\windows-amd64\\bin'],
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools\\golang\\bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'windows-arm64',
-      api.platform('win', 64, 'arm'),
-      api.post_check(post_process.MustRun, 'Path 0'),
-      api.post_check(post_process.StepTextContains, 'Path 0',
-                     ['tools\\golang\\windows-arm64\\bin']),
-      api.post_check(post_process.MustRun, 'Path 1'),
-      api.post_check(post_process.StepTextContains, 'Path 1',
-                     ['tools\\golang\\bin']),
-      api.post_process(post_process.DropExpectation),
+    'windows-arm64',
+    api.platform('win', 64, 'arm'),
+    api.post_check(post_process.MustRun, 'Path 0'),
+    api.post_check(
+      post_process.StepTextContains,
+      'Path 0',
+      ['tools\\golang\\windows-arm64\\bin'],
+    ),
+    api.post_check(post_process.MustRun, 'Path 1'),
+    api.post_check(
+      post_process.StepTextContains, 'Path 1', ['tools\\golang\\bin']
+    ),
+    api.post_process(post_process.DropExpectation),
   )

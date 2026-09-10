@@ -18,9 +18,9 @@ from RECIPE_MODULES.build.v8.v8version import VersionTuple, normalize_version
 
 from .platforms import UnixPlatform, WindowsPlatform
 from .profile_track import (
-    ChangeProfileTrack,
-    RevisionProfileTrack,
-    VersionProfileTrack,
+  ChangeProfileTrack,
+  RevisionProfileTrack,
+  VersionProfileTrack,
 )
 
 JET_STREAM_BASE_PATH = 'benchmarks/JetStream'
@@ -47,45 +47,47 @@ BLOCKLIST_PATH = f'gs://{BLOCKLIST_BUCKET}/{BLOCKLIST_FILE}'
 
 VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)'
 PGO_VERSION_TAG_PATTERN = r'(\w+)\s+refs/tags/(\d+\.\d+\.\d+(?:\.\d+)?)-pgo'
-PROFILE_PATTERN = (r'(block_hint,\w+(,\d+){3}\n)+'
-                   r'(builtin_count,\w+,\d+\n)*'
-                   r'(block_count,\w+(,\d+){2}\n)*'
-                   r'((block,\w+(,\d+){2}\n)*(builtin_hash,\w+,\-?\d+\n)+)+')
+PROFILE_PATTERN = (
+  r'(block_hint,\w+(,\d+){3}\n)+'
+  r'(builtin_count,\w+,\d+\n)*'
+  r'(block_count,\w+(,\d+){2}\n)*'
+  r'((block,\w+(,\d+){2}\n)*(builtin_hash,\w+,\-?\d+\n)+)+'
+)
 
 COMPILATOR_CAS_INSTANCE = 'projects/chromium-swarm/instances/default_instance'
 
 COMPILATORS = [
-    {
-        'triggered_by': {'ci', 'ci-hp'},
-        'project': 'v8',
-        'bucket': 'ci',
-        'compilators': {
-            'x86': 'V8 Linux PGO instrumentation - builder',
-            'x64': 'V8 Linux64 PGO instrumentation - builder',
-            'x86-rl': 'V8 Win32 PGO instrumentation - builder',
-            'x64-rl': 'V8 Win64 PGO instrumentation - builder',
-        },
-        'profiling_pool': 'chromium.tests',
+  {
+    'triggered_by': {'ci', 'ci-hp'},
+    'project': 'v8',
+    'bucket': 'ci',
+    'compilators': {
+      'x86': 'V8 Linux PGO instrumentation - builder',
+      'x64': 'V8 Linux64 PGO instrumentation - builder',
+      'x86-rl': 'V8 Win32 PGO instrumentation - builder',
+      'x64-rl': 'V8 Win64 PGO instrumentation - builder',
     },
-    {
-        'triggered_by': {'try'},
-        'project': 'v8',
-        'bucket': 'try',
-        'compilators': {
-            'x86': 'v8_linux_pgo_compile_rel',
-            'x64': 'v8_linux64_pgo_compile_rel',
-            'x86-rl': 'v8_win_pgo_compile_rel',
-            'x64-rl': 'v8_win64_pgo_compile_rel',
-        },
-        'profiling_pool': 'chrome.tests',
+    'profiling_pool': 'chromium.tests',
+  },
+  {
+    'triggered_by': {'try'},
+    'project': 'v8',
+    'bucket': 'try',
+    'compilators': {
+      'x86': 'v8_linux_pgo_compile_rel',
+      'x64': 'v8_linux64_pgo_compile_rel',
+      'x86-rl': 'v8_win_pgo_compile_rel',
+      'x64-rl': 'v8_win64_pgo_compile_rel',
     },
+    'profiling_pool': 'chrome.tests',
+  },
 ]
 
 PLATFORM_BY_TARGET = {
-    'x86': UnixPlatform(),
-    'x64': UnixPlatform(),
-    'x86-rl': WindowsPlatform(),
-    'x64-rl': WindowsPlatform(),
+  'x86': UnixPlatform(),
+  'x64': UnixPlatform(),
+  'x86-rl': WindowsPlatform(),
+  'x64-rl': WindowsPlatform(),
 }
 
 
@@ -93,14 +95,14 @@ def with_wrapper_step(func):
 
   def wrapped_func(*args, **kwargs):
     builder = args[0]
-    assert hasattr(
-        builder, 'api'), ('Decorated function does not take recipe API object '
-                          'as first argument.')
+    assert hasattr(builder, 'api'), (
+      'Decorated function does not take recipe API object as first argument.'
+    )
 
     wrapper_step_name = func.__name__.replace('_', ' ')
     with builder.api.step.nest(wrapper_step_name) as step:
       step.logs['profile trackers'] = [
-          t.presentation for t in builder.profile_trackers or []
+        t.presentation for t in builder.profile_trackers or []
       ]
       return func(*args, **kwargs)
 
@@ -108,7 +110,6 @@ def with_wrapper_step(func):
 
 
 class BaseProfileBuilder(ABC):
-
   def __init__(self, api, compilators, swarming_service_account):
     self.api = api
     self.profile_trackers = None
@@ -120,18 +121,19 @@ class BaseProfileBuilder(ABC):
   def compilators(self):
     triggered_by = self.api.buildbucket.build.builder.bucket
     bucket_compilators = next(
-        c for c in COMPILATORS if triggered_by in c['triggered_by'])
+      c for c in COMPILATORS if triggered_by in c['triggered_by']
+    )
 
     compilator_ids = self.selected_compilator_ids
     return {
-        platform: {
-            'project': bucket_compilators['project'],
-            'bucket': bucket_compilators['bucket'],
-            'builder': name,
-            'profiling_pool': bucket_compilators['profiling_pool'],
-        }
-        for platform, name in bucket_compilators['compilators'].items()
-        if compilator_ids is None or platform in compilator_ids
+      platform: {
+        'project': bucket_compilators['project'],
+        'bucket': bucket_compilators['bucket'],
+        'builder': name,
+        'profiling_pool': bucket_compilators['profiling_pool'],
+      }
+      for platform, name in bucket_compilators['compilators'].items()
+      if compilator_ids is None or platform in compilator_ids
     }
 
   def run(self):
@@ -183,10 +185,10 @@ class BaseProfileBuilder(ABC):
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         compilator = self.compilators[tracker.track]
         tracker.compilator_handler = self.orchestrator.trigger_compilator(
-            compilator['builder'],
-            project=compilator['project'],
-            bucket=compilator['bucket'],
-            **tracker.compilator_kwargs,
+          compilator['builder'],
+          project=compilator['project'],
+          bucket=compilator['bucket'],
+          **tracker.compilator_kwargs,
         )
 
   @with_wrapper_step
@@ -194,7 +196,8 @@ class BaseProfileBuilder(ABC):
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         sub_build = self.orchestrator.launch_compilator_watcher(
-            tracker.compilator_handler)
+          tracker.compilator_handler
+        )
         comp_props = sub_build.output.properties['compilator_properties']
         tracker.find_original_cas_digest(comp_props)
 
@@ -206,10 +209,11 @@ class BaseProfileBuilder(ABC):
     # script, letting it return that value. However, this needs to be first
     # implemented on the V8 side and reach all relevant channels.
     content = self.api.file.read_text(
-        name=f'check jetstream version for {tracker.name}',
-        source=cas_work_dir / 'tools/builtins-pgo/profile_only.py',
-        test_data=JET_STREAM_VERSION_TEST_DATA,
-        include_log=False)
+      name=f'check jetstream version for {tracker.name}',
+      source=cas_work_dir / 'tools/builtins-pgo/profile_only.py',
+      test_data=JET_STREAM_VERSION_TEST_DATA,
+      include_log=False,
+    )
 
     match = re.search(JET_STREAM_VERSION_PATTERN, content)
     assert match, 'Could not establish JetStream version'
@@ -224,15 +228,19 @@ class BaseProfileBuilder(ABC):
         cas_work_dir = self.api.path.mkdtemp()
 
         with self.api.cas.with_instance(COMPILATOR_CAS_INSTANCE):
-          self.api.cas.download('download', tracker.original_cas_digest,
-                                cas_work_dir)
+          self.api.cas.download(
+            'download', tracker.original_cas_digest, cas_work_dir
+          )
 
         version = self.get_jetstream_version(tracker, cas_work_dir)
-        self.api.file.copytree('copy benchmark code',
-                               self.perf_code_path / version,
-                               cas_work_dir / version)
+        self.api.file.copytree(
+          'copy benchmark code',
+          self.perf_code_path / version,
+          cas_work_dir / version,
+        )
         tracker.augmented_cas_digest = self.api.cas.archive(
-            'archive', cas_work_dir)
+          'archive', cas_work_dir
+        )
 
   @with_wrapper_step
   def trigger_profilers(self):
@@ -244,18 +252,18 @@ class BaseProfileBuilder(ABC):
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         platform = PLATFORM_BY_TARGET[tracker.track]
         task = self.api.chromium_swarming.task(
-            name=f'pgo profile {tracker.name}',
-            task_output_dir=tracker.profile_dir,
-            raw_cmd=[
-                'vpython3',
-                '-u',
-                platform.profile_only_path,
-                '--d8-path',
-                platform.d8_out_path,
-                '--output-dir',
-                '${ISOLATED_OUTDIR}',
-            ],
-            cas_input_root=tracker.augmented_cas_digest,
+          name=f'pgo profile {tracker.name}',
+          task_output_dir=tracker.profile_dir,
+          raw_cmd=[
+            'vpython3',
+            '-u',
+            platform.profile_only_path,
+            '--d8-path',
+            platform.d8_out_path,
+            '--output-dir',
+            '${ISOLATED_OUTDIR}',
+          ],
+          cas_input_root=tracker.augmented_cas_digest,
         )
 
         task_slice = task.request[0]
@@ -277,10 +285,12 @@ class BaseProfileBuilder(ABC):
     for tracker in self.healthy_profile_trackers:
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         step, is_valid = self.api.chromium_swarming.collect_task(
-            tracker.profile_task)
+          tracker.profile_task
+        )
         if step.presentation.status != self.api.step.SUCCESS or not is_valid:
           raise Exception(
-              f'collect_profiles returned {step.presentation.status}')
+            f'collect_profiles returned {step.presentation.status}'
+          )
 
   @with_wrapper_step
   def validate_profiles(self):
@@ -291,21 +301,22 @@ class BaseProfileBuilder(ABC):
       assert tracker.profile_out_file, 'Expected profile, but no file found.'
 
       content = self.api.file.read_text(
-          name=f'read profile for {tracker.name}',
-          source=tracker.profile_out_file,
-          include_log=False)
+        name=f'read profile for {tracker.name}',
+        source=tracker.profile_out_file,
+        include_log=False,
+      )
       assert re.fullmatch(PROFILE_PATTERN, content), (
-          f'Profile from tracker {tracker.name} does not match expected pattern.'
+        f'Profile from tracker {tracker.name} does not match expected pattern.'
       )
 
   @with_wrapper_step
   def download_benchmark_code(self):
     self.api.v8.git_output(
-        'clone',
-        '--depth=1',
-        '--filter=blob:none',
-        '--sparse',
-        V8_PERF_REPO_URL,
+      'clone',
+      '--depth=1',
+      '--filter=blob:none',
+      '--sparse',
+      V8_PERF_REPO_URL,
     )
 
     config = self.api.gclient.make_config()
@@ -314,18 +325,18 @@ class BaseProfileBuilder(ABC):
     solution.url = V8_PERF_REPO_URL
     solution.managed = False
     self.api.gclient(
-        'setup',
-        ['config', '--spec',
-         self.api.gclient.config_to_pythonish(config)])
+      'setup',
+      ['config', '--spec', self.api.gclient.config_to_pythonish(config)],
+    )
 
     # We only check out the JetStream root. With `gclient sync`, all three
     # JetStream benchmarks are synced.
     checkout_path = self.work_dir / 'v8-perf'
     with self.api.context(cwd=checkout_path):
       self.api.v8.git_output(
-          'sparse-checkout',
-          'set',
-          JET_STREAM_BASE_PATH,
+        'sparse-checkout',
+        'set',
+        JET_STREAM_BASE_PATH,
       )
 
       self.api.gclient.sync(cfg=config)
@@ -362,13 +373,14 @@ class BaseProfileBuilder(ABC):
     if not failed_trackers:
       return result_pb2.RawResult(status=common_pb.SUCCESS)
 
-    msg = (f'{len(failed_trackers)} of {len(self.profile_trackers)} tracks '
-           'encounterd exceptions.')
+    msg = (
+      f'{len(failed_trackers)} of {len(self.profile_trackers)} tracks '
+      'encounterd exceptions.'
+    )
     return result_pb2.RawResult(status=common_pb.FAILURE, summary_markdown=msg)
 
 
 class V8CiBuilder(BaseProfileBuilder):
-
   def __init__(self, api, compilators, revision, swarming_service_account):
     super().__init__(api, compilators, swarming_service_account)
     self.revision = revision
@@ -376,14 +388,14 @@ class V8CiBuilder(BaseProfileBuilder):
   @with_wrapper_step
   def init_trackers_for_candidate_versions(self):
     self.profile_trackers = [
-        RevisionProfileTrack(self.api, track, config['profiling_pool'],
-                             self.revision)
-        for track, config in self.compilators.items()
+      RevisionProfileTrack(
+        self.api, track, config['profiling_pool'], self.revision
+      )
+      for track, config in self.compilators.items()
     ]
 
 
 class V8TryBuilder(BaseProfileBuilder):
-
   def __init__(self, api, compilators, change, swarming_service_account):
     super().__init__(api, compilators, swarming_service_account)
     self.change = change
@@ -391,14 +403,12 @@ class V8TryBuilder(BaseProfileBuilder):
   @with_wrapper_step
   def init_trackers_for_candidate_versions(self):
     self.profile_trackers = [
-        ChangeProfileTrack(self.api, track, config['profiling_pool'],
-                           self.change)
-        for track, config in self.compilators.items()
+      ChangeProfileTrack(self.api, track, config['profiling_pool'], self.change)
+      for track, config in self.compilators.items()
     ]
 
 
 class V8PerfTryBuilder(BaseProfileBuilder):
-
   def __init__(self, api, compilators, change, swarming_service_account):
     super().__init__(api, compilators, swarming_service_account)
     self.change = change
@@ -414,8 +424,8 @@ class V8PerfTryBuilder(BaseProfileBuilder):
     commit = resp.split('\t')[0]
 
     self.profile_trackers = [
-        RevisionProfileTrack(self.api, track, config['profiling_pool'], commit)
-        for track, config in self.compilators.items()
+      RevisionProfileTrack(self.api, track, config['profiling_pool'], commit)
+      for track, config in self.compilators.items()
     ]
 
   @with_wrapper_step
@@ -432,9 +442,14 @@ class V8PerfTryBuilder(BaseProfileBuilder):
 
 
 class V8VersionTagBuilder(BaseProfileBuilder):
-
-  def __init__(self, api, compilators, max_parallel_versions,
-               version_number_cutoff, swarming_service_account):
+  def __init__(
+    self,
+    api,
+    compilators,
+    max_parallel_versions,
+    version_number_cutoff,
+    swarming_service_account,
+  ):
     super().__init__(api, compilators, swarming_service_account)
     self.max_parallel_versions = max_parallel_versions
     self.version_number_cutoff = version_number_cutoff
@@ -451,31 +466,36 @@ class V8VersionTagBuilder(BaseProfileBuilder):
     return versions_revisions
 
   def select_tags_without_profiles(self) -> list[tuple[VersionTuple, str]]:
-    lines = self.api.v8.git_output('ls-remote', '--tags',
-                                   V8_REPO_URL).split('\n')
+    lines = self.api.v8.git_output('ls-remote', '--tags', V8_REPO_URL).split(
+      '\n'
+    )
 
     all_tags = self.get_version_revision(lines, VERSION_TAG_PATTERN)
     pgo_tags = self.get_version_revision(lines, PGO_VERSION_TAG_PATTERN)
 
     tags_without_pgo = list(all_tags - pgo_tags)
 
-    return [(normalize_version(version), revision)
-            for version, revision in tags_without_pgo]
+    return [
+      (normalize_version(version), revision)
+      for version, revision in tags_without_pgo
+    ]
 
-  def filter_tags_by_cutoff(self, tags,
-                            cutoff) -> list[tuple[VersionTuple, str]]:
+  def filter_tags_by_cutoff(
+    self, tags, cutoff
+  ) -> list[tuple[VersionTuple, str]]:
     return [t for t in tags if t[0] >= cutoff]
 
-  def filter_max_parallel_tags(self, tags,
-                               parallel) -> list[tuple[VersionTuple, str]]:
+  def filter_max_parallel_tags(
+    self, tags, parallel
+  ) -> list[tuple[VersionTuple, str]]:
     return sorted(tags, reverse=True)[:parallel]
 
   def filter_blocked_tags(self, tags) -> list[tuple[VersionTuple, str]]:
     """Load a blocklist from a storage bucket, and remove blocked versions."""
     blocked = self.download_blocked_versions()
-    self.api.step.active_result.presentation.logs[
-        'blocked versions'] = self.api.json.dumps(
-            blocked, indent=2)
+    self.api.step.active_result.presentation.logs['blocked versions'] = (
+      self.api.json.dumps(blocked, indent=2)
+    )
 
     blocked_versions = []
     for version, justification in blocked.items():
@@ -507,28 +527,33 @@ class V8VersionTagBuilder(BaseProfileBuilder):
 
   def upload_pgo_file(self, tracker):
     self.api.gsutil.upload(
-        tracker.profile_out_file,
-        BUCKET_NAME,
-        tracker.remote_profile_path,
-        name=f'upload {tracker.name}')
+      tracker.profile_out_file,
+      BUCKET_NAME,
+      tracker.remote_profile_path,
+      name=f'upload {tracker.name}',
+    )
 
   def upload_meta_json(self, tracker_pair):
     successful_tracks = [t.track for t in tracker_pair if not t.exception]
     assert successful_tracks, 'Expected tracks, but none found to upload.'
     self.api.gsutil.upload(
-        self.api.json.input({
-            'version': tracker_pair[0].version,
-            'revision': tracker_pair[0].revision,
-            'profile': successful_tracks,
-            'build_link': self.api.buildbucket.build_url(),
-        }),
-        BUCKET_NAME,
-        f'by-version/{tracker_pair[0].version}/meta.json',
-        name=f'upload metadata {tracker_pair[0].version}')
+      self.api.json.input(
+        {
+          'version': tracker_pair[0].version,
+          'revision': tracker_pair[0].revision,
+          'profile': successful_tracks,
+          'build_link': self.api.buildbucket.build_url(),
+        }
+      ),
+      BUCKET_NAME,
+      f'by-version/{tracker_pair[0].version}/meta.json',
+      name=f'upload metadata {tracker_pair[0].version}',
+    )
 
   def download_blocked_versions(self) -> dict[str, any]:
     result = self.api.gsutil.cat(
-        BLOCKLIST_PATH, stdout=self.api.raw_io.output())
+      BLOCKLIST_PATH, stdout=self.api.raw_io.output()
+    )
     blocked_lines = result.stdout.decode().strip()
 
     blocked_versions = defaultdict(dict)
@@ -543,8 +568,8 @@ class V8VersionTagBuilder(BaseProfileBuilder):
         blocked_versions[version] = self.api.json.loads(justification)
       except json.decoder.JSONDecodeError:
         blocked_versions[version] = {
-            "reason": "Justification cannot be parsed",
-            "original_justification": justification,
+          "reason": "Justification cannot be parsed",
+          "original_justification": justification,
         }
 
     return blocked_versions
@@ -557,8 +582,8 @@ class V8VersionTagBuilder(BaseProfileBuilder):
 
     blocked = self.download_blocked_versions()
     build_failure = {
-        "build": self.api.buildbucket.build_url(),
-        "time": self.api.time.time(),
+      "build": self.api.buildbucket.build_url(),
+      "time": self.api.time.time(),
     }
 
     for version in failed_versions:
@@ -568,18 +593,24 @@ class V8VersionTagBuilder(BaseProfileBuilder):
     for version, justification in blocked.items():
       blockfile_lines.append(f'{version} {self.api.json.dumps(justification)}')
 
-    upload_content = self.api.raw_io.input_text('\n'.join([
-        '# If you manually add a version to this list, use the format:',
-        '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
-        '#',
-        '# Example:',
-        '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
-    ] + blockfile_lines))
+    upload_content = self.api.raw_io.input_text(
+      '\n'.join(
+        [
+          '# If you manually add a version to this list, use the format:',
+          '# <major>.<minor>.<build>.<patch> {"reason": "<Link to CL or bug>"}',
+          '#',
+          '# Example:',
+          '# 12.8.5.0 {"reason": "crbug.com/40245627"}',
+        ]
+        + blockfile_lines
+      )
+    )
     self.api.gsutil.upload(
-        upload_content,
-        BLOCKLIST_BUCKET,
-        BLOCKLIST_FILE,
-        name=f'upload {BLOCKLIST_FILE}')
+      upload_content,
+      BLOCKLIST_BUCKET,
+      BLOCKLIST_FILE,
+      name=f'upload {BLOCKLIST_FILE}',
+    )
 
   @with_wrapper_step
   def init_trackers_for_candidate_versions(self):
@@ -589,8 +620,8 @@ class V8VersionTagBuilder(BaseProfileBuilder):
     tags = self.filter_max_parallel_tags(tags, self.max_parallel_versions)
 
     tag_lines = [
-        f'{".".join([str(n) for n in version])} {revision}'
-        for version, revision in tags
+      f'{".".join([str(n) for n in version])} {revision}'
+      for version, revision in tags
     ]
     self.api.step.active_result.presentation.logs['filtered tags'] = tag_lines
 
@@ -599,8 +630,10 @@ class V8VersionTagBuilder(BaseProfileBuilder):
     for version, revision in tags:
       for track, config in self.compilators.items():
         self.profile_trackers.append(
-            VersionProfileTrack(self.api, track, config['profiling_pool'],
-                                version, revision))
+          VersionProfileTrack(
+            self.api, track, config['profiling_pool'], version, revision
+          )
+        )
 
   @with_wrapper_step
   def upload_to_gs(self):
@@ -631,15 +664,18 @@ class V8VersionTagBuilder(BaseProfileBuilder):
 
       tag = f'{version}-pgo'
       self.api.gerrit.create_gerrit_tag(
-          GERRIT_HOST,
-          GERRIT_PROJECT,
-          tag,
-          revision,
-          step_test_data=lambda: self.api.json.test_api.output({
-              'ref': f'refs/tags/{tag}',
-              'revision': revision,
-              'can_delete': False,
-          }))
+        GERRIT_HOST,
+        GERRIT_PROJECT,
+        tag,
+        revision,
+        step_test_data=lambda: self.api.json.test_api.output(
+          {
+            'ref': f'refs/tags/{tag}',
+            'revision': revision,
+            'can_delete': False,
+          }
+        ),
+      )
 
   @with_wrapper_step
   def add_comment_to_gerrit_changes(self):
@@ -651,31 +687,37 @@ class V8VersionTagBuilder(BaseProfileBuilder):
       version = version_trackers[0].version
 
       change = self.api.gerrit.get_changes(
-          name=f'retrieve details for {commit} ({version})',
-          host=GERRIT_HOST,
-          query_params=[('commit', commit)])[0]
+        name=f'retrieve details for {commit} ({version})',
+        host=GERRIT_HOST,
+        query_params=[('commit', commit)],
+      )[0]
       build_id = self.api.buildbucket.build.id
       build_url = self.api.buildbucket.build_url()
 
       self.api.gerrit.call_raw_api(
-          name=f'add comment to {commit} ({version})',
-          method='POST',
-          host=GERRIT_HOST,
-          path=f'/changes/{change["id"]}/revisions/1/review',
-          body={
-              "message":
-                  "\n".join([
-                      ("PGO profiles for V8 builtins have been generated in "
-                       f"[build  {build_id}]({build_url}) for the following "
-                       "tracks:"),
-                      *[
-                          f'* [{t.track}]({t.get_profile_url(BUCKET_NAME)})'
-                          for t in version_trackers
-                      ],
-                      "",
-                      ("If you suspect an error caused by PGO profiles, "
-                       "[report a bug](https://bugs.chromium.org/p/chromium/issues/"
-                       "entry?components=Infra>Client>V8) to the V8 Infra team."
-                      ),
-                  ])
-          })
+        name=f'add comment to {commit} ({version})',
+        method='POST',
+        host=GERRIT_HOST,
+        path=f'/changes/{change["id"]}/revisions/1/review',
+        body={
+          "message": "\n".join(
+            [
+              (
+                "PGO profiles for V8 builtins have been generated in "
+                f"[build  {build_id}]({build_url}) for the following "
+                "tracks:"
+              ),
+              *[
+                f'* [{t.track}]({t.get_profile_url(BUCKET_NAME)})'
+                for t in version_trackers
+              ],
+              "",
+              (
+                "If you suspect an error caused by PGO profiles, "
+                "[report a bug](https://bugs.chromium.org/p/chromium/issues/"
+                "entry?components=Infra>Client>V8) to the V8 Infra team."
+              ),
+            ]
+          )
+        },
+      )

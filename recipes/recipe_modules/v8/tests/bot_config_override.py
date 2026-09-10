@@ -33,6 +33,7 @@ class TEST_DEPS(RecipeTestApi):
   json: json.TEST_API
   properties: properties.TEST_API
 
+
 DEFAULT_BOT_CONFIG = freeze({'dims': {'os': 'Ubuntu-20', 'cpu': 'x64'}})
 
 
@@ -48,50 +49,49 @@ def GenTests(api: TEST_DEPS):
 
     if override_content is not None:
       step_overrides.append(
-          api.override_step_data(
-              'Retrieve bot_config.fetch deadbeef:infra/builder_properties.pyl',
-              api.gitiles.make_encoded_file(override_content),
-          ))
+        api.override_step_data(
+          'Retrieve bot_config.fetch deadbeef:infra/builder_properties.pyl',
+          api.gitiles.make_encoded_file(override_content),
+        )
+      )
 
     return api.test(
-        name,
-        api.buildbucket.ci_build(builder=f'Builder {name}'),
-        api.properties(apply_repo_bot_config_override=True),
-        *step_overrides,
-        api.post_process(LogEquals, 'Retrieve bot_config', 'merged bot_config',
-                         expected),
-        api.post_process(DropExpectation),
+      name,
+      api.buildbucket.ci_build(builder=f'Builder {name}'),
+      api.properties(apply_repo_bot_config_override=True),
+      *step_overrides,
+      api.post_process(
+        LogEquals, 'Retrieve bot_config', 'merged bot_config', expected
+      ),
+      api.post_process(DropExpectation),
     )
 
   yield test(
-      name='no-override-file',
-      override_content=None,
-      bot_config_expectation=DEFAULT_BOT_CONFIG,
+    name='no-override-file',
+    override_content=None,
+    bot_config_expectation=DEFAULT_BOT_CONFIG,
   )
 
   yield test(
-      name='no-override-builder',
-      override_content="{'Builder other-name': {'dims': {'os': 'Mac'}}}",
-      bot_config_expectation=DEFAULT_BOT_CONFIG,
+    name='no-override-builder',
+    override_content="{'Builder other-name': {'dims': {'os': 'Mac'}}}",
+    bot_config_expectation=DEFAULT_BOT_CONFIG,
   )
 
   yield test(
-      name='no-override-empty-dict',
-      override_content="{'Builder no-override-empty-dict': {'dims': {}}}",
-      bot_config_expectation=DEFAULT_BOT_CONFIG,
+    name='no-override-empty-dict',
+    override_content="{'Builder no-override-empty-dict': {'dims': {}}}",
+    bot_config_expectation=DEFAULT_BOT_CONFIG,
   )
 
   yield test(
-      name='update-entry',
-      override_content="{'Builder update-entry': {'dims': {'os': 'Mac',},},}",
-      bot_config_expectation={'dims': {
-          'os': 'Mac',
-          'cpu': 'x64'
-      }},
+    name='update-entry',
+    override_content="{'Builder update-entry': {'dims': {'os': 'Mac',},},}",
+    bot_config_expectation={'dims': {'os': 'Mac', 'cpu': 'x64'}},
   )
 
   yield test(
-      name='substituted-dict',
-      override_content="{'Builder substituted-dict': {'dims': None}}",
-      bot_config_expectation={'dims': None},
+    name='substituted-dict',
+    override_content="{'Builder substituted-dict': {'dims': None}}",
+    bot_config_expectation={'dims': None},
   )

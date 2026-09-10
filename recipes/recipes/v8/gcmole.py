@@ -11,10 +11,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, v8
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    git,
-    gsutil,
+  depot_tools,
+  gclient,
+  git,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import context, raw_io, step
 
@@ -35,6 +35,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
+
 
 GS_BUCKET = 'chrome-v8-gcmole'
 
@@ -58,48 +59,50 @@ def RunSteps(api: DEPS):
     api.step('Package gcmole', [gcmole_root / 'package.sh'])
 
     api.v8.python(
-        'upload_to_google_storage',
-        api.depot_tools.upload_to_google_storage_path,
-        ['-b', GS_BUCKET, gcmole_root / 'gcmole-tools.tar.gz'],
+      'upload_to_google_storage',
+      api.depot_tools.upload_to_google_storage_path,
+      ['-b', GS_BUCKET, gcmole_root / 'gcmole-tools.tar.gz'],
     )
 
     changes = api.git(
-        'status', '--porcelain',
-        stdout=api.raw_io.output_text()).stdout.strip()
+      'status', '--porcelain', stdout=api.raw_io.output_text()
+    ).stdout.strip()
     if changes:
       api.git('commit', '-am', '[tools] Update gcmole')
       api.git(
-          'cl',
-          'upload',
-          '-f',
-          '-d',
-          '--bypass-hooks',
-          '--send-mail',
-          '--r-owners',
+        'cl',
+        'upload',
+        '-f',
+        '-d',
+        '--bypass-hooks',
+        '--send-mail',
+        '--r-owners',
       )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      "default test",
-      api.override_step_data(
-          'git status',
-          api.raw_io.stream_output_text('some change', stream='stdout'),
-      ),
-      api.post_process(post_process.MustRun, 'git commit', 'git cl'),
-      api.post_process(
-          post_process.Filter('Build gcmole', 'Package gcmole',
-                              'upload_to_google_storage', 'git cl')),
-      status='SUCCESS',
+    "default test",
+    api.override_step_data(
+      'git status',
+      api.raw_io.stream_output_text('some change', stream='stdout'),
+    ),
+    api.post_process(post_process.MustRun, 'git commit', 'git cl'),
+    api.post_process(
+      post_process.Filter(
+        'Build gcmole', 'Package gcmole', 'upload_to_google_storage', 'git cl'
+      )
+    ),
+    status='SUCCESS',
   )
 
   yield api.test(
-      "no change test",
-      api.override_step_data(
-          'git status',
-          api.raw_io.stream_output_text('', stream='stdout'),
-      ),
-      api.post_process(post_process.DoesNotRun, 'git commit', 'git cl'),
-      api.post_process(post_process.DropExpectation),
-      status='SUCCESS',
+    "no change test",
+    api.override_step_data(
+      'git status',
+      api.raw_io.stream_output_text('', stream='stdout'),
+    ),
+    api.post_process(post_process.DoesNotRun, 'git commit', 'git cl'),
+    api.post_process(post_process.DropExpectation),
+    status='SUCCESS',
   )

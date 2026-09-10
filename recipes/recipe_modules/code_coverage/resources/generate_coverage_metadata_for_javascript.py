@@ -71,18 +71,22 @@ def _to_compressed_format(line_data):
   last_index = 0
   for i in range(1, len(line_data) + 1):
     is_continous_line = (
-        i < len(line_data) and line_data[i][0] == line_data[i - 1][0] + 1)
+      i < len(line_data) and line_data[i][0] == line_data[i - 1][0] + 1
+    )
     has_same_count = (
-        i < len(line_data) and line_data[i][1] == line_data[i - 1][1])
+      i < len(line_data) and line_data[i][1] == line_data[i - 1][1]
+    )
     # Merge two lines iff they have continous line number and exactly the same
     # count. For example: (101, 10) and (102, 10).
-    if (is_continous_line and has_same_count):
+    if is_continous_line and has_same_count:
       continue
-    lines.append({
+    lines.append(
+      {
         'first': line_data[last_index][0],
         'last': line_data[i - 1][0],
         'count': line_data[last_index][1],
-    })
+      }
+    )
     last_index = i
   return lines
 
@@ -121,7 +125,9 @@ def _to_compressed_file_record(lcov_lines, sources=None, diff_mapping=None):
       line_number = int(parts[0].lstrip(DA_MARKER))
       execution_count = int(parts[1])
       assert line_number > 0, "Invalid line number in DA line %s" % line
-      assert line_number not in exec_count, "Unexpected line number in DA line %s" % line
+      assert line_number not in exec_count, (
+        "Unexpected line number in DA line %s" % line
+      )
       exec_count[line_number] = execution_count
     elif line.startswith(END_OF_RECORD_MARKER):
       if sources and path not in sources:
@@ -133,9 +139,9 @@ def _to_compressed_file_record(lcov_lines, sources=None, diff_mapping=None):
         exec_count = _rebase_exec_count(exec_count, line_mapping)
       lines = _to_compressed_format(exec_count)
       data = {
-          'path': '//' + path,
-          'lines': lines,
-          'summaries': [_get_line_coverage_metric_summary(lines)]
+        'path': '//' + path,
+        'lines': lines,
+        'summaries': [_get_line_coverage_metric_summary(lines)],
       }
       all_files_data.append(data)
       path = ''
@@ -150,11 +156,9 @@ def _get_raw_coverage_data(coverage_file):
   return coverage_data
 
 
-def generate_json_coverage_metadata(coverage_dir,
-                                    src_path,
-                                    component_mapping,
-                                    sources=None,
-                                    diff_mapping=None):
+def generate_json_coverage_metadata(
+  coverage_dir, src_path, component_mapping, sources=None, diff_mapping=None
+):
   """Generate a JSON output representing JavaScript code coverage.
 
   JSON format conforms to the proto:
@@ -176,11 +180,14 @@ def generate_json_coverage_metadata(coverage_dir,
     raise Exception('No coverage data associated with source files found.')
   # Add git revision and timestamp per source file.
   repository_util.AddGitRevisionsToCoverageFilesMetadata(
-      data['files'], src_path, 'DEPS')
+    data['files'], src_path, 'DEPS'
+  )
   logging.info('Adding directories and components coverage data ...')
   per_directory_coverage_data, per_component_coverage_data = (
-      aggregation_util.get_aggregated_coverage_data_from_files(
-          data['files'], component_mapping))
+    aggregation_util.get_aggregated_coverage_data_from_files(
+      data['files'], component_mapping
+    )
+  )
 
   data['components'] = None
   data['dirs'] = None
@@ -203,37 +210,44 @@ def _parse_args(args):
     The parsed arguments as parameters.
   """
   parser = argparse.ArgumentParser(
-      description='Generate the JavaScript coverage metadata')
+    description='Generate the JavaScript coverage metadata'
+  )
   parser.add_argument(
-      '--src-path',
-      required=True,
-      type=str,
-      help='absolute path to the code checkout')
+    '--src-path',
+    required=True,
+    type=str,
+    help='absolute path to the code checkout',
+  )
   parser.add_argument(
-      '--output-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to write the metadata, must exist')
+    '--output-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to write the metadata, must exist',
+  )
   parser.add_argument(
-      '--coverage-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory that contains merged JavaScript '
-      'coverage data')
+    '--coverage-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory that contains merged JavaScript '
+    'coverage data',
+  )
   parser.add_argument(
-      '--dir-metadata-path',
-      type=str,
-      help='absolute path to json file mapping dirs to metadata')
+    '--dir-metadata-path',
+    type=str,
+    help='absolute path to json file mapping dirs to metadata',
+  )
   parser.add_argument(
-      '--source-files',
-      nargs='*',
-      type=str,
-      help='a list of source files to generate coverage data for.'
-      'path should be relative to the root of the code checkout.')
+    '--source-files',
+    nargs='*',
+    type=str,
+    help='a list of source files to generate coverage data for.'
+    'path should be relative to the root of the code checkout.',
+  )
   parser.add_argument(
-      '--diff-mapping-path',
-      type=str,
-      help='absolute path to the file that stores the diff mapping')
+    '--diff-mapping-path',
+    type=str,
+    help='absolute path to the file that stores the diff mapping',
+  )
   params = parser.parse_args(args=args)
 
   if params.dir_metadata_path and not os.path.isfile(params.dir_metadata_path):
@@ -252,9 +266,9 @@ def main():
   if params.dir_metadata_path:
     with open(params.dir_metadata_path) as f:
       component_mapping = {
-          d: md['monorail']['component']
-          for d, md in json.load(f)['dirs'].items()
-          if 'monorail' in md and 'component' in md['monorail']
+        d: md['monorail']['component']
+        for d, md in json.load(f)['dirs'].items()
+        if 'monorail' in md and 'component' in md['monorail']
       }
 
   diff_mapping = None
@@ -263,20 +277,28 @@ def main():
       diff_mapping = json.load(f)
 
   assert (component_mapping is None) != (diff_mapping is None), (
-      'Either component_mapping (for full-repo coverage) or diff_mapping '
-      '(for per-cl coverage) must be specified.')
+    'Either component_mapping (for full-repo coverage) or diff_mapping '
+    '(for per-cl coverage) must be specified.'
+  )
 
-  data = generate_json_coverage_metadata(params.coverage_dir, params.src_path,
-                                         component_mapping, params.source_files,
-                                         diff_mapping)
+  data = generate_json_coverage_metadata(
+    params.coverage_dir,
+    params.src_path,
+    component_mapping,
+    params.source_files,
+    diff_mapping,
+  )
 
-  logging.info('Writing fulfilled JavaScript coverage metadata to %s',
-               params.output_dir)
+  logging.info(
+    'Writing fulfilled JavaScript coverage metadata to %s', params.output_dir
+  )
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
     serialized_metadata = json.dumps(data, separators=(',', ':'))
     f.write(zlib.compress(serialized_metadata.encode()))
 
+
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

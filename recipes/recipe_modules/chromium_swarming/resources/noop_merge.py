@@ -24,8 +24,9 @@ def noop_merge(output_json, jsons_to_merge):
   """
   if len(jsons_to_merge) > 1:
     print(
-        'Multiple JSONs provided: %s' % (','.join(jsons_to_merge)),
-        file=sys.stderr)
+      'Multiple JSONs provided: %s' % (','.join(jsons_to_merge)),
+      file=sys.stderr,
+    )
     return 1
   if jsons_to_merge:
     shutil.copyfile(jsons_to_merge[0], output_json)

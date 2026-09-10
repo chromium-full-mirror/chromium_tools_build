@@ -35,9 +35,9 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'full',
-      api.builder_group.for_current('current-group'),
-      api.builder_group.for_parent('parent-group'),
-      api.builder_group.for_target('target-group'),
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.builder_group.for_current('current-group'),
+    api.builder_group.for_parent('parent-group'),
+    api.builder_group.for_target('target-group'),
+    api.post_process(post_process.DropExpectation),
   )

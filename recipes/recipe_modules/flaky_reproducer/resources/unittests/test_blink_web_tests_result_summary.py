@@ -10,12 +10,12 @@ from unittest.mock import patch
 
 from libs.result_summary import TestStatus
 from libs.result_summary.blink_web_tests_result_summary import (
-    BlinkWebTestsResultSummary)
+  BlinkWebTestsResultSummary,
+)
 from testdata import get_test_data
 
 
 class BlinkWebTestsResultSummaryTest(unittest.TestCase):
-
   def test_run_histories_json(self):
     json_data = json.loads(get_test_data('blink_web_tests_result_summary.json'))
     result_summary = BlinkWebTestsResultSummary.from_output_json(json_data)
@@ -42,16 +42,19 @@ class BlinkWebTestsResultSummaryTest(unittest.TestCase):
     self.assertEqual(results[2].status, TestStatus.CRASH)
     self.assertEqual(results[3].expected, False)
     self.assertEqual(results[3].status, TestStatus.FAIL)
-    self.assertEqual(results[3].primary_error_message,
-                     'some primary error message')
+    self.assertEqual(
+      results[3].primary_error_message, 'some primary error message'
+    )
 
   @patch('logging.error')
   def test_corrupted_output_json(self, mock_logging):
-    with self.assertRaisesRegex(ValueError,
-                                'Not supported Blink Web Tests output format'):
+    with self.assertRaisesRegex(
+      ValueError, 'Not supported Blink Web Tests output format'
+    ):
       BlinkWebTestsResultSummary.from_output_json({})
 
-    with self.assertRaisesRegex(ValueError,
-                                'Not supported Blink Web Tests output format'):
+    with self.assertRaisesRegex(
+      ValueError, 'Not supported Blink Web Tests output format'
+    ):
       BlinkWebTestsResultSummary.from_output_json({'run_histories': [{}]})
     mock_logging.assert_called()

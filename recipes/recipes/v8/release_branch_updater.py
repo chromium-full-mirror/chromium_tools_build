@@ -8,7 +8,10 @@ import datetime as dt
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
-from PB.recipes.build.v8.release_branch_updater import InputProperties, ChannelSource
+from PB.recipes.build.v8.release_branch_updater import (
+  InputProperties,
+  ChannelSource,
+)
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process as post
@@ -21,15 +24,15 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromiumdash, v8
 from RECIPE_MODULES.depot_tools import gclient, git, gitiles
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    json,
-    path,
-    properties,
-    raw_io,
-    step,
-    time,
-    url,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  raw_io,
+  step,
+  time,
+  url,
 )
 
 
@@ -59,6 +62,7 @@ class TEST_DEPS(RecipeTestApi):
   time: time.TEST_API
   url: url.TEST_API
 
+
 PROPERTIES = InputProperties
 
 TIME_FORMAT = '%a %b %d %H:%M:%S %Y'
@@ -78,7 +82,6 @@ def RunSteps(api: DEPS, props):
 
 
 class Channel:
-
   def __init__(self, api: DEPS, milestones, spec):
     self.api = api
     self.milestones = milestones
@@ -111,8 +114,9 @@ class Channel:
     with self.api.step.nest(f'Update channel {self.refname}'):
       self.api.gclient.set_config('v8')
       self.api.v8.checkout(self.next_head)
-      self._git('push', 'origin', f'{self.next_head}:refs/heads/{self.refname}',
-                '-f')
+      self._git(
+        'push', 'origin', f'{self.next_head}:refs/heads/{self.refname}', '-f'
+      )
 
   def _git(self, *cmd):
     cwd = self.api.v8.checkout_root / 'v8'
@@ -137,23 +141,24 @@ class Channel:
 
   def _fetch_current_head(self):
     return self.api.git.ls_remote(
-        V8_REPO,
-        f'refs/heads/{self.refname}',
-        name=f'git: Fetch current head for refs/heads/{self.refname}')
+      V8_REPO,
+      f'refs/heads/{self.refname}',
+      name=f'git: Fetch current head for refs/heads/{self.refname}',
+    )
 
   def _fetch_next_head(self):
     raise NotImplementedError()  # pragma: no cover
 
 
 class MilestoneChannel(Channel):
-
   def schedule_phase_matches(self, milestone):
     """Match milestone to channel translating the rename of the beta channel
     shortly before the release.
     """
     phase = milestone['schedule_phase']
-    return (phase == self.channel or
-            phase == 'stable_cut' and self.channel == 'beta')
+    return (
+      phase == self.channel or phase == 'stable_cut' and self.channel == 'beta'
+    )
 
   def _fetch_next_head(self):
     milestones = [m for m in self.milestones if self.schedule_phase_matches(m)]
@@ -163,28 +168,27 @@ class MilestoneChannel(Channel):
     milestone = sorted(milestones, key=lambda ms: -ms['milestone'])[0]
     chromium_branch = milestone['chromium_branch']
     return self.api.git.ls_remote(
-        V8_REPO,
-        f'refs/heads/chromium/{chromium_branch}',
-        name=f'git: Fetch next head for refs/heads/{self.refname}')
+      V8_REPO,
+      f'refs/heads/chromium/{chromium_branch}',
+      name=f'git: Fetch next head for refs/heads/{self.refname}',
+    )
 
 
 class ReleaseChannel(Channel):
-
   @property
   def platform(self):
     return self.spec.platform
 
   def _fetch_next_head(self):
     return self.api.chromiumdash.releases(
-        self.platform,
-        self.channel,
-        1,
-        f'chromiumdash: Fetch next head for refs/heads/{self.refname}',
+      self.platform,
+      self.channel,
+      1,
+      f'chromiumdash: Fetch next head for refs/heads/{self.refname}',
     )[0]['hashes']['v8']
 
 
 class ReleaseBranchUpdater:
-
   def __init__(self, api: DEPS, channel_specs):
     self.channels = []
     self.channel_specs = channel_specs
@@ -199,18 +203,20 @@ class ReleaseBranchUpdater:
       self._create_channels()
 
   def _ensure_checkout(self):
-    self.api.file.ensure_directory('ensure v8 checkout dir',
-                                   self.api.v8.checkout_root / 'v8')
+    self.api.file.ensure_directory(
+      'ensure v8 checkout dir', self.api.v8.checkout_root / 'v8'
+    )
 
   def _fetch_milestones(self):
     if any(c.source == ChannelSource.MILESTONES for c in self.channel_specs):
       self.milestones = self.api.chromiumdash.milestones(
-          100, 'chromiumdash: Fetch recent milestones', only_active=True)
+        100, 'chromiumdash: Fetch recent milestones', only_active=True
+      )
 
   def _create_channels(self):
     by_source = {
-        ChannelSource.MILESTONES: MilestoneChannel,
-        ChannelSource.RELEASES: ReleaseChannel,
+      ChannelSource.MILESTONES: MilestoneChannel,
+      ChannelSource.RELEASES: ReleaseChannel,
     }
 
     for spec in self.channel_specs:
@@ -255,49 +261,61 @@ def GenTests(api: TEST_DEPS):
 
   def milestone(milestone_number, chromium_branch, channel='stable'):
     return {
-        "chromium_branch": chromium_branch,
-        "schedule_phase": channel,
-        "milestone": milestone_number,
+      "chromium_branch": chromium_branch,
+      "schedule_phase": channel,
+      "milestone": milestone_number,
     }
 
   def ls_remote(step_name, branch, revision):
     return api.override_step_data(
-        step_name,
-        api.raw_io.stream_output_text(
-            f'{revision}\t{branch}\n', stream='stdout'))
+      step_name,
+      api.raw_io.stream_output_text(f'{revision}\t{branch}\n', stream='stdout'),
+    )
 
   def test(name, config, *args):
     beta_name = config.get('beta_name', 'beta')
     stable_revision = config.get('stable_revision', '7ea')
-    channels = config.get('channels', [{
-        "refname": "stable",
-        "source": "MILESTONES",
-        "channel": "stable",
-        "max_age_weeks": 5
-    }])
+    channels = config.get(
+      'channels',
+      [
+        {
+          "refname": "stable",
+          "source": "MILESTONES",
+          "channel": "stable",
+          "max_age_weeks": 5,
+        }
+      ],
+    )
     now = config.get('now', 1729071780)  # 2024-10-16T09:43:00+00
 
     next_revisions_by_ref = {
-        'stable': stable_revision,
-        'beta': config.get('beta_revision', '7eb'),
-        'extended': '50da',
+      'stable': stable_revision,
+      'beta': config.get('beta_revision', '7eb'),
+      'extended': '50da',
     }
 
     mocks = []
     if any(c['source'] == "MILESTONES" for c in channels):
       mocks.append(
-          api.url.json('Initialize.chromiumdash: Fetch recent milestones', [
-              milestone(129, '6668'),
-              milestone(128, '6613'),
-              milestone(130, '6723', channel=beta_name),
-          ]))
+        api.url.json(
+          'Initialize.chromiumdash: Fetch recent milestones',
+          [
+            milestone(129, '6668'),
+            milestone(128, '6613'),
+            milestone(130, '6723', channel=beta_name),
+          ],
+        )
+      )
 
     for channel in channels:
       refname = channel['refname']
       mocks.append(
-          ls_remote(
-              f'Initialize.git: Fetch current head for refs/heads/{refname}',
-              f'refs/heads/{refname}', 'c0ffee'))
+        ls_remote(
+          f'Initialize.git: Fetch current head for refs/heads/{refname}',
+          f'refs/heads/{refname}',
+          'c0ffee',
+        )
+      )
 
       revision = next_revisions_by_ref.get(refname, 'c0ffee')
       if refname in {'stable', 'beta'}:
@@ -305,134 +323,144 @@ def GenTests(api: TEST_DEPS):
         if refname == 'beta' and beta_name == 'stable_cut':
           chromium_branch = '6723'
         mocks.append(
-            ls_remote(
-                f'Initialize.git: Fetch next head for refs/heads/{refname}',
-                f'refs/heads/chromium/{chromium_branch}', revision))
+          ls_remote(
+            f'Initialize.git: Fetch next head for refs/heads/{refname}',
+            f'refs/heads/chromium/{chromium_branch}',
+            revision,
+          )
+        )
 
       if refname == 'extended':
         mocks.append(
-            api.url.json(
-                'Initialize.chromiumdash: Fetch next head for refs/heads/extended',
-                [
-                    {
-                        'hashes': {
-                            'v8': '50da'
-                        }
-                    },
-                ]))
+          api.url.json(
+            'Initialize.chromiumdash: Fetch next head for refs/heads/extended',
+            [
+              {'hashes': {'v8': '50da'}},
+            ],
+          )
+        )
 
       mocks.append(
-          api.step_data(
-              f'Check freshness.Check {refname} age.commit log: {revision}',
-              api.json.output(
-                  {'committer': {
-                      'time': 'Wed Oct 16 09:42:00 2024'
-                  }}),
-          ))
+        api.step_data(
+          f'Check freshness.Check {refname} age.commit log: {revision}',
+          api.json.output({'committer': {'time': 'Wed Oct 16 09:42:00 2024'}}),
+        )
+      )
 
     return api.test(
-        name,
-        api.properties(channels=channels),
-        api.time.seed(now),
-        api.time.step(0),
-        *mocks,
-        *args,
-        api.post_process(post.DropExpectation),
+      name,
+      api.properties(channels=channels),
+      api.time.seed(now),
+      api.time.step(0),
+      *mocks,
+      *args,
+      api.post_process(post.DropExpectation),
     )
 
   yield test(
-      'beta-stable-cut',
-      {
-          "channels": [{
-              "refname": "beta",
-              "source": "MILESTONES",
-              "channel": "beta",
-              "max_age_weeks": 9
-          }],
-          "beta_name": "stable_cut",
-      },
-      api.post_process(post.StepTextEquals, 'Verify beta',
-                       '⇧ Update head to 7eb.'),
-      api.post_process(post.MustRun, 'Update 1 channel(s).Update channel beta'),
+    'beta-stable-cut',
+    {
+      "channels": [
+        {
+          "refname": "beta",
+          "source": "MILESTONES",
+          "channel": "beta",
+          "max_age_weeks": 9,
+        }
+      ],
+      "beta_name": "stable_cut",
+    },
+    api.post_process(
+      post.StepTextEquals, 'Verify beta', '⇧ Update head to 7eb.'
+    ),
+    api.post_process(post.MustRun, 'Update 1 channel(s).Update channel beta'),
   )
 
   yield test(
-      'new-revision-for-milestones-endpoint',
-      {},
-      api.post_process(post.StepTextEquals, 'Verify stable',
-                       '⇧ Update head to 7ea.'),
-      api.post_process(post.MustRun,
-                       'Update 1 channel(s).Update channel stable'),
+    'new-revision-for-milestones-endpoint',
+    {},
+    api.post_process(
+      post.StepTextEquals, 'Verify stable', '⇧ Update head to 7ea.'
+    ),
+    api.post_process(post.MustRun, 'Update 1 channel(s).Update channel stable'),
   )
 
   yield test(
-      'new-revision-for-releases-endpoint',
-      {
-          "channels": [{
-              "refname": "extended",
-              "source": "RELEASES",
-              "channel": "Extended",
-              "platform": "Mac",
-              "max_age_weeks": 9
-          }],
-      },
-      api.post_process(post.StepTextEquals, 'Verify extended',
-                       '⇧ Update head to 50da.'),
-      api.post_process(post.MustRun,
-                       'Update 1 channel(s).Update channel extended'),
+    'new-revision-for-releases-endpoint',
+    {
+      "channels": [
+        {
+          "refname": "extended",
+          "source": "RELEASES",
+          "channel": "Extended",
+          "platform": "Mac",
+          "max_age_weeks": 9,
+        }
+      ],
+    },
+    api.post_process(
+      post.StepTextEquals, 'Verify extended', '⇧ Update head to 50da.'
+    ),
+    api.post_process(
+      post.MustRun, 'Update 1 channel(s).Update channel extended'
+    ),
   )
 
   yield test(
-      'no-updates',
-      {'stable_revision': 'c0ffee'},
-      api.post_process(post.StepTextEquals, 'Verify stable',
-                       'Head c0ffee is up-to-date.'),
-      api.post_process(post.MustRun, 'Update 0 channel(s)'),
+    'no-updates',
+    {'stable_revision': 'c0ffee'},
+    api.post_process(
+      post.StepTextEquals, 'Verify stable', 'Head c0ffee is up-to-date.'
+    ),
+    api.post_process(post.MustRun, 'Update 0 channel(s)'),
   )
 
   yield test(
-      'missing-chromiumdash-channel',
-      {
-          'channels': [
-              {
-                  "refname": "stable",
-                  "source": "MILESTONES",
-                  "channel": "stable",
-                  "max_age_weeks": 5
-              },
-              {
-                  "refname": "dev",
-                  "source": "MILESTONES",
-                  "channel": "dev",
-                  "max_age_weeks": 5
-              },
-          ],
-      },
-      api.post_process(post.MustRun,
-                       'Update 1 channel(s).Update channel stable'),
-      api.post_process(post.StepTextEquals, 'Verify dev',
-                       'Channel is unavailable at chromiumdash.'),
+    'missing-chromiumdash-channel',
+    {
+      'channels': [
+        {
+          "refname": "stable",
+          "source": "MILESTONES",
+          "channel": "stable",
+          "max_age_weeks": 5,
+        },
+        {
+          "refname": "dev",
+          "source": "MILESTONES",
+          "channel": "dev",
+          "max_age_weeks": 5,
+        },
+      ],
+    },
+    api.post_process(post.MustRun, 'Update 1 channel(s).Update channel stable'),
+    api.post_process(
+      post.StepTextEquals,
+      'Verify dev',
+      'Channel is unavailable at chromiumdash.',
+    ),
   )
 
   yield test(
-      'validate-channels',
-      {},
-      api.post_process(
-          post.StepTextEquals,
-          'Check freshness.Check stable age',
-          'Current: 60s · Max: 3024000s',
-      ),
+    'validate-channels',
+    {},
+    api.post_process(
+      post.StepTextEquals,
+      'Check freshness.Check stable age',
+      'Current: 60s · Max: 3024000s',
+    ),
   )
 
   yield test(
-      'validate-channels-failure',
-      {"now": 1734345780},  # 2024-12-16T09:43:00+00
-      api.post_process(
-          post.StepTextEquals,
-          'Check freshness.Check stable age',
-          'Current: 5274060s · Max: 3024000s',
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post.SummaryMarkdown,
-                       'stable is outdated: 5274060s > 3024000s.'),
+    'validate-channels-failure',
+    {"now": 1734345780},  # 2024-12-16T09:43:00+00
+    api.post_process(
+      post.StepTextEquals,
+      'Check freshness.Check stable age',
+      'Current: 5274060s · Max: 3024000s',
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post.SummaryMarkdown, 'stable is outdated: 5274060s > 3024000s.'
+    ),
   )

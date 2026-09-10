@@ -19,27 +19,27 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    archive,
-    chromium,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
-    code_coverage,
-    filter as filter_module,
-    gn,
+  archive,
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
+  code_coverage,
+  filter as filter_module,
+  gn,
 )
 from RECIPE_MODULES.depot_tools import depot_tools, gsutil, tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    runtime,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  runtime,
+  step,
 )
 
 
@@ -79,6 +79,7 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
 
+
 PROPERTIES = InputProperties
 
 # The name of the manifest file that will be written to the archive's build
@@ -92,22 +93,22 @@ MANIFEST_FILENAME = 'clusterfuzz_manifest.json'
 DEFAULT_ARCHIVE_SCHEMA_VERSION = 0
 
 
-def gn_refs(api: DEPS,
-            build_dir: Path,
-            step_name,
-            target,
-            output_type='executable'):
+def gn_refs(
+  api: DEPS, build_dir: Path, step_name, target, output_type='executable'
+):
   """Runs gn refs to calculate targets depending on target.
   Returns: the set of matched targets.
   """
   raw_output = api.gn.refs(
-      build_dir, [target],
-      output_type=output_type,
-      step_name=step_name,
-      output_format='label')
+    build_dir,
+    [target],
+    output_type=output_type,
+    step_name=step_name,
+    output_format='label',
+  )
   # Filter out lines starting with "Warning: is_asan "
   return {
-      line for line in raw_output if not line.startswith('Warning: is_asan ')
+    line for line in raw_output if not line.startswith('Warning: is_asan ')
   }
 
 
@@ -115,9 +116,10 @@ def copy_path(api: DEPS, source_dir: Path, build_dir: Path, path_name):
   """Copies the path_name, which could be a file or a directory
   into ${build_dir}/src_root.
   """
-  assert path_name.startswith(
-      '../../'), path_name + " is expected to start with ../../"
-  relative_path = path_name[len('../../'):]
+  assert path_name.startswith('../../'), (
+    path_name + " is expected to start with ../../"
+  )
+  relative_path = path_name[len('../../') :]
   src = source_dir / relative_path
   dest = build_dir / 'src_root' / relative_path
   if api.path.exists(dest):
@@ -133,8 +135,9 @@ def copy_path(api: DEPS, source_dir: Path, build_dir: Path, path_name):
     api.file.copytree('copying directory:' + str(src), src, dest)
 
 
-def filter_runtime_deps(runtime_deps: list[str],
-                        gn_targets: set[str]) -> set[str]:
+def filter_runtime_deps(
+  runtime_deps: list[str], gn_targets: set[str]
+) -> set[str]:
   """Get the subset of runtime dependencies for the specified targets.
 
   The list of runtime dependencies has the following format:
@@ -155,7 +158,7 @@ def filter_runtime_deps(runtime_deps: list[str],
 
   for line in runtime_deps:
     if line.startswith(TARGET_PREFIX):
-      target_name = line[len(TARGET_PREFIX):]
+      target_name = line[len(TARGET_PREFIX) :]
       is_collecting = target_name in gn_targets
     elif is_collecting:
       # lines corresponding to runtime dependencies start with spaces.
@@ -163,6 +166,7 @@ def filter_runtime_deps(runtime_deps: list[str],
       if dependency and dependency != 'runtime_deps':
         result.add(dependency)
   return result
+
 
 # How many elements to return per batch by `batched()`.
 #
@@ -200,19 +204,21 @@ def gn_ls_with_filter(api: DEPS, build_dir, inputs, **kwargs):
   """Wraps api.gn.ls to filter out 'is_asan' warnings."""
   raw_output = api.gn.ls(build_dir, inputs, **kwargs)
   return {
-      line for line in raw_output if not line.startswith('Warning: is_asan ')
+    line for line in raw_output if not line.startswith('Warning: is_asan ')
   }
 
 
 def RunSteps(api: DEPS, properties):
   builder_id, builder_config = (
-      api.chromium_tests_builder_config.lookup_builder())
+    api.chromium_tests_builder_config.lookup_builder()
+  )
   api.chromium_tests.configure_build(builder_config)
 
   # Most CI fuzz bots clobber. But we don't want the trybots clobbering, since
   # some of them are on the CQ.
   should_clobber = (
-      api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver)
+    api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver
+  )
   update_result = api.chromium_checkout.ensure_checkout()
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
@@ -236,36 +242,39 @@ def RunSteps(api: DEPS, properties):
         gn_output_type = 'shared_library'
 
       all_fuzzers = gn_refs(
-          api,
-          build_dir,
-          'calculate all_fuzzers',
-          '//testing/libfuzzer:fuzzing_engine',
-          output_type=gn_output_type)
+        api,
+        build_dir,
+        'calculate all_fuzzers',
+        '//testing/libfuzzer:fuzzing_engine',
+        output_type=gn_output_type,
+      )
       if properties.v8_targets_only:
         # Some builders only need the V8 targets as the only difference is code
         # generated by V8 simulators.
         v8_fuzzers = gn_refs(
-            api,
-            build_dir,
-            'calculate v8_fuzzers',
-            '//v8:fuzzer_support',
-            output_type=gn_output_type,
+          api,
+          build_dir,
+          'calculate v8_fuzzers',
+          '//v8:fuzzer_support',
+          output_type=gn_output_type,
         )
         all_fuzzers = all_fuzzers & v8_fuzzers
       elif properties.ios_targets_only:
         ios_fuzzers = gn_refs(
-            api,
-            build_dir,
-            'calculate ios_fuzzers',
-            '//testing/libfuzzer:build_for_ios_clusterfuzz_job',
-            output_type=gn_output_type)
-        all_fuzzers = all_fuzzers & ios_fuzzers
-      no_clusterfuzz = gn_refs(
           api,
           build_dir,
-          'calculate no_clusterfuzz',
-          '//testing/libfuzzer:no_clusterfuzz',
-          output_type=gn_output_type)
+          'calculate ios_fuzzers',
+          '//testing/libfuzzer:build_for_ios_clusterfuzz_job',
+          output_type=gn_output_type,
+        )
+        all_fuzzers = all_fuzzers & ios_fuzzers
+      no_clusterfuzz = gn_refs(
+        api,
+        build_dir,
+        'calculate no_clusterfuzz',
+        '//testing/libfuzzer:no_clusterfuzz',
+        output_type=gn_output_type,
+      )
       # If we're collecting coverage, build the main `chrome` binary to ensure
       # that all files that make up the binary show up in the coverage report.
       # Otherwise, the report includes only files that get built for at least
@@ -289,19 +298,24 @@ def RunSteps(api: DEPS, properties):
       targets = sorted(all_fuzzers - no_clusterfuzz)
 
       api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
-          all_fuzzers)
-      api.step.active_result.presentation.logs['no_clusterfuzz'] = (
-          sorted(no_clusterfuzz))
+        all_fuzzers
+      )
+      api.step.active_result.presentation.logs['no_clusterfuzz'] = sorted(
+        no_clusterfuzz
+      )
       api.step.active_result.presentation.logs['targets'] = targets
 
-      should_analyze = (not api.runtime.is_experimental and
-                        api.tryserver.is_tryserver and
-                        not properties.collect_fuzz_coverage)
+      should_analyze = (
+        not api.runtime.is_experimental
+        and api.tryserver.is_tryserver
+        and not properties.collect_fuzz_coverage
+      )
       if should_analyze:
         # Filter out all targets that the patch doesn't affect.
         affected_files = api.chromium_checkout.get_files_affected_by_patch()
         test_targets, compile_targets = api.filter.analyze(
-            source_dir, build_dir, affected_files, None, targets)
+          source_dir, build_dir, affected_files, None, targets
+        )
         targets = sorted(test_targets + compile_targets)
         if not targets:
           return
@@ -327,7 +341,8 @@ def RunSteps(api: DEPS, properties):
       target_set = set()
       for target_batch in batched(targets):
         target_set |= gn_ls_with_filter(
-            api, build_dir, target_batch, output_format='output')
+          api, build_dir, target_batch, output_format='output'
+        )
 
       targets = list(target_set)
       targets.sort()  # Ensure stable order for tests.
@@ -346,7 +361,8 @@ def RunSteps(api: DEPS, properties):
       raw_result = None
       for target_batch in batched(targets):
         raw_result = api.chromium.compile(
-            source_dir, build_dir, targets=target_batch)
+          source_dir, build_dir, targets=target_batch
+        )
 
         if raw_result.status != common_pb.SUCCESS:
           return raw_result
@@ -364,20 +380,22 @@ def RunSteps(api: DEPS, properties):
       try:
         corpora_dir = 'current-corpora-from-clusterfuzz'
         profdata_dir = str(
-            api.chromium_checkout.source_dir.joinpath('out',
-                                                      'profdata-output-dir'))
+          api.chromium_checkout.source_dir.joinpath(
+            'out', 'profdata-output-dir'
+          )
+        )
         api.step('make corpora directory', ['mkdir', corpora_dir])
         api.file.rmtree('ensure profdata directory blank', profdata_dir)
         api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
         download_cmd = [
-            'python3',
-            'tools/code_coverage/download_fuzz_corpora.py',
-            '--download-dir',
-            corpora_dir,
-            '--build-dir',
-            build_dir,
-            '--corpora-type',
-            properties.fuzz_engine,
+          'python3',
+          'tools/code_coverage/download_fuzz_corpora.py',
+          '--download-dir',
+          corpora_dir,
+          '--build-dir',
+          build_dir,
+          '--corpora-type',
+          properties.fuzz_engine,
         ]
         if properties.fuzz_engine == 'fuzzilli':
           download_cmd.extend(['--arch', get_target_cpu(api, gn_args)])
@@ -389,19 +407,31 @@ def RunSteps(api: DEPS, properties):
         withxvfb_args = ['--target', api.chromium.c.build_config_fs]
         withxvfb_args.append('--build-dir=%s' % build_dir)
 
-        run_cmd = ['python3', withxvfb_path] + withxvfb_args + [
-            '--', 'python3', 'tools/code_coverage/run_all_fuzzers.py',
-            '--fuzzer-binaries-dir', build_dir, '--fuzzer-corpora-dir',
-            corpora_dir, '--profdata-outdir', profdata_dir, '--fuzzer',
-            properties.fuzz_engine
-        ]
+        run_cmd = (
+          ['python3', withxvfb_path]
+          + withxvfb_args
+          + [
+            '--',
+            'python3',
+            'tools/code_coverage/run_all_fuzzers.py',
+            '--fuzzer-binaries-dir',
+            build_dir,
+            '--fuzzer-corpora-dir',
+            corpora_dir,
+            '--profdata-outdir',
+            profdata_dir,
+            '--fuzzer',
+            properties.fuzz_engine,
+          ]
+        )
         if properties.fuzz_engine != 'fuzzilli':
           target_list_dir = str(
-              api.chromium_checkout.source_dir.joinpath('out',
-                                                        'target-list-dir'))
+            api.chromium_checkout.source_dir.joinpath('out', 'target-list-dir')
+          )
           api.file.rmtree('ensure target list directory blank', target_list_dir)
-          api.step('make target list directory',
-                   ['mkdir', '-p', target_list_dir])
+          api.step(
+            'make target list directory', ['mkdir', '-p', target_list_dir]
+          )
           run_cmd.extend(['--target-list-dir', target_list_dir])
 
         api.step('run all fuzzers', run_cmd)
@@ -411,47 +441,62 @@ def RunSteps(api: DEPS, properties):
           # json file to GCS
           gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
           revision = api.buildbucket.gitiles_commit.id[:7]
-          targets_file = api.path.join(target_list_dir,
-                                       properties.fuzz_engine + '.json')
-          api.gsutil.upload(targets_file, 'code-coverage-data',
-                            f'{gcs_dir}{revision}/')
+          targets_file = api.path.join(
+            target_list_dir, properties.fuzz_engine + '.json'
+          )
+          api.gsutil.upload(
+            targets_file, 'code-coverage-data', f'{gcs_dir}{revision}/'
+          )
 
-          successful_targets = api.file.read_json('read successful targets',
-                                                  targets_file)
+          successful_targets = api.file.read_json(
+            'read successful targets', targets_file
+          )
           for target in successful_targets:
             profdata_path = api.path.join(profdata_dir, f'{target}.profdata')
             api.code_coverage.get_chromium_fuzz_coverage(
-                api.chromium_checkout.source_dir,
-                build_dir,
-                profdata_path, {target},
-                overall=False,
-                use_cache=True)
+              api.chromium_checkout.source_dir,
+              build_dir,
+              profdata_path,
+              {target},
+              overall=False,
+              use_cache=True,
+            )
 
         profdata_path = api.chromium_checkout.source_dir.joinpath(
-            'total_fuzz_coverage.profdata')
+          'total_fuzz_coverage.profdata'
+        )
         llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
-            'third_party', 'llvm-build', 'Release+Asserts', 'bin',
-            'llvm-profdata')
-        api.step('merge all fuzzers', [
-            'python3', 'tools/code_coverage/merge_all_profdata.py',
-            '--profdata-dir', profdata_dir, '--outfile', profdata_path,
-            '--llvm-profdata', llvm_profdata_path
-        ])
+          'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata'
+        )
+        api.step(
+          'merge all fuzzers',
+          [
+            'python3',
+            'tools/code_coverage/merge_all_profdata.py',
+            '--profdata-dir',
+            profdata_dir,
+            '--outfile',
+            profdata_path,
+            '--llvm-profdata',
+            llvm_profdata_path,
+          ],
+        )
 
         api.code_coverage.get_chromium_fuzz_coverage(
-            api.chromium_checkout.source_dir,
-            build_dir,
-            profdata_path,
-            targets,
-            use_cache=True)
+          api.chromium_checkout.source_dir,
+          build_dir,
+          profdata_path,
+          targets,
+          use_cache=True,
+        )
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
         api.step('diagnostic: df -h', ['df', '-h'])
         api.step('diagnostic: df -ih', ['df', '-ih'])
         api.step(
-            'diagnostic: ls -laR /dev/shm',
-            ['ls', '-laR', '/dev/shm'],
-            ok_ret='any',
+          'diagnostic: ls -laR /dev/shm',
+          ['ls', '-laR', '/dev/shm'],
+          ok_ret='any',
         )
         raise
 
@@ -461,9 +506,10 @@ def RunSteps(api: DEPS, properties):
       api.path.mock_add_file('[CACHE]/builder/src/path2')
 
       archive_schema_version = (
-          properties.archive_schema_version
-          if properties.HasField('archive_schema_version') else
-          DEFAULT_ARCHIVE_SCHEMA_VERSION)
+        properties.archive_schema_version
+        if properties.HasField('archive_schema_version')
+        else DEFAULT_ARCHIVE_SCHEMA_VERSION
+      )
 
       # Archive schema version >= 1 compiles runtime dependencies and archives
       # based on `.runtime_deps` files.
@@ -471,21 +517,21 @@ def RunSteps(api: DEPS, properties):
         archive_root = source_dir
 
         api.archive.clusterfuzz_archive_targets(
-            source_dir=source_dir,
-            archive_root=archive_root,
-            update_properties=update_result.properties,
-            gs_bucket=properties.upload_bucket,
-            archive_prefix=properties.archive_prefix or 'libfuzzer',
-            archive_path=properties.archive_path,
-            use_archive_path=properties.use_archive_path,
-            build_config=api.chromium.c.build_config_fs,
-            compile_targets=targets,
-            build_dir=build_dir,
-            archive_schema_version=archive_schema_version,
-            fuzz_targets=targets,
-            archive_subdir_suffix=properties.upload_directory,
-            gs_acl='public-read',
-            **kwargs,
+          source_dir=source_dir,
+          archive_root=archive_root,
+          update_properties=update_result.properties,
+          gs_bucket=properties.upload_bucket,
+          archive_prefix=properties.archive_prefix or 'libfuzzer',
+          archive_path=properties.archive_path,
+          use_archive_path=properties.use_archive_path,
+          build_config=api.chromium.c.build_config_fs,
+          compile_targets=targets,
+          build_dir=build_dir,
+          archive_schema_version=archive_schema_version,
+          fuzz_targets=targets,
+          archive_subdir_suffix=properties.upload_directory,
+          gs_acl='public-read',
+          **kwargs,
         )
         return
 
@@ -497,14 +543,15 @@ def RunSteps(api: DEPS, properties):
       with api.step.nest('collect all runtime dependencies') as step_result:
         set_of_gn_targets = set(gn_targets)
         raw_list_of_runtime_deps = api.gn.desc(
-            build_dir,
-            '*',
-            'runtime_deps',
-            step_name='get runtime dependencies with pattern *',
-            use_cache=True,
+          build_dir,
+          '*',
+          'runtime_deps',
+          step_name='get runtime dependencies with pattern *',
+          use_cache=True,
         )
-        runtime_deps = filter_runtime_deps(raw_list_of_runtime_deps,
-                                           set_of_gn_targets)
+        runtime_deps = filter_runtime_deps(
+          raw_list_of_runtime_deps, set_of_gn_targets
+        )
         runtime_deps = sorted(runtime_deps)
         step_result.logs['runtime_dependencies'] = runtime_deps
 
@@ -514,65 +561,66 @@ def RunSteps(api: DEPS, properties):
             copy_path(api, source_dir, build_dir, path)
 
       fuzz_target_paths = [
-          api.path.relpath(build_dir / target, archive_root)
-          for target in targets
+        api.path.relpath(build_dir / target, archive_root) for target in targets
       ]
       manifest_dict = {
-          'archive_schema_version': 0,
-          'fuzz_targets': fuzz_target_paths,
+        'archive_schema_version': 0,
+        'fuzz_targets': fuzz_target_paths,
       }
 
       api.file.write_json(
-          'write archive manifest',
-          archive_root / MANIFEST_FILENAME,
-          manifest_dict,
+        'write archive manifest',
+        archive_root / MANIFEST_FILENAME,
+        manifest_dict,
       )
 
       api.archive.clusterfuzz_archive(
-          source_dir=source_dir,
-          archive_root=archive_root,
-          update_properties=update_result.properties,
-          gs_bucket=properties.upload_bucket,
-          archive_prefix=properties.archive_prefix or 'libfuzzer',
-          archive_path=properties.archive_path,
-          use_archive_path=properties.use_archive_path,
-          build_config=api.chromium.c.build_config_fs,
-          archive_subdir_suffix=properties.upload_directory,
-          gs_acl='public-read',
-          **kwargs,
+        source_dir=source_dir,
+        archive_root=archive_root,
+        update_properties=update_result.properties,
+        gs_bucket=properties.upload_bucket,
+        archive_prefix=properties.archive_prefix or 'libfuzzer',
+        archive_path=properties.archive_path,
+        use_archive_path=properties.use_archive_path,
+        build_config=api.chromium.c.build_config_fs,
+        archive_subdir_suffix=properties.upload_directory,
+        gs_acl='public-read',
+        **kwargs,
       )
 
 
 def GenTests(api: TEST_DEPS):
 
   def generate_test(
-      is_try=False,
-      is_coverage=False,
-      is_ios=False,
-      is_v8=False,
-      coverage_metadata_failure=False,
-      engine='libfuzzer',
-      archive_schema_version=None,
-      drop_expectation=True,
+    is_try=False,
+    is_coverage=False,
+    is_ios=False,
+    is_v8=False,
+    coverage_metadata_failure=False,
+    engine='libfuzzer',
+    archive_schema_version=None,
+    drop_expectation=True,
   ):
     test = api.properties(
-        upload_bucket='chromium-browser-libfuzzer',
-        upload_directory='fuzz',
-        v8_targets_only=is_v8,
-        ios_targets_only=is_ios,
-        collect_fuzz_coverage=is_coverage,
-        fuzz_engine=engine,
+      upload_bucket='chromium-browser-libfuzzer',
+      upload_directory='fuzz',
+      v8_targets_only=is_v8,
+      ios_targets_only=is_ios,
+      collect_fuzz_coverage=is_coverage,
+      fuzz_engine=engine,
     )
     if archive_schema_version is not None:
       test += api.properties(archive_schema_version=archive_schema_version)
     else:
       archive_schema_version = DEFAULT_ARCHIVE_SCHEMA_VERSION
     if engine != 'fuzzilli':
-      targets = api.raw_io.output_text('target1\ntarget2\ntarget3\n'
-                                       'fuzzer.exe\n')
+      targets = api.raw_io.output_text(
+        'target1\ntarget2\ntarget3\nfuzzer.exe\n'
+      )
       test += api.step_data('calculate all_fuzzers', stdout=targets)
       test += api.step_data(
-          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1'))
+        'calculate no_clusterfuzz', stdout=api.raw_io.output_text('target1')
+      )
       if is_v8:
         test += api.step_data('calculate v8_fuzzers', stdout=targets)
       if is_ios:
@@ -583,89 +631,92 @@ def GenTests(api: TEST_DEPS):
 
     if not (is_try or is_coverage):
       if archive_schema_version == 0:
-        test += api.post_process(post_process.MustRun,
-                                 'collect all runtime dependencies')
+        test += api.post_process(
+          post_process.MustRun, 'collect all runtime dependencies'
+        )
         # this will lead to us having ../../path2 and ../../path4 as runtime
         # dependencies to copy
-        step_output = ('some warning1\n\n'
-                       'some warning2\n'
-                       'Target target1\n'
-                       'runtime_deps\n'
-                       '  ./target1\n'
-                       '  ../../path14\n'
-                       '  ./path15\n\n\n'
-                       'Target target2\n'
-                       'runtime_deps\n'
-                       '  ./target2\n'
-                       '  ../../path1\n'
-                       '  ../../path2\n'
-                       'Target target3\n'
-                       'runtime_deps\n'
-                       '  ./target3\n'
-                       '  ./path3\n'
-                       '  ../../path4\n'
-                       'Target fuzzer.exe\n'
-                       'runtime_deps\n'
-                       '  ./fuzzer.exe\n'
-                       'Target target5\n'
-                       'runtime_deps\n'
-                       '  ./path16\n'
-                       '  ../../path17\n')
+        step_output = (
+          'some warning1\n\n'
+          'some warning2\n'
+          'Target target1\n'
+          'runtime_deps\n'
+          '  ./target1\n'
+          '  ../../path14\n'
+          '  ./path15\n\n\n'
+          'Target target2\n'
+          'runtime_deps\n'
+          '  ./target2\n'
+          '  ../../path1\n'
+          '  ../../path2\n'
+          'Target target3\n'
+          'runtime_deps\n'
+          '  ./target3\n'
+          '  ./path3\n'
+          '  ../../path4\n'
+          'Target fuzzer.exe\n'
+          'runtime_deps\n'
+          '  ./fuzzer.exe\n'
+          'Target target5\n'
+          'runtime_deps\n'
+          '  ./path16\n'
+          '  ../../path17\n'
+        )
 
         test += api.step_data(
-            'collect all runtime dependencies.get runtime '
-            'dependencies with pattern *',
-            stdout=api.raw_io.output_text(step_output),
+          'collect all runtime dependencies.get runtime '
+          'dependencies with pattern *',
+          stdout=api.raw_io.output_text(step_output),
         )
         # ../../path1, ../../path2 and ../../path4 need to be copied.
         test += api.post_process(
-            LogEquals, 'collect all runtime dependencies',
-            'runtime_dependencies', '../../path1\n'
-            '../../path2\n'
-            '../../path4\n'
-            './fuzzer.exe\n'
-            './path3\n'
-            './target2\n'
-            './target3')
-        test += api.post_process(
-            post_process.MustRun,
-            'copy runtime dependencies to build directory')
-        test += api.post_process(
-            post_process.MustRun,
-            'copy runtime dependencies to build directory.copying file:'
-            '[CACHE]/builder/src/path2',
+          LogEquals,
+          'collect all runtime dependencies',
+          'runtime_dependencies',
+          '../../path1\n'
+          '../../path2\n'
+          '../../path4\n'
+          './fuzzer.exe\n'
+          './path3\n'
+          './target2\n'
+          './target3',
         )
         test += api.post_process(
-            post_process.MustRun,
-            'copy runtime dependencies to build directory.copying directory:'
-            '[CACHE]/builder/src/path4',
+          post_process.MustRun, 'copy runtime dependencies to build directory'
+        )
+        test += api.post_process(
+          post_process.MustRun,
+          'copy runtime dependencies to build directory.copying file:'
+          '[CACHE]/builder/src/path2',
+        )
+        test += api.post_process(
+          post_process.MustRun,
+          'copy runtime dependencies to build directory.copying directory:'
+          '[CACHE]/builder/src/path4',
         )
       else:
         test += api.post_process(
-            post_process.MustRun,
-            'collect runtime deps for compile targets',
+          post_process.MustRun,
+          'collect runtime deps for compile targets',
         )
         test += api.post_process(
-            post_process.MustRun,
-            'collect runtime deps for compile targets.'
-            'read fuzzer.runtime_deps',
+          post_process.MustRun,
+          'collect runtime deps for compile targets.read fuzzer.runtime_deps',
         )
         test += api.post_process(
-            post_process.MustRun,
-            'collect runtime deps for compile targets.'
-            'read target1.runtime_deps',
+          post_process.MustRun,
+          'collect runtime deps for compile targets.read target1.runtime_deps',
         )
         test += api.post_process(
-            post_process.MustRun,
-            'collect runtime deps for compile targets.'
-            'read target2.runtime_deps',
+          post_process.MustRun,
+          'collect runtime deps for compile targets.read target2.runtime_deps',
         )
         test += api.post_process(
-            post_process.MustRun,
-            'collect runtime deps for compile targets.'
-            'read target3.runtime_deps',
+          post_process.MustRun,
+          'collect runtime deps for compile targets.read target3.runtime_deps',
         )
-        expected_paths = '\n'.join([
+        expected_paths = '\n'.join(
+          [
             'out/1826-some-ci-bot/fuzzer.exe',
             'out/1826-some-ci-bot/fuzzer.runtime_deps',
             'out/1826-some-ci-bot/fuzzer_dependency',
@@ -679,657 +730,754 @@ def GenTests(api: TEST_DEPS):
             'out/1826-some-ci-bot/target3.runtime_deps',
             'out/1826-some-ci-bot/target3_dependency',
             'testing/data/fuzzer_seed.txt',
-        ])
+          ]
+        )
         test += api.post_process(
-            LogEquals,
-            'collect runtime deps for compile targets',
-            'paths_to_archive',
-            expected_paths,
+          LogEquals,
+          'collect runtime deps for compile targets',
+          'paths_to_archive',
+          expected_paths,
         )
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
-      test += api.post_process(post_process.MustRun,
-                               'process fuzz coverage (overall)')
+      test += api.post_process(
+        post_process.MustRun, 'process fuzz coverage (overall)'
+      )
       retcode = 0
       if coverage_metadata_failure:
         retcode = 1
       if engine != 'fuzzilli':
         test += api.step_data(
-            'read successful targets',
-            api.file.read_json(['target1', 'target2', 'target3']))
-        test += api.post_process(post_process.MustRun,
-                                 'process fuzz coverage (target1)')
-        test += api.post_process(post_process.MustRun,
-                                 'process fuzz coverage (target2)')
-        test += api.post_process(post_process.MustRun,
-                                 'process fuzz coverage (target3)')
+          'read successful targets',
+          api.file.read_json(['target1', 'target2', 'target3']),
+        )
+        test += api.post_process(
+          post_process.MustRun, 'process fuzz coverage (target1)'
+        )
+        test += api.post_process(
+          post_process.MustRun, 'process fuzz coverage (target2)'
+        )
+        test += api.post_process(
+          post_process.MustRun, 'process fuzz coverage (target3)'
+        )
       test += api.step_data(
-          'process fuzz coverage (overall).generate coverage metadata',
-          retcode=retcode)
+        'process fuzz coverage (overall).generate coverage metadata',
+        retcode=retcode,
+      )
     if is_ios:
       test += api.properties(xcode_build_version='12345')
     if archive_schema_version != 0:
       test += api.post_process(
-          post_process.DoesNotRun,
-          'copy runtime dependencies to build directory',
+        post_process.DoesNotRun,
+        'copy runtime dependencies to build directory',
       )
       if not is_try:
         # Verify that targets and runtime_deps are in the archive.
         # targets in test are fuzzer.exe, target1, target2, target3
         # runtime_deps in test (filtered) are ../../path1, ../../path2,
         # ../../path4, ./path3
-        expected_paths = ('["clusterfuzz_manifest.json", '
-                          '"out/1826-some-ci-bot/args.gn", '
-                          '"out/1826-some-ci-bot/fuzzer.exe", '
-                          '"out/1826-some-ci-bot/fuzzer.runtime_deps", '
-                          '"out/1826-some-ci-bot/fuzzer_dependency", '
-                          '"out/1826-some-ci-bot/target1", '
-                          '"out/1826-some-ci-bot/target1.runtime_deps", '
-                          '"out/1826-some-ci-bot/target1_dependency", '
-                          '"out/1826-some-ci-bot/target2", '
-                          '"out/1826-some-ci-bot/target2.runtime_deps", '
-                          '"out/1826-some-ci-bot/target2_dependency", '
-                          '"out/1826-some-ci-bot/target3", '
-                          '"out/1826-some-ci-bot/target3.runtime_deps", '
-                          '"out/1826-some-ci-bot/target3_dependency", '
-                          '"testing/data/fuzzer_seed.txt"]')
-        test += api.post_process(
-            post_process.StepCommandContains,
-            'zipping',
-            [expected_paths],
+        expected_paths = (
+          '["clusterfuzz_manifest.json", '
+          '"out/1826-some-ci-bot/args.gn", '
+          '"out/1826-some-ci-bot/fuzzer.exe", '
+          '"out/1826-some-ci-bot/fuzzer.runtime_deps", '
+          '"out/1826-some-ci-bot/fuzzer_dependency", '
+          '"out/1826-some-ci-bot/target1", '
+          '"out/1826-some-ci-bot/target1.runtime_deps", '
+          '"out/1826-some-ci-bot/target1_dependency", '
+          '"out/1826-some-ci-bot/target2", '
+          '"out/1826-some-ci-bot/target2.runtime_deps", '
+          '"out/1826-some-ci-bot/target2_dependency", '
+          '"out/1826-some-ci-bot/target3", '
+          '"out/1826-some-ci-bot/target3.runtime_deps", '
+          '"out/1826-some-ci-bot/target3_dependency", '
+          '"testing/data/fuzzer_seed.txt"]'
         )
-        expected_manifest_dict = ('{"archive_schema_version": 1, '
-                                  '"fuzz_targets": ['
-                                  '"out/1826-some-ci-bot/fuzzer.exe", '
-                                  '"out/1826-some-ci-bot/target1", '
-                                  '"out/1826-some-ci-bot/target2", '
-                                  '"out/1826-some-ci-bot/target3"]}')
         test += api.post_process(
-            LogEquals,
-            'write archive manifest',
-            'clusterfuzz_manifest.json',
-            expected_manifest_dict,
+          post_process.StepCommandContains,
+          'zipping',
+          [expected_paths],
+        )
+        expected_manifest_dict = (
+          '{"archive_schema_version": 1, '
+          '"fuzz_targets": ['
+          '"out/1826-some-ci-bot/fuzzer.exe", '
+          '"out/1826-some-ci-bot/target1", '
+          '"out/1826-some-ci-bot/target2", '
+          '"out/1826-some-ci-bot/target3"]}'
+        )
+        test += api.post_process(
+          LogEquals,
+          'write archive manifest',
+          'clusterfuzz_manifest.json',
+          expected_manifest_dict,
         )
     if drop_expectation:
       test += api.post_process(post_process.DropExpectation)
     return test
 
   yield api.test(
-      'linux-32',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          chromium_apply_config=['clobber'],
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_BITS': 32,
-                          },
-                      ),
+    'linux-32',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              chromium_apply_config=['clobber'],
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_BITS': 32,
               },
-          })),
-      api.platform.name('linux'),
-      api.post_process(post_process.MustRun, 'clobber'),
-      generate_test(),
-  )
-
-  yield api.test(
-      'linux-dbg',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'BUILD_CONFIG': 'Debug',
-                          },
-                      ),
-              },
-          }),
+            ),
+          },
+        }
       ),
-      api.path.exists(api.path.cache_dir /
-                      'builder/src/out/1826-some-ci-bot/src_root/path1'),
-      api.platform.name('linux'),
-      generate_test(),
+    ),
+    api.platform.name('linux'),
+    api.post_process(post_process.MustRun, 'clobber'),
+    generate_test(),
   )
+
   yield api.test(
-      'schema_v1',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
+    'linux-dbg',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'BUILD_CONFIG': 'Debug',
               },
-          }),
+            ),
+          },
+        }
       ),
-      api.platform.name('linux'),
-      generate_test(archive_schema_version=1),
+    ),
+    api.path.exists(
+      api.path.cache_dir / 'builder/src/out/1826-some-ci-bot/src_root/path1'
+    ),
+    api.platform.name('linux'),
+    generate_test(),
   )
-
   yield api.test(
-      'v8',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      generate_test(is_v8=True),
-  )
-
-  yield api.test(
-      'ios',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM': 'ios',
-                          },
-                      ),
-              },
-          })),
-      api.platform.name('mac'),
-      generate_test(is_ios=True),
-  )
-
-  yield api.test(
-      'android',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM': 'android',
-                          },
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      generate_test(drop_expectation=False),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text(
-              '//foo:target1__library\n//foo:target2__library\n'
-              '//foo:fuzzer.exe__library\n')),
-      api.step_data(
-          'list gn targets',
-          stdout=api.raw_io.output_text('fuzzer.exe\ntarget1\ntarget2')),
-      api.step_data(
-          'collect all runtime dependencies.'
-          'get runtime dependencies with pattern *',
-          stdout=api.raw_io.output_text('Target //foo:target1\n'
-                                        'runtime_deps\n'
-                                        '  ../../path1\n'
-                                        '  ../../path2\n'
-                                        '  ../../path4\n'
-                                        '  ./path3\n'
-                                        '  ./target2\n'
-                                        '  ./target3\n'
-                                        'Target //foo:fuzzer.exe\n'
-                                        'runtime_deps\n'
-                                        '  ./fuzzer.exe\n')),
-      api.post_check(post_process.StepCommandContains, 'list gn targets',
-                     ['//foo:target1']),
-      api.post_check(post_process.StepCommandDoesNotContain, 'list gn targets',
-                     ['//foo:target1__library']),
-  )
-
-  yield api.test(
-      'coverage',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      generate_test(is_coverage=True),
-  )
-
-  yield api.test(
-      'mac-coverage',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM': 'mac',
-                          },
-                      ),
-              },
-          })),
-      api.platform.name('mac'),
-      generate_test(is_coverage=True),
-  )
-
-  yield api.test(
-      'coverage_metadata_generation_failure',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      api.expect_status('FAILURE'),
-      generate_test(is_coverage=True, coverage_metadata_failure=True),
-  )
-
-  yield api.test(
-      'fuzzilli-coverage',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      generate_test(is_coverage=True, engine='fuzzilli'),
-  )
-
-  yield api.test(
-      'centipede-coverage',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      generate_test(is_coverage=True, engine='centipede'),
-  )
-
-  yield api.test(
-      'd8-compile-failure',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      api.properties(fuzz_engine='fuzzilli'),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'compile_failure',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='Libfuzzer Upload Mac ASan',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'Libfuzzer Upload Mac ASan':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('mac'),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('//foo/bar:target1')),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target1')),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'basic_linux_tryjob_no_compile',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'fuzz-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          }),
-          try_db=ctbc.TryDatabase.create({
-              'tryserver.chromium.linux': {
-                  'linux-libfuzzer-asan-rel':
-                      ctbc.TrySpec.create_for_single_mirror(
-                          'chromium.fuzz', 'fuzz-ci-bot'),
-              },
-          })),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text(
-              '//foo/bar:target1\n//foo/bar:target2\n//foo/bar:target3')),
-      api.step_data(
-          'calculate no_clusterfuzz',
-          stdout=api.raw_io.output_text('//foo/bar:target1')),
-      api.filter.no_dependency(),
-  )
-
-  yield api.test(
-      'basic_linux_tryjob_with_compile',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'fuzz-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          chromium_apply_config=['clobber'],
-                          gclient_config='chromium',
-                      ),
-              },
-          }),
-          try_db=ctbc.TryDatabase.create({
-              'tryserver.chromium.linux': {
-                  'linux-libfuzzer-asan-rel':
-                      ctbc.TrySpec.create_for_single_mirror(
-                          'chromium.fuzz', 'fuzz-ci-bot'),
-              },
-          })),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('\n'.join(
-              ['//foo/bar:target1', '//foo/bar:target2',
-               '//foo/bar:target3']))),
-      api.step_data(
-          'calculate no_clusterfuzz',
-          stdout=api.raw_io.output_text('//foo/bar:target1')),
-      api.filter.analyze_output(
-          status='Found dependency',
-          test_targets=[],
-          compile_targets=['//foo/bar:target2'],
+    'schema_v1',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
       ),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target2')),
-      api.post_process(post_process.DoesNotRun, 'clobber'),
+    ),
+    api.platform.name('linux'),
+    generate_test(archive_schema_version=1),
   )
 
   yield api.test(
-      'basic_linux_tryjob_with_compile_many_targets',
-      api.chromium_tests_builder_config.try_build(
-          builder_group='tryserver.chromium.linux',
-          builder='linux-libfuzzer-asan-rel',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'fuzz-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          }),
-          try_db=ctbc.TryDatabase.create({
-              'tryserver.chromium.linux': {
-                  'linux-libfuzzer-asan-rel':
-                      ctbc.TrySpec.create_for_single_mirror(
-                          'chromium.fuzz', 'fuzz-ci-bot'),
-              },
-          })),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('\n'.join(
-              f'//foo/bar:target{i}' for i in range(1500)))),
-      api.step_data(
-          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
-      api.step_data(
-          'list gn targets',
-          stdout=api.raw_io.output_text('\n'.join(
-              f'target{i}' for i in range(500)))),
-      api.step_data(
-          'list gn targets (2)',
-          stdout=api.raw_io.output_text('\n'.join(
-              f'target{i}' for i in range(500, 1000)))),
-      api.step_data(
-          'list gn targets (3)',
-          stdout=api.raw_io.output_text('\n'.join(
-              f'target{i}' for i in range(1000, 1500)))),
-      # So many targets get batched into several gn ls invocations.
-      api.post_check(post_process.MustRun, 'list gn targets'),
-      api.post_check(post_process.MustRun, 'list gn targets (2)'),
-      api.post_check(post_process.MustRun, 'list gn targets (3)'),
-      api.post_check(post_process.DoesNotRun, 'list gn targets (4)'),
-      # Same goes for ninja invocations.
-      api.post_check(post_process.MustRun, 'compile'),
-      api.post_check(post_process.MustRun, 'compile (3)'),
-      api.post_check(post_process.MustRun, 'compile (3)'),
-      api.post_check(post_process.DoesNotRun, 'compile (4)'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'filter_asan_warning',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='chromium-browser-libfuzzer',
-          upload_directory='fuzz',
+    'v8',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
       ),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('Warning: is_asan is not defined\n'
-                                        '//foo/bar:target1\n')),
-      api.step_data(
-          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
-      api.step_data(
-          'list gn targets', stdout=api.raw_io.output_text('target1')),
-      api.post_check(post_process.StepCommandDoesNotContain, 'list gn targets',
-                     ['Warning: is_asan is not defined']),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.platform.name('linux'),
+    generate_test(is_v8=True),
   )
 
   yield api.test(
-      'filter_asan_warning_in_gn_ls',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.fuzz',
-          builder='some-ci-bot',
-          builder_db=ctbc.BuilderDatabase.create({
-              'chromium.fuzz': {
-                  'some-ci-bot':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
+    'ios',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'ios',
               },
-          })),
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='chromium-browser-libfuzzer',
-          upload_directory='fuzz',
+            ),
+          },
+        }
       ),
-      api.step_data(
-          'calculate all_fuzzers',
-          stdout=api.raw_io.output_text('//foo/bar:target1\n')),
-      api.step_data(
-          'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
-      api.step_data(
-          'list gn targets',
-          stdout=api.raw_io.output_text('Warning: is_asan is not defined\n'
-                                        'target1\n')),
-      api.post_check(post_process.StepCommandContains, 'compile', ['target1']),
-      api.post_check(post_process.StepCommandDoesNotContain, 'compile',
-                     ['Warning: is_asan is not defined']),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.platform.name('mac'),
+    generate_test(is_ios=True),
+  )
+
+  yield api.test(
+    'android',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'android',
+              },
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    generate_test(drop_expectation=False),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text(
+        '//foo:target1__library\n//foo:target2__library\n'
+        '//foo:fuzzer.exe__library\n'
+      ),
+    ),
+    api.step_data(
+      'list gn targets',
+      stdout=api.raw_io.output_text('fuzzer.exe\ntarget1\ntarget2'),
+    ),
+    api.step_data(
+      'collect all runtime dependencies.'
+      'get runtime dependencies with pattern *',
+      stdout=api.raw_io.output_text(
+        'Target //foo:target1\n'
+        'runtime_deps\n'
+        '  ../../path1\n'
+        '  ../../path2\n'
+        '  ../../path4\n'
+        '  ./path3\n'
+        '  ./target2\n'
+        '  ./target3\n'
+        'Target //foo:fuzzer.exe\n'
+        'runtime_deps\n'
+        '  ./fuzzer.exe\n'
+      ),
+    ),
+    api.post_check(
+      post_process.StepCommandContains, 'list gn targets', ['//foo:target1']
+    ),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'list gn targets',
+      ['//foo:target1__library'],
+    ),
+  )
+
+  yield api.test(
+    'coverage',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    generate_test(is_coverage=True),
+  )
+
+  yield api.test(
+    'mac-coverage',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'mac',
+              },
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('mac'),
+    generate_test(is_coverage=True),
+  )
+
+  yield api.test(
+    'coverage_metadata_generation_failure',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.expect_status('FAILURE'),
+    generate_test(is_coverage=True, coverage_metadata_failure=True),
+  )
+
+  yield api.test(
+    'fuzzilli-coverage',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    generate_test(is_coverage=True, engine='fuzzilli'),
+  )
+
+  yield api.test(
+    'centipede-coverage',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    generate_test(is_coverage=True, engine='centipede'),
+  )
+
+  yield api.test(
+    'd8-compile-failure',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.properties(fuzz_engine='fuzzilli'),
+    api.step_data('compile', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'compile_failure',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='Libfuzzer Upload Mac ASan',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'Libfuzzer Upload Mac ASan': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('mac'),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text('//foo/bar:target1'),
+    ),
+    api.step_data('list gn targets', stdout=api.raw_io.output_text('target1')),
+    api.step_data('compile', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'basic_linux_tryjob_no_compile',
+    api.chromium_tests_builder_config.try_build(
+      builder_group='tryserver.chromium.linux',
+      builder='linux-libfuzzer-asan-rel',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'fuzz-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+      try_db=ctbc.TryDatabase.create(
+        {
+          'tryserver.chromium.linux': {
+            'linux-libfuzzer-asan-rel': ctbc.TrySpec.create_for_single_mirror(
+              'chromium.fuzz', 'fuzz-ci-bot'
+            ),
+          },
+        }
+      ),
+    ),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text(
+        '//foo/bar:target1\n//foo/bar:target2\n//foo/bar:target3'
+      ),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz',
+      stdout=api.raw_io.output_text('//foo/bar:target1'),
+    ),
+    api.filter.no_dependency(),
+  )
+
+  yield api.test(
+    'basic_linux_tryjob_with_compile',
+    api.chromium_tests_builder_config.try_build(
+      builder_group='tryserver.chromium.linux',
+      builder='linux-libfuzzer-asan-rel',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'fuzz-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              chromium_apply_config=['clobber'],
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+      try_db=ctbc.TryDatabase.create(
+        {
+          'tryserver.chromium.linux': {
+            'linux-libfuzzer-asan-rel': ctbc.TrySpec.create_for_single_mirror(
+              'chromium.fuzz', 'fuzz-ci-bot'
+            ),
+          },
+        }
+      ),
+    ),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text(
+        '\n'.join(
+          ['//foo/bar:target1', '//foo/bar:target2', '//foo/bar:target3']
+        )
+      ),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz',
+      stdout=api.raw_io.output_text('//foo/bar:target1'),
+    ),
+    api.filter.analyze_output(
+      status='Found dependency',
+      test_targets=[],
+      compile_targets=['//foo/bar:target2'],
+    ),
+    api.step_data('list gn targets', stdout=api.raw_io.output_text('target2')),
+    api.post_process(post_process.DoesNotRun, 'clobber'),
+  )
+
+  yield api.test(
+    'basic_linux_tryjob_with_compile_many_targets',
+    api.chromium_tests_builder_config.try_build(
+      builder_group='tryserver.chromium.linux',
+      builder='linux-libfuzzer-asan-rel',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'fuzz-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+      try_db=ctbc.TryDatabase.create(
+        {
+          'tryserver.chromium.linux': {
+            'linux-libfuzzer-asan-rel': ctbc.TrySpec.create_for_single_mirror(
+              'chromium.fuzz', 'fuzz-ci-bot'
+            ),
+          },
+        }
+      ),
+    ),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text(
+        '\n'.join(f'//foo/bar:target{i}' for i in range(1500))
+      ),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')
+    ),
+    api.step_data(
+      'list gn targets',
+      stdout=api.raw_io.output_text(
+        '\n'.join(f'target{i}' for i in range(500))
+      ),
+    ),
+    api.step_data(
+      'list gn targets (2)',
+      stdout=api.raw_io.output_text(
+        '\n'.join(f'target{i}' for i in range(500, 1000))
+      ),
+    ),
+    api.step_data(
+      'list gn targets (3)',
+      stdout=api.raw_io.output_text(
+        '\n'.join(f'target{i}' for i in range(1000, 1500))
+      ),
+    ),
+    # So many targets get batched into several gn ls invocations.
+    api.post_check(post_process.MustRun, 'list gn targets'),
+    api.post_check(post_process.MustRun, 'list gn targets (2)'),
+    api.post_check(post_process.MustRun, 'list gn targets (3)'),
+    api.post_check(post_process.DoesNotRun, 'list gn targets (4)'),
+    # Same goes for ninja invocations.
+    api.post_check(post_process.MustRun, 'compile'),
+    api.post_check(post_process.MustRun, 'compile (3)'),
+    api.post_check(post_process.MustRun, 'compile (3)'),
+    api.post_check(post_process.DoesNotRun, 'compile (4)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'filter_asan_warning',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='chromium-browser-libfuzzer',
+      upload_directory='fuzz',
+    ),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text(
+        'Warning: is_asan is not defined\n//foo/bar:target1\n'
+      ),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')
+    ),
+    api.step_data('list gn targets', stdout=api.raw_io.output_text('target1')),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'list gn targets',
+      ['Warning: is_asan is not defined'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'filter_asan_warning_in_gn_ls',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='chromium-browser-libfuzzer',
+      upload_directory='fuzz',
+    ),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text('//foo/bar:target1\n'),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')
+    ),
+    api.step_data(
+      'list gn targets',
+      stdout=api.raw_io.output_text(
+        'Warning: is_asan is not defined\ntarget1\n'
+      ),
+    ),
+    api.post_check(post_process.StepCommandContains, 'compile', ['target1']),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'compile',
+      ['Warning: is_asan is not defined'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   def upload_test(name, *args, upload_path=''):
     test_args = [
-        api.chromium_tests_builder_config.ci_build(
-            builder_group='chromium.fuzz',
-            builder='some-ci-bot',
-            builder_db=ctbc.BuilderDatabase.create({
-                'chromium.fuzz': {
-                    'some-ci-bot':
-                        ctbc.BuilderSpec.create(
-                            chromium_config='chromium',
-                            gclient_config='chromium',
-                        ),
-                },
-            })),
-        *args,
-        api.step_data(
-            'calculate all_fuzzers',
-            stdout=api.raw_io.output_text('//foo/bar:target1\n')),
-        api.step_data(
-            'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')),
+      api.chromium_tests_builder_config.ci_build(
+        builder_group='chromium.fuzz',
+        builder='some-ci-bot',
+        builder_db=ctbc.BuilderDatabase.create(
+          {
+            'chromium.fuzz': {
+              'some-ci-bot': ctbc.BuilderSpec.create(
+                chromium_config='chromium',
+                gclient_config='chromium',
+              ),
+            },
+          }
+        ),
+      ),
+      *args,
+      api.step_data(
+        'calculate all_fuzzers',
+        stdout=api.raw_io.output_text('//foo/bar:target1\n'),
+      ),
+      api.step_data(
+        'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')
+      ),
     ]
     if upload_path:
       test_args.append(
-          api.post_check(post_process.StepCommandContains, 'gsutil upload',
-                         [f'{upload_path}-170242.zip']))
+        api.post_check(
+          post_process.StepCommandContains,
+          'gsutil upload',
+          [f'{upload_path}-170242.zip'],
+        )
+      )
     test_args.append(api.post_process(post_process.DropExpectation))
     return api.test(f'upload path {name}', *test_args)
 
   yield upload_test(
-      'default',
-      api.platform.name('linux'),
-      api.properties(upload_bucket='bucket'),
-      upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
+    'default',
+    api.platform.name('linux'),
+    api.properties(upload_bucket='bucket'),
+    upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
   )
 
   yield upload_test(
-      'prefix',
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='bucket',
-          archive_prefix='prefix',
-      ),
-      upload_path='gs://bucket/linux-release/prefix-linux-release',
+    'prefix',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      archive_prefix='prefix',
+    ),
+    upload_path='gs://bucket/linux-release/prefix-linux-release',
   )
 
   yield upload_test(
-      'subdir',
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='bucket',
-          upload_directory='subdir',
-      ),
-      upload_path='gs://bucket/linux-release-subdir/libfuzzer-linux-release',
+    'subdir',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      upload_directory='subdir',
+    ),
+    upload_path='gs://bucket/linux-release-subdir/libfuzzer-linux-release',
   )
 
   yield upload_test(
-      'mac',
-      api.platform.name('mac'),
-      api.properties(upload_bucket='bucket'),
-      upload_path='gs://bucket/mac-release/libfuzzer-mac-release',
+    'mac',
+    api.platform.name('mac'),
+    api.properties(upload_bucket='bucket'),
+    upload_path='gs://bucket/mac-release/libfuzzer-mac-release',
   )
 
   yield upload_test(
-      'windows',
-      api.platform.name('win'),
-      api.properties(upload_bucket='bucket'),
-      upload_path='gs://bucket/win32-release/libfuzzer-win32-release',
+    'windows',
+    api.platform.name('win'),
+    api.properties(upload_bucket='bucket'),
+    upload_path='gs://bucket/win32-release/libfuzzer-win32-release',
   )
 
   yield upload_test(
-      'verbatim',
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='bucket',
-          archive_path='bleep-bloop/foo-bar',
-          use_archive_path=True,
-      ),
-      upload_path='gs://bucket/bleep-bloop/foo-bar',
+    'verbatim',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      archive_path='bleep-bloop/foo-bar',
+      use_archive_path=True,
+    ),
+    upload_path='gs://bucket/bleep-bloop/foo-bar',
   )
 
   yield upload_test(
-      'assert success',
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='bucket',
-          archive_path='linux-release/libfuzzer-linux-release',
-      ),
-      upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
+    'assert success',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      archive_path='linux-release/libfuzzer-linux-release',
+    ),
+    upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
   )
 
   yield upload_test(
-      'assert failure',
-      api.platform.name('linux'),
-      api.properties(
-          upload_bucket='bucket',
-          archive_path='wrong-path',
-      ),
-      api.expect_exception('AssertionError'),
+    'assert failure',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      archive_path='wrong-path',
+    ),
+    api.expect_exception('AssertionError'),
   )

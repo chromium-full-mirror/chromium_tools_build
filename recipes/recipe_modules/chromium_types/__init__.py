@@ -6,8 +6,13 @@ from __future__ import annotations
 
 from recipe_engine import recipe_api
 
-from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
-                                             mapping, sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  FieldMapping,
+  attrib,
+  attrs,
+  mapping,
+  sequence,
+)
 
 
 @attrs()
@@ -74,11 +79,10 @@ class BuilderSpec(FieldMapping):
 
 
 class API(recipe_api.RecipeApi):
-
   def __init__(self, *args, **kwargs):
     raise Exception(
-        'API has no methods, '
-        'instead import RECIPE_MODULE.build.chromium_types')  # pragma: no cover
+      'API has no methods, instead import RECIPE_MODULE.build.chromium_types'
+    )  # pragma: no cover
 
 
 __all__ = ['API', 'BuilderId', 'BuilderSpec']

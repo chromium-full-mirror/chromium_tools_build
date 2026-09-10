@@ -22,20 +22,24 @@ def _parse_args(args):
     The parsed arguments as parameters.
   """
   parser = argparse.ArgumentParser(
-      description='Get native libraries for an android target')
+    description='Get native libraries for an android target'
+  )
   parser.add_argument(
-      '--chromium-output-dir',
-      required=True,
-      help='absolute path to the chromium output directory')
+    '--chromium-output-dir',
+    required=True,
+    help='absolute path to the chromium output directory',
+  )
   parser.add_argument(
-      '--isolate-target',
-      required=True,
-      help='isolate target name of the target to find libraries for')
+    '--isolate-target',
+    required=True,
+    help='isolate target name of the target to find libraries for',
+  )
   parser.add_argument(
-      '--output-json',
-      required=True,
-      help='absoluate path to the file that stores the output, and the format '
-      'is a json list of absolute paths to relevant binaries')
+    '--output-json',
+    required=True,
+    help='absoluate path to the file that stores the output, and the format '
+    'is a json list of absolute paths to relevant binaries',
+  )
   params = parser.parse_args(args=args)
 
   if not os.path.isdir(params.chromium_output_dir):
@@ -54,27 +58,30 @@ def _get_library_paths(chromium_output_dir, isolate_target):
   Returns:
     A list of all found paths.
   """
-  isolated_path = (
-      os.path.join(chromium_output_dir, '%s.isolate' % isolate_target))
+  isolated_path = os.path.join(
+    chromium_output_dir, '%s.isolate' % isolate_target
+  )
   with open(isolated_path) as f:
     # This is a list of relative paths from build output.
     raw_isolated_paths = json.load(f).get('variables', {}).get('files', [])
     all_isolated_paths = [os.path.normpath(path) for path in raw_isolated_paths]
 
   is_wanted = lambda path: (
-      path.startswith('lib.unstripped/') and path.endswith('.so'))
+    path.startswith('lib.unstripped/') and path.endswith('.so')
+  )
 
   wanted_paths = [path for path in all_isolated_paths if is_wanted(path)]
   return [
-      os.path.join(chromium_output_dir, lib_path) for lib_path in wanted_paths
+    os.path.join(chromium_output_dir, lib_path) for lib_path in wanted_paths
   ]
 
 
 def main():
   params = _parse_args(sys.argv[1:])
   paths = _get_library_paths(params.chromium_output_dir, params.isolate_target)
-  logging.info('For %s, found native libraries files: %r' %
-               (params.isolate_target, paths))
+  logging.info(
+    'For %s, found native libraries files: %r' % (params.isolate_target, paths)
+  )
 
   with open(params.output_json, 'w') as f:
     json.dump(paths, f, separators=(',', ':'))
@@ -82,5 +89,6 @@ def main():
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

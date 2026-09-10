@@ -24,13 +24,14 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   _ = api.chromium_checkout.default_checkout_dir
-  with api.assertions.assertRaisesRegexp(ValueError,
-                                         'this indicates a likely mistake'):
+  with api.assertions.assertRaisesRegexp(
+    ValueError, 'this indicates a likely mistake'
+  ):
     api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

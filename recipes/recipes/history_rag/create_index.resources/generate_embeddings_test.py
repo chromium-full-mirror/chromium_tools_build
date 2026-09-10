@@ -17,7 +17,6 @@ import generate_embeddings
 
 
 class TestGenerateEmbeddings(unittest.TestCase):
-
   def setUp(self):
     # Create a temporary directory for test files
     self.test_dir = tempfile.mkdtemp()
@@ -26,19 +25,23 @@ class TestGenerateEmbeddings(unittest.TestCase):
     self.output_file = Path(self.test_dir) / "output.npz"
 
     # Create dummy commit data
-    self.dummy_commits = [{
+    self.dummy_commits = [
+      {
         'message': 'Fix bug in rendering',
         'cleaned_message': 'Fix bug rendering',
-        'commits': ['hash1']
-    }, {
+        'commits': ['hash1'],
+      },
+      {
         'message': 'Update documentation',
         'cleaned_message': 'Update docs',
-        'commits': ['hash2']
-    }, {
+        'commits': ['hash2'],
+      },
+      {
         'message': 'Refactor login logic',
         'cleaned_message': 'Refactor login',
-        'commits': ['hash3']
-    }]
+        'commits': ['hash3'],
+      },
+    ]
 
     # Save dummy data to pickle
     with open(self.input_file, 'wb') as f:
@@ -76,19 +79,20 @@ class TestGenerateEmbeddings(unittest.TestCase):
       return mock_response
 
     mock_client.models.embed_content.side_effect = [
-        create_mock_response(2),  # First batch (size 2)
-        create_mock_response(1)  # Second batch (size 1 remainder)
+      create_mock_response(2),  # First batch (size 2)
+      create_mock_response(1),  # Second batch (size 1 remainder)
     ]
 
     messages = ["msg1", "msg2", "msg3"]
 
     # Run with batch size 2 and dummy model name
     embeddings = generate_embeddings.generate_embeddings_batch(
-        messages,
-        mock_client,
-        model_name="test-model",
-        output_dimensionality=768,
-        batch_size=2)
+      messages,
+      mock_client,
+      model_name="test-model",
+      output_dimensionality=768,
+      batch_size=2,
+    )
 
     self.assertEqual(embeddings.shape, (3, 2))  # 3 messages, dimension 2
     self.assertEqual(mock_client.models.embed_content.call_count, 2)
@@ -110,18 +114,20 @@ class TestGenerateEmbeddings(unittest.TestCase):
 
     # Fail once, then succeed
     mock_client.models.embed_content.side_effect = [
-        Exception("API overloaded"), mock_response
+      Exception("API overloaded"),
+      mock_response,
     ]
 
     # Patch time.sleep to speed up test
     with patch('time.sleep') as mock_sleep:
       embeddings = generate_embeddings.generate_embeddings_batch(
-          ["msg1"],
-          mock_client,
-          model_name="test-model",
-          output_dimensionality=768,
-          batch_size=1,
-          max_retries=3)
+        ["msg1"],
+        mock_client,
+        model_name="test-model",
+        output_dimensionality=768,
+        batch_size=1,
+        max_retries=3,
+      )
 
     self.assertEqual(len(embeddings), 1)
     self.assertEqual(mock_client.models.embed_content.call_count, 2)
@@ -139,11 +145,12 @@ class TestGenerateEmbeddings(unittest.TestCase):
     messages = [d['cleaned_message'] for d in self.dummy_commits]
 
     embeddings = generate_embeddings.get_embeddings_with_cache(
-        messages,
-        self.cache_dir,
-        mock_client,
-        model_name="test-model",
-        output_dimensionality=768)
+      messages,
+      self.cache_dir,
+      mock_client,
+      model_name="test-model",
+      output_dimensionality=768,
+    )
 
     # Should have called API once
     mock_client.models.embed_content.assert_called_once()
@@ -173,15 +180,17 @@ class TestGenerateEmbeddings(unittest.TestCase):
     mock_client.models.embed_content.return_value = mock_response
 
     embeddings = generate_embeddings.get_embeddings_with_cache(
-        messages,
-        self.cache_dir,
-        mock_client,
-        model_name=model_name,
-        output_dimensionality=output_dim)
+      messages,
+      self.cache_dir,
+      mock_client,
+      model_name=model_name,
+      output_dimensionality=output_dim,
+    )
 
     mock_client.models.embed_content.assert_called_once()
     called_messages = mock_client.models.embed_content.call_args.kwargs[
-        'contents']
+      'contents'
+    ]
     self.assertEqual(called_messages, ["new_msg"])
 
     # Result should combine cached (0.9) and new (0.1)
@@ -203,10 +212,12 @@ class TestGenerateEmbeddings(unittest.TestCase):
 
     # Arguments simulation
     test_args = [
-        "generate_embeddings.py",
-        str(self.input_file), "--output-file",
-        str(self.output_file), "--cache-dir",
-        str(self.cache_dir)
+      "generate_embeddings.py",
+      str(self.input_file),
+      "--output-file",
+      str(self.output_file),
+      "--cache-dir",
+      str(self.cache_dir),
     ]
 
     with patch.object(sys, 'argv', test_args):

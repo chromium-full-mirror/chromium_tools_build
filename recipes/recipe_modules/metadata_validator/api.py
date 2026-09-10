@@ -13,30 +13,34 @@ from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 SKIP_FOOTER = 'Metadata-Validate-Bypass'
-BYPASS_TEXT = ('\n\n**To bypass this check, add '
-               f'`{SKIP_FOOTER}: <REASON>` '
-               'to your CL description.**')
+BYPASS_TEXT = (
+  '\n\n**To bypass this check, add '
+  f'`{SKIP_FOOTER}: <REASON>` '
+  'to your CL description.**'
+)
 
-CIPD_GCS_CAVEAT = ('\n\nLicenses stored in CIPD or GCS aren\'t detected '
-                   'correctly')
+CIPD_GCS_CAVEAT = (
+  '\n\nLicenses stored in CIPD or GCS aren\'t detected correctly'
+)
 
 BYPASSED_TEXT = '\n\n**Validation bypassed by footer.**'
 
 RUN_LOCALLY_FOOTNOTE = (
-    '\n\nTo run these checks locally, use '
-    '`python3 <path_to_depot_tools>/metadata/scan.py <path/to/dependency>`')
+  '\n\nTo run these checks locally, use '
+  '`python3 <path_to_depot_tools>/metadata/scan.py <path/to/dependency>`'
+)
 
 METADATA_FILES = [
-    'README.chromium',
-    'README.angle',
-    'README.pdfium',
-    'README.crashpad',
-    'README.skia',
-    'README.swarming',
-    'README.v8',
-    'README.webrtc',
-    'README.google',
-    'README.libaom',
+  'README.chromium',
+  'README.angle',
+  'README.pdfium',
+  'README.crashpad',
+  'README.skia',
+  'README.swarming',
+  'README.v8',
+  'README.webrtc',
+  'README.google',
+  'README.libaom',
 ]
 
 # Truncate the list of failures to keep the summary under
@@ -45,7 +49,8 @@ MAX_SUMMARY = 4000
 
 # This list is used to determine if scan.py should provide
 # --is-open-source-project flag which allows more permissive license usage.
-OPEN_SOURCE_HOSTS = frozenset([
+OPEN_SOURCE_HOSTS = frozenset(
+  [
     'chromium-review.googlesource.com',
     'pdfium-review.googlesource.com',
     'webrtc-review.googlesource.com',
@@ -53,7 +58,8 @@ OPEN_SOURCE_HOSTS = frozenset([
     'dawn-review.googlesource.com',
     'skia-review.googlesource.com',
     'swiftshader-review.googlesource.com',
-])
+  ]
+)
 
 
 @dataclass
@@ -63,7 +69,6 @@ class ValidationResult:
 
 
 class MetadataValidatorApi(RecipeApi):
-
   @property
   def _working_dir(self):
     return self.m.path.cleanup_dir / 'gerrit_readme_checkout'
@@ -71,10 +76,12 @@ class MetadataValidatorApi(RecipeApi):
   def _write_to_working_dir(self, rel_path, content):
     """Writes content to the working directory, mirroring the relative path."""
     dest_path = self._working_dir / rel_path
-    self.m.file.ensure_directory(f'Ensure cache dir for {rel_path}',
-                                 dest_path.parent)
-    return self.m.file.write_text(f'Write {rel_path} to cache', dest_path,
-                                  content)
+    self.m.file.ensure_directory(
+      f'Ensure cache dir for {rel_path}', dest_path.parent
+    )
+    return self.m.file.write_text(
+      f'Write {rel_path} to cache', dest_path, content
+    )
 
   def extract_license_paths(self, readme_content):
     """
@@ -146,8 +153,9 @@ class MetadataValidatorApi(RecipeApi):
             where status is 'A' (added), 'M' (modified), or 'D' (deleted).
     """
     current_revision = change.get('current_revision')
-    return change.get('revisions', {}).get(current_revision,
-                                           {}).get('files', {})
+    return (
+      change.get('revisions', {}).get(current_revision, {}).get('files', {})
+    )
 
   def is_file_deleted(self, change, file_path):
     """Check if a file is deleted in the given change.
@@ -159,10 +167,9 @@ class MetadataValidatorApi(RecipeApi):
       return file_desc.get('status') == 'D'
     return False
 
-  def fetch_gerrit_file_content(self,
-                                file_path,
-                                change,
-                                accept_statuses=None) -> str | None:
+  def fetch_gerrit_file_content(
+    self, file_path, change, accept_statuses=None
+  ) -> str | None:
     """Fetch file content using Gitiles API.
 
     Returns:
@@ -173,38 +180,42 @@ class MetadataValidatorApi(RecipeApi):
     cl = self.m.tryserver.gerrit_change
     if self.is_file_deleted(change, file_path):
       self.m.step.empty(
-          f'Not fetching {file_path} because it is deleted in the CL')
+        f'Not fetching {file_path} because it is deleted in the CL'
+      )
       return None
 
     # TODO(b/483862822): Remove this once url paths are properly encoded.
     if " " in file_path:
       self.m.step.empty(
-          f'Not fetching {file_path} because it contains spaces, see '
-          'b/483862822')
+        f'Not fetching {file_path} because it contains spaces, see b/483862822'
+      )
       return None
 
     # TODO(b/484171134): Support downloading .md files.
     if ".md" in file_path:
       self.m.step.empty(
-          f'Not fetching {file_path} because it contains .md, see b/484171134')
+        f'Not fetching {file_path} because it contains .md, see b/484171134'
+      )
       return None
 
     # Construct Gitiles repo URL from Gerrit host/project.
-    gitiles_host = cl.host.replace('-review.googlesource.com',
-                                   '.googlesource.com')
+    gitiles_host = cl.host.replace(
+      '-review.googlesource.com', '.googlesource.com'
+    )
     repo_url = f'https://{gitiles_host}/{cl.project}'
 
     return self.m.gitiles.download_file(
-        repo_url,
-        file_path,
-        branch=change.get('current_revision', 'HEAD'),
-        step_name=f'Fetch {file_path}',
-        attempts=5,
-        accept_statuses=accept_statuses)
+      repo_url,
+      file_path,
+      branch=change.get('current_revision', 'HEAD'),
+      step_name=f'Fetch {file_path}',
+      attempts=5,
+      accept_statuses=accept_statuses,
+    )
 
-  def submodule_path_map(self,
-                         change,
-                         child_path_filter=None) -> dict[str, str]:
+  def submodule_path_map(
+    self, change, child_path_filter=None
+  ) -> dict[str, str]:
     """Returns a map from submodule path to project url.
 
     Args:
@@ -220,7 +231,8 @@ class MetadataValidatorApi(RecipeApi):
     submodule_map = {}
     # .gitmodules might not exist in the CL.
     git_modules = self.fetch_gerrit_file_content(
-        '.gitmodules', change, accept_statuses=[200, 400, 404])
+      '.gitmodules', change, accept_statuses=[200, 400, 404]
+    )
     if not git_modules:
       self.m.step.empty('No .gitmodules file found')
       return submodule_map
@@ -230,19 +242,21 @@ class MetadataValidatorApi(RecipeApi):
 
     # Use start_dir to avoid the "mismatched bases" error
     temp_modules = self.m.path.start_dir / 'temp_gitmodules'
-    self.m.file.write_text('write .gitmodules for parsing', temp_modules,
-                           git_modules)
+    self.m.file.write_text(
+      'write .gitmodules for parsing', temp_modules, git_modules
+    )
 
     # We use --get-regexp to find the unique names without parsing the line.
     with self.m.context(cwd=self.m.path.start_dir):
       res = self.m.git(
-          'config',
-          '--file',
-          temp_modules,
-          '--get-regexp',
-          r'submodule\..*\.path',
-          stdout=self.m.raw_io.output_text(),
-          name='list submodules')
+        'config',
+        '--file',
+        temp_modules,
+        '--get-regexp',
+        r'submodule\..*\.path',
+        stdout=self.m.raw_io.output_text(),
+        name='list submodules',
+      )
 
     if not res.stdout:
       return submodule_map
@@ -260,12 +274,13 @@ class MetadataValidatorApi(RecipeApi):
 
       with self.m.context(cwd=self.m.path.start_dir):
         url_val = self.m.git(
-            'config',
-            '--file',
-            temp_modules,
-            '--get',
-            url_key,
-            stdout=self.m.raw_io.output_text()).stdout.strip()
+          'config',
+          '--file',
+          temp_modules,
+          '--get',
+          url_key,
+          stdout=self.m.raw_io.output_text(),
+        ).stdout.strip()
 
       if path_val and url_val:
         submodule_map[path_val] = url_val
@@ -314,23 +329,26 @@ class MetadataValidatorApi(RecipeApi):
     # TODO(b/483862822): Remove this once url paths are properly encoded.
     if " " in rel_path:
       self.m.step.empty(
-          f'Not fetching {submodule_dir} : {rel_path} because it contains '
-          'spaces, see b/483862822')
+        f'Not fetching {submodule_dir} : {rel_path} because it contains '
+        'spaces, see b/483862822'
+      )
       return None
 
     # TODO(b/484171134): Support downloading .md files.
     if ".md" in rel_path:
       self.m.step.empty(
-          f'Not fetching {submodule_dir} : {rel_path} because it contains .md, '
-          'see b/484171134')
+        f'Not fetching {submodule_dir} : {rel_path} because it contains .md, '
+        'see b/484171134'
+      )
       return None
     step_name = f'Fetch license from submodule {submodule_dir} : {rel_path}'
     return self.m.gitiles.download_file(
-        url,
-        rel_path,
-        branch=submodule_rev,
-        step_name=step_name,
-        accept_statuses=[200, 400, 404])
+      url,
+      rel_path,
+      branch=submodule_rev,
+      step_name=step_name,
+      accept_statuses=[200, 400, 404],
+    )
 
   def get_changes(self):
     """Helper to get the set of affected files in the current CL.
@@ -343,10 +361,11 @@ class MetadataValidatorApi(RecipeApi):
     change_id = cl.change
     gerrit_url = f'https://{host}'
     return self.m.gerrit.get_changes(
-        gerrit_url,
-        query_params=[('change', str(change_id))],
-        o_params=['CURRENT_COMMIT', 'CURRENT_FILES', 'CURRENT_REVISION'],
-        limit=1)
+      gerrit_url,
+      query_params=[('change', str(change_id))],
+      o_params=['CURRENT_COMMIT', 'CURRENT_FILES', 'CURRENT_REVISION'],
+      limit=1,
+    )
 
   def is_metadata_file(self, file_path):
     """Check if the given file path is a recognized metadata file.
@@ -411,13 +430,16 @@ class MetadataValidatorApi(RecipeApi):
       resolved_path_str = str(resolved_path)
 
       license_content = self.fetch_gerrit_file_content(
-          resolved_path_str, change, accept_statuses=[200, 400, 404])
+        resolved_path_str, change, accept_statuses=[200, 400, 404]
+      )
       if license_content is None and not self.is_file_deleted(
-          change, resolved_path_str):
+        change, resolved_path_str
+      ):
         # If Gerrit fetch failed (e.g. 404 because file is in a submodule),
         # try Gitiles fallback.
-        license_content = self.fetch_submodule_license(resolved_path_str,
-                                                       readme_content, change)
+        license_content = self.fetch_submodule_license(
+          resolved_path_str, readme_content, change
+        )
 
       if license_content is not None:
         self._write_to_working_dir(resolved_path_str, license_content)
@@ -444,18 +466,19 @@ class MetadataValidatorApi(RecipeApi):
     with self.m.step.nest('Validate') as step:
       cl = self.m.tryserver.gerrit_change
       cmd = [
-          'vpython3',
-          self.m.depot_tools.root.joinpath('metadata', 'scan.py'),
-          readme_dir_abs,
-          '--json-summary',
-          json_out,
+        'vpython3',
+        self.m.depot_tools.root.joinpath('metadata', 'scan.py'),
+        readme_dir_abs,
+        '--json-summary',
+        json_out,
       ]
 
       if not self._is_internal_host(cl.host):
         cmd.append('--is-open-source-project')
       else:
         self.m.step.empty(
-            f'Enforcing reciprocal license check for host {cl.host}')
+          f'Enforcing reciprocal license check for host {cl.host}'
+        )
 
       step_res = self.m.step('Run validator', cmd, raise_on_failure=False)
 
@@ -481,7 +504,8 @@ class MetadataValidatorApi(RecipeApi):
 
         if errors or warnings:
           all_results[filepath] = ValidationResult(
-              errors=errors, warnings=warnings)
+            errors=errors, warnings=warnings
+          )
 
       return all_results
 
@@ -492,7 +516,8 @@ class MetadataValidatorApi(RecipeApi):
     if bypass_validation:
       self.m.step('Validation bypassed', cmd=None)
       return result_pb.RawResult(
-          status=common_pb.SUCCESS, summary_markdown=BYPASSED_TEXT)
+        status=common_pb.SUCCESS, summary_markdown=BYPASSED_TEXT
+      )
 
     changes = self.get_changes()
     assert len(changes) == 1, f'Expected 1 change, got {len(changes)}'
@@ -528,4 +553,5 @@ class MetadataValidatorApi(RecipeApi):
       raise self.m.step.StepFailure(failure_msg)
 
     return result_pb.RawResult(
-        status=common_pb.SUCCESS, summary_markdown=failure_msg)
+      status=common_pb.SUCCESS, summary_markdown=failure_msg
+    )

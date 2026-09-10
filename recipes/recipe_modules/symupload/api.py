@@ -47,11 +47,14 @@ class SymuploadApi(recipe_api.RecipeApi):
     # chrome.dll, so always use the 64-bit DLL.
     try:
       toolchain_data = self.m.file.read_json(
-          'find_win_toolchain',
-          self.m.chromium_checkout.source_dir.joinpath('build',
-                                                       'win_toolchain.json'))
-      dia_dir = self.m.path.join(toolchain_data['path'], 'DIA SDK', 'bin',
-                                 'amd64')
+        'find_win_toolchain',
+        self.m.chromium_checkout.source_dir.joinpath(
+          'build', 'win_toolchain.json'
+        ),
+      )
+      dia_dir = self.m.path.join(
+        toolchain_data['path'], 'DIA SDK', 'bin', 'amd64'
+      )
       x64_runtime_dir = toolchain_data['runtime_dirs'][0]
       return [dia_dir, x64_runtime_dir]
     # TODO(gbeaty) We really shouldn't catch Exception as it can hide
@@ -79,14 +82,16 @@ class SymuploadApi(recipe_api.RecipeApi):
 
     self.m.step('symupload %s' % artifact, cmd, infra_step=True)
 
-  def symupload_v2(self,
-                   artifacts,
-                   artifact_type,
-                   encrypted_key_path,
-                   kms_key_path,
-                   server_url,
-                   symupload_binary,
-                   name=None):
+  def symupload_v2(
+    self,
+    artifacts,
+    artifact_type,
+    encrypted_key_path,
+    kms_key_path,
+    server_url,
+    symupload_binary,
+    name=None,
+  ):
     """Invokes symupload.py for V2 protocol.
 
     Args:
@@ -103,25 +108,26 @@ class SymuploadApi(recipe_api.RecipeApi):
       self.m.cloudkms.decrypt(kms_key_path, encrypted_key_path, output_api_key)
 
       api_key = self.m.file.read_raw(
-          'read decrypted api key', output_api_key, test_data='test_key')
+        'read decrypted api key', output_api_key, test_data='test_key'
+      )
       key_presentation.logs['api_key sanity check'] = str(len(api_key))
 
     cmd = [
-        'python3',
-        self.resource('symupload_script.py'),
-        '--artifacts',
-        ','.join(artifacts),
-        '--api-key-file',
-        output_api_key,
-        '--binary-path',
-        symupload_binary,
-        '--platform',
-        self.platform,
-        '--server-urls',
-        # the recipe currently only supports one url at the
-        # moment, so this should be reworked to pass it a
-        # comma-delimited list of urls when supported.
-        server_url,
+      'python3',
+      self.resource('symupload_script.py'),
+      '--artifacts',
+      ','.join(artifacts),
+      '--api-key-file',
+      output_api_key,
+      '--binary-path',
+      symupload_binary,
+      '--platform',
+      self.platform,
+      '--server-urls',
+      # the recipe currently only supports one url at the
+      # moment, so this should be reworked to pass it a
+      # comma-delimited list of urls when supported.
+      server_url,
     ]
 
     if artifact_type:
@@ -135,9 +141,10 @@ class SymuploadApi(recipe_api.RecipeApi):
         input_str = input_str.replace(placeholder, custom_vars[key])
       else:
         self.m.step.empty(
-            'Unresolved placeholder',
-            status=self.m.step.INFRA_FAILURE,
-            step_text=placeholder + ' can not be resolved')
+          'Unresolved placeholder',
+          status=self.m.step.INFRA_FAILURE,
+          step_text=placeholder + ' can not be resolved',
+        )
 
     return input_str
 
@@ -149,12 +156,14 @@ class SymuploadApi(recipe_api.RecipeApi):
 
     return binary_name
 
-  def __call__(self,
-               build_dir,
-               config_file_path=None,
-               experimental=False,
-               symupload_binary=None,
-               custom_vars=None):
+  def __call__(
+    self,
+    build_dir,
+    config_file_path=None,
+    experimental=False,
+    symupload_binary=None,
+    custom_vars=None,
+  ):
     """
     Args:
       build_dir: The absolute path to the build output directory, e.g.
@@ -170,47 +179,57 @@ class SymuploadApi(recipe_api.RecipeApi):
                    E.g. custom_vars={'url':'https://foo.com'}, then
                    url='{%url%}' will be replaced to 'https://foo.com'.
     """
-    if not (self._properties.symupload_datas or
-            self._properties.source_side_spec_path or config_file_path):
+    if not (
+      self._properties.symupload_datas
+      or self._properties.source_side_spec_path
+      or config_file_path
+    ):
       return
 
     if self._properties.source_side_spec_path:
       config_file_path = self.m.chromium_checkout.checkout_dir.joinpath(
-          *self._properties.source_side_spec_path)
+        *self._properties.source_side_spec_path
+      )
 
     if config_file_path is not None:
       if not self.m.path.exists(config_file_path):
         self.m.step.empty(
-            'Could not find specified symupload config',
-            status=self.m.step.INFRA_FAILURE,
-            step_text=f'{config_file_path} symupload spec does not exist.')
+          'Could not find specified symupload config',
+          status=self.m.step.INFRA_FAILURE,
+          step_text=f'{config_file_path} symupload spec does not exist.',
+        )
 
       # read the file content and load it as a symupload_datas object
       # for the remainder of the workflow to run.
       config = self.m.file.read_json(
-          'read config from file',
-          config_file_path,
-          test_data=[{
-              'artifacts': ['some_artifact.txt'],
-              'url':
-                  'https://some.url.com',
-              'base64_api_key':
-                  base64.b64encode(b'encrypted_api_key').decode('ascii'),
-              'kms_key_path':
-                  'some/key/path'
-          }])
+        'read config from file',
+        config_file_path,
+        test_data=[
+          {
+            'artifacts': ['some_artifact.txt'],
+            'url': 'https://some.url.com',
+            'base64_api_key': base64.b64encode(b'encrypted_api_key').decode(
+              'ascii'
+            ),
+            'kms_key_path': 'some/key/path',
+          }
+        ],
+      )
       self._properties = symupload_properties.InputProperties(
-          symupload_datas=config)
+        symupload_datas=config
+      )
 
     with self.m.step.nest('symupload') as presentation:
       # Check binary before moving on
       if symupload_binary is None:
         symupload_binary = self.m.path.join(build_dir, self.symupload_binary)
       if not self.m.path.exists(symupload_binary):
-        raise self.m.step.InfraFailure('The symupload binary cannot be found '
-                                       'at %s. Please ensure targets symupload '
-                                       'are being built such that the binaries '
-                                       'are generated.' % str(symupload_binary))
+        raise self.m.step.InfraFailure(
+          'The symupload binary cannot be found '
+          'at %s. Please ensure targets symupload '
+          'are being built such that the binaries '
+          'are generated.' % str(symupload_binary)
+        )
 
       with self.m.context(env_suffixes={'PATH': self._get_msdia_paths()}):
         for symupload_data in self._properties.symupload_datas:
@@ -218,10 +237,11 @@ class SymuploadApi(recipe_api.RecipeApi):
           uploads = []
           for filename in symupload_data.file_globs:
             for f in self.m.file.glob_paths(
-                'expand file globs',
-                build_dir,
-                filename,
-                test_data=('glob1.txt', 'glob2.txt')):
+              'expand file globs',
+              build_dir,
+              filename,
+              test_data=('glob1.txt', 'glob2.txt'),
+            ):
               assert build_dir.base == f.base
               assert build_dir in f.parents
               uploads.append(self.m.path.abspath(f))
@@ -242,36 +262,43 @@ class SymuploadApi(recipe_api.RecipeApi):
           # artifacts, we'll invoke it here for each symupload data config.
           if symupload_data.base64_api_key:
             if not symupload_data.kms_key_path:
-              raise self.m.step.InfraFailure('api_key exists but kms_key_path '
-                                             'is missing')
+              raise self.m.step.InfraFailure(
+                'api_key exists but kms_key_path is missing'
+              )
 
             custom_vars = custom_vars or {}
             url = self._replace_placeholders(custom_vars, symupload_data.url)
             kms_key_path = self._replace_placeholders(
-                custom_vars, symupload_data.kms_key_path)
-            base64_api_key = custom_vars.get('base64_api_key',
-                                             symupload_data.base64_api_key)
+              custom_vars, symupload_data.kms_key_path
+            )
+            base64_api_key = custom_vars.get(
+              'base64_api_key', symupload_data.base64_api_key
+            )
 
             # Write out decoded api key
             input_api_key = self.m.path.cleanup_dir.joinpath(
-                'symupload-api-key.encrypted')
+              'symupload-api-key.encrypted'
+            )
             api_key_data = base64.b64decode(base64_api_key)
-            self.m.file.write_raw('write encrypted api key', input_api_key,
-                                  api_key_data)
+            self.m.file.write_raw(
+              'write encrypted api key', input_api_key, api_key_data
+            )
 
             # (crbug.com/1295894) Add retry to symupload_v2 step to mitigate
             # flaky http request errors.
             @self.m.time.exponential_retry(
-                retries=2, delay=datetime.timedelta(seconds=30))
+              retries=2, delay=datetime.timedelta(seconds=30)
+            )
             def _retry_symupload():
               logging.disable('ERROR')
               self.symupload_v2(
-                  artifacts=uploads,
-                  artifact_type=symupload_data.artifact_type,
-                  encrypted_key_path=input_api_key,
-                  kms_key_path=kms_key_path,
-                  server_url=url,
-                  symupload_binary=symupload_binary)
+                artifacts=uploads,
+                artifact_type=symupload_data.artifact_type,
+                encrypted_key_path=input_api_key,
+                kms_key_path=kms_key_path,
+                server_url=url,
+                symupload_binary=symupload_binary,
+              )
               presentation.status = self.m.step.SUCCESS
 
             _retry_symupload()
@@ -281,8 +308,8 @@ class SymuploadApi(recipe_api.RecipeApi):
             # consumers migrate to V2.
             for artifact in uploads:
               self.symupload(
-                  symupload_binary,
-                  artifact,  # artifact
-                  symupload_data.url,
+                symupload_binary,
+                artifact,  # artifact
+                symupload_data.url,
               )
       return uploads

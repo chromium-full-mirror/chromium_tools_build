@@ -41,5 +41,6 @@ class BaseStrategy:
     kwargs['strategy'] = self.name
     if 'SWARMING_TASK_ID' in os.environ and 'SWARMING_SERVER' in os.environ:
       kwargs['task_ui_link'] = '{0}/task?id={1}'.format(
-          os.environ['SWARMING_SERVER'], os.environ['SWARMING_TASK_ID'])
+        os.environ['SWARMING_SERVER'], os.environ['SWARMING_TASK_ID']
+      )
     return ReproducingStep(*args, **kwargs)

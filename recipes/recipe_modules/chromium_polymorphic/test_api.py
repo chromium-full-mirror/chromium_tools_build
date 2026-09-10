@@ -9,17 +9,17 @@ from collections.abc import Collection
 from recipe_engine import recipe_test_api
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
-from PB.recipe_modules.build.chromium_polymorphic \
-    import properties as properties_pb
+from PB.recipe_modules.build.chromium_polymorphic import (
+  properties as properties_pb,
+)
 
 
 class ChromiumPolymorphicTestApi(recipe_test_api.RecipeTestApi):
-
   def properties_on_target_build(
-      self,
-      properties: dict[str, object],
-      *,
-      step_name: str | None = None,
+    self,
+    properties: dict[str, object],
+    *,
+    step_name: str | None = None,
   ) -> recipe_test_api.StepTestData:
     """Mocks the properties on the most recent build.
 
@@ -29,17 +29,18 @@ class ChromiumPolymorphicTestApi(recipe_test_api.RecipeTestApi):
     """
     build = build_pb.Build()
     build.input.properties.update(properties)
-    return self.m.buildbucket.simulated_search_results([build],
-                                                       step_name=step_name)
+    return self.m.buildbucket.simulated_search_results(
+      [build], step_name=step_name
+    )
 
   def triggered_properties(
-      self,
-      *,
-      builder_group: str,
-      builder: str,
-      project: str = 'chromium',
-      bucket: str = 'ci',
-      testers: Collection[properties_pb.BuilderGroupAndName] | None = None,
+    self,
+    *,
+    builder_group: str,
+    builder: str,
+    project: str = 'chromium',
+    bucket: str = 'ci',
+    testers: Collection[properties_pb.BuilderGroupAndName] | None = None,
   ) -> recipe_test_api.TestData:
     """Set properties that would be set for a polymorphic builder.
 
@@ -59,6 +60,8 @@ class ChromiumPolymorphicTestApi(recipe_test_api.RecipeTestApi):
     if testers is not None:
       properties.tester_filter.testers.extend(testers)
 
-    return self.m.properties(**{
+    return self.m.properties(
+      **{
         '$build/chromium_polymorphic': properties,
-    })
+      }
+    )

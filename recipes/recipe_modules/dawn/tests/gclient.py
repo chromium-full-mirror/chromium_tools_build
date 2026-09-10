@@ -27,8 +27,9 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
+
 TEST_CONFIGS = [
-    'dawn',
+  'dawn',
 ]
 
 
@@ -42,22 +43,22 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'dawn_android',
-      api.properties(apply_gclient_config='dawn_android'),
-      api.post_process(post_process.DropExpectation),
+    'dawn_android',
+    api.properties(apply_gclient_config='dawn_android'),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'dawn_node',
-      api.properties(apply_gclient_config='dawn_node'),
-      api.post_process(post_process.DropExpectation),
+    'dawn_node',
+    api.properties(apply_gclient_config='dawn_node'),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'dawn_wasm',
-      api.properties(apply_gclient_config='dawn_wasm'),
-      api.post_process(post_process.DropExpectation),
+    'dawn_wasm',
+    api.properties(apply_gclient_config='dawn_wasm'),
+    api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-      'checkout_litert_lm',
-      api.properties(apply_gclient_config='checkout_litert_lm'),
-      api.post_process(post_process.DropExpectation),
+    'checkout_litert_lm',
+    api.properties(apply_gclient_config='checkout_litert_lm'),
+    api.post_process(post_process.DropExpectation),
   )

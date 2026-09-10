@@ -57,20 +57,25 @@ def parse_args(args=None, *, parser_type=None):
 
   parser.set_defaults(func=generate_groupings)
   parser.add_argument(
-      '--validate',
-      help='Validate that files are up-to-date instead of generating them',
-      action='store_const',
-      dest='func',
-      const=validate_groupings)
+    '--validate',
+    help='Validate that files are up-to-date instead of generating them',
+    action='store_const',
+    dest='func',
+    const=validate_groupings,
+  )
   parser.add_argument(
-      'projects', help='The projects to generate/validate', nargs='+')
+    'projects', help='The projects to generate/validate', nargs='+'
+  )
 
   # Flags to facilitate testing
   parser.add_argument(
-      '--groupings-dir',
-      help=('The directory where the groupings files are located/generated to'
-            ' (used for testing)'),
-      default=DEFAULT_GROUPINGS_DIR)
+    '--groupings-dir',
+    help=(
+      'The directory where the groupings files are located/generated to'
+      ' (used for testing)'
+    ),
+    default=DEFAULT_GROUPINGS_DIR,
+  )
 
   return parser.parse_args(args)
 
@@ -82,18 +87,18 @@ def _run_builder_config_migration_recipe(project, output_path):
   with open(os.path.normpath(f'{__file__}/../filters/{project}.json')) as f:
     filters = json.load(f)
   properties = {
-      'groupings_operation': {
-          'output_path': output_path,
-          'builder_group_filters': filters,
-      }
+    'groupings_operation': {
+      'output_path': output_path,
+      'builder_group_filters': filters,
+    }
   }
   cmd = [
-      sys.executable,
-      _RECIPES_PY,
-      'run',
-      '--properties',
-      json.dumps(properties),
-      'chromium/builder_config_migration',
+    sys.executable,
+    _RECIPES_PY,
+    'run',
+    '--properties',
+    json.dumps(properties),
+    'chromium/builder_config_migration',
   ]
 
   env = os.environ.copy()
@@ -107,7 +112,8 @@ def _run_builder_config_migration_recipe(project, output_path):
 
 
 def generate_groupings(
-    args, *, groupings_generator=_run_builder_config_migration_recipe):
+  args, *, groupings_generator=_run_builder_config_migration_recipe
+):
   """Generate the contents of the groupings files.
 
   Args:
@@ -120,7 +126,6 @@ def generate_groupings(
 
 
 class ValidationException(Exception):
-
   def __init__(self, projects):
     super().__init__(projects)
     self._projects = tuple(projects)
@@ -131,12 +136,15 @@ class ValidationException(Exception):
 
   def __str__(self):
     project_str = ', '.join(sorted(self.projects))
-    return (f'The following groupings files need regeneration: {project_str}\n'
-            f"Please run {__file__} {' '.join(self.projects)}")
+    return (
+      f'The following groupings files need regeneration: {project_str}\n'
+      f"Please run {__file__} {' '.join(self.projects)}"
+    )
 
 
 def validate_groupings(
-    args, *, groupings_generator=_run_builder_config_migration_recipe):
+  args, *, groupings_generator=_run_builder_config_migration_recipe
+):
   """Validate the contents of the groupings files.
 
   Args:

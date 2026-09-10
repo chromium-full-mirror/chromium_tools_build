@@ -29,5 +29,8 @@ def RunSteps(api: DEPS):
 
 
 def GenTests(api: TEST_DEPS):
-  yield api.test('basic', api.binary_size.build(),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'basic',
+    api.binary_size.build(),
+    api.post_process(post_process.DropExpectation),
+  )

@@ -59,7 +59,7 @@ def _parse_blame_list(lines):
   for line in lines:
     if line.startswith('^'):
       continue
-    blame_list_header = line[line.find('(') + 1:line.find(')')]
+    blame_list_header = line[line.find('(') + 1 : line.find(')')]
     match = BLAME_LIST_HEADER_REGEX.match(blame_list_header)
     if not match:
       logging.error(line)

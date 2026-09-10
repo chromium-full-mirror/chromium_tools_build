@@ -14,19 +14,19 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    chromium_build_perf,
-    chromium_tests,
-    chromium_tests_builder_config,
-    reclient,
-    siso,
+  builder_group,
+  chromium,
+  chromium_build_perf,
+  chromium_tests,
+  chromium_tests_builder_config,
+  reclient,
+  siso,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    path,
-    platform,
+  buildbucket,
+  file,
+  path,
+  platform,
 )
 
 
@@ -56,57 +56,67 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   builder_id = chromium_types.BuilderId.create_for_group(
-      api.builder_group.for_current, api.buildbucket.builder_name)
+    api.builder_group.for_current, api.buildbucket.builder_name
+  )
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
-      builder_id, use_try_db=False)
+    builder_id, use_try_db=False
+  )
   api.chromium_tests.configure_build(builder_config)
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = api.chromium.default_build_dir(source_dir)
 
   api.chromium_build_perf.build_with_ninja(
-      source_dir, build_dir, 'all', with_remote_cache=True)
+    source_dir, build_dir, 'all', with_remote_cache=True
+  )
   api.chromium_build_perf.build_with_ninja(
-      source_dir, build_dir, 'all', with_remote_cache=False)
+    source_dir, build_dir, 'all', with_remote_cache=False
+  )
   api.chromium_build_perf.build_with_siso(
-      source_dir, build_dir, 'all', with_remote_cache=True)
+    source_dir, build_dir, 'all', with_remote_cache=True
+  )
   api.chromium_build_perf.build_with_siso(
-      source_dir, build_dir, 'all', with_remote_cache=False)
+    source_dir, build_dir, 'all', with_remote_cache=False
+  )
   api.chromium_build_perf.build_with_siso(
-      source_dir, build_dir, 'all', use_rbe=False)
+    source_dir, build_dir, 'all', use_rbe=False
+  )
   api.chromium_build_perf.build_with_siso(
-      source_dir,
-      build_dir,
-      'all',
-      with_remote_cache=True,
-      siso_experiments=['fail-on-bad-deps'])
+    source_dir,
+    build_dir,
+    'all',
+    with_remote_cache=True,
+    siso_experiments=['fail-on-bad-deps'],
+  )
   api.chromium_build_perf.build_with_ninja(
-      source_dir,
-      build_dir,
-      'all',
-      with_remote_cache=False,
-      step_name_suffix=' suffix')
+    source_dir,
+    build_dir,
+    'all',
+    with_remote_cache=False,
+    step_name_suffix=' suffix',
+  )
   api.file.write_raw('write .siso_deps', build_dir / '.siso_deps', 'siso deps')
   api.chromium_build_perf.recreate_build_dir(source_dir, build_dir)
   api.chromium_build_perf.recreate_build_dir(source_dir, source_dir / 'foo')
   api.chromium_build_perf.recreate_build_dir(
-      source_dir, build_dir, remove_deps_cache=True)
+    source_dir, build_dir, remove_deps_cache=True
+  )
   api.chromium_build_perf.checkout(source_dir, build_dir, 'abcd')
 
   rusage = {'foo': 1}
   include_analysis = {
-      'target': 'chrome',
-      'revision': 'abcd',
-      'date': None,
-      'files': [
-          'a.cc',
-          'a.h',
-      ],
-      'roots': [0],
-      'includes': [[1]],
-      'included_by': [[], [0]],
-      'sizes': [10, 20],
-      'tsizes': [30, 20],
-      'archive_link': '',
+    'target': 'chrome',
+    'revision': 'abcd',
+    'date': None,
+    'files': [
+      'a.cc',
+      'a.h',
+    ],
+    'roots': [0],
+    'includes': [[1]],
+    'included_by': [[], [0]],
+    'sizes': [10, 20],
+    'tsizes': [30, 20],
+    'archive_link': '',
   }
   api.chromium_build_perf.upload_build_stats_to_bq(rusage, include_analysis)
 
@@ -114,39 +124,43 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
   builder = {
-      'builder_group': 'fake-group',
-      'builder': 'fake-builder',
+    'builder_group': 'fake-group',
+    'builder': 'fake-builder',
   }
   yield api.test(
-      'full',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'ios',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='ios',
-                  chromium_config='chromium',
-                  chromium_config_kwargs={
-                      'TARGET_PLATFORM': 'ios',
-                  },
-              ),
-              **builder).assemble()),
-      api.platform.name('mac'),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.post_process(post_process.DropExpectation),
+    'ios',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='ios',
+          chromium_config='chromium',
+          chromium_config_kwargs={
+            'TARGET_PLATFORM': 'ios',
+          },
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.platform.name('mac'),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.post_process(post_process.DropExpectation),
   )

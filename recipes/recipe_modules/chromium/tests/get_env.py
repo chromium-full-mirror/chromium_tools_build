@@ -13,11 +13,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    path,
-    platform,
-    properties,
-    step,
+  context,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -48,7 +48,7 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'basic',
-      api.platform('mac', 64),
-      api.post_process(DropExpectation),
+    'basic',
+    api.platform('mac', 64),
+    api.post_process(DropExpectation),
   )

@@ -13,9 +13,9 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium_tests_builder_config
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    properties,
-    step,
+  buildbucket,
+  properties,
+  step,
 )
 
 
@@ -25,7 +25,6 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   properties: properties.API
   step: step.API
-
 
 
 from .api import ChromiumPolymorphicApi as API

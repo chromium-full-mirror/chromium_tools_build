@@ -16,17 +16,17 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    tryserver,
+  bot_update,
+  gclient,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    properties,
-    step,
+  buildbucket,
+  context,
+  path,
+  properties,
+  step,
 )
 
 
@@ -66,7 +66,8 @@ def RunSteps(api: DEPS, properties):
 
   with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(
-        patch=True, gclient_config=gclient_config)
+      patch=True, gclient_config=gclient_config
+    )
 
   repo_path = update_result.source_root.path
 
@@ -96,67 +97,77 @@ def RunSteps(api: DEPS, properties):
 
   if bad_reclient_configs:
     return _result(
-        status=common_pb.FAILURE,
-        elements=bad_reclient_configs,
-        header='The following reclient configs were missing:',
-        footer='See steps for more information')
+      status=common_pb.FAILURE,
+      elements=bad_reclient_configs,
+      header='The following reclient configs were missing:',
+      footer='See steps for more information',
+    )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.try_build(),
-      api.properties(
-          tester_pb.InputProperties(
-              fetch_script='fetch-script',
-              rbe_project=[
-                  tester_pb.ProjectConfigVerification(
-                      name='rbe-project-1',
-                      cfg_file=[
-                          'rewrapper-linux.cfg',
-                          'rewrapper-win.cfg',
-                      ])
-              ])),
-      api.properties(mock_cfgs=True),
-      api.post_check(
-          post_process.MustRun,
-          'rbe-project-1.fetch configs',
-          'rbe-project-1.verify',
-      ),
+    'basic',
+    api.buildbucket.try_build(),
+    api.properties(
+      tester_pb.InputProperties(
+        fetch_script='fetch-script',
+        rbe_project=[
+          tester_pb.ProjectConfigVerification(
+            name='rbe-project-1',
+            cfg_file=[
+              'rewrapper-linux.cfg',
+              'rewrapper-win.cfg',
+            ],
+          )
+        ],
+      )
+    ),
+    api.properties(mock_cfgs=True),
+    api.post_check(
+      post_process.MustRun,
+      'rbe-project-1.fetch configs',
+      'rbe-project-1.verify',
+    ),
   )
 
   yield api.test(
-      'missing configs',
-      api.buildbucket.try_build(),
-      api.properties(
-          tester_pb.InputProperties(
-              fetch_script='fetch-script',
-              rbe_project=[
-                  tester_pb.ProjectConfigVerification(
-                      name='rbe-project-1', cfg_file=['rewrapper-linux.cfg'])
-              ])),
-      api.properties(mock_cfgs=False),
-      api.post_check(
-          post_process.MustRun,
-          'rbe-project-1.fetch configs',
-          'rbe-project-1.verify',
-      ),
-      api.expect_status('FAILURE'),
+    'missing configs',
+    api.buildbucket.try_build(),
+    api.properties(
+      tester_pb.InputProperties(
+        fetch_script='fetch-script',
+        rbe_project=[
+          tester_pb.ProjectConfigVerification(
+            name='rbe-project-1', cfg_file=['rewrapper-linux.cfg']
+          )
+        ],
+      )
+    ),
+    api.properties(mock_cfgs=False),
+    api.post_check(
+      post_process.MustRun,
+      'rbe-project-1.fetch configs',
+      'rbe-project-1.verify',
+    ),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'failed fetch',
-      api.buildbucket.try_build(),
-      api.properties(
-          tester_pb.InputProperties(
-              fetch_script='fetch-script',
-              rbe_project=[
-                  tester_pb.ProjectConfigVerification(
-                      name='rbe-project-1', cfg_file=['rewrapper-linux.cfg'])
-              ])),
-      api.properties(mock_cfgs=False),
-      api.step_data('rbe-project-1.fetch configs', retcode=1),
-      api.post_check(post_process.StepException, 'rbe-project-1'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'failed fetch',
+    api.buildbucket.try_build(),
+    api.properties(
+      tester_pb.InputProperties(
+        fetch_script='fetch-script',
+        rbe_project=[
+          tester_pb.ProjectConfigVerification(
+            name='rbe-project-1', cfg_file=['rewrapper-linux.cfg']
+          )
+        ],
+      )
+    ),
+    api.properties(mock_cfgs=False),
+    api.step_data('rbe-project-1.fetch configs', retcode=1),
+    api.post_check(post_process.StepException, 'rbe-project-1'),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

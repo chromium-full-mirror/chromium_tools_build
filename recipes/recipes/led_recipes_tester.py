@@ -13,8 +13,13 @@ from recipe_engine import post_process
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.led.job import job as job_pb2
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, cached_property,
-                                             enum, sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  cached_property,
+  enum,
+  sequence,
+)
 
 from dataclasses import dataclass
 
@@ -23,26 +28,26 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_gerrit_utils
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    gerrit,
-    gitiles,
-    tryserver,
+  bot_update,
+  gclient,
+  gerrit,
+  gitiles,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    defer,
-    file,
-    futures,
-    json,
-    led,
-    path,
-    properties,
-    raw_io,
-    step,
-    swarming,
+  buildbucket,
+  cipd,
+  context,
+  defer,
+  file,
+  futures,
+  json,
+  led,
+  path,
+  properties,
+  raw_io,
+  step,
+  swarming,
 )
 
 
@@ -80,6 +85,7 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
   tryserver: tryserver.TEST_API
 
+
 GERRIT_TOPIC = 'led-recipes-tester'
 
 # If present in a CL description, will override the existing default builders
@@ -105,10 +111,11 @@ FILE_TO_TRIGGER_SHORT_TESTING = 'content/test/content_browser_test_test.cc'
 # compile and test.
 FILE_TO_TRIGGER_SHORT_ANDROID_TESTING = 'ui/android/run_all_unittests.cc'
 ALL_FILES = [
-    FILE_TO_TRIGGER_EXTENSIVE_TESTING,
-    FILE_TO_TRIGGER_SHORT_TESTING,
-    FILE_TO_TRIGGER_SHORT_ANDROID_TESTING,
+  FILE_TO_TRIGGER_EXTENSIVE_TESTING,
+  FILE_TO_TRIGGER_SHORT_TESTING,
+  FILE_TO_TRIGGER_SHORT_ANDROID_TESTING,
 ]
+
 
 @attrs()
 class BuilderToTrigger:
@@ -120,20 +127,25 @@ class BuilderToTrigger:
 
 
 DEFAULT_BUILDERS = (
-    BuilderToTrigger(
-        'luci.chromium.try:linux-presubmit',
-        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING),
-    BuilderToTrigger(
-        'luci.chromium.try:android-x64-rel',
-        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_ANDROID_TESTING),
-    BuilderToTrigger(
-        'luci.chromium.try:linux-rel',
-        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING,
-        file_to_change_for_full_testing=FILE_TO_TRIGGER_EXTENSIVE_TESTING),
-    BuilderToTrigger(
-        'luci.chromium.try:win-rel',
-        file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING),
+  BuilderToTrigger(
+    'luci.chromium.try:linux-presubmit',
+    file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING,
+  ),
+  BuilderToTrigger(
+    'luci.chromium.try:android-x64-rel',
+    file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_ANDROID_TESTING,
+  ),
+  BuilderToTrigger(
+    'luci.chromium.try:linux-rel',
+    file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING,
+    file_to_change_for_full_testing=FILE_TO_TRIGGER_EXTENSIVE_TESTING,
+  ),
+  BuilderToTrigger(
+    'luci.chromium.try:win-rel',
+    file_to_change_for_quick_testing=FILE_TO_TRIGGER_SHORT_TESTING,
+  ),
 )
+
 
 @attrs()
 class FilesToIgnore:
@@ -166,51 +178,60 @@ class FilesToIgnore:
 # affect these files, launching the default set of builders will only provide a
 # useful signal in the small percentage of CLs that affect those default
 # builders and unnecesarily consume resources and time in the rest of the CLs
-DEFAULT_FILES_TO_IGNORE = (FilesToIgnore(
+DEFAULT_FILES_TO_IGNORE = (
+  FilesToIgnore(
     patterns=[
-        'recipes/recipe_modules/chromium_tests_builder_config/{}'.format(r)
-        for r in (r'builders/.*\.py', r'trybots\.py')
+      'recipes/recipe_modules/chromium_tests_builder_config/{}'.format(r)
+      for r in (r'builders/.*\.py', r'trybots\.py')
     ],
     step_name='ignoring per-builder config',
-    step_text=('The following affected files are being ignored because they'
-               ' contain per-builder config that is unlikely to affect the'
-               ' default builders:'),
-),)
+    step_text=(
+      'The following affected files are being ignored because they'
+      ' contain per-builder config that is unlikely to affect the'
+      ' default builders:'
+    ),
+  ),
+)
 
 FILES_TO_ALWAYS_IGNORE = (
-    FilesToIgnore(
-        patterns=[
-            r'(.+/)?recipe_modules/[^/]+/examples/.+',
-            r'(.+/)?recipe_modules/[^/]+/tests/.+',
-        ],
-        step_name='ignoring recipe tests',
-        step_text=('The following affected files'
-                   ' do not contain production recipe code:'),
+  FilesToIgnore(
+    patterns=[
+      r'(.+/)?recipe_modules/[^/]+/examples/.+',
+      r'(.+/)?recipe_modules/[^/]+/tests/.+',
+    ],
+    step_name='ignoring recipe tests',
+    step_text=(
+      'The following affected files do not contain production recipe code:'
     ),
-    FilesToIgnore(
-        patterns=[r'(.+/)*[A-Z_]*OWNERS'],
-        step_name='ignoring OWNERS files',
-        step_text=(
-            'The following affected files are being ignored because they are'
-            ' OWNERS files, which contain repository metadata and are not part'
-            ' of the recipes:'),
+  ),
+  FilesToIgnore(
+    patterns=[r'(.+/)*[A-Z_]*OWNERS'],
+    step_name='ignoring OWNERS files',
+    step_text=(
+      'The following affected files are being ignored because they are'
+      ' OWNERS files, which contain repository metadata and are not part'
+      ' of the recipes:'
     ),
-    FilesToIgnore(
-        patterns=[
-            r'(.+/)?recipe_modules/chromium_tests_builder_config/migration/.+',
-        ],
-        step_name='ignoring src-side config migration files',
-        step_text=(
-            'The following affected files are being ignored because they are'
-            ' used for tracking the migration of builder configs src-side and'
-            ' are not part of the recipes:'),
+  ),
+  FilesToIgnore(
+    patterns=[
+      r'(.+/)?recipe_modules/chromium_tests_builder_config/migration/.+',
+    ],
+    step_name='ignoring src-side config migration files',
+    step_text=(
+      'The following affected files are being ignored because they are'
+      ' used for tracking the migration of builder configs src-side and'
+      ' are not part of the recipes:'
     ),
-    FilesToIgnore(
-        patterns=[r'(.+/)*PRESUBMIT.py'],
-        step_name='ignoring PRESUBMIT.py scripts',
-        step_text=('PRESUBMIT.py scripts are executed by the presubmit builder'
-                   ' and are not consumed by our recipes:'),
+  ),
+  FilesToIgnore(
+    patterns=[r'(.+/)*PRESUBMIT.py'],
+    step_name='ignoring PRESUBMIT.py scripts',
+    step_text=(
+      'PRESUBMIT.py scripts are executed by the presubmit builder'
+      ' and are not consumed by our recipes:'
     ),
+  ),
 )
 
 
@@ -241,12 +262,13 @@ def _process_footer_builders(api: DEPS, builders):
     result = api.step(step_name, [])
     result.presentation.status = api.step.FAILURE
     result.presentation.step_text = ''.join(
-        ['\n  ' + b for b in sorted(unknown_buckets)])
+      ['\n  ' + b for b in sorted(unknown_buckets)]
+    )
     raise api.step.StepFailure(step_name, result)
 
   return [
-      BuilderToTrigger(builder, FILE_TO_TRIGGER_EXTENSIVE_TESTING)
-      for builder in builders
+    BuilderToTrigger(builder, FILE_TO_TRIGGER_EXTENSIVE_TESTING)
+    for builder in builders
   ]
 
 
@@ -282,8 +304,9 @@ def _get_builders_to_check(api: DEPS):
   return builders, files_to_ignore
 
 
-def _ignore_affected_files(api: DEPS, repo_path, affected_files,
-                           files_to_ignore):
+def _ignore_affected_files(
+  api: DEPS, repo_path, affected_files, files_to_ignore
+):
   """Ignore files for analysis that match a regex.
 
   Args:
@@ -313,8 +336,10 @@ def _ignore_affected_files(api: DEPS, repo_path, affected_files,
     if files:
       step_result = api.step(i.step_name, [])
       message = ['\n' + i.step_text]
-      message.extend('*   {}'.format(f.replace('*', r'\*').replace('_', r'\_'))
-                     for f in sorted(files))
+      message.extend(
+        '*   {}'.format(f.replace('*', r'\*').replace('_', r'\_'))
+        for f in sorted(files)
+      )
       step_result.presentation.step_text = '\n'.join(message)
 
   return new_affected_files
@@ -348,15 +373,16 @@ def _get_led_builders(api: DEPS, builders):
         # By default, the priority of the tasks will be increased by 10, but
         # since this builder runs as part of CQ for the recipe repos, we want
         # the builds to run at regular priority
-        led_builders[builder.name] = api.led('get-builder', '-real-build',
-                                             '-adjust-priority', '0',
-                                             builder.name)
+        led_builders[builder.name] = api.led(
+          'get-builder', '-real-build', '-adjust-priority', '0', builder.name
+        )
 
   return led_builders
 
 
-def _determine_affected_recipes(api: DEPS, affected_files, recipes,
-                                recipes_py_path, recipes_cfg_path):
+def _determine_affected_recipes(
+  api: DEPS, affected_files, recipes, recipes_py_path, recipes_cfg_path
+):
   """Determine the set of recipes that are affected by the change.
 
   Args:
@@ -375,24 +401,26 @@ def _determine_affected_recipes(api: DEPS, affected_files, recipes,
     StepFailure if analyzing the recipes fails.
   """
   cmd = [
-      'vpython3',
-      recipes_py_path,
-      '--package',
-      recipes_cfg_path,
-      'analyze',
-      api.json.input({
-          'files': sorted(affected_files),
-          'recipes': sorted(recipes),
-      }),
-      api.json.output(),
+    'vpython3',
+    recipes_py_path,
+    '--package',
+    recipes_cfg_path,
+    'analyze',
+    api.json.input(
+      {
+        'files': sorted(affected_files),
+        'recipes': sorted(recipes),
+      }
+    ),
+    api.json.output(),
   ]
 
   step_name = 'determine affected recipes'
   result = api.step(
-      step_name,
-      cmd,
-      ok_ret='any',
-      step_test_data=lambda: api.json.test_api.output({'recipes': []}),
+    step_name,
+    cmd,
+    ok_ret='any',
+    step_test_data=lambda: api.json.test_api.output({'recipes': []}),
   )
 
   json = getattr(result, 'json', None)
@@ -409,9 +437,11 @@ def _determine_affected_recipes(api: DEPS, affected_files, recipes,
   invalid_recipes = json_output.get('invalid_recipes', [])
   if invalid_recipes:
     result.presentation.step_text = (
-        '\nanalyze reported that the recipes {!r} were invalid. '
-        'The associated builders may be incorrectly configured.'.format(
-            invalid_recipes))
+      '\nanalyze reported that the recipes {!r} were invalid. '
+      'The associated builders may be incorrectly configured.'.format(
+        invalid_recipes
+      )
+    )
     result.presentation.logs['invalid recipes'] = invalid_recipes
 
   if error or invalid_recipes:
@@ -424,8 +454,9 @@ def _determine_affected_recipes(api: DEPS, affected_files, recipes,
   return set(affected_recipes)
 
 
-def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
-                            recipes_cfg_path):
+def _get_filepath_to_change(
+  affected_files, affected_recipes, builder, recipe, recipes_cfg_path
+):
   """Returns the chromium/src.git filepath to modify for the Chromium CL.
 
   Args:
@@ -441,8 +472,10 @@ def _get_filepath_to_change(affected_files, affected_recipes, builder, recipe,
     to modify.
   """
   if recipe in affected_recipes:
-    return (builder.file_to_change_for_full_testing or
-            builder.file_to_change_for_quick_testing)
+    return (
+      builder.file_to_change_for_full_testing
+      or builder.file_to_change_for_quick_testing
+    )
 
   if str(recipes_cfg_path) in affected_files:
     return builder.file_to_change_for_quick_testing
@@ -489,11 +522,14 @@ def _test_builder(api: DEPS, builder, led_builder, cl):
 
     build = api.buildbucket.collect_build(job.build_id, timeout=7200)
     step_status = (
-        api.step.SUCCESS
-        if build.status == common_pb2.SUCCESS else api.step.FAILURE)
+      api.step.SUCCESS
+      if build.status == common_pb2.SUCCESS
+      else api.step.FAILURE
+    )
     api.step.empty(
-        'build ends with {}'.format(common_pb2.Status.Name(build.status)),
-        status=step_status)
+      'build ends with {}'.format(common_pb2.Status.Name(build.status)),
+      status=step_status,
+    )
 
 
 def RunSteps(api: DEPS):
@@ -505,7 +541,8 @@ def RunSteps(api: DEPS):
 
   with api.context(cwd=api.path.cache_dir / 'builder'):
     update_result = api.bot_update.ensure_checkout(
-        patch=True, gclient_config=gclient_config)
+      patch=True, gclient_config=gclient_config
+    )
 
   repo_path = update_result.source_root.path
 
@@ -514,26 +551,30 @@ def RunSteps(api: DEPS):
 
   builders_to_trigger, files_to_ignore = _get_builders_to_check(api)
 
-  affected_files = _ignore_affected_files(api, repo_path, affected_files,
-                                          files_to_ignore)
+  affected_files = _ignore_affected_files(
+    api, repo_path, affected_files, files_to_ignore
+  )
   if not affected_files:
     result = api.step('all affected files ignored', [])
     result.presentation.step_text = (
-        'all affected files have been ignored, there is nothing to test')
+      'all affected files have been ignored, there is nothing to test'
+    )
     return
 
   led_builders = _get_led_builders(api, builders_to_trigger)
   recipes = set(
-      _get_recipe(led_builder) for led_builder in led_builders.values())
+    _get_recipe(led_builder) for led_builder in led_builders.values()
+  )
 
   recipes_py_path = api.cipd.ensure_tool(
-      'infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py',
-      version='refs/heads/main',
-      executable_path='recipe_engine/recipes.py')
+    'infra/recipe_bundles/chromium.googlesource.com/infra/luci/recipes-py',
+    version='refs/heads/main',
+    executable_path='recipe_engine/recipes.py',
+  )
   recipes_cfg_path = repo_path.joinpath('infra', 'config', 'recipes.cfg')
-  affected_recipes = _determine_affected_recipes(api, affected_files, recipes,
-                                                 recipes_py_path,
-                                                 recipes_cfg_path)
+  affected_recipes = _determine_affected_recipes(
+    api, affected_files, recipes, recipes_py_path, recipes_cfg_path
+  )
 
   api.swarming.ensure_client()
 
@@ -552,29 +593,35 @@ def RunSteps(api: DEPS):
         led_builder = led_builders[builder.name]
         led_builder = led_builder.then('edit-recipe-bundle')
 
-    file_path = _get_filepath_to_change(affected_files, affected_recipes,
-                                        builder, _get_recipe(led_builder),
-                                        recipes_cfg_path)
+    file_path = _get_filepath_to_change(
+      affected_files,
+      affected_recipes,
+      builder,
+      _get_recipe(led_builder),
+      recipes_cfg_path,
+    )
     if not file_path:
       with api.step.nest('test {}'.format(builder.name)) as presentation:
         presentation.step_text = (
-            '\nNot running a tryjob for {!r}. The CL does not affect the '
-            '{!r} recipe and the CL does not affect recipes.cfg'.format(
-                builder.name, _get_recipe(led_builder)))
+          '\nNot running a tryjob for {!r}. The CL does not affect the '
+          '{!r} recipe and the CL does not affect recipes.cfg'.format(
+            builder.name, _get_recipe(led_builder)
+          )
+        )
         continue
 
     cl = cls_by_filepath.get(file_path)
     if not cl:
       _, cl = api.chromium_gerrit_utils.create_temp_cl(
-          file_path,
-          GERRIT_TOPIC,
-          [f'Created for {api.tryserver.gerrit_change_review_url}'],
+        file_path,
+        GERRIT_TOPIC,
+        [f'Created for {api.tryserver.gerrit_change_review_url}'],
       )
       cls_by_filepath[file_path] = cl
 
     futures.append(
-        api.futures.spawn_immediate(_test_builder, api, builder, led_builder,
-                                    cl))
+      api.futures.spawn_immediate(_test_builder, api, builder, led_builder, cl)
+    )
 
   # While we wait for the led builds to finish, let's clean-up any stale
   # CLs uploaded from prev runs of this builder that we were unable to close
@@ -597,10 +644,10 @@ def GenTests(api: TEST_DEPS):
   def gerrit_change(footer_builder=None, experiments=()):
     patch_set = 12
     t = api.buildbucket.try_build(
-        git_repo='https://chromium.googlesource.com/foo/bar/baz',
-        change_number=456789,
-        patch_set=patch_set,
-        experiments=experiments,
+      git_repo='https://chromium.googlesource.com/foo/bar/baz',
+      change_number=456789,
+      patch_set=patch_set,
+      experiments=experiments,
     )
 
     message = 'nothing important'
@@ -610,31 +657,42 @@ def GenTests(api: TEST_DEPS):
       parse_description_json = {BUILDER_FOOTER: [footer_builder]}
 
     t += api.override_step_data(
-        'gerrit changes',
-        api.json.output([{
+      'gerrit changes',
+      api.json.output(
+        [
+          {
             'revisions': {
-                1: {
-                    '_number': patch_set,
-                    'commit': {
-                        'message': message,
-                    }
-                }
+              1: {
+                '_number': patch_set,
+                'commit': {
+                  'message': message,
+                },
+              }
             }
-        }]))
-    t += api.override_step_data('parse description',
-                                api.json.output(parse_description_json))
+          }
+        ]
+      ),
+    )
+    t += api.override_step_data(
+      'parse description', api.json.output(parse_description_json)
+    )
     return t
 
   def affected_files(*affected_files):
     return api.override_step_data(
-        'git diff to analyze patch',
-        stdout=api.raw_io.output('\n'.join(affected_files)))
+      'git diff to analyze patch',
+      stdout=api.raw_io.output('\n'.join(affected_files)),
+    )
 
   def affected_recipes(*affected_recipes):
-    return api.step_data('determine affected recipes',
-                         api.json.output({
-                             'recipes': affected_recipes,
-                         }))
+    return api.step_data(
+      'determine affected recipes',
+      api.json.output(
+        {
+          'recipes': affected_recipes,
+        }
+      ),
+    )
 
   def led_get_builder_name(name):
     return 'get led builders.get {}.led get-builder'.format(name)
@@ -643,7 +701,7 @@ def GenTests(api: TEST_DEPS):
     # TODO: stop using buildbucket v1 buildernames.
     bucket, buildername = name.split(':', 1)
     assert bucket.startswith('luci.')
-    project, bucket = bucket[len('luci.'):].split('.', 1)
+    project, bucket = bucket[len('luci.') :].split('.', 1)
     return project, bucket, buildername
 
   def non_existent_builder(name):
@@ -654,9 +712,12 @@ def GenTests(api: TEST_DEPS):
     build = job.buildbucket.bbagent_args.build
     build.input.properties['recipe'] = recipe
     build.infra.backend.config.CopyFrom(
-        api.buildbucket.dict_to_struct({
-            'priority': 40,
-        },))
+      api.buildbucket.dict_to_struct(
+        {
+          'priority': 40,
+        },
+      )
+    )
 
     return job
 
@@ -671,241 +732,266 @@ def GenTests(api: TEST_DEPS):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
       path = str(
-          api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/')))
+        api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/'))
+      )
       check(path not in input_files)
 
   def affected_recipes_input_files_contains(check, steps, *rel_paths):
     input_files = affected_recipes_input_files(steps)
     for rel_path in rel_paths:
       path = str(
-          api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/')))
+        api.path.cache_dir.joinpath('builder', 'baz', *rel_path.split('/'))
+      )
       check(path in input_files)
 
   yield api.test(
-      'basic',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      default_builders(),
+    'basic',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    default_builders(),
   )
 
   def builder_config_path(p):
     return 'recipes/recipe_modules/chromium_tests_builder_config/{}'.format(p)
 
   yield api.test(
-      'per_builder_config_ignored',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      affected_files(
-          'recipes/foo.py',
-          builder_config_path('builders/__init__.py'),
-          builder_config_path('builders/chromium.py'),
-          builder_config_path('trybots.py'),
+    'per_builder_config_ignored',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    affected_files(
+      'recipes/foo.py',
+      builder_config_path('builders/__init__.py'),
+      builder_config_path('builders/chromium.py'),
+      builder_config_path('trybots.py'),
+    ),
+    default_builders(),
+    api.post_check(post_process.MustRun, 'ignoring per-builder config'),
+    api.post_check(
+      post_process.StepTextContains,
+      'ignoring per-builder config',
+      [r'\_\_init\_\_.py'],
+    ),
+    api.post_check(
+      affected_recipes_input_files_does_not_contain,
+      builder_config_path('builders/__init__.py'),
+      builder_config_path('builders/chromium.py'),
+      builder_config_path('trybots.py'),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'recipe_test_ignored',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    affected_files(
+      'recipes/foo.py',
+      'recipes/recipe_modules/chromium_swarming/examples/full.py',
+      builder_config_path('tests/builders.py'),
+    ),
+    default_builders(),
+    api.post_check(post_process.MustRun, 'ignoring recipe tests'),
+    api.post_check(
+      affected_recipes_input_files_does_not_contain,
+      'recipes/recipe_modules/chromium_swarming/examples/full.py',
+      builder_config_path('tests/builders.py'),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'owners_files_ignored',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    affected_files(
+      'recipes/foo.py',
+      builder_config_path('OWNERS'),
+      'recipes/recipe_modules/chromium_tests/CHROMIUM_TESTS_OWNERS',
+    ),
+    default_builders(),
+    api.post_check(post_process.MustRun, 'ignoring OWNERS files'),
+    api.post_check(
+      affected_recipes_input_files_does_not_contain,
+      builder_config_path('OWNERS'),
+      'recipes/recipe_modules/chromium_tests/CHROMIUM_TESTS_OWNERS',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'src_side_migration_files_ignored',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    affected_files(
+      'recipes/foo.py',
+      builder_config_path('migration/chromium.json'),
+    ),
+    default_builders(),
+    api.post_check(
+      post_process.MustRun, 'ignoring src-side config migration files'
+    ),
+    api.post_check(
+      affected_recipes_input_files_does_not_contain,
+      builder_config_path('migration/chromium.json'),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'presubmit_scripts_ignored',
+    gerrit_change(),
+    affected_recipes(RECIPE),
+    affected_files(
+      'recipes/foo.py',
+      builder_config_path('PRESUBMIT.py'),
+    ),
+    default_builders(),
+    api.post_check(post_process.MustRun, 'ignoring PRESUBMIT.py scripts'),
+    api.post_check(
+      affected_recipes_input_files_does_not_contain,
+      builder_config_path('PRESUBMIT.py'),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'all_affected_files_are_ignored',
+    gerrit_change(),
+    affected_files(builder_config_path('builders/__init__.py')),
+    api.post_check(post_process.MustRun, 'all affected files ignored'),
+    api.post_check(post_process.DoesNotRun, 'determine affected recipes'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'no_jobs_to_run',
+    gerrit_change(),
+    default_builders(),
+    api.post_check(post_process.DoesNotRunRE, 'test .*\.trigger'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'recipe_roller',
+    gerrit_change(),
+    affected_files(
+      'random/file.py',
+      'infra/config/recipes.cfg',
+    ),
+    default_builders(),
+  )
+
+  yield api.test(
+    'manual_roll_with_changes',
+    gerrit_change(),
+    affected_files(
+      'random/file.py',
+      'infra/config/recipes.cfg',
+    ),
+    default_builders(),
+  )
+
+  yield api.test(
+    'analyze_missing_json',
+    gerrit_change(),
+    default_builders(),
+    api.override_step_data('determine affected recipes', retcode=1),
+    api.post_check(post_process.StepException, 'determine affected recipes'),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'analyze_failure',
+    gerrit_change(),
+    default_builders(),
+    api.step_data(
+      'determine affected recipes',
+      api.json.output(
+        {
+          'error': 'Bad analyze!!!!',
+          'invalid_recipes': [RECIPE],
+        }
       ),
-      default_builders(),
-      api.post_check(post_process.MustRun, 'ignoring per-builder config'),
-      api.post_check(post_process.StepTextContains,
-                     'ignoring per-builder config', [r'\_\_init\_\_.py']),
-      api.post_check(affected_recipes_input_files_does_not_contain,
-                     builder_config_path('builders/__init__.py'),
-                     builder_config_path('builders/chromium.py'),
-                     builder_config_path('trybots.py')),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'recipe_test_ignored',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      affected_files(
-          'recipes/foo.py',
-          'recipes/recipe_modules/chromium_swarming/examples/full.py',
-          builder_config_path('tests/builders.py'),
-      ),
-      default_builders(),
-      api.post_check(post_process.MustRun, 'ignoring recipe tests'),
-      api.post_check(
-          affected_recipes_input_files_does_not_contain,
-          'recipes/recipe_modules/chromium_swarming/examples/full.py',
-          builder_config_path('tests/builders.py')),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'owners_files_ignored',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      affected_files(
-          'recipes/foo.py',
-          builder_config_path('OWNERS'),
-          'recipes/recipe_modules/chromium_tests/CHROMIUM_TESTS_OWNERS',
-      ),
-      default_builders(),
-      api.post_check(post_process.MustRun, 'ignoring OWNERS files'),
-      api.post_check(
-          affected_recipes_input_files_does_not_contain,
-          builder_config_path('OWNERS'),
-          'recipes/recipe_modules/chromium_tests/CHROMIUM_TESTS_OWNERS'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'src_side_migration_files_ignored',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      affected_files(
-          'recipes/foo.py',
-          builder_config_path('migration/chromium.json'),
-      ),
-      default_builders(),
-      api.post_check(post_process.MustRun,
-                     'ignoring src-side config migration files'),
-      api.post_check(affected_recipes_input_files_does_not_contain,
-                     builder_config_path('migration/chromium.json')),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'presubmit_scripts_ignored',
-      gerrit_change(),
-      affected_recipes(RECIPE),
-      affected_files(
-          'recipes/foo.py',
-          builder_config_path('PRESUBMIT.py'),
-      ),
-      default_builders(),
-      api.post_check(post_process.MustRun, 'ignoring PRESUBMIT.py scripts'),
-      api.post_check(affected_recipes_input_files_does_not_contain,
-                     builder_config_path('PRESUBMIT.py')),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'all_affected_files_are_ignored',
-      gerrit_change(),
-      affected_files(builder_config_path('builders/__init__.py')),
-      api.post_check(post_process.MustRun, 'all affected files ignored'),
-      api.post_check(post_process.DoesNotRun, 'determine affected recipes'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'no_jobs_to_run',
-      gerrit_change(),
-      default_builders(),
-      api.post_check(post_process.DoesNotRunRE, 'test .*\.trigger'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'recipe_roller',
-      gerrit_change(),
-      affected_files(
-          'random/file.py',
-          'infra/config/recipes.cfg',
-      ),
-      default_builders(),
-  )
-
-  yield api.test(
-      'manual_roll_with_changes',
-      gerrit_change(),
-      affected_files(
-          'random/file.py',
-          'infra/config/recipes.cfg',
-      ),
-      default_builders(),
-  )
-
-  yield api.test(
-      'analyze_missing_json',
-      gerrit_change(),
-      default_builders(),
-      api.override_step_data('determine affected recipes', retcode=1),
-      api.post_check(post_process.StepException, 'determine affected recipes'),
-      api.expect_status('INFRA_FAILURE'),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'analyze_failure',
-      gerrit_change(),
-      default_builders(),
-      api.step_data(
-          'determine affected recipes',
-          api.json.output({
-              'error': 'Bad analyze!!!!',
-              'invalid_recipes': [RECIPE],
-          }),
-          retcode=1),
-      api.post_check(post_process.StepFailure, 'determine affected recipes'),
-      api.post_check(
-          lambda check, steps: \
-          check(RECIPE in
-                steps['determine affected recipes'].logs['invalid recipes'])
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+      retcode=1,
+    ),
+    api.post_check(post_process.StepFailure, 'determine affected recipes'),
+    api.post_check(
+      lambda check, steps: check(
+        RECIPE in steps['determine affected recipes'].logs['invalid recipes']
+      )
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   def step_text_lines(step):
     return [l.strip() for l in step.step_text.split('<br/>')]
 
   yield api.test(
-      'footer_builder_with_invalid_format',
-      gerrit_change(footer_builder='bad-builder'),
-      api.post_check(post_process.StepFailure, 'bad builders'),
-      api.post_check(
-          lambda check, steps: \
-          check('bad-builder' in step_text_lines(steps['bad builders']))
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'footer_builder_with_invalid_format',
+    gerrit_change(footer_builder='bad-builder'),
+    api.post_check(post_process.StepFailure, 'bad builders'),
+    api.post_check(
+      lambda check, steps: check(
+        'bad-builder' in step_text_lines(steps['bad builders'])
+      )
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'footer_builder_with_unknown_bucket',
-      gerrit_change(footer_builder='arbitrary-bucket:arbitrary-builder'),
-      api.post_check(post_process.StepFailure, 'unknown buckets'),
-      api.post_check(
-          lambda check, steps: \
-          check('arbitrary-bucket' in step_text_lines(steps['unknown buckets']))
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'footer_builder_with_unknown_bucket',
+    gerrit_change(footer_builder='arbitrary-bucket:arbitrary-builder'),
+    api.post_check(post_process.StepFailure, 'unknown buckets'),
+    api.post_check(
+      lambda check, steps: check(
+        'arbitrary-bucket' in step_text_lines(steps['unknown buckets'])
+      )
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'footer_builder',
-      gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
-      affected_recipes(RECIPE),
-      default_builders(),
-      api.post_check(post_process.DoesNotRun,
-                     *[led_get_builder_name(b) for b in DEFAULT_BUILDERS]),
-      api.post_process(post_process.DropExpectation),
+    'footer_builder',
+    gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
+    affected_recipes(RECIPE),
+    default_builders(),
+    api.post_check(
+      post_process.DoesNotRun,
+      *[led_get_builder_name(b) for b in DEFAULT_BUILDERS],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'per_builder_config_not_ignored_for_footer_builders',
-      gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
-      affected_recipes(RECIPE),
-      affected_files(
-          builder_config_path('builders/chromium.py'),
-          builder_config_path('trybots.py')),
-      default_builders(),
-      api.post_check(post_process.DoesNotRun, 'ignoring builder config'),
-      api.post_check(affected_recipes_input_files_contains,
-                     builder_config_path('builders/chromium.py'),
-                     builder_config_path('trybots.py')),
-      api.post_process(post_process.DropExpectation),
+    'per_builder_config_not_ignored_for_footer_builders',
+    gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
+    affected_recipes(RECIPE),
+    affected_files(
+      builder_config_path('builders/chromium.py'),
+      builder_config_path('trybots.py'),
+    ),
+    default_builders(),
+    api.post_check(post_process.DoesNotRun, 'ignoring builder config'),
+    api.post_check(
+      affected_recipes_input_files_contains,
+      builder_config_path('builders/chromium.py'),
+      builder_config_path('trybots.py'),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'footer_builder_does_not_exist',
-      gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
-      non_existent_builder('luci.chromium.try:arbitrary-builder'),
-      api.post_check(
-          post_process.StepFailure,
-          led_get_builder_name('luci.chromium.try:arbitrary-builder')),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'footer_builder_does_not_exist',
+    gerrit_change(footer_builder='luci.chromium.try:arbitrary-builder'),
+    non_existent_builder('luci.chromium.try:arbitrary-builder'),
+    api.post_check(
+      post_process.StepFailure,
+      led_get_builder_name('luci.chromium.try:arbitrary-builder'),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

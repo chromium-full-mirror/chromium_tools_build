@@ -26,13 +26,17 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   return api.binary_size.android_binary_size(
-      chromium_config='chromium',
-      chromium_apply_configs=['mb'],
-      gclient_config='chromium',
-      gclient_apply_configs=['android'],
-      try_gs_analysis=True)
+    chromium_config='chromium',
+    chromium_apply_configs=['mb'],
+    gclient_config='chromium',
+    gclient_apply_configs=['android'],
+    try_gs_analysis=True,
+  )
 
 
 def GenTests(api: TEST_DEPS):
-  yield api.test('basic', api.binary_size.build(override_commit_log=True),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'basic',
+    api.binary_size.build(override_commit_log=True),
+    api.post_process(post_process.DropExpectation),
+  )

@@ -24,5 +24,5 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
+    'basic',
   )

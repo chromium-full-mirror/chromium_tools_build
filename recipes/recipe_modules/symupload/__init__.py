@@ -12,16 +12,16 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
+  chromium,
+  chromium_checkout,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    properties,
-    step,
-    time,
+  context,
+  file,
+  path,
+  properties,
+  step,
+  time,
 )
 from RECIPE_MODULES.infra import cloudkms
 
@@ -37,7 +37,6 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   step: step.API
   time: time.API
-
 
 
 from .api import SymuploadApi as API

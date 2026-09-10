@@ -42,25 +42,30 @@ def RunSteps(api: DEPS):
     return initial + rerun
 
   initial_results = Results(
-      task_failures=['Failure in Shard 0 (crash)', 'Failure in Shard 1 (test)'])
+    task_failures=['Failure in Shard 0 (crash)', 'Failure in Shard 1 (test)']
+  )
   rerun_results = Results()
   final_results = simulate_exoneration(
-      initial_results, rerun_results, exoneration_tests=[])
+    initial_results, rerun_results, exoneration_tests=[]
+  )
   assert final_results.task_failures == [
-      'Failure in Shard 0 (crash)', 'Failure in Shard 1 (test)'
+    'Failure in Shard 0 (crash)',
+    'Failure in Shard 1 (test)',
   ], final_results.task_failures
-  assert (final_results.exonerated_failures == []
-         ), final_results.exonerated_failures
+  assert final_results.exonerated_failures == [], (
+    final_results.exonerated_failures
+  )
 
   initial_results2 = Results(task_failures=['Failure in Shard 1 (test)'])
   rerun_results2 = Results()
   final_results2 = simulate_exoneration(
-      initial_results2,
-      rerun_results2,
-      exoneration_tests=['front_end/foo.test.ts:my_test'])
+    initial_results2,
+    rerun_results2,
+    exoneration_tests=['front_end/foo.test.ts:my_test'],
+  )
   assert final_results2.task_failures == [], final_results2.task_failures
   assert final_results2.exonerated_failures == [
-      'front_end/foo.test.ts:my_test'
+    'front_end/foo.test.ts:my_test'
   ], final_results2.exonerated_failures
 
   # 3. Test raise_on_failure prioritizing test failure over infra failure
@@ -80,7 +85,8 @@ def RunSteps(api: DEPS):
   r_exon = Results(exonerated_failures=['test1'])
   res = r_exon.raw_result()
   assert res.summary_markdown == 'Flaky tests exonerated: test1', (
-      res.summary_markdown)
+    res.summary_markdown
+  )
 
   # 5. Test exonerable() returns False when any infra failure is present
   r_mixed = Results(task_failures=['test1'], infra_failures=['infra1'])

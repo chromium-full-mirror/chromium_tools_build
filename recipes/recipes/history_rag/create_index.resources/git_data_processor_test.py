@@ -31,14 +31,16 @@ class TestBlameParsing(unittest.TestCase):
     mock_file.parent = Path(".")
     mock_file.name = "test.py"
 
-    mock_output = (f"{HASH_A} 1 1 1\n"
-                   "author User One\n"
-                   "\tline_of_code = 1\n"
-                   f"{HASH_A} 1 2 1\n"
-                   "\tline_of_code = 2\n"
-                   f"{HASH_B} 2 3 1\n"
-                   "author User Two\n"
-                   "\tline_of_code = 3\n")
+    mock_output = (
+      f"{HASH_A} 1 1 1\n"
+      "author User One\n"
+      "\tline_of_code = 1\n"
+      f"{HASH_A} 1 2 1\n"
+      "\tline_of_code = 2\n"
+      f"{HASH_B} 2 3 1\n"
+      "author User Two\n"
+      "\tline_of_code = 3\n"
+    )
     mock_run.return_value.stdout = mock_output
 
     result = git_data_processor.get_blame_data(mock_file)
@@ -56,8 +58,9 @@ class TestProcessFileLogic(unittest.TestCase):
   @patch('git_data_processor.get_blame_data')
   @patch('git_data_processor.get_file_hash')
   @patch('builtins.open', new_callable=mock_open)
-  def test_process_file_success(self, mock_open_file, mock_hash, mock_blame,
-                                mock_mkdir):
+  def test_process_file_success(
+    self, mock_open_file, mock_hash, mock_blame, mock_mkdir
+  ):
     # Setup: Standard success case
     mock_hash.return_value = HASH_1
     mock_blame.return_value = [HASH_A, HASH_B]
@@ -88,19 +91,21 @@ class TestCommitMetadata(unittest.TestCase):
   @patch('subprocess.run')
   def test_get_commit_details_parsing(self, mock_run):
     # Simulate `git show` output with Chromium/Google style tags
-    raw_output = ("Subject line of the commit\n"
-                  "\n"
-                  "Body of the commit message.\n"
-                  "\n"
-                  "Bug: 123, 456\n"
-                  "Change-Id: Iabc123\n"
-                  "Reviewed-by: User <u@example.com>\n"
-                  "Test=Unit tests passed\n"
-                  "\n"
-                  "--author--\n"
-                  "Dev Name <dev@example.com>\n"
-                  "--date--\n"
-                  "2025-01-01 10:00:00")
+    raw_output = (
+      "Subject line of the commit\n"
+      "\n"
+      "Body of the commit message.\n"
+      "\n"
+      "Bug: 123, 456\n"
+      "Change-Id: Iabc123\n"
+      "Reviewed-by: User <u@example.com>\n"
+      "Test=Unit tests passed\n"
+      "\n"
+      "--author--\n"
+      "Dev Name <dev@example.com>\n"
+      "--date--\n"
+      "2025-01-01 10:00:00"
+    )
     mock_run.return_value.stdout = raw_output
 
     # Pass a 40-char commit hash
@@ -122,12 +127,14 @@ class TestCommitMetadata(unittest.TestCase):
   @patch('subprocess.run')
   def test_get_commit_details_unicode_replace(self, mock_run):
     # Simulate non-UTF8 characters replaced with replacement character
-    raw_output = ("Subject with non-utf8 char: \ufffd\n"
-                  "\n"
-                  "--author--\n"
-                  "Dev Name \ufffd <dev@example.com>\n"
-                  "--date--\n"
-                  "2025-01-01 10:00:00")
+    raw_output = (
+      "Subject with non-utf8 char: \ufffd\n"
+      "\n"
+      "--author--\n"
+      "Dev Name \ufffd <dev@example.com>\n"
+      "--date--\n"
+      "2025-01-01 10:00:00"
+    )
     mock_run.return_value.stdout = raw_output
 
     details = git_data_processor.get_commit_details(HASH_A)
@@ -149,8 +156,9 @@ class TestCommandFlows(unittest.TestCase):
   @patch('pathlib.Path.mkdir')
   @patch('git_data_processor.process_file')
   @patch('subprocess.run')
-  def test_blame_command_exclude_logic(self, mock_run, mock_process_file,
-                                       mock_mkdir):
+  def test_blame_command_exclude_logic(
+    self, mock_run, mock_process_file, mock_mkdir
+  ):
     # Mock arguments
     args = MagicMock()
     # Use absolute path for source_dir to simplify mock resolution
@@ -167,9 +175,9 @@ class TestCommandFlows(unittest.TestCase):
 
     # Mock git rev-parse (git root)
     mock_run.side_effect = [
-        MagicMock(stdout="/repo\n"),
-        # Mock git ls-files returning 3 files relative to the input dir (src)
-        MagicMock(stdout="main.py\nthird_party/lib.py\ntests/test.py\n")
+      MagicMock(stdout="/repo\n"),
+      # Mock git ls-files returning 3 files relative to the input dir (src)
+      MagicMock(stdout="main.py\nthird_party/lib.py\ntests/test.py\n"),
     ]
 
     # Define a side effect for Path.resolve that returns CONCRETE Path objects.
@@ -203,8 +211,9 @@ class TestCommandFlows(unittest.TestCase):
   @patch('git_data_processor.collect_blame_details')
   @patch('json.dump')
   @patch('builtins.open', new_callable=mock_open)
-  def test_collect_command(self, mock_open_file, mock_dump, mock_collect,
-                           mock_mkdir):
+  def test_collect_command(
+    self, mock_open_file, mock_dump, mock_collect, mock_mkdir
+  ):
     args = MagicMock()
     args.directory = "blame_indices"
     args.output_file = "final.json"
@@ -227,8 +236,9 @@ class TestCommandFlows(unittest.TestCase):
   @patch('git_data_processor.process_commit_hash')
   @patch('json.load')
   @patch('builtins.open', new_callable=mock_open)
-  def test_fetch_command(self, mock_open_file, mock_load, mock_process_hash,
-                         mock_mkdir, mock_glob):
+  def test_fetch_command(
+    self, mock_open_file, mock_load, mock_process_hash, mock_mkdir, mock_glob
+  ):
     args = MagicMock()
     args.blame_details_file = "input.json"
     args.output_dir = "out_dir"

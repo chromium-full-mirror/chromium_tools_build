@@ -31,9 +31,10 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   api.chromium.set_config(
-      api.properties.get('chromium_config', 'chromium'),
-      TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
-      TARGET_BITS=api.properties.get('target_bits', 64))
+    api.properties.get('chromium_config', 'chromium'),
+    TARGET_PLATFORM=api.properties.get('target_platform', 'linux'),
+    TARGET_BITS=api.properties.get('target_bits', 64),
+  )
 
   api.chromium.verify_config |= True
 
@@ -44,18 +45,18 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
   def from_config(config):
     return api.test(
-        config,
-        api.properties(chromium_config=config),
-        api.post_process(post_process.DropExpectation),
+      config,
+      api.properties(chromium_config=config),
+      api.post_process(post_process.DropExpectation),
     )
 
   yield from_config('gn')
 
   yield api.test(
-      'ios',
-      api.platform('mac', 64),
-      api.properties(target_platform='ios'),
-      api.post_process(post_process.DropExpectation),
+    'ios',
+    api.platform('mac', 64),
+    api.properties(target_platform='ios'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield from_config('gcc')
@@ -63,11 +64,12 @@ def GenTests(api: TEST_DEPS):
   yield from_config('trybot_flavor')
 
   yield api.test(
-      'chromium_win_clang_official',
-      api.platform('win', 64),
-      api.properties(
-          chromium_config='chromium_win_clang_official', target_platform='win'),
-      api.post_process(post_process.DropExpectation),
+    'chromium_win_clang_official',
+    api.platform('win', 64),
+    api.properties(
+      chromium_config='chromium_win_clang_official', target_platform='win'
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield from_config('chromium_win_clang_official_tot')
@@ -85,11 +87,10 @@ def GenTests(api: TEST_DEPS):
   yield from_config('chromium_win_rust_tot')
 
   yield api.test(
-      'clang_tot_mac',
-      api.platform('mac', 64),
-      api.properties(
-          chromium_config='clang_tot_mac_asan', target_platform='mac'),
-      api.post_process(post_process.DropExpectation),
+    'clang_tot_mac',
+    api.platform('mac', 64),
+    api.properties(chromium_config='clang_tot_mac_asan', target_platform='mac'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield from_config('clang_tot_ios')
@@ -103,11 +104,10 @@ def GenTests(api: TEST_DEPS):
   yield from_config('clang_tot_linux_ubsan_vptr')
 
   yield api.test(
-      'clang_tot_mac_asan',
-      api.platform('mac', 64),
-      api.properties(
-          chromium_config='clang_tot_mac_asan', target_platform='mac'),
-      api.post_process(post_process.DropExpectation),
+    'clang_tot_mac_asan',
+    api.platform('mac', 64),
+    api.properties(chromium_config='clang_tot_mac_asan', target_platform='mac'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield from_config('clang_tot_android_asan')
@@ -133,23 +133,23 @@ def GenTests(api: TEST_DEPS):
   yield from_config('internal_mb_config')
 
   yield api.test(
-      'mac_toolchain',
-      api.platform('mac', 64),
-      api.properties(
-          target_platform='mac',
-          chromium_apply_config=['mac_toolchain'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'mac_toolchain',
+    api.platform('mac', 64),
+    api.properties(
+      target_platform='mac',
+      chromium_apply_config=['mac_toolchain'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'ios_toolchain',
-      api.platform('mac', 64),
-      api.properties(
-          target_platform='ios',
-          chromium_apply_config=['mac_toolchain'],
-      ),
-      api.post_process(post_process.DropExpectation),
+    'ios_toolchain',
+    api.platform('mac', 64),
+    api.properties(
+      target_platform='ios',
+      chromium_apply_config=['mac_toolchain'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield from_config('android_internal_isolate_maps')
@@ -157,11 +157,11 @@ def GenTests(api: TEST_DEPS):
   yield from_config('official_no_clobber')
 
   yield api.test(
-      'ios_codesearch',
-      api.platform('mac', 64),
-      api.properties(
-          target_platform='ios',
-          chromium_config='codesearch',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'ios_codesearch',
+    api.platform('mac', 64),
+    api.properties(
+      target_platform='ios',
+      chromium_config='codesearch',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

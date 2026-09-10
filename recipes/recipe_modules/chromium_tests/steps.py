@@ -48,12 +48,19 @@ from recipe_engine.config_types import Path
 from .resultdb import ResultDB
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       test_result_pb2)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as test_result_pb2,
+)
 
 from RECIPE_MODULES.build import chromium_swarming
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, command_args, enum,
-                                             mapping, sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  command_args,
+  enum,
+  mapping,
+  sequence,
+)
 from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_instruction
 from RECIPE_MODULES.build.skylab.test_runner import TestRunner
 from RECIPE_MODULES.build.test_utils import util
@@ -79,8 +86,7 @@ RETRY_LIMIT_FOR_CI_RETRY_SHARDS = 5
 # Pinned version of
 # https://chromium.googlesource.com/infra/infra/+/main/go/src/infra/cmd/mac_toolchain
 MAC_TOOLCHAIN_PACKAGE = 'infra/tools/mac_toolchain/${platform}'
-MAC_TOOLCHAIN_VERSION = (
-    'git_revision:07e67ff89ff11ed0e3071867ed6bb49319a91b05')
+MAC_TOOLCHAIN_VERSION = 'git_revision:07e67ff89ff11ed0e3071867ed6bb49319a91b05'
 MAC_TOOLCHAIN_ROOT = '.'
 
 ALLOWED_RESULT_HANDLER_NAMES = ('default', 'layout tests', 'fake')
@@ -129,53 +135,53 @@ class TestOptionFlags:
 
   @classmethod
   def create(
-      cls,
-      filter_flag: str = '',
-      filter_delimiter: str = '',
-      **kwargs,
+    cls,
+    filter_flag: str = '',
+    filter_delimiter: str = '',
+    **kwargs,
   ):
     """Create a TestOptionFlags instance."""
     if filter_flag and not filter_delimiter:
       raise ValueError("'filter_delimiter' must be set if 'filter_flag' is")
     return cls(
-        filter_flag=filter_flag,
-        filter_delimiter=filter_delimiter,
-        **kwargs,
+      filter_flag=filter_flag,
+      filter_delimiter=filter_delimiter,
+      **kwargs,
     )
 
 
 _DEFAULT_OPTION_FLAGS = TestOptionFlags.create()
 _GTEST_OPTION_FLAGS = TestOptionFlags.create(
-    filter_flag='--gtest_filter',
-    filter_delimiter=':',
-    repeat_flag='--gtest_repeat',
-    retry_limit_flag='--test-launcher-retry-limit',
-    run_disabled_flag='--gtest_also_run_disabled_tests',
-    batch_limit_flag='--test-launcher-batch-limit',
+  filter_flag='--gtest_filter',
+  filter_delimiter=':',
+  repeat_flag='--gtest_repeat',
+  retry_limit_flag='--test-launcher-retry-limit',
+  run_disabled_flag='--gtest_also_run_disabled_tests',
+  batch_limit_flag='--test-launcher-batch-limit',
 )
 _ISOLATED_SCRIPT_OPTION_FLAGS = TestOptionFlags.create(
-    filter_flag='--isolated-script-test-filter',
-    filter_delimiter='::',
-    repeat_flag='--isolated-script-test-repeat',
-    retry_limit_flag='--isolated-script-test-launcher-retry-limit',
+  filter_flag='--isolated-script-test-filter',
+  filter_delimiter='::',
+  repeat_flag='--isolated-script-test-repeat',
+  retry_limit_flag='--isolated-script-test-launcher-retry-limit',
 )
 # webkit_layout_tests were renamed to blink_web_tests, which only supports
 # gtest style arguments. See crbug/831345 and crrev/c/1006067 for details.
 # batch limit was never supported for webkit_layout_tests, so we'll exclude
 # override of that variable.
 _BLINK_WEB_TESTS_OPTION_FLAGS = TestOptionFlags.create(
-    filter_flag='--gtest_filter',
-    filter_delimiter=':',
-    repeat_flag='--gtest_repeat',
-    retry_limit_flag='--test-launcher-retry-limit',
-    run_disabled_flag='--gtest_also_run_disabled_tests',
+  filter_flag='--gtest_filter',
+  filter_delimiter=':',
+  repeat_flag='--gtest_repeat',
+  retry_limit_flag='--test-launcher-retry-limit',
+  run_disabled_flag='--gtest_also_run_disabled_tests',
 )
 _ANGLE_UNITTESTS_OPTION_FLAGS = TestOptionFlags.create(
-    filter_flag='--gtest_filter',
-    filter_delimiter=':',
-    repeat_flag='--gtest_repeat',
-    retry_limit_flag='--flaky-retries',
-    run_disabled_flag='--gtest_also_run_disabled_tests',
+  filter_flag='--gtest_filter',
+  filter_delimiter=':',
+  repeat_flag='--gtest_repeat',
+  retry_limit_flag='--flaky-retries',
+  run_disabled_flag='--gtest_also_run_disabled_tests',
 )
 
 
@@ -223,16 +229,16 @@ class TestOptions:
 
     if self.repeat_count is None and suffix == 'without patch':
       return attr.evolve(
-          self,
-          repeat_count=REPEAT_COUNT_FOR_FAILING_TESTS,
-          # If we're repeating the tests 10 times, then we want to set
-          # retry_limit=0. The default retry_limit of 3 means that failing tests
-          # will be retried 40 times, which is not our intention.
-          retry_limit=0,
-          # Since we're retrying a small number of tests, force them to be
-          # independent. This increases run time but produces more reliable
-          # results.
-          force_independent_tests=True,
+        self,
+        repeat_count=REPEAT_COUNT_FOR_FAILING_TESTS,
+        # If we're repeating the tests 10 times, then we want to set
+        # retry_limit=0. The default retry_limit of 3 means that failing tests
+        # will be retried 40 times, which is not our intention.
+        retry_limit=0,
+        # Since we're retrying a small number of tests, force them to be
+        # independent. This increases run time but produces more reliable
+        # results.
+        force_independent_tests=True,
       )
 
     # Allow more retries for CI shard retries.
@@ -258,8 +264,9 @@ class TestOptions:
     args = list(args)
 
     if self.test_filter and flags.filter_flag:
-      args = _merge_arg(args, flags.filter_flag,
-                        flags.filter_delimiter.join(self.test_filter))
+      args = _merge_arg(
+        args, flags.filter_flag, flags.filter_delimiter.join(self.test_filter)
+      )
 
     if self.repeat_count and self.repeat_count > 1 and flags.repeat_flag:
       args = _merge_arg(args, flags.repeat_flag, self.repeat_count)
@@ -474,21 +481,23 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     """Steps to execute before running the test."""
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     """Run the test."""
     raise NotImplementedError()  # pragma: no cover
@@ -540,9 +549,9 @@ class AbstractTest(abc.ABC):
 
   @abc.abstractmethod
   def update_rdb_results(
-      self,
-      suffix: str,
-      results: util.RDBPerSuiteResults,
+    self,
+    suffix: str,
+    results: util.RDBPerSuiteResults,
   ) -> None:
     raise NotImplementedError()  # pragma: no cover
 
@@ -570,8 +579,8 @@ class AbstractTest(abc.ABC):
 
   @abc.abstractmethod
   def add_known_luci_analysis_flaky_failures(
-      self,
-      test_names: Iterable[str],
+    self,
+    test_names: Iterable[str],
   ) -> None:
     """Add known flaky failures on ToT."""
     raise NotImplementedError()  # pragma: no cover
@@ -593,8 +602,8 @@ class AbstractTest(abc.ABC):
     raise NotImplementedError()  # pragma: no cover
 
   def failures_including_retry(
-      self,
-      suffix: str,
+    self,
+    suffix: str,
   ) -> tuple[bool, Set[str] | None]:
     """Returns test failures after retries.
 
@@ -626,14 +635,16 @@ class AbstractTest(abc.ABC):
       # tests in the original run that failed in the retry shards, those
       # failures are exposed in the build.
       return True, (
-          set(retry_shards_failures) - self.known_luci_analysis_flaky_failures)
+        set(retry_shards_failures) - self.known_luci_analysis_flaky_failures
+      )
 
     if original_run_valid:
       return True, set(failures) - self.known_luci_analysis_flaky_failures
 
     if retry_shards_valid:
       return True, set(
-          retry_shards_failures) - self.known_luci_analysis_flaky_failures
+        retry_shards_failures
+      ) - self.known_luci_analysis_flaky_failures
 
     return False, None
 
@@ -698,7 +709,8 @@ class AbstractTest(abc.ABC):
       if not test_failures:
         return SUCCESS_SUITE_STATUS
       # Check if the without patch exonerates this suite
-      valid, without_patch_failures = self.deterministic_without_patch_failures(
+      valid, without_patch_failures = (
+        self.deterministic_without_patch_failures()
       )
       if valid and not without_patch_failures:
         return SUCCESS_SUITE_STATUS
@@ -711,7 +723,8 @@ class AbstractTest(abc.ABC):
     return SUCCESS_SUITE_STATUS
 
   def deterministic_without_patch_failures(
-      self) -> tuple[bool, Set[str] | None]:
+    self,
+  ) -> tuple[bool, Set[str] | None]:
     # Check if the suite succeeded in without patch
     valid_results, ignored_failures = self.without_patch_failures_to_ignore()
     if not valid_results:
@@ -719,8 +732,9 @@ class AbstractTest(abc.ABC):
 
     valid_results, test_failures = self.with_patch_failures_including_retry()
     assert valid_results, (
-        "If there were no valid results, then there was no "
-        "point in running 'without patch'. This is a recipe bug.")
+      "If there were no valid results, then there was no "
+      "point in running 'without patch'. This is a recipe bug."
+    )
 
     # The FAILURE and NOTRUN test statuses are both considered deterministic
     # failures. But some suites can have trouble during later phases, causing
@@ -734,8 +748,9 @@ class AbstractTest(abc.ABC):
         initial_notruns = self.notrun_failures('with patch')
       without_patch_notruns = self.notrun_failures('without patch')
       for ignored_failure in ignored_failures.copy():
-        if ((ignored_failure in initial_notruns) != (ignored_failure
-                                                     in without_patch_notruns)):
+        if (ignored_failure in initial_notruns) != (
+          ignored_failure in without_patch_notruns
+        ):
           ignored_failures.remove(ignored_failure)
     # Remove the tests that failed wo patch
     return True, test_failures - ignored_failures
@@ -959,9 +974,9 @@ class Test(AbstractTest):
     return self._rdb_results.get(suffix)
 
   def update_rdb_results(
-      self,
-      suffix: str,
-      results: util.RDBPerSuiteResults,
+    self,
+    suffix: str,
+    results: util.RDBPerSuiteResults,
   ) -> None:
     self._rdb_results[suffix] = results
 
@@ -974,8 +989,8 @@ class Test(AbstractTest):
     return self._weak_luci_analysis_flaky_failures
 
   def add_known_luci_analysis_flaky_failures(
-      self,
-      test_names: Iterable[str],
+    self,
+    test_names: Iterable[str],
   ) -> None:
     self._known_luci_analysis_flaky_failures.update(test_names)
 
@@ -987,7 +1002,8 @@ class Test(AbstractTest):
     rdb_results = self._rdb_results.get(suffix)
     if rdb_results:
       self._rdb_results[suffix] = rdb_results.with_failure_on_exit(
-          failure_on_exit)
+        failure_on_exit
+      )
 
   def failure_on_exit(self, suffix: str) -> bool:
     return self._failure_on_exit_suffix_map.get(suffix, True)
@@ -1003,20 +1019,23 @@ class Test(AbstractTest):
 
   def deterministic_failures(self, suffix: str) -> Set[str]:
     failure_msg = (
-        'There is no data for the test run suffix ({0}). This should never '
-        'happen as all calls to deterministic_failures() should first check '
-        'that the data exists.'.format(suffix))
+      'There is no data for the test run suffix ({0}). This should never '
+      'happen as all calls to deterministic_failures() should first check '
+      'that the data exists.'.format(suffix)
+    )
     assert suffix in self._rdb_results, failure_msg
     return {
-        t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests
+      t.test_name for t in self._rdb_results[suffix].unexpected_failing_tests
     }
 
   def notrun_failures(self, suffix: str) -> Set[str]:
     assert self.has_valid_results(suffix), (
-        'notrun_failures must only be called when the test run is known to '
-        'have valid results.')
+      'notrun_failures must only be called when the test run is known to '
+      'have valid results.'
+    )
     return set(
-        t.test_name for t in self._rdb_results[suffix].unexpected_skipped_tests)
+      t.test_name for t in self._rdb_results[suffix].unexpected_skipped_tests
+    )
 
   @property
   def uses_local_devices(self) -> bool:
@@ -1042,8 +1061,9 @@ class Test(AbstractTest):
       # Invalid results should be treated as if every test failed.
       return failures if valid_results else None
 
-    if (suffix == 'without patch' or
-        (suffix == 'retry shards with patch' and self.retry_only_failed_tests)):
+    if suffix == 'without patch' or (
+      suffix == 'retry shards with patch' and self.retry_only_failed_tests
+    ):
       valid_results, failures = self.with_patch_failures_including_retry()
       # Invalid results should be treated as if every test failed.
       return failures if valid_results else None
@@ -1053,10 +1073,9 @@ class Test(AbstractTest):
     # all the tests fail to pass a suffix.
     return None
 
-  def _present_rdb_results(self,
-                           step_result,
-                           rdb_results,
-                           as_nested_step=False):
+  def _present_rdb_results(
+    self, step_result, rdb_results, as_nested_step=False
+  ):
     """Add a summary of test failures tracked in RDB to the given step_result.
 
     This duplicates info present in the "Test Results" tab in the new Milo UI.
@@ -1074,22 +1093,29 @@ class Test(AbstractTest):
       return
 
     _, failures_text = self.api.m.test_utils.limit_failures(
-        sorted([t.test_name for t in rdb_results.unexpected_failing_tests]))
+      sorted([t.test_name for t in rdb_results.unexpected_failing_tests])
+    )
     display_text = self.api.m.presentation_utils.format_step_text(
-        [['deterministic failures [caused step to fail]:', failures_text]])
+      [['deterministic failures [caused step to fail]:', failures_text]]
+    )
     if as_nested_step:
       step_result.step_text += display_text
     else:
       step_result.presentation.step_text += display_text
 
-  def _instructions_tag_for_suffix(self, instruction_type: str,
-                                   suffix: str) -> str:
+  def _instructions_tag_for_suffix(
+    self, instruction_type: str, suffix: str
+  ) -> str:
     identifiers = [self.name, instruction_type, suffix]
     return 'tag_' + str(
-        hashlib.sha1(''.join(
-            str(hashlib.sha1(identifier.encode('utf-8')).hexdigest())
-            for identifier in identifiers
-            if identifier).encode('utf-8')).hexdigest())
+      hashlib.sha1(
+        ''.join(
+          str(hashlib.sha1(identifier.encode('utf-8')).hexdigest())
+          for identifier in identifiers
+          if identifier
+        ).encode('utf-8')
+      ).hexdigest()
+    )
 
 
 class AbstractSwarmingTest(AbstractTest):
@@ -1131,11 +1157,11 @@ class AbstractSwarmingTest(AbstractTest):
 
   @abc.abstractmethod
   def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-      include_utr_instruction: bool,
-      is_ci_only: bool,
+    self,
+    suffix: str,
+    cas_input_root: str,
+    include_utr_instruction: bool,
+    is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     """Creates a swarming task. Must be overridden in subclasses.
 
@@ -1198,6 +1224,7 @@ class AbstractSkylabTest(AbstractTest):
   def build_output_dir(self, value: str) -> None:
     raise NotImplementedError()  # pragma: no cover
 
+
 @attrs()
 class TestWrapperSpec(AbstractTestSpec):
   """Abstract base class for specs for test wrappers.
@@ -1221,9 +1248,9 @@ class TestWrapperSpec(AbstractTestSpec):
 
   def get_test(self, chromium_tests_api):
     """Get the test described by the spec."""
-    return self.test_wrapper_class(self,
-                                   self._test_spec.get_test(chromium_tests_api),
-                                   chromium_tests_api)
+    return self.test_wrapper_class(
+      self, self._test_spec.get_test(chromium_tests_api), chromium_tests_api
+    )
 
   @property
   @abc.abstractmethod
@@ -1285,11 +1312,11 @@ class _TestDelegateAbstractMeta(abc.ABCMeta):
 
 
 class TestWrapper(
-    AbstractSwarmingTest,
-    AbstractSkylabTest,
-    AbstractTest,
-    # This handles delegating abstract methods in the base classes to _test
-    metaclass=_TestDelegateAbstractMeta,
+  AbstractSwarmingTest,
+  AbstractSkylabTest,
+  AbstractTest,
+  # This handles delegating abstract methods in the base classes to _test
+  metaclass=_TestDelegateAbstractMeta,
 ):
   """A base class for wrapping Tests to modify behavior.
 
@@ -1337,33 +1364,37 @@ class TestWrapper(
   def is_enabled(self):
     return not self._disabled_message and self._test.is_enabled
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     if not self._disabled_message:
       return self._test.pre_run(suffix, include_utr_instruction, is_ci_only)
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     # Don't call methods on self that take the suffix, if the subclass performs
     # suffix modification then the suffix passed in should already be modified
     if self._disabled_message:
       info_messages = itertools.chain([self._disabled_message], info_messages)
       self.api.m.step.empty(
-          self._test.step_name(suffix), step_text='\n'.join(info_messages))
+        self._test.step_name(suffix), step_text='\n'.join(info_messages)
+      )
       return
 
     if self._info_message:
       info_messages = itertools.chain([self._info_message], info_messages)
-    return self._test.run(checkout_dir, source_dir, build_dir, suffix,
-                          info_messages)
+    return self._test.run(
+      checkout_dir, source_dir, build_dir, suffix, info_messages
+    )
 
 
 class CiOnlyTestSpec(TestWrapperSpec):
@@ -1382,10 +1413,12 @@ class CiOnlyTest(TestWrapper):
     super().__init__(spec, test, chromium_tests_api)
     self._disabled = self._compute_disabled()
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     if not self._disabled_message:
       self._test.pre_run(suffix, include_utr_instruction, is_ci_only=True)
 
@@ -1403,16 +1436,19 @@ class CiOnlyTest(TestWrapper):
     if not self.api.m.tryserver.is_tryserver:
       return False
 
-    if (self.api.m.cv.active and
-        self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES):
+    if (
+      self.api.m.cv.active
+      and self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES
+    ):
       return False
 
     enabled_tests_by_builder = self.api.get_footer_enabled_ci_only_tests()
 
     def test_is_enabled_for_builder(builder):
       tests_for_builder = enabled_tests_by_builder.get(builder, set())
-      return ('*' in tests_for_builder or
-              self.canonical_name in tests_for_builder)
+      return (
+        '*' in tests_for_builder or self.canonical_name in tests_for_builder
+      )
 
     if test_is_enabled_for_builder('*'):
       return False
@@ -1433,21 +1469,31 @@ class CiOnlyTest(TestWrapper):
 
   @property
   def _disabled_message(self):
-    return (("This test is not being run because it is marked 'ci_only'."
-             f" Add '{self._footer_to_enable}' to CL footers to override.")
-            if self._disabled else '')
+    return (
+      (
+        "This test is not being run because it is marked 'ci_only'."
+        f" Add '{self._footer_to_enable}' to CL footers to override."
+      )
+      if self._disabled
+      else ''
+    )
 
   @property
   def _info_message(self):
-    if (self.api.m.cv.active and
-        self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES):
+    if (
+      self.api.m.cv.active
+      and self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES
+    ):
       return 'This test is being run on Mega CQ runs'
 
     if self.api.m.tryserver.is_tryserver:
-      return ('This test is being run due to the'
-              f' {INCLUDE_CI_FOOTER} gerrit footer')
-    return ('This test will not be run on try builders by default, add the '
-            f'following CL footer to override: `{self._footer_to_enable}`\n')
+      return (
+        f'This test is being run due to the {INCLUDE_CI_FOOTER} gerrit footer'
+      )
+    return (
+      'This test will not be run on try builders by default, add the '
+      f'following CL footer to override: `{self._footer_to_enable}`\n'
+    )
 
 
 class SuccessReuseTestSpec(TestWrapperSpec):
@@ -1464,8 +1510,10 @@ class SuccessReuseTest(TestWrapper):
 
   @property
   def _disabled_message(self):
-    return ("This test is not being run because it has passed in the last 24 "
-            "hours with the equivalent patchset")
+    return (
+      "This test is not being run because it has passed in the last 24 "
+      "hours with the equivalent patchset"
+    )
 
 
 @attrs()
@@ -1485,7 +1533,8 @@ class ExperimentalTestSpec(TestWrapperSpec):
     """
     experiment_percentage = max(0, min(100, experiment_percentage))
     return super().create(
-        test_spec, experiment_percentage=experiment_percentage)
+      test_spec, experiment_percentage=experiment_percentage
+    )
 
   @property
   def test_wrapper_class(self):
@@ -1526,17 +1575,21 @@ class ExperimentalTest(TestWrapper):
     # The overall algorithm is copied from the CQ's implementation of
     # experimental builders, albeit with different experiment keys.
     criteria = [
-        self.api.m.buildbucket.builder_name,
-        (self.api.m.tryserver.gerrit_change and
-         self.api.m.tryserver.gerrit_change.change) or
-        self.api.m.buildbucket.build.number or '0',
-        self.name,
+      self.api.m.buildbucket.builder_name,
+      (
+        self.api.m.tryserver.gerrit_change
+        and self.api.m.tryserver.gerrit_change.change
+      )
+      or self.api.m.buildbucket.build.number
+      or '0',
+      self.name,
     ]
 
-    digest = hashlib.sha1(''.join(
-        str(c) for c in criteria).encode('utf-8')).digest()
+    digest = hashlib.sha1(
+      ''.join(str(c) for c in criteria).encode('utf-8')
+    ).digest()
     short = struct.unpack_from('<H', digest)[0]
-    return self._wrapper_spec.experiment_percentage * 0xffff >= short * 100
+    return self._wrapper_spec.experiment_percentage * 0xFFFF >= short * 100
 
   def _experimental_suffix(self, suffix):
     if not suffix:
@@ -1563,8 +1616,10 @@ class ExperimentalTest(TestWrapper):
 
   @property
   def _info_message(self):
-    return ('This is an experimental test that was selected for this build,'
-            ' failures will not cause build failures')
+    return (
+      'This is an experimental test that was selected for this build,'
+      ' failures will not cause build failures'
+    )
 
   @property
   def is_experimental(self) -> bool:
@@ -1573,35 +1628,38 @@ class ExperimentalTest(TestWrapper):
   def step_name(self, suffix: str) -> str:
     return self._test.step_name(self._experimental_suffix(suffix))
 
-  #override
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  # override
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     try:
       return super().pre_run(
-          self._experimental_suffix(suffix),
-          include_utr_instruction,
-          is_ci_only=is_ci_only)
+        self._experimental_suffix(suffix),
+        include_utr_instruction,
+        is_ci_only=is_ci_only,
+      )
     except self.api.m.step.StepFailure:
       pass
 
-  #override
+  # override
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     try:
       return super().run(
-          checkout_dir,
-          source_dir,
-          build_dir,
-          self._experimental_suffix(suffix),
-          info_messages,
+        checkout_dir,
+        source_dir,
+        build_dir,
+        self._experimental_suffix(suffix),
+        info_messages,
       )
     except self.api.m.step.StepFailure as e:
       return e.result
@@ -1609,21 +1667,21 @@ class ExperimentalTest(TestWrapper):
   def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
     return self._test.get_task(self._experimental_suffix(suffix))
 
-  #override
+  # override
   def has_valid_results(self, suffix: str) -> bool:
     # Call the wrapped test's implementation in case it has side effects, but
     # ignore the result.
     super().has_valid_results(self._experimental_suffix(suffix))
     return True
 
-  #override
+  # override
   def failure_on_exit(self, suffix: str) -> bool:
     # Call the wrapped test's implementation in case it has side effects, but
     # ignore the result.
     super().failure_on_exit(self._experimental_suffix(suffix))
     return False
 
-  #override
+  # override
   def deterministic_failures(self, suffix: str) -> Set[str]:
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
@@ -1631,10 +1689,10 @@ class ExperimentalTest(TestWrapper):
       super().deterministic_failures(self._experimental_suffix(suffix))
     return []
 
-  #override
+  # override
   def notrun_failures(
-      self,
-      suffix: str,
+    self,
+    suffix: str,
   ) -> Set[str]:  # pragma: no cover
     if self._actually_has_valid_results(suffix):
       # Call the wrapped test's implementation in case it has side effects,
@@ -1649,12 +1707,13 @@ class ExperimentalTest(TestWrapper):
     return super().get_rdb_results(self._experimental_suffix(suffix))
 
   def update_rdb_results(
-      self,
-      suffix: str,
-      results: util.RDBPerSuiteResults,
+    self,
+    suffix: str,
+    results: util.RDBPerSuiteResults,
   ) -> None:
     return super().update_rdb_results(
-        self._experimental_suffix(suffix), results)
+      self._experimental_suffix(suffix), results
+    )
 
 
 class LocalTest(Test):
@@ -1672,21 +1731,21 @@ class LocalTest(Test):
   def locality(self) -> TestLocality:
     return TestLocality.LOCAL
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     del suffix, is_ci_only
 
   def get_invocation_names(self, suffix: str) -> Iterable[str]:
     inv = self._suffix_to_invocation_names.get(suffix)
     return [inv] if inv else []
 
-  def _prep_local_rdb(self,
-                      source_dir: Path,
-                      *,
-                      temp=None,
-                      include_artifacts=True):
+  def _prep_local_rdb(
+    self, source_dir: Path, *, temp=None, include_artifacts=True
+  ):
     """Returns a ResultDB instance suitable for local test runs.
 
     Main difference between remote swarming runs and local test runs (ie:
@@ -1701,20 +1760,21 @@ class LocalTest(Test):
     temp = temp or self.api.m.path.mkstemp()
     artifact_dir = self.api.m.path.dirname(temp) if include_artifacts else ''
     base_tags = None
-    if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
+    if self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM:
       base_tags = (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),)
     resultdb = attr.evolve(
-        self.spec.resultdb,
-        artifact_directory=artifact_dir,
-        base_tags=base_tags,
-        base_variant=dict(
-            self.spec.resultdb.base_variant or {},
-            test_suite=self.canonical_name),
-        result_adapter_path=str(source_dir / 'tools/resultdb/result_adapter'),
-        result_file=self.api.m.path.abspath(temp),
-        # Give each local test suite its own invocation to make it easier to
-        # fetch results.
-        include=True)
+      self.spec.resultdb,
+      artifact_directory=artifact_dir,
+      base_tags=base_tags,
+      base_variant=dict(
+        self.spec.resultdb.base_variant or {}, test_suite=self.canonical_name
+      ),
+      result_adapter_path=str(source_dir / 'tools/resultdb/result_adapter'),
+      result_file=self.api.m.path.abspath(temp),
+      # Give each local test suite its own invocation to make it easier to
+      # fetch results.
+      include=True,
+    )
     return resultdb
 
   def _update_inv_name_from_stderr(self, stderr, suffix):
@@ -1774,12 +1834,12 @@ class ScriptTest(LocalTest):
     return self.spec.compile_targets
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     del checkout_dir
 
@@ -1788,18 +1848,19 @@ class ScriptTest(LocalTest):
     tests_to_retry = self._tests_to_retry(suffix)
     if tests_to_retry:
       run_args.extend(
-          ['--filter-file',
-           self.api.m.json.input(sorted(tests_to_retry))])
+        ['--filter-file', self.api.m.json.input(sorted(tests_to_retry))]
+      )
 
     resultdb = self._prep_local_rdb(source_dir)
 
     step_test_data = lambda: (
-        self.api.m.json.test_api.output({
-            'valid': True,
-            'failures': []
-        }) + self.api.m.raw_io.test_api.stream_output_text(
-            'rdb-stream: included "invocations/test-name" in '
-            '"invocations/build-inv"', 'stderr'))
+      self.api.m.json.test_api.output({'valid': True, 'failures': []})
+      + self.api.m.raw_io.test_api.stream_output_text(
+        'rdb-stream: included "invocations/test-name" in '
+        '"invocations/build-inv"',
+        'stderr',
+      )
+    )
 
     script_args = []
     if self.spec.script_args:
@@ -1808,24 +1869,34 @@ class ScriptTest(LocalTest):
     # Enforce that all scripts are in the specified directory for
     # consistency.
     common_args, paths, properties = (
-        self.api.m.chromium_tests.get_common_args_for_scripts(
-            source_dir, build_dir))
-    cmd = ([
+      self.api.m.chromium_tests.get_common_args_for_scripts(
+        source_dir, build_dir
+      )
+    )
+    cmd = (
+      [
         'vpython3',
-        (source_dir / 'testing/scripts' /
-         self.api.m.path.basename(self.spec.script))
-    ] + common_args + script_args +
-           ['run', '--output', self.api.m.json.output()] + run_args)
+        (
+          source_dir
+          / 'testing/scripts'
+          / self.api.m.path.basename(self.spec.script)
+        ),
+      ]
+      + common_args
+      + script_args
+      + ['run', '--output', self.api.m.json.output()]
+      + run_args
+    )
     step_name = self.step_name(suffix)
     if resultdb:
       cmd = resultdb.wrap(self.api.m, cmd, step_name=step_name)
     result = self.api.m.step(
-        step_name,
-        cmd=cmd,
-        raise_on_failure=False,
-        stderr=self.api.m.raw_io.output_text(
-            add_output_log=True, name='stderr'),
-        step_test_data=step_test_data)
+      step_name,
+      cmd=cmd,
+      raise_on_failure=False,
+      stderr=self.api.m.raw_io.output_text(add_output_log=True, name='stderr'),
+      step_test_data=step_test_data,
+    )
     result.presentation.logs['paths.json'] = str(paths)
     result.presentation.logs['properties.json'] = str(properties)
 
@@ -1836,19 +1907,21 @@ class ScriptTest(LocalTest):
       failures = result.json.output.get('failures')
     if failures is None:
       self.api.m.step.empty(
-          '%s with suffix %s had an invalid result' % (self.name, suffix),
-          status=self.api.m.step.FAILURE,
-          step_text=(
-              'The recipe expected the result to contain the key \'failures\'.'
-              ' Contents are:\n%s' %
-              self.api.m.json.dumps(result.json.output, indent=2)))
+        '%s with suffix %s had an invalid result' % (self.name, suffix),
+        status=self.api.m.step.FAILURE,
+        step_text=(
+          'The recipe expected the result to contain the key \'failures\'.'
+          ' Contents are:\n%s'
+          % self.api.m.json.dumps(result.json.output, indent=2)
+        ),
+      )
 
     self._update_failure_on_exit(suffix, result.retcode != 0)
 
     _, failures = self.api.m.test_utils.limit_failures(failures)
     result.presentation.step_text += (
-        self.api.m.presentation_utils.format_step_text([['failures:',
-                                                         failures]]))
+      self.api.m.presentation_utils.format_step_text([['failures:', failures]])
+    )
 
     self._update_inv_name_from_stderr(result.stderr, suffix)
 
@@ -1878,8 +1951,6 @@ class LocalGTestTestSpec(TestSpec):
 
 
 class LocalGTestTest(LocalTest):
-
-
   @property
   def option_flags(self) -> TestOptionFlags:
     return _GTEST_OPTION_FLAGS
@@ -1892,12 +1963,12 @@ class LocalGTestTest(LocalTest):
     return [self.target_name]
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
@@ -1910,34 +1981,38 @@ class LocalGTestTest(LocalTest):
 
     resultdb = self._prep_local_rdb(source_dir, include_artifacts=False)
     gtest_results_file = self.api.m.json.output(
-        add_json_log=False, leak_to=resultdb.result_file)
+      add_json_log=False, leak_to=resultdb.result_file
+    )
 
     step_test_data = lambda: (
-        self.api.m.test_utils.test_api.canned_gtest_output(True) + self.api.m.
-        raw_io.test_api.stream_output_text(
-            'rdb-stream: included "invocations/some-inv-name" in '
-            '"invocations/parent-inv-name"', 'stderr'))
+      self.api.m.test_utils.test_api.canned_gtest_output(True)
+      + self.api.m.raw_io.test_api.stream_output_text(
+        'rdb-stream: included "invocations/some-inv-name" in '
+        '"invocations/parent-inv-name"',
+        'stderr',
+      )
+    )
 
     kwargs = {
-        'name': self.step_name(suffix),
-        'args': args,
-        'step_test_data': step_test_data,
-        'resultdb': resultdb,
-        'parse_gtest_output': True,
+      'name': self.step_name(suffix),
+      'args': args,
+      'step_test_data': step_test_data,
+      'resultdb': resultdb,
+      'parse_gtest_output': True,
     }
     kwargs['xvfb'] = self.spec.use_xvfb
     kwargs['test_type'] = self.name
     kwargs['test_launcher_summary_output'] = gtest_results_file
 
     step_result = self.api.m.chromium.runtest(
-        checkout_dir,
-        build_dir,
-        self.target_name,
-        builder_group=self.spec.waterfall_builder_group,
-        stderr=self.api.m.raw_io.output_text(
-            add_output_log=True, name='stderr'),
-        raise_on_failure=False,
-        **kwargs)
+      checkout_dir,
+      build_dir,
+      self.target_name,
+      builder_group=self.spec.waterfall_builder_group,
+      stderr=self.api.m.raw_io.output_text(add_output_log=True, name='stderr'),
+      raise_on_failure=False,
+      **kwargs,
+    )
 
     status = step_result.presentation.status
 
@@ -1969,10 +2044,9 @@ def _clean_step_name(step_name, suffix):
   return _add_suffix(step_name, suffix)
 
 
-def _archive_layout_test_results(api,
-                                 step_name,
-                                 step_suffix=None,
-                                 swarm_task_ids=None):
+def _archive_layout_test_results(
+  api, step_name, step_suffix=None, swarm_task_ids=None
+):
   # LayoutTest's special archive and upload results
   results_dir = api.path.start_dir / 'layout-test-results'
 
@@ -1981,16 +2055,16 @@ def _archive_layout_test_results(api,
 
   gcs_bucket = 'chromium-layout-test-archives'
   cmd = [
-      'python3',
-      api.chromium_tests.resource('archive_layout_test_results.py'),
-      '--results-dir',
-      results_dir,
-      '--build-number',
-      buildnumber,
-      '--builder-name',
-      buildername,
-      '--gs-bucket',
-      f'gs://{gcs_bucket}',
+    'python3',
+    api.chromium_tests.resource('archive_layout_test_results.py'),
+    '--results-dir',
+    results_dir,
+    '--build-number',
+    buildnumber,
+    '--builder-name',
+    buildername,
+    '--gs-bucket',
+    f'gs://{gcs_bucket}',
   ]
   if swarm_task_ids:
     cmd.extend(['--task-ids', ','.join(swarm_task_ids)])
@@ -2013,7 +2087,10 @@ def _archive_layout_test_results(api,
   # ?json=<full_results_jsonp.js>
   base = f"https://{gcs_bucket}.storage.googleapis.com/results.html"
   path_full_results_jsonp = "%s/%s/%s/full_results_jsonp.js" % (
-      sanitized_buildername, buildnumber, urllib.parse.quote(step_name))
+    sanitized_buildername,
+    buildnumber,
+    urllib.parse.quote(step_name),
+  )
   web_test_results = f"{base}?json={path_full_results_jsonp}"
   archive_result.presentation.links['web_test_results'] = web_test_results
   return web_test_results
@@ -2071,6 +2148,7 @@ class SwarmingTestSpec(TestSpec):
     * wait_for_capacity - Whether to wait for capacity to appear if *none* is
       immediately present. Waits up to the expiration.
   """
+
   # pylint: disable=abstract-method
 
   cipd_packages = attrib(sequence[chromium_swarming.CipdPackage], default=())
@@ -2095,11 +2173,11 @@ class SwarmingTestSpec(TestSpec):
 
   @classmethod
   def create(
-      cls,
-      name: str,
-      target_name: str | None = None,
-      extra_suffix: str | None = None,
-      **kwargs,
+    cls,
+    name: str,
+    target_name: str | None = None,
+    extra_suffix: str | None = None,
+    **kwargs,
   ):
     """Create a SwarmingTestSpec.
 
@@ -2120,10 +2198,10 @@ class SwarmingTestSpec(TestSpec):
       elif dimensions.get('os') == 'Android' and dimensions.get('device_type'):
         extra_suffix = cls._get_android_suffix(dimensions)
     return super().create(
-        name,
-        target_name=target_name,
-        extra_suffix=extra_suffix,
-        **kwargs,
+      name,
+      target_name=target_name,
+      extra_suffix=extra_suffix,
+      **kwargs,
     )
 
   @property
@@ -2145,18 +2223,19 @@ class SwarmingTestSpec(TestSpec):
       split_gpu_dimension = gpu_dimension.split(':')
       gpu_vendor_id = split_gpu_dimension[0].lower()
       vendor_ids = {
-          '8086': 'Intel',
-          '10de': 'NVIDIA',
-          '1002': 'AMD',
-          'none': 'SwiftShader',  # explicit 'none' means requesting SwS
+        '8086': 'Intel',
+        '10de': 'NVIDIA',
+        '1002': 'AMD',
+        'none': 'SwiftShader',  # explicit 'none' means requesting SwS
       }
       gpu_model_id = ''
       if len(split_gpu_dimension) > 1:
         gpu_model_id = split_gpu_dimension[1].split('-')[0]
       if gpu_vendor_id in vendor_ids:
         if gpu_model_id:
-          all_gpu_identifiers.append('%s 0x%s' %
-                                     (vendor_ids[gpu_vendor_id], gpu_model_id))
+          all_gpu_identifiers.append(
+            '%s 0x%s' % (vendor_ids[gpu_vendor_id], gpu_model_id)
+          )
         else:
           all_gpu_identifiers.append(vendor_ids[gpu_vendor_id])
       else:
@@ -2183,42 +2262,42 @@ class SwarmingTestSpec(TestSpec):
   @staticmethod
   def _get_android_suffix(dimensions):
     device_codenames = {
-        'angler': 'Nexus 6P',
-        'athene': 'Moto G4',
-        'blueline': 'Pixel 3',
-        'bullhead': 'Nexus 5X',
-        'cheetah': 'Pixel 7 Pro',
-        'crosshatch': 'Pixel 3 XL',
-        'dragon': 'Pixel C',
-        'flame': 'Pixel 4',
-        'flo': 'Nexus 7 [2013]',
-        'flounder': 'Nexus 9',
-        'foster': 'NVIDIA Shield',
-        'fugu': 'Nexus Player',
-        'goyawifi': 'Galaxy Tab 3',
-        'grouper': 'Nexus 7 [2012]',
-        'hammerhead': 'Nexus 5',
-        'herolte': 'Galaxy S7 [Global]',
-        'heroqlteatt': 'Galaxy S7 [AT&T]',
-        'j5xnlte': 'Galaxy J5',
-        'm0': 'Galaxy S3',
-        'mako': 'Nexus 4',
-        'manta': 'Nexus 10',
-        'marlin': 'Pixel 1 XL',
-        'oriole': 'Pixel 6',
-        'panther': 'Pixel 7',
-        'raven': 'Pixel 6 Pro',
-        'redfin': 'Pixel 5',
-        'sailfish': 'Pixel 1',
-        'sargo': 'Pixel 3a',
-        'shamu': 'Nexus 6',
-        'shiba': 'Pixel 8',
-        'sprout': 'Android One',
-        'sunfish': 'Pixel 4a',
-        'taimen': 'Pixel 2 XL',
-        'tangorpro': 'Pixel Tablet',
-        'walleye': 'Pixel 2',
-        'zerofltetmo': 'Galaxy S6',
+      'angler': 'Nexus 6P',
+      'athene': 'Moto G4',
+      'blueline': 'Pixel 3',
+      'bullhead': 'Nexus 5X',
+      'cheetah': 'Pixel 7 Pro',
+      'crosshatch': 'Pixel 3 XL',
+      'dragon': 'Pixel C',
+      'flame': 'Pixel 4',
+      'flo': 'Nexus 7 [2013]',
+      'flounder': 'Nexus 9',
+      'foster': 'NVIDIA Shield',
+      'fugu': 'Nexus Player',
+      'goyawifi': 'Galaxy Tab 3',
+      'grouper': 'Nexus 7 [2012]',
+      'hammerhead': 'Nexus 5',
+      'herolte': 'Galaxy S7 [Global]',
+      'heroqlteatt': 'Galaxy S7 [AT&T]',
+      'j5xnlte': 'Galaxy J5',
+      'm0': 'Galaxy S3',
+      'mako': 'Nexus 4',
+      'manta': 'Nexus 10',
+      'marlin': 'Pixel 1 XL',
+      'oriole': 'Pixel 6',
+      'panther': 'Pixel 7',
+      'raven': 'Pixel 6 Pro',
+      'redfin': 'Pixel 5',
+      'sailfish': 'Pixel 1',
+      'sargo': 'Pixel 3a',
+      'shamu': 'Nexus 6',
+      'shiba': 'Pixel 8',
+      'sprout': 'Android One',
+      'sunfish': 'Pixel 4a',
+      'taimen': 'Pixel 2 XL',
+      'tangorpro': 'Pixel Tablet',
+      'walleye': 'Pixel 2',
+      'zerofltetmo': 'Galaxy S6',
     }
     targetted_device = dimensions['device_type']
     product_name = device_codenames.get(targetted_device, targetted_device)
@@ -2228,7 +2307,8 @@ class SwarmingTestSpec(TestSpec):
 class SwarmingTest(Test, AbstractSwarmingTest):
   # Some suffixes should have marginally higher priority. See crbug.com/937151.
   SUFFIXES_TO_INCREASE_PRIORITY = set(
-      ['without patch', 'retry shards with patch'])
+    ['without patch', 'retry shards with patch']
+  )
   # The flake endorser triggers test "shards" as different test suffixes.
   # For example, there could be an android_browsertests (check flakiness
   # shard #0) and android_browsertests (check flakiness shard #1). Since the
@@ -2289,97 +2369,110 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     local_dependency = self.api.m.repro_instructions.get_dependency(r'compile')
 
     task = self._tasks[suffix]
-    prebuilt_task_id = task.trigger_output.get('tasks',
-                                               []).get(0,
-                                                       {}).get('task_id', None)
+    prebuilt_task_id = (
+      task.trigger_output.get('tasks', []).get(0, {}).get('task_id', None)
+    )
     cas_digest = self.api.m.isolate.isolated_tests.get(self.isolate_target)
     remote_instruction = None
     remote_dependency = None
     builder = self.api.m.properties.get('orchestrator', {}).get(
-        'builder_name', self.api.m.buildbucket.build.builder.builder)
+      'builder_name', self.api.m.buildbucket.build.builder.builder
+    )
 
     def _create_prebuilt_instruction(extra_args: Iterable[str]):
       prebuilt_instruction = []
       if include_utr_instruction:
         prebuilt_instruction.append('**Re-trigger in swarming:**')
         prebuilt_instruction.append(
-            get_utr_instruction(
-                'test',
-                self.api.m.buildbucket.build.builder.project,
-                self.api.m.led.shadowed_bucket or
-                self.api.m.buildbucket.build.builder.bucket,
-                builder,
-                [self.name],
-                utr_flags=['--reuse-task', prebuilt_task_id],
-                extra_args=extra_args,
-            ))
+          get_utr_instruction(
+            'test',
+            self.api.m.buildbucket.build.builder.project,
+            self.api.m.led.shadowed_bucket
+            or self.api.m.buildbucket.build.builder.bucket,
+            builder,
+            [self.name],
+            utr_flags=['--reuse-task', prebuilt_task_id],
+            extra_args=extra_args,
+          )
+        )
         prebuilt_instruction.append(
-            '*Note: additional args can be used by extending this command*')
+          '*Note: additional args can be used by extending this command*'
+        )
         prebuilt_instruction.append('')
       if cas_digest:
         prebuilt_instruction.append('**Download test binary:**')
-        prebuilt_instruction.append('```./tools/luci-go/cas download '
-                                    f'-cas-instance {self.api.m.cas.instance} '
-                                    f'-digest {cas_digest} -dir tmp```')
+        prebuilt_instruction.append(
+          '```./tools/luci-go/cas download '
+          f'-cas-instance {self.api.m.cas.instance} '
+          f'-digest {cas_digest} -dir tmp```'
+        )
         prebuilt_instruction.append('Run `./tools/luci-go/cas login` if needed')
         prebuilt_instruction.append(
-            '*See the local instructions tab and run from the tmp dir*')
+          '*See the local instructions tab and run from the tmp dir*'
+        )
       return '<br/>'.join(prebuilt_instruction)
 
     if include_utr_instruction:
       remote_dependency = self.api.m.repro_instructions.get_dependency(
-          r'bot_update')
+        r'bot_update'
+      )
       remote_instruction = get_utr_instruction(
-          'compile-and-test',
-          self.api.m.buildbucket.build.builder.project,
-          self.api.m.led.shadowed_bucket or
-          self.api.m.buildbucket.build.builder.bucket,
-          builder,
-          [self.name],
+        'compile-and-test',
+        self.api.m.buildbucket.build.builder.project,
+        self.api.m.led.shadowed_bucket
+        or self.api.m.buildbucket.build.builder.bucket,
+        builder,
+        [self.name],
       )
     self.api.m.repro_instructions.create_step_instruction(
-        self._instructions_tag_for_suffix('step', suffix),
-        f'{self.name} instructions',
-        local_content=task.get_local_instruction(),
-        remote_content=remote_instruction,
-        local_dependency=local_dependency,
-        remote_dependency=remote_dependency,
-        prebuilt_content=_create_prebuilt_instruction(None),
+      self._instructions_tag_for_suffix('step', suffix),
+      f'{self.name} instructions',
+      local_content=task.get_local_instruction(),
+      remote_content=remote_instruction,
+      local_dependency=local_dependency,
+      remote_dependency=remote_dependency,
+      prebuilt_content=_create_prebuilt_instruction(None),
     )
 
     test_invocations = [
-        inv if '/' not in inv else inv.split('/')[1]
-        for inv in task.get_invocation_names()
+      inv if '/' not in inv else inv.split('/')[1]
+      for inv in task.get_invocation_names()
     ]
 
     if test_invocations:
       # Escaping the brackets makes the placeholder a constant string of
       # {{test.tags.test_name}} which will be replaced in milo with the
       # actual test name
-      filter_arg = f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
+      filter_arg = (
+        f'{self.option_flags.filter_flag}={{{{test.tags.test_name}}}}'
+      )
       if include_utr_instruction:
         remote_instruction = get_utr_instruction(
-            'compile-and-test',
-            self.api.m.buildbucket.build.builder.project,
-            self.api.m.led.shadowed_bucket or
-            self.api.m.buildbucket.build.builder.bucket,
-            self.api.m.buildbucket.build.builder.builder.replace(
-                '-compilator', ''), [self.name],
-            extra_args=['--', filter_arg])
+          'compile-and-test',
+          self.api.m.buildbucket.build.builder.project,
+          self.api.m.led.shadowed_bucket
+          or self.api.m.buildbucket.build.builder.bucket,
+          self.api.m.buildbucket.build.builder.builder.replace(
+            '-compilator', ''
+          ),
+          [self.name],
+          extra_args=['--', filter_arg],
+        )
         self.api.m.repro_instructions.create_test_result_instruction(
-            self._instructions_tag_for_suffix('test', suffix),
-            f'{self.name} instructions',
-            test_invocations,
-            local_content=task.get_local_instruction(extra_args=[filter_arg]),
-            remote_content=remote_instruction,
-            prebuilt_content=_create_prebuilt_instruction(['--', filter_arg]),
-            local_dependency=local_dependency,
-            remote_dependency=remote_dependency,
+          self._instructions_tag_for_suffix('test', suffix),
+          f'{self.name} instructions',
+          test_invocations,
+          local_content=task.get_local_instruction(extra_args=[filter_arg]),
+          remote_content=remote_instruction,
+          prebuilt_content=_create_prebuilt_instruction(['--', filter_arg]),
+          local_dependency=local_dependency,
+          remote_dependency=remote_dependency,
         )
 
   def did_complete(self, suffix) -> bool:
-    return suffix in self._tasks and not self._tasks[
-        suffix].has_incomplete_shards
+    return (
+      suffix in self._tasks and not self._tasks[suffix].has_incomplete_shards
+    )
 
   def has_valid_results(self, suffix: str) -> bool:
     if not super().has_valid_results(suffix):
@@ -2394,7 +2487,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     num_failed_shards = len(task.failed_shards)
 
     rdb_invocations_with_fails = {
-        test.invocation_id for test in rdb_results.unexpected_failing_tests
+      test.invocation_id for test in rdb_results.unexpected_failing_tests
     }
 
     # This check ensure that all shards from the task that marked as a failure
@@ -2405,11 +2498,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
   @abc.abstractmethod
   def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-      include_utr_instruction: bool,
-      is_ci_only: bool,
+    self,
+    suffix: str,
+    cas_input_root: str,
+    include_utr_instruction: bool,
+    is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     """Creates a swarming task. Must be overridden in subclasses.
 
@@ -2424,9 +2517,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     raise NotImplementedError()  # pragma: no cover
 
   def _handle_results(
-      self,
-      suffix: str,
-      step_result: step_data.StepData,
+    self,
+    suffix: str,
+    step_result: step_data.StepData,
   ) -> None:
     """Handle step results from collecting the swarming tasks.
 
@@ -2435,8 +2528,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     """
     del suffix, step_result
 
-  def _shards_to_retry_with(self, original_num_shards, num_tests_to_retry,
-                            test_options):
+  def _shards_to_retry_with(
+    self, original_num_shards, num_tests_to_retry, test_options
+  ):
     """Calculates the number of shards to run when retrying this test.
 
     Args:
@@ -2456,11 +2550,13 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       return original_num_shards
 
     total_tests_ran = max(
-        result.total_tests_ran for result in self._rdb_results.values())
+      result.total_tests_ran for result in self._rdb_results.values()
+    )
     assert total_tests_ran, (
-        "We cannot compute the total number of tests to re-run if no tests "
-        "were run 'with patch'. Expected the results tracker to contain key "
-        "'total_tests_ran', but it didn't")
+      "We cannot compute the total number of tests to re-run if no tests "
+      "were run 'with patch'. Expected the results tracker to contain key "
+      "'total_tests_ran', but it didn't"
+    )
 
     # We want to approximately match the previous shard load. Using only one
     # shard can lead to a single shard running many more tests than it
@@ -2479,18 +2575,22 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # We never allow more than num_test_to_retry shards, since that would leave
     # shards doing nothing.
     return int(
-        min(
-            max(
-                original_num_shards * (test_options.repeat_count or 1) *
-                (float(num_tests_to_retry) / total_tests_ran), 1),
-            original_num_shards,
-            num_tests_to_retry,
-        ))
+      min(
+        max(
+          original_num_shards
+          * (test_options.repeat_count or 1)
+          * (float(num_tests_to_retry) / total_tests_ran),
+          1,
+        ),
+        original_num_shards,
+        num_tests_to_retry,
+      )
+    )
 
-  def _apply_swarming_task_config(self, task, suffix, filter_flag,
-                                  filter_delimiter, extra_args, is_ci_only):
-    """Applies shared configuration for swarming tasks.
-    """
+  def _apply_swarming_task_config(
+    self, task, suffix, filter_flag, filter_delimiter, extra_args, is_ci_only
+  ):
+    """Applies shared configuration for swarming tasks."""
     add_one_test_shard_enabled = False
     shards = self.spec.shards
     # When this experiment is enabled, we want to trigger suites with one
@@ -2502,8 +2602,10 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # with more than one shard.
     buildbucket_experiments = self.api.m.buildbucket.build.input.experiments
     add_one_test_shard_enabled = (
-        'chromium.add_one_test_shard' in buildbucket_experiments and
-        suffix in ['with patch', 'retry shards with patch'] and shards > 1)
+      'chromium.add_one_test_shard' in buildbucket_experiments
+      and suffix in ['with patch', 'retry shards with patch']
+      and shards > 1
+    )
     if add_one_test_shard_enabled:
       shards += 1
 
@@ -2515,9 +2617,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # sending the filter list if we're close to the limit -- this causes all
       # tests to be run.
       char_limit = 6000 if self._dispatches_to_windows() else 90000
-      expected_filter_length = (
-          sum(len(x) for x in tests_to_retry) +
-          len(tests_to_retry) * len(filter_delimiter))
+      expected_filter_length = sum(len(x) for x in tests_to_retry) + len(
+        tests_to_retry
+      ) * len(filter_delimiter)
       if expected_filter_length >= char_limit:
         tests_to_retry = None
 
@@ -2527,8 +2629,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       test_list = filter_delimiter.join(tests_to_retry)
       # Append filter with individual tests to retry
       args = _merge_arg(args, filter_flag, test_list)
-      shards = self._shards_to_retry_with(shards, len(tests_to_retry),
-                                          test_options)
+      shards = self._shards_to_retry_with(
+        shards, len(tests_to_retry), test_options
+      )
 
     task.extra_args.extend(args)
     task.shards = shards
@@ -2564,7 +2667,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       else:
         llvm_profile_file = llvm_profile_file + 'default-%2m.profraw'
       env_vars = {
-          'LLVM_PROFILE_FILE': llvm_profile_file,
+        'LLVM_PROFILE_FILE': llvm_profile_file,
       }
 
       # crbug.com/1124774 - For PGO, we're increasing the shutdown timeout to
@@ -2591,11 +2694,12 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # defined by the swarming task in the chromium_swarm module. (The default
       # behavior for non-coverage/non-profile tests).
       merge = self.api.m.code_coverage.shard_merge(
-          self.step_name(suffix),
-          self.target_name,
-          skip_validation=skip_validation,
-          sparse=sparse,
-          additional_merge=self.spec.merge or task.merge)
+        self.step_name(suffix),
+        self.target_name,
+        skip_validation=skip_validation,
+        sparse=sparse,
+        additional_merge=self.spec.merge or task.merge,
+      )
 
     if suffix.startswith('retry shards'):
       task_slice = task_slice.with_idempotent(False)
@@ -2608,7 +2712,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     # We will re-calculate the number of shards for tests_to_retry and retry the
     # same failed shard indices otherwise.
     if not tests_to_retry and suffix in [
-        'retry shards', 'retry shards with patch'
+      'retry shards',
+      'retry shards with patch',
     ]:
       if suffix == 'retry shards':
         # CI builders use the default '' suffix when calling run_tests()
@@ -2618,8 +2723,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
         task_suffix = 'with patch'
       task.task_to_retry = self._tasks[task_suffix]
       assert task.task_to_retry, (
-          '\'retry_shards_with_patch\' expects that the \'with patch\' phase '
-          'has already run, but it apparently hasn\'t.')
+        '\'retry_shards_with_patch\' expects that the \'with patch\' phase '
+        'has already run, but it apparently hasn\'t.'
+      )
       task.shard_indices = task.task_to_retry.failed_shards
       # Test suite failure is determined by merging and examining the JSON
       # output from the shards. Failed shards are determined by looking at the
@@ -2631,14 +2737,17 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # overlooked.
       if len(task.shard_indices) == 0:  # pragma: no cover
         self.api.m.step.empty(
-            'missing failed shards',
-            status=self.api.m.step.FAILURE,
-            step_text=(
-                "Retry shards with patch is being run on {},"
-                " which has no failed shards."
-                " This usually happens because of a test runner bug."
-                " The test runner reports test failures, but had exit_code 0."
-                .format(self.step_name(suffix='with patch'))))
+          'missing failed shards',
+          status=self.api.m.step.FAILURE,
+          step_text=(
+            "Retry shards with patch is being run on {},"
+            " which has no failed shards."
+            " This usually happens because of a test runner bug."
+            " The test runner reports test failures, but had exit_code 0.".format(
+              self.step_name(suffix='with patch')
+            )
+          ),
+        )
     else:
       task.shard_indices = range(task.shards)
 
@@ -2653,12 +2762,14 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     for package in self.spec.cipd_packages:
       ensure_file.add_package(package.name, package.version, package.root)
 
-    task_slice = (task_slice.with_cipd_ensure_file(ensure_file))
+    task_slice = task_slice.with_cipd_ensure_file(ensure_file)
 
     task.named_caches.update(self.spec.named_caches)
 
-    if (suffix in self.SUFFIXES_TO_INCREASE_PRIORITY or
-        self.CHECK_FLAKINESS_SUFFIX in suffix):
+    if (
+      suffix in self.SUFFIXES_TO_INCREASE_PRIORITY
+      or self.CHECK_FLAKINESS_SUFFIX in suffix
+    ):
       task_request = task_request.with_priority(task_request.priority - 1)
 
     if self.spec.expiration:
@@ -2666,7 +2777,8 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     if self.spec.hard_timeout:
       task_slice = task_slice.with_execution_timeout_secs(
-          self.spec.hard_timeout)
+        self.spec.hard_timeout
+      )
 
     if self.spec.io_timeout:
       task_slice = task_slice.with_io_timeout_secs(self.spec.io_timeout)
@@ -2681,20 +2793,22 @@ class SwarmingTest(Test, AbstractSwarmingTest):
 
     # Add tags.
     tags = {
-        'ninja_target': [self.spec.full_test_target or ''],
-        # TODO(crbug/1106965): remove test_id_prefix from tags, if deriver
-        # gets turned down.
-        'test_id_prefix': [self.test_id_prefix or ''],
-        'test_suite': [self.canonical_name],
-        'waterfall_builder_group': [self.spec.waterfall_builder_group or ''],
-        'waterfall_buildername': [self.spec.waterfall_buildername or ''],
-        'test_phase': [suffix or ''],
+      'ninja_target': [self.spec.full_test_target or ''],
+      # TODO(crbug/1106965): remove test_id_prefix from tags, if deriver
+      # gets turned down.
+      'test_id_prefix': [self.test_id_prefix or ''],
+      'test_suite': [self.canonical_name],
+      'waterfall_builder_group': [self.spec.waterfall_builder_group or ''],
+      'waterfall_buildername': [self.spec.waterfall_buildername or ''],
+      'test_phase': [suffix or ''],
     }
     if add_one_test_shard_enabled:
-      tags.update({
+      tags.update(
+        {
           'experimental_shard_count': [str(shards)],
           'normally_assigned_shard_count': [str(shards - 1)],
-      })
+        }
+      )
 
     if is_ci_only and self.api.m.tryserver.is_tryserver:
       tags['include_ci_only_tests'] = ['true']
@@ -2709,9 +2823,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       task_request = task_request.with_realm(self.spec.realm)
 
     task.request = (
-        task_request.with_slice(0, task_slice).with_name(
-            self.step_name(suffix)).with_service_account(
-                self.spec.service_account or '').with_tags(tags))
+      task_request.with_slice(0, task_slice)
+      .with_name(self.step_name(suffix))
+      .with_service_account(self.spec.service_account or '')
+      .with_tags(tags)
+    )
     return task
 
   def get_task(self, suffix: str) -> chromium_swarming.SwarmingTask:
@@ -2723,94 +2839,108 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       return task.get_invocation_names()
     return []
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     """Launches the test on Swarming."""
-    assert suffix not in self._tasks, ('Test %s was already triggered' %
-                                       self.step_name(suffix))
+    assert suffix not in self._tasks, (
+      'Test %s was already triggered' % self.step_name(suffix)
+    )
 
     task_input = self.api.m.isolate.isolated_tests.get(self.isolate_target)
     if not task_input:
       return self.api.m.step.empty(
-          '[error] %s' % self.step_name(suffix),
-          status=self.api.m.step.INFRA_FAILURE,
-          step_text=('*.isolated file for target %s is missing' %
-                     self.isolate_target))
+        '[error] %s' % self.step_name(suffix),
+        status=self.api.m.step.INFRA_FAILURE,
+        step_text=(
+          '*.isolated file for target %s is missing' % self.isolate_target
+        ),
+      )
 
     # Create task.
     self.api.m.chromium_turboci.create_test_check(self.step_name(suffix))
-    self._tasks[suffix] = self._create_task(suffix, task_input,
-                                            include_utr_instruction, is_ci_only)
+    self._tasks[suffix] = self._create_task(
+      suffix, task_input, include_utr_instruction, is_ci_only
+    )
 
     # Export TARGET_PLATFORM to resultdb tags
     resultdb = self.spec.resultdb
     base_tags = resultdb.base_tags or tuple()
-    if (self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM):
+    if self.api.m.chromium.c and self.api.m.chromium.c.TARGET_PLATFORM:
       resultdb = attr.evolve(
-          resultdb,
-          base_tags=base_tags +
-          (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),))
+        resultdb,
+        base_tags=base_tags
+        + (('target_platform', self.api.m.chromium.c.TARGET_PLATFORM),),
+      )
 
     self.api.m.chromium_swarming.trigger_task(
-        self._tasks[suffix], resultdb=resultdb)
+      self._tasks[suffix], resultdb=resultdb
+    )
     self.api.m.chromium_turboci.set_test_check_planned(self.step_name(suffix))
 
     # Add instructions now that we have invocations
     self._add_instructions(suffix, include_utr_instruction)
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     """Waits for launched test to finish and collects the results."""
     # There's no guarantee that a checkout exists for a swarming test, so
     # checkout_dir and source_dir shouldn't be used
     del checkout_dir, source_dir, build_dir
 
-    step_result, _ = (
-        self.api.m.chromium_swarming.collect_task(
-            self._tasks[suffix], raise_on_failure=False))
+    step_result, _ = self.api.m.chromium_swarming.collect_task(
+      self._tasks[suffix], raise_on_failure=False
+    )
 
     metadata = self._step_metadata(suffix)
     metadata['full_step_name'] = '.'.join(step_result.name_tokens)
-    step_result.presentation.logs['step_metadata'] = (self.api.m.json.dumps(
-        metadata, indent=2, sort_keys=True)).splitlines()
+    step_result.presentation.logs['step_metadata'] = (
+      self.api.m.json.dumps(metadata, indent=2, sort_keys=True)
+    ).splitlines()
 
     failure_on_exit = (
-        bool(self._tasks[suffix].failed_shards) or step_result.retcode != 0)
+      bool(self._tasks[suffix].failed_shards) or step_result.retcode != 0
+    )
     self._update_failure_on_exit(suffix, failure_on_exit)
 
     info_message_list = list(info_messages)
     if suffix == 'retry shards with patch' and self.retry_only_failed_tests:
       info_message_list.append(
-          'Ran only previously failing tests, instead of the entire shard.\n')
+        'Ran only previously failing tests, instead of the entire shard.\n'
+      )
     _present_info_messages(step_result.presentation, self, info_message_list)
 
     self._present_rdb_results(step_result, self._rdb_results.get(suffix))
     self.api.m.chromium_turboci.finalize_test_check(
-        self.step_name(suffix), not failure_on_exit,
-        step_result.presentation.step_text)
+      self.step_name(suffix),
+      not failure_on_exit,
+      step_result.presentation.step_text,
+    )
 
     self._handle_results(suffix, step_result)
 
   def _step_metadata(self, suffix):
     data = {
-        'waterfall_builder_group': self.spec.waterfall_builder_group,
-        'waterfall_buildername': self.spec.waterfall_buildername,
-        'canonical_step_name': self.canonical_name,
-        'isolate_target_name': self.isolate_target,
+      'waterfall_builder_group': self.spec.waterfall_builder_group,
+      'waterfall_buildername': self.spec.waterfall_buildername,
+      'canonical_step_name': self.canonical_name,
+      'isolate_target_name': self.isolate_target,
     }
     if suffix is not None:
       data['patched'] = suffix in ('with patch', 'retry shards with patch')
       data['dimensions'] = self._tasks[suffix].request[0].dimensions
       data['swarm_task_ids'] = self._tasks[suffix].get_task_ids()
     return data
+
 
 @attrs()
 class SwarmingGTestTestSpec(SwarmingTestSpec):
@@ -2823,7 +2953,6 @@ class SwarmingGTestTestSpec(SwarmingTestSpec):
 
 
 class SwarmingGTestTest(SwarmingTest):
-
   @property
   def option_flags(self) -> TestOptionFlags:
     return _GTEST_OPTION_FLAGS
@@ -2832,11 +2961,11 @@ class SwarmingGTestTest(SwarmingTest):
     return [self.target_name]
 
   def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-      include_utr_instruction: bool,
-      is_ci_only: bool,
+    self,
+    suffix: str,
+    cas_input_root: str,
+    include_utr_instruction: bool,
+    is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     json_override = None
     # TODO(crbug.com/1255217): Remove this android exception when logcats and
@@ -2855,23 +2984,27 @@ class SwarmingGTestTest(SwarmingTest):
     for cmd_filter in cmd_filters:
       cmd.remove(cmd_filter)
     task = self.api.m.chromium_swarming.gtest_task(
-        test_name=self.name,
-        raw_cmd=cmd,
-        relative_cwd=self.relative_cwd,
-        cas_input_root=cas_input_root,
-        collect_json_output_override=json_override,
-        instructions_tag=self._instructions_tag_for_suffix('step', suffix),
-        include_utr_instruction=include_utr_instruction)
+      test_name=self.name,
+      raw_cmd=cmd,
+      relative_cwd=self.relative_cwd,
+      cas_input_root=cas_input_root,
+      collect_json_output_override=json_override,
+      instructions_tag=self._instructions_tag_for_suffix('step', suffix),
+      include_utr_instruction=include_utr_instruction,
+    )
     extra_args = list(self.spec.args) + cmd_filters
     merged_filter_file_arg = ';'.join(
-        arg[len('--test-launcher-filter-file='):]
-        for arg in extra_args
-        if arg.startswith('--test-launcher-filter-file='))
+      arg[len('--test-launcher-filter-file=') :]
+      for arg in extra_args
+      if arg.startswith('--test-launcher-filter-file=')
+    )
     if merged_filter_file_arg:
-      extra_args = _merge_arg(extra_args, '--test-launcher-filter-file',
-                              merged_filter_file_arg)
-    self._apply_swarming_task_config(task, suffix, '--gtest_filter', ':',
-                                     extra_args, is_ci_only)
+      extra_args = _merge_arg(
+        extra_args, '--test-launcher-filter-file', merged_filter_file_arg
+      )
+    self._apply_swarming_task_config(
+      task, suffix, '--gtest_filter', ':', extra_args, is_ci_only
+    )
     return task
 
 
@@ -2893,7 +3026,8 @@ class LocalIsolatedScriptTestSpec(TestSpec):
 
   args = attrib(command_args, default=())
   results_handler_name = attrib(
-      enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
+    enum(ALLOWED_RESULT_HANDLER_NAMES), default='default'
+  )
   isolate_profile_data = attrib(bool, False)
 
   @property
@@ -2903,7 +3037,6 @@ class LocalIsolatedScriptTestSpec(TestSpec):
 
 
 class LocalIsolatedScriptTest(LocalTest):
-
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
     self.raw_cmd = []
@@ -2927,12 +3060,12 @@ class LocalIsolatedScriptTest(LocalTest):
   # TODO(nednguyen, kbr): figure out what to do with Android.
   # (crbug.com/533480)
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     del checkout_dir, build_dir
 
@@ -2955,16 +3088,18 @@ class LocalIsolatedScriptTest(LocalTest):
     args.extend(['--isolated-script-test-output', json_results_file])
 
     step_test_data = lambda: (
-        self.api.m.json.test_api.output({
-            'valid': True,
-            'failures': []
-        }) + self.api.m.raw_io.test_api.stream_output_text(
-            'rdb-stream: included "invocations/test-name" in '
-            '"invocations/build-inv"', 'stderr'))
+      self.api.m.json.test_api.output({'valid': True, 'failures': []})
+      + self.api.m.raw_io.test_api.stream_output_text(
+        'rdb-stream: included "invocations/test-name" in '
+        '"invocations/build-inv"',
+        'stderr',
+      )
+    )
 
     kwargs = {}
     if self.spec.isolate_profile_data:
-      kwargs.update({
+      kwargs.update(
+        {
           # Targets built with 'use_clang_coverage' will look at this
           # environment variable to determine where to write the profile dumps.
           # The %Nm syntax # is understood by this instrumentation, see:
@@ -2975,27 +3110,27 @@ class LocalIsolatedScriptTest(LocalTest):
           # tests. Anything longer or more complex should be running on swarming
           # instead of locally.
           'env': {
-              'LLVM_PROFILE_FILE':
-                  '${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw',
+            'LLVM_PROFILE_FILE': '${ISOLATED_OUTDIR}/profraw/default-%1m%c.profraw',
           },
           # The results of the script will be isolated, and the .isolate will be
           # dumped to stdout.
           'stdout': self.api.m.raw_io.output_text(),
-      })
+        }
+      )
 
     resultdb = self._prep_local_rdb(source_dir, temp=temp)
 
     step_result = self.api.m.isolate.run_isolated(
-        self.step_name(suffix),
-        self.api.m.isolate.isolated_tests[self.target_name],
-        args,
-        pre_args=pre_args,
-        step_test_data=step_test_data,
-        raise_on_failure=False,
-        resultdb=resultdb if resultdb else None,
-        stderr=self.api.m.raw_io.output_text(
-            add_output_log=True, name='stderr'),
-        **kwargs)
+      self.step_name(suffix),
+      self.api.m.isolate.isolated_tests[self.target_name],
+      args,
+      pre_args=pre_args,
+      step_test_data=step_test_data,
+      raise_on_failure=False,
+      resultdb=resultdb if resultdb else None,
+      stderr=self.api.m.raw_io.output_text(add_output_log=True, name='stderr'),
+      **kwargs,
+    )
 
     status = step_result.presentation.status
 
@@ -3021,7 +3156,8 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
   """
 
   results_handler_name = attrib(
-      enum(ALLOWED_RESULT_HANDLER_NAMES), default='default')
+    enum(ALLOWED_RESULT_HANDLER_NAMES), default='default'
+  )
 
   @property
   def test_class(self):
@@ -3030,7 +3166,6 @@ class SwarmingIsolatedScriptTestSpec(SwarmingTestSpec):
 
 
 class SwarmingIsolatedScriptTest(SwarmingTest):
-
   def compile_targets(self) -> Iterable[str]:
     return [self.target_name]
 
@@ -3043,40 +3178,47 @@ class SwarmingIsolatedScriptTest(SwarmingTest):
     return _ISOLATED_SCRIPT_OPTION_FLAGS
 
   def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-      include_utr_instruction: bool,
-      is_ci_only: bool,
+    self,
+    suffix: str,
+    cas_input_root: str,
+    include_utr_instruction: bool,
+    is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:
     cmd = self.raw_cmd
 
     task = self.api.m.chromium_swarming.isolated_script_task(
-        raw_cmd=cmd,
-        relative_cwd=self.relative_cwd,
-        cas_input_root=cas_input_root,
-        instructions_tag=self._instructions_tag_for_suffix('step', suffix),
-        test_name=self.name,
-        include_utr_instruction=include_utr_instruction)
+      raw_cmd=cmd,
+      relative_cwd=self.relative_cwd,
+      cas_input_root=cas_input_root,
+      instructions_tag=self._instructions_tag_for_suffix('step', suffix),
+      test_name=self.name,
+      include_utr_instruction=include_utr_instruction,
+    )
 
-    self._apply_swarming_task_config(task, suffix,
-                                     '--isolated-script-test-filter', '::',
-                                     self.spec.args, is_ci_only)
+    self._apply_swarming_task_config(
+      task,
+      suffix,
+      '--isolated-script-test-filter',
+      '::',
+      self.spec.args,
+      is_ci_only,
+    )
     return task
 
   def _handle_results(
-      self,
-      suffix: str,
-      step_result: step_data.StepData,
+    self,
+    suffix: str,
+    step_result: step_data.StepData,
   ) -> None:
     if self.spec.results_handler_name == 'layout tests':
       upload_step_name = step_result.name_tokens[-1]
       swarm_task_ids = self._tasks[suffix].get_task_ids()
       _archive_layout_test_results(
-          self.api.m,
-          upload_step_name,
-          step_suffix=suffix,
-          swarm_task_ids=swarm_task_ids)
+        self.api.m,
+        upload_step_name,
+        step_suffix=suffix,
+        swarm_task_ids=swarm_task_ids,
+      )
 
 
 @attrs()
@@ -3116,7 +3258,6 @@ class MockTestSpec(TestSpec):
 
 
 class MockTask:
-
   def __init__(self, shards: int):
     self._shards = shards
     self.server = 'mock-swarming.appspot.com'
@@ -3148,8 +3289,11 @@ class MockTest(AbstractSwarmingTest, Test):
 
   @property
   def locality(self):
-    return (TestLocality.SWARMING
-            if self.spec.runs_on_swarming else TestLocality.LOCAL)
+    return (
+      TestLocality.SWARMING
+      if self.spec.runs_on_swarming
+      else TestLocality.LOCAL
+    )
 
   @property
   def isolate_profile_data(self) -> bool:
@@ -3185,11 +3329,11 @@ class MockTest(AbstractSwarmingTest, Test):
     return self._tasks_by_suffix[suffix]
 
   def _create_task(
-      self,
-      suffix: str,
-      cas_input_root: str,
-      include_utr_instruction: bool,
-      is_ci_only: bool,
+    self,
+    suffix: str,
+    cas_input_root: str,
+    include_utr_instruction: bool,
+    is_ci_only: bool,
   ) -> chromium_swarming.SwarmingTask:  # pragma: no cover
     return None  # pragma: no cover
 
@@ -3205,24 +3349,27 @@ class MockTest(AbstractSwarmingTest, Test):
       self._failures.append('test_failure')
       raise
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     del is_ci_only
     with self._mock_exit_codes():
-      self.api.m.step('pre_run {}'.format(self.step_name(suffix)),
-                      ['mock_test.pre_run'])
+      self.api.m.step(
+        'pre_run {}'.format(self.step_name(suffix)), ['mock_test.pre_run']
+      )
     if self.runs_on_swarming:
       self._tasks_by_suffix[suffix] = MockTask(self.shards)
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     del checkout_dir, source_dir, build_dir
 
@@ -3230,7 +3377,6 @@ class MockTest(AbstractSwarmingTest, Test):
       step_result = self.api.m.step(self.step_name(suffix), ['mock_test'])
 
     _present_info_messages(step_result.presentation, self, info_messages)
-
 
   def has_valid_results(self, suffix: str) -> bool:
     if suffix in self.spec.per_suffix_valid:  # pragma: no cover
@@ -3257,6 +3403,7 @@ class MockTest(AbstractSwarmingTest, Test):
 @attrs()
 class SkylabTestSpec(TestSpec):
   """Spec for a suite that runs on CrOS Skylab."""
+
   # The CrOS board name, e.g. eve, kevin.
   cros_board = attrib(str)
   # Build target of the ChromeOS board. If unspecified, cros_board will be used.
@@ -3348,7 +3495,6 @@ class SkylabTestSpec(TestSpec):
 
 
 class SkylabTest(AbstractSkylabTest, Test):
-
   def __init__(self, spec, chromium_tests_api):
     super().__init__(spec, chromium_tests_api)
     # Dict of a cros_test_platform, aka CTP, build ID keyed with
@@ -3374,11 +3520,14 @@ class SkylabTest(AbstractSkylabTest, Test):
 
   @property
   def is_tag_criteria_test(self) -> bool:
-    return bool(self.spec.cros_test_tags or self.spec.cros_test_tags_exclude or
-                self.spec.cros_test_names or
-                self.spec.cros_test_names_exclude or
-                self.spec.cros_test_names_from_file or
-                self.spec.cros_test_names_exclude_from_file)
+    return bool(
+      self.spec.cros_test_tags
+      or self.spec.cros_test_tags_exclude
+      or self.spec.cros_test_names
+      or self.spec.cros_test_names_exclude
+      or self.spec.cros_test_names_from_file
+      or self.spec.cros_test_names_exclude_from_file
+    )
 
   @property
   def is_GPU_test(self) -> bool:
@@ -3438,10 +3587,12 @@ class SkylabTest(AbstractSkylabTest, Test):
       return [f'invocations/build-{build_id}']
     return []
 
-  def pre_run(self,
-              suffix: str,
-              include_utr_instruction: bool = False,
-              is_ci_only: bool = False) -> None:
+  def pre_run(
+    self,
+    suffix: str,
+    include_utr_instruction: bool = False,
+    is_ci_only: bool = False,
+  ) -> None:
     del is_ci_only
     retry_shards = []
     runtime_excluded_tests = []
@@ -3451,41 +3602,45 @@ class SkylabTest(AbstractSkylabTest, Test):
       if suffix == 'without patch':
         valid, failures = self.with_patch_failures_including_retry()
         assert valid, (
-            "Invalid with patch result should not trigger without patch")
+          "Invalid with patch result should not trigger without patch"
+        )
         runtime_override_tests = [
-            t.removeprefix(self.test_id_prefix or '') for t in failures
+          t.removeprefix(self.test_id_prefix or '') for t in failures
         ]
       rdb_results = self._rdb_results.get(
-          self.api.m.test_utils.remove_retry_shards(suffix))
+        self.api.m.test_utils.remove_retry_shards(suffix)
+      )
       if rdb_results:
         for individual_test in rdb_results.all_tests:
           if any(individual_test.expectednesses):
             runtime_excluded_tests.append(
-                individual_test.test_name.removeprefix(self.test_id_prefix or
-                                                       ''))
+              individual_test.test_name.removeprefix(self.test_id_prefix or '')
+            )
     else:
       for tr in self.test_runner_builds.get(
-          self.api.m.test_utils.remove_retry_shards(suffix), []):
+        self.api.m.test_utils.remove_retry_shards(suffix), []
+      ):
         # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
         if not tr.status in [common_pb2.SUCCESS] and tr.shard >= 0:
           retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(
-        self,
-        suffix,
-        retry_shards=retry_shards,
-        runtime_no_retry=is_without_patch,
-        runtime_override_tests=runtime_override_tests,
-        runtime_excluded_tests=runtime_excluded_tests)
+      self,
+      suffix,
+      retry_shards=retry_shards,
+      runtime_no_retry=is_without_patch,
+      runtime_override_tests=runtime_override_tests,
+      runtime_excluded_tests=runtime_excluded_tests,
+    )
 
     self._add_instructions(suffix, include_utr_instruction)
 
   def run(
-      self,
-      checkout_dir: Path,
-      source_dir: Path,
-      build_dir: Path,
-      suffix: str,
-      info_messages: Iterable[str] = (),
+    self,
+    checkout_dir: Path,
+    source_dir: Path,
+    build_dir: Path,
+    suffix: str,
+    info_messages: Iterable[str] = (),
   ) -> None:
     # There's no guarantee that a checkout exists for a skylab test, so
     # checkout_dir and source_dir shouldn't be used
@@ -3493,7 +3648,8 @@ class SkylabTest(AbstractSkylabTest, Test):
 
     with self.api.m.step.nest(self.step_name(suffix)) as step:
       step.tags['resultdb.instruction.id'] = self._instructions_tag_for_suffix(
-          'step', suffix)
+        'step', suffix
+      )
       self.api.m.skylab.fetch_test_runners(self, suffix)
 
       _present_info_messages(step, self, info_messages)
@@ -3520,80 +3676,94 @@ class SkylabTest(AbstractSkylabTest, Test):
       # failure.
       shard_steps = []
       test_runners = sorted(
-          self.test_runner_builds.get(suffix, []), key=lambda x: x.shard)
+        self.test_runner_builds.get(suffix, []), key=lambda x: x.shard
+      )
       for tr in test_runners:
         with self.api.m.step.nest(
-            f'shard: #{tr.shard}' if tr.shard >= 0 else f'shard: #{tr.name}',
-            status='last') as shard_step:
+          f'shard: #{tr.shard}' if tr.shard >= 0 else f'shard: #{tr.name}',
+          status='last',
+        ) as shard_step:
           if tr.status == common_pb2.FAILURE:
             shard_step.status = self.api.m.step.FAILURE
           elif tr.status != common_pb2.SUCCESS:
             shard_step.status = self.api.m.step.EXCEPTION
           if tr.url:
-            shard_step.links['test results'] = (f'{tr.url}/test-results')
+            shard_step.links['test results'] = f'{tr.url}/test-results'
           if tr.log_url:
             shard_step.links['test log'] = tr.log_url
           if tr.log_dir:
             shard_step.links['all logs (including system logs)'] = tr.log_dir
-          shard_step.links[
-              'help doc'] = 'http://go/cros-testing-for-chrome-help'
+          shard_step.links['help doc'] = (
+            'http://go/cros-testing-for-chrome-help'
+          )
           shard_steps.append(shard_step)
 
       if not rdb_results.total_tests_ran:
         self._raise_failed_nested_step(
-            suffix, step, self.api.m.step.EXCEPTION,
-            'Test did not run or failed to report to ResultDB.'
-            'Check the CTP build for details.')
+          suffix,
+          step,
+          self.api.m.step.EXCEPTION,
+          'Test did not run or failed to report to ResultDB.'
+          'Check the CTP build for details.',
+        )
 
-      if any(not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
-             for s in shard_steps):
-        self._raise_failed_nested_step(suffix, step, self.api.m.step.EXCEPTION,
-                                       'Some shards were unsuccessful.')
+      if any(
+        not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
+        for s in shard_steps
+      ):
+        self._raise_failed_nested_step(
+          suffix,
+          step,
+          self.api.m.step.EXCEPTION,
+          'Some shards were unsuccessful.',
+        )
 
   def _add_instructions(self, suffix: str, include_utr_instruction: bool):
     """Gets the reproduction instructions to be attached to the invocation"""
 
     if include_utr_instruction:
       remote_dependency = self.api.m.repro_instructions.get_dependency(
-          r'bot_update')
+        r'bot_update'
+      )
       builder = self.api.m.properties.get('orchestrator', {}).get(
-          'builder_name', self.api.m.buildbucket.build.builder.builder)
+        'builder_name', self.api.m.buildbucket.build.builder.builder
+      )
       remote_instruction = get_utr_instruction(
-          'compile-and-test',
-          self.api.m.buildbucket.build.builder.project,
-          self.api.m.led.shadowed_bucket or
-          self.api.m.buildbucket.build.builder.bucket,
-          builder,
-          [self.name],
+        'compile-and-test',
+        self.api.m.buildbucket.build.builder.project,
+        self.api.m.led.shadowed_bucket
+        or self.api.m.buildbucket.build.builder.bucket,
+        builder,
+        [self.name],
       )
       self.api.m.repro_instructions.create_step_instruction(
-          self._instructions_tag_for_suffix('step', suffix),
-          f'{self.name} instructions',
-          remote_content=remote_instruction,
-          remote_dependency=remote_dependency,
+        self._instructions_tag_for_suffix('step', suffix),
+        f'{self.name} instructions',
+        remote_content=remote_instruction,
+        remote_dependency=remote_dependency,
       )
 
       test_invocations = [
-          inv if '/' not in inv else inv.split('/')[1]
-          for inv in self.get_invocation_names(suffix)
+        inv if '/' not in inv else inv.split('/')[1]
+        for inv in self.get_invocation_names(suffix)
       ]
 
       if test_invocations:
         remote_instruction = get_utr_instruction(
-            'compile-and-test',
-            self.api.m.buildbucket.build.builder.project,
-            self.api.m.led.shadowed_bucket or
-            self.api.m.buildbucket.build.builder.bucket,
-            builder,
-            [self.name],
+          'compile-and-test',
+          self.api.m.buildbucket.build.builder.project,
+          self.api.m.led.shadowed_bucket
+          or self.api.m.buildbucket.build.builder.bucket,
+          builder,
+          [self.name],
         )
         self.api.m.repro_instructions.create_test_result_instruction(
-            self._instructions_tag_for_suffix('test', suffix),
-            f'{self.name} instructions',
-            test_invocations,
-            remote_content=remote_instruction,
-            remote_dependency=remote_dependency,
-            recursive=True,
+          self._instructions_tag_for_suffix('test', suffix),
+          f'{self.name} instructions',
+          test_invocations,
+          remote_content=remote_instruction,
+          remote_dependency=remote_dependency,
+          recursive=True,
         )
 
   def compile_targets(self) -> Iterable[str]:

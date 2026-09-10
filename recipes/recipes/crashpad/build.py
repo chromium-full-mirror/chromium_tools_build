@@ -2,8 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Buildbot recipe definition for the various Crashpad continuous builders.
-"""
+"""Buildbot recipe definition for the various Crashpad continuous builders."""
 
 import ast
 import contextlib
@@ -16,21 +15,21 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    osx_sdk,
-    windows_sdk,
+  bot_update,
+  depot_tools,
+  gclient,
+  osx_sdk,
+  windows_sdk,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -57,14 +56,13 @@ class TEST_DEPS(RecipeTestApi):
   path: path.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = {
-    'config':
-        Property(kind=str, help='Debug or Release', default='Debug'),
-    'target_os':
-        Property(
-            kind=str, help='win, mac, ios, linux, or fuchsia', default=None),
-    'target_cpu':
-        Property(kind=str, help='x64, arm64, or ""', default=''),
+  'config': Property(kind=str, help='Debug or Release', default='Debug'),
+  'target_os': Property(
+    kind=str, help='win, mac, ios, linux, or fuchsia', default=None
+  ),
+  'target_cpu': Property(kind=str, help='x64, arm64, or ""', default=''),
 }
 
 
@@ -148,15 +146,22 @@ def RunSteps(api: DEPS, config, target_os, target_cpu):
     if is_ios:
       gn = api.path.cache_dir.joinpath('builder', 'buildtools', 'mac', 'gn')
     else:
-      gn = api.path.start_dir.joinpath('buildtools',
-                                       'mac' if is_mac else 'linux64', 'gn')
+      gn = api.path.start_dir.joinpath(
+        'buildtools', 'mac' if is_mac else 'linux64', 'gn'
+      )
     # Generic GN build.
     path = source_dir.joinpath('out', dirname)
     if not target_cpu:
       target_cpu = 'x64'
     args = (
-      'target_os="' + target_os + '" target_cpu="' + target_cpu + '"' +
-      ' is_debug=' + ('true' if is_debug else 'false'))
+      'target_os="'
+      + target_os
+      + '" target_cpu="'
+      + target_cpu
+      + '"'
+      + ' is_debug='
+      + ('true' if is_debug else 'false')
+    )
     if is_ios and target_cpu == 'arm64':
       # Disable code signing for iOS device builds since the bots don't have
       # certs installed.
@@ -168,8 +173,9 @@ def RunSteps(api: DEPS, config, target_os, target_cpu):
       args += ' target_sysroot="//third_party/linux/sysroot"'
     with api.context(cwd=source_dir):
       with sdk(target_os):
-        api.step('generate build files',
-                 [gn, 'gen', path, '--check', '--args=' + args])
+        api.step(
+          'generate build files', [gn, 'gen', path, '--check', '--args=' + args]
+        )
   elif is_win:
     gn = api.path.start_dir.joinpath('buildtools', 'win', 'gn.exe')
     # On Windows, we ought to test:
@@ -191,15 +197,27 @@ def RunSteps(api: DEPS, config, target_os, target_cpu):
     args = 'target_os="win" is_debug=' + ('true' if is_debug else 'false')
     with api.context(cwd=source_dir):
       with sdk(target_os, 'x86'):
-        api.step('generate build files x86', [
-            gn, 'gen', x86_path, '--check',
-            '--args=' + args + ' target_cpu="x86"'
-        ])
+        api.step(
+          'generate build files x86',
+          [
+            gn,
+            'gen',
+            x86_path,
+            '--check',
+            '--args=' + args + ' target_cpu="x86"',
+          ],
+        )
       with sdk(target_os, 'x64'):
-        api.step('generate build files x64', [
-            gn, 'gen', x64_path, '--check',
-            '--args=' + args + ' target_cpu="x64"'
-        ])
+        api.step(
+          'generate build files x64',
+          [
+            gn,
+            'gen',
+            x64_path,
+            '--check',
+            '--args=' + args + ' target_cpu="x64"',
+          ],
+        )
 
   def run_tests(build_dir, env=None):
     if is_fuchsia:
@@ -218,11 +236,15 @@ def RunSteps(api: DEPS, config, target_os, target_cpu):
 
     with api.context(env=env):
       api.step(
-          'run tests', [
-              'vpython3', '-u',
-              source_dir.joinpath('build', 'run_tests.py'), build_dir
-          ],
-          timeout=timeout_in_minutes * 60)
+        'run tests',
+        [
+          'vpython3',
+          '-u',
+          source_dir.joinpath('build', 'run_tests.py'),
+          build_dir,
+        ],
+        timeout=timeout_in_minutes * 60,
+      )
 
   ninja = source_dir.joinpath('third_party', 'ninja', 'ninja')
   if is_win:
@@ -245,30 +267,35 @@ def GenTests(api: TEST_DEPS):
   test = 'crashpad_mac_dbg'
   CRASHPAD_REPO = 'https://chromium.googlesource.com/crashpad/crashpad.git'
   yield api.test(
-      test + '_clobber',
-      api.properties(target_os='mac', config='Debug', clobber=True) +
-      api.buildbucket.ci_build(
-          project='crashpad', builder=test, git_repo=CRASHPAD_REPO))
+    test + '_clobber',
+    api.properties(target_os='mac', config='Debug', clobber=True)
+    + api.buildbucket.ci_build(
+      project='crashpad', builder=test, git_repo=CRASHPAD_REPO
+    ),
+  )
 
   tests = [
-      (test, 'mac', '', None),
-      ('crashpad_try_mac_rel', 'mac', '', None),
-      ('crashpad_try_win_dbg', 'win', '', None),
-      ('crashpad_try_linux_rel', 'linux', '', None),
-      ('crashpad_fuchsia_rel', 'fuchsia', '', None),
-      ('crashpad_ios_simulator_dbg', 'ios', '', api.path.cache_dir / 'builder'),
-      ('crashpad_ios_device_rel', 'ios', 'arm64', None),
+    (test, 'mac', '', None),
+    ('crashpad_try_mac_rel', 'mac', '', None),
+    ('crashpad_try_win_dbg', 'win', '', None),
+    ('crashpad_try_linux_rel', 'linux', '', None),
+    ('crashpad_fuchsia_rel', 'fuchsia', '', None),
+    ('crashpad_ios_simulator_dbg', 'ios', '', api.path.cache_dir / 'builder'),
+    ('crashpad_ios_device_rel', 'ios', 'arm64', None),
   ]
   for t, os, cpu, checkout_dir in tests:
     checkout_dir = checkout_dir or api.path.start_dir
     yield api.test(
-        t,
-        api.properties(
-            config='Debug' if '_dbg' in t else 'Release',
-            target_os=os,
-            target_cpu=cpu),
-        api.buildbucket.ci_build(
-            project='crashpad', builder=t, git_repo=CRASHPAD_REPO),
-        api.path.exists(
-            checkout_dir.joinpath('crashpad', 'build',
-                                  'swarming_test_spec.pyl')))
+      t,
+      api.properties(
+        config='Debug' if '_dbg' in t else 'Release',
+        target_os=os,
+        target_cpu=cpu,
+      ),
+      api.buildbucket.ci_build(
+        project='crashpad', builder=t, git_repo=CRASHPAD_REPO
+      ),
+      api.path.exists(
+        checkout_dir.joinpath('crashpad', 'build', 'swarming_test_spec.pyl')
+      ),
+    )

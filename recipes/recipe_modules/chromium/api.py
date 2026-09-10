@@ -25,7 +25,9 @@ from .config import validate_config
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
-from RECIPE_MODULES.build.chromium_utr.instruction import get_utr_compile_instruction
+from RECIPE_MODULES.build.chromium_utr.instruction import (
+  get_utr_compile_instruction,
+)
 
 _CR_COMPILE_GUARD_NAME = 'CR_COMPILE_GUARD.txt'
 _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
@@ -43,6 +45,7 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
 # TODO: b/315393741 - Remove this logic after Siso migration.
 _LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
 
+
 class ChromiumApi(recipe_api.RecipeApi):
   # Tag used to indicate a step can be used for bisect.
   BISECT_STEP_TAG = 'luci-bisection.is_bisectable'
@@ -58,9 +61,10 @@ class ChromiumApi(recipe_api.RecipeApi):
     # TODO(yueshe@) - migrate this property to xcode module once downstream
     # no longer sets this property
     self._xcode_build_version = input_properties.xcode_build_version
-    self._fail_build_on_clang_warnings = input_properties.fail_build_on_clang_warnings
+    self._fail_build_on_clang_warnings = (
+      input_properties.fail_build_on_clang_warnings
+    )
     self._mac_toolchain_version = input_properties.mac_toolchain_version
-
 
   @property
   def xcode_build_version(self):
@@ -100,11 +104,12 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
 
     with self.m.context(
-        env={
-            # CHROME_HEADLESS makes sure that running 'gclient runhooks' and
-            # other tools don't require user interaction.
-            'CHROME_HEADLESS': '1',
-        }):
+      env={
+        # CHROME_HEADLESS makes sure that running 'gclient runhooks' and
+        # other tools don't require user interaction.
+        'CHROME_HEADLESS': '1',
+      }
+    ):
       yield
 
   def _with_chromium_layout(fn):
@@ -124,27 +129,27 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   def get_config_defaults(self):
     defaults = {
-        'HOST_PLATFORM': None,
-        'DEFAULT_HOST_PLATFORM': self.m.platform.name,
-        'HOST_ARCH': self.m.platform.arch,
-        'HOST_BITS': self.m.platform.bits,
-        'TARGET_PLATFORM': self.m.platform.name,
-        'TARGET_ARCH': self.m.platform.arch,
-        'TARGET_CROS_BOARDS': None,
-        'CROS_BOARDS_WITH_QEMU_IMAGES': None,
-
-        # NOTE: This is replicating logic which lives in
-        # chrome/trunk/src/build/common.gypi, which is undesirable. The desired
-        # end-state is that all the configuration logic lives in one place (in
-        # chromium/config.py), and the buildside gypfiles are as dumb as
-        # possible. However, since the recipes need to accurately contain
-        # {TARGET,HOST}_{BITS,ARCH,PLATFORM}, for use across many tools (of
-        # which gyp is one tool), we're taking a small risk and replicating the
-        # logic here.
-        'TARGET_BITS':
-            (32 if self.m.platform.name == 'win' else self.m.platform.bits),
-        'BUILD_CONFIG': self.m.properties.get('build_config', 'Release'),
-        'TEST_ONLY': False,
+      'HOST_PLATFORM': None,
+      'DEFAULT_HOST_PLATFORM': self.m.platform.name,
+      'HOST_ARCH': self.m.platform.arch,
+      'HOST_BITS': self.m.platform.bits,
+      'TARGET_PLATFORM': self.m.platform.name,
+      'TARGET_ARCH': self.m.platform.arch,
+      'TARGET_CROS_BOARDS': None,
+      'CROS_BOARDS_WITH_QEMU_IMAGES': None,
+      # NOTE: This is replicating logic which lives in
+      # chrome/trunk/src/build/common.gypi, which is undesirable. The desired
+      # end-state is that all the configuration logic lives in one place (in
+      # chromium/config.py), and the buildside gypfiles are as dumb as
+      # possible. However, since the recipes need to accurately contain
+      # {TARGET,HOST}_{BITS,ARCH,PLATFORM}, for use across many tools (of
+      # which gyp is one tool), we're taking a small risk and replicating the
+      # logic here.
+      'TARGET_BITS': (
+        32 if self.m.platform.name == 'win' else self.m.platform.bits
+      ),
+      'BUILD_CONFIG': self.m.properties.get('build_config', 'Release'),
+      'TEST_ONLY': False,
     }
 
     return defaults
@@ -158,7 +163,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     ret = {}
     if self.c.env.PATH:
       ret['PATH'] = self.m.path.pathsep.join(
-          [str(source_dir / p) for p in self.c.env.PATH] + ['%(PATH)s'])
+        [str(source_dir / p) for p in self.c.env.PATH] + ['%(PATH)s']
+      )
     if self.c.env.FORCE_MAC_TOOLCHAIN:
       ret['FORCE_MAC_TOOLCHAIN'] = self.c.env.FORCE_MAC_TOOLCHAIN
     return ret
@@ -185,12 +191,14 @@ class ChromiumApi(recipe_api.RecipeApi):
       return source_dir / 'out' / f'shared-{self.c.build_config_fs}'
     # Add "/" to prevent collisions since it can't show up in a builder name.
     hash_input = '{}/{}/{}'.format(
-        self.m.buildbucket.build.builder.project,
-        self.m.buildbucket.build.builder.bucket,
-        self.m.buildbucket.build.builder.builder).encode()
+      self.m.buildbucket.build.builder.project,
+      self.m.buildbucket.build.builder.bucket,
+      self.m.buildbucket.build.builder.builder,
+    ).encode()
     hash_part = hashlib.sha256(hash_input).hexdigest()[:4]
-    builder_name_part = ('_'.join(
-        self.m.buildbucket.build.builder.builder.split())[:15])
+    builder_name_part = '_'.join(
+      self.m.buildbucket.build.builder.builder.split()
+    )[:15]
     return source_dir / 'out' / (hash_part + '-' + builder_name_part)
 
   def _default_ninja_path(self, source_dir: Path) -> Path:
@@ -223,9 +231,10 @@ class ChromiumApi(recipe_api.RecipeApi):
     { 'MAJOR'": '51', 'MINOR': '0', 'BUILD': '2704', 'PATCH': '0' }
     """
     text = self.m.file.read_text(
-        step_name,
-        version_file_path,
-        test_data="MAJOR=51\nMINOR=0\nBUILD=2704\nPATCH=0\n")
+      step_name,
+      version_file_path,
+      test_data="MAJOR=51\nMINOR=0\nBUILD=2704\nPATCH=0\n",
+    )
     version = {}
     for line in text.splitlines():
       [k, v] = line.split('=', 1)
@@ -262,8 +271,10 @@ class ChromiumApi(recipe_api.RecipeApi):
     group_dict = builders_dict.get(builder_id.group, {})
     bot_config = group_dict.get('builders', {}).get(builder_id.builder)
 
-    self.set_config(bot_config.chromium_config or 'chromium',
-                    **bot_config.chromium_config_kwargs)
+    self.set_config(
+      bot_config.chromium_config or 'chromium',
+      **bot_config.chromium_config_kwargs,
+    )
 
     for c in bot_config.chromium_apply_config:
       self.apply_config(c)
@@ -280,13 +291,15 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     return (builder_id, bot_config)
 
-  def _limit_error_list(self,
-                        error_list,
-                        char_limit,
-                        message_prefix='',
-                        message_suffix='',
-                        line_format='{}',
-                        limit_hint=''):
+  def _limit_error_list(
+    self,
+    error_list,
+    char_limit,
+    message_prefix='',
+    message_suffix='',
+    line_format='{}',
+    limit_hint='',
+  ):
     """Limits combined length of strings and formats the error list.
 
     Args:
@@ -313,12 +326,14 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     return [message_prefix] + errors + [message_suffix]
 
-  def _format_failures(self,
-                       failure_summary,
-                       step_name,
-                       footer='',
-                       char_limit=1000,
-                       line_limit=1000):
+  def _format_failures(
+    self,
+    failure_summary,
+    step_name,
+    footer='',
+    char_limit=1000,
+    line_limit=1000,
+  ):
     """Removes non-vital information from summary and adds markdown.
 
     Args:
@@ -339,22 +354,24 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     # The estimated length of a line will be 1 / 7th of the char limit.
     # The default case will 100 characters per line
-    AVG_LINE_SIZE = (char_limit // 7)
+    AVG_LINE_SIZE = char_limit // 7
 
     summary_lines = failure_summary.splitlines()
     for index in range(len(summary_lines)):
       if len(summary_lines[index]) > line_limit:
         summary_lines[index] = (
-            summary_lines[index][:AVG_LINE_SIZE] + '...(too long)')
+          summary_lines[index][:AVG_LINE_SIZE] + '...(too long)'
+        )
 
     CODE_TAG = '```'
 
     summary_lines = self._limit_error_list(
-        summary_lines,
-        char_limit,
-        message_prefix=CODE_TAG,
-        message_suffix=CODE_TAG,
-        limit_hint='##### ...The message was too long...')
+      summary_lines,
+      char_limit,
+      message_prefix=CODE_TAG,
+      message_suffix=CODE_TAG,
+      limit_hint='##### ...The message was too long...',
+    )
 
     # Header and footer are not reduced previously because
     # they have markdown and should not be encased in code tags.
@@ -371,32 +388,37 @@ class ChromiumApi(recipe_api.RecipeApi):
   # TODO: crbug.com/339375951 - Move this logic to infra recipe modules.
   def _get_logdog_url(self, step, log):
     sanitized_name_tokens = [
-        re.sub('[ _/()]', '_', t) for t in step.name_tokens
+      re.sub('[ _/()]', '_', t) for t in step.name_tokens
     ]
-    url = 'https://%(logdog_hostname)s/logs/%(logdog_project)s/%(logdog_prefix)s/+/u/%(step_name)s/%(log_name)s' % {
+    url = (
+      'https://%(logdog_hostname)s/logs/%(logdog_project)s/%(logdog_prefix)s/+/u/%(step_name)s/%(log_name)s'
+      % {
         'logdog_hostname': self.m.buildbucket.build.infra.logdog.hostname,
         'logdog_project': self.m.buildbucket.build.infra.logdog.project,
         'logdog_prefix': self.m.buildbucket.build.infra.logdog.prefix,
         'step_name': '/'.join(sanitized_name_tokens),
         'log_name': log,
-    }
+      }
+    )
     return url
 
-  def _run_ninja(self,
-                 source_dir: Path,
-                 build_dir: Path,
-                 ninja_command,
-                 *,
-                 name=None,
-                 ninja_env=None,
-                 ninja_extra_args=None,
-                 siso_args=None,
-                 skip_log_upload=False,
-                 resource_usage_output_file=None,
-                 ninja_invocation_id=None,
-                 include_utr_instruction=False,
-                 builder_id=None,
-                 **kwargs):
+  def _run_ninja(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    ninja_command,
+    *,
+    name=None,
+    ninja_env=None,
+    ninja_extra_args=None,
+    siso_args=None,
+    skip_log_upload=False,
+    resource_usage_output_file=None,
+    ninja_invocation_id=None,
+    include_utr_instruction=False,
+    builder_id=None,
+    **kwargs,
+  ):
     """
     Run ninja with given command and env.
 
@@ -429,29 +451,36 @@ class ChromiumApi(recipe_api.RecipeApi):
     """
 
     CompileResult = collections.namedtuple(
-        'CompileResult',
-        'failure_summary failure_summary_url retcode',
-        defaults=(None, None, None))
+      'CompileResult',
+      'failure_summary failure_summary_url retcode',
+      defaults=(None, None, None),
+    )
 
     failure_output = self.m.raw_io.output_text(
-        add_output_log='on_failure', name='failure_summary')
+      add_output_log='on_failure', name='failure_summary'
+    )
 
     example_json = {
-        'failures': [{
-            'output_nodes': ['a.o'],
-            'rule': 'CXX',
-            'output': '''\
+      'failures': [
+        {
+          'output_nodes': ['a.o'],
+          'rule': 'CXX',
+          'output': '''\
         filename:row:col: error: error info''',
-            'dependencies': ['b/a.cc']
-        }]
+          'dependencies': ['b/a.cc'],
+        }
+      ]
     }
     example_failure_output = textwrap.dedent("""\
         [1/1] CXX a.o
         filename:row:col: error: error info
     """)
-    step_test_data = (lambda: self.m.json.test_api.output(
-        example_json, name='ninja_info') + self.m.raw_io.test_api.output_text(
-            example_failure_output, name='failure_summary'))
+    step_test_data = lambda: (
+      self.m.json.test_api.output(example_json, name='ninja_info')
+      + self.m.raw_io.test_api.output_text(
+        example_failure_output, name='failure_summary'
+      )
+    )
 
     ninja_step_result = None
     try:
@@ -461,26 +490,27 @@ class ChromiumApi(recipe_api.RecipeApi):
         if ninja_extra_args:
           cmd.extend(ninja_extra_args)
         ninja_step_result = self.m.siso.run_ninja(
-            source_dir,
-            cmd,
-            ninja_env=ninja_env,
-            siso_args=siso_args,
-            name=name,
-            step_test_data=step_test_data,
-            skip_log_upload=skip_log_upload,
-            resource_usage_output_file=resource_usage_output_file,
-            ninja_invocation_id=ninja_invocation_id,
-            include_utr_instruction=include_utr_instruction,
-            builder_id=builder_id,
-            **kwargs)
+          source_dir,
+          cmd,
+          ninja_env=ninja_env,
+          siso_args=siso_args,
+          name=name,
+          step_test_data=step_test_data,
+          skip_log_upload=skip_log_upload,
+          resource_usage_output_file=resource_usage_output_file,
+          ninja_invocation_id=ninja_invocation_id,
+          include_utr_instruction=include_utr_instruction,
+          builder_id=builder_id,
+          **kwargs,
+        )
       else:
         cmd = [
-            'vpython3',
-            self.resource('ninja_wrapper.py'),
-            '--ninja_info_output',
-            self.m.json.output(add_json_log='on_failure', name='ninja_info'),
-            '--failure_output',
-            failure_output,
+          'vpython3',
+          self.resource('ninja_wrapper.py'),
+          '--ninja_info_output',
+          self.m.json.output(add_json_log='on_failure', name='ninja_info'),
+          '--failure_output',
+          failure_output,
         ]
         if resource_usage_output_file:
           cmd.append('--resource_usage_output_file')
@@ -491,29 +521,40 @@ class ChromiumApi(recipe_api.RecipeApi):
           cmd.extend(ninja_extra_args)
         with self.m.context(env=ninja_env):
           ninja_step_result = self.m.step(
-              name or 'compile', cmd, step_test_data=step_test_data, **kwargs)
+            name or 'compile', cmd, step_test_data=step_test_data, **kwargs
+          )
           if ninja_invocation_id:
-            ninja_step_result.presentation.tags[
-                'ninja_invocation_id'] = ninja_invocation_id
+            ninja_step_result.presentation.tags['ninja_invocation_id'] = (
+              ninja_invocation_id
+            )
 
           if include_utr_instruction and builder_id:
             get_utr_compile_instruction(self, ninja_step_result, builder_id)
     except self.m.step.StepFailure as ex:
       ninja_step_result = ex.result
-      if ninja_invocation_id and 'ninja_invocation_id' not in ninja_step_result.presentation.tags:
-        ninja_step_result.presentation.tags[
-            'ninja_invocation_id'] = ninja_invocation_id
+      if (
+        ninja_invocation_id
+        and 'ninja_invocation_id' not in ninja_step_result.presentation.tags
+      ):
+        ninja_step_result.presentation.tags['ninja_invocation_id'] = (
+          ninja_invocation_id
+        )
       # Ensure the repro instructions are attached for failing compiles
-      if (include_utr_instruction and builder_id and
-          'resultdb.instruction.id' not in ninja_step_result.presentation.tags):
+      if (
+        include_utr_instruction
+        and builder_id
+        and 'resultdb.instruction.id' not in ninja_step_result.presentation.tags
+      ):
         get_utr_compile_instruction(self, ninja_step_result, builder_id)
       if ninja_step_result.retcode != 1:
         raise self.m.step.InfraFailure(
-            ninja_step_result.name, result=ninja_step_result)
+          ninja_step_result.name, result=ninja_step_result
+        )
       siso_result_path = build_dir / 'siso_result.json'
       if self.m.path.exists(siso_result_path):
-        siso_result = self.m.file.read_json('read siso_result.json',
-                                            siso_result_path)
+        siso_result = self.m.file.read_json(
+          'read siso_result.json', siso_result_path
+        )
         if siso_result.get("infra_failure", False):
           name = ninja_step_result.name
           msg = siso_result.get("message", None)
@@ -521,18 +562,21 @@ class ChromiumApi(recipe_api.RecipeApi):
             name += " : " + msg
           raise self.m.step.InfraFailure(name, result=ninja_step_result)
 
-      failure_summary = ('(retcode=%d) No failure summary provided.' %
-                         ninja_step_result.retcode)
+      failure_summary = (
+        '(retcode=%d) No failure summary provided.' % ninja_step_result.retcode
+      )
       failure_summary_url = ''
       if ninja_step_result.raw_io.output_text:
         failure_summary = ninja_step_result.raw_io.output_text
         failure_summary_url = self._get_logdog_url(
-            ninja_step_result, 'raw_io.output_text_failure_summary_')
+          ninja_step_result, 'raw_io.output_text_failure_summary_'
+        )
 
       return CompileResult(
-          failure_summary=failure_summary,
-          failure_summary_url=failure_summary_url,
-          retcode=ninja_step_result.retcode)
+        failure_summary=failure_summary,
+        failure_summary_url=failure_summary_url,
+        retcode=ninja_step_result.retcode,
+      )
 
     finally:
       if ninja_step_result:
@@ -541,21 +585,25 @@ class ChromiumApi(recipe_api.RecipeApi):
         self.m.repro_instructions.update_invocation_instructions()
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:
         clang_crashreports_script = (
-            source_dir / 'tools/clang/scripts/process_crashreports.py')
+          source_dir / 'tools/clang/scripts/process_crashreports.py'
+        )
         if self.m.path.exists(clang_crashreports_script):
-          source = '%s-%s' % (self.m.builder_group.for_current,
-                              self.m.buildbucket.builder_name)
+          source = '%s-%s' % (
+            self.m.builder_group.for_current,
+            self.m.buildbucket.builder_name,
+          )
           if self.m.buildbucket.build.number:
             source += '-%s' % self.m.buildbucket.build.number
 
           crash_step = self.m.step(
-              'process clang crashes',
-              ['python3', clang_crashreports_script, '--source', source],
-              stdout=self.m.raw_io.output_text(),
-              step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-                  '    gs://chrome-clang-crash-reports/v1/2023/01/01/user-base.tgz\n'
-              ),
-              **kwargs)
+            'process clang crashes',
+            ['python3', clang_crashreports_script, '--source', source],
+            stdout=self.m.raw_io.output_text(),
+            step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+              '    gs://chrome-clang-crash-reports/v1/2023/01/01/user-base.tgz\n'
+            ),
+            **kwargs,
+          )
 
           if crash_step and crash_step.stdout is not None:
             crash_step.presentation.logs['stdout'] = crash_step.stdout
@@ -566,15 +614,16 @@ class ChromiumApi(recipe_api.RecipeApi):
                 filename = line.split('/')[-1]
                 crash_step.presentation.links[filename] = url
 
-        self.m.ninjalog.upload(name, ninja_command, ninja_step_result.retcode,
-                               ninja_invocation_id)
+        self.m.ninjalog.upload(
+          name, ninja_command, ninja_step_result.retcode, ninja_invocation_id
+        )
 
     if self.fail_build_on_clang_warnings:
       result = self.check_for_clang_warnings(build_dir)
       if result:
         return CompileResult(
-            failure_summary=result, failure_summary_url='', retcode=1)
-
+          failure_summary=result, failure_summary_url='', retcode=1
+        )
 
     ninja_command_explain = ninja_command + ['-d', 'explain', '-n']
 
@@ -585,54 +634,60 @@ class ChromiumApi(recipe_api.RecipeApi):
     # misconfigured somehow, which is bad and should break the build.
     noop_step_name = (name or 'compile') + ' confirm no-op'
     noop_step_test_data = lambda: self.m.raw_io.test_api.stream_output_text(
-        ninja_no_work)
+      ninja_no_work
+    )
 
     def check_noop(step_result):
       if ninja_no_work in step_result.stdout:
         # No dependency issue found.
         return
       step_result.presentation.step_text = (
-          "This should have been a no-op, but it wasn't.")
+        "This should have been a no-op, but it wasn't."
+      )
       step_result.presentation.status = self.m.step.FAILURE
 
     if self.m.siso.enabled:
       step_result = self.m.siso.run_ninja(
-          source_dir,
-          ninja_command_explain,
-          siso_args=siso_args,
-          name=noop_step_name,
-          step_test_data=noop_step_test_data,
-          stdout=self.m.raw_io.output_text(),
-          post_step_func=check_noop,
-          skip_log_upload=skip_log_upload,
-          ninja_invocation_id=ninja_invocation_id,
-          **kwargs)
+        source_dir,
+        ninja_command_explain,
+        siso_args=siso_args,
+        name=noop_step_name,
+        step_test_data=noop_step_test_data,
+        stdout=self.m.raw_io.output_text(),
+        post_step_func=check_noop,
+        skip_log_upload=skip_log_upload,
+        ninja_invocation_id=ninja_invocation_id,
+        **kwargs,
+      )
     else:
       with self.m.context(env=ninja_env):
         step_result = self.m.step(
-            noop_step_name,
-            ninja_command_explain,
-            stdout=self.m.raw_io.output_text(),
-            step_test_data=noop_step_test_data)
+          noop_step_name,
+          ninja_command_explain,
+          stdout=self.m.raw_io.output_text(),
+          step_test_data=noop_step_test_data,
+        )
       check_noop(step_result)
 
     failure_summary_url = ''
     if step_result.presentation.status == self.m.step.FAILURE:
       failure_summary_url = self._get_logdog_url(step_result, 'stderr')
       return CompileResult(
-          failure_summary=textwrap.dedent("""
+        failure_summary=textwrap.dedent("""
               Failing build because ninja reported work to do.
               This means that after completing a compile, another was run and
               it resulted in still having work to do (that is, a no-op build
               wasn't a no-op). Consult the first "ninja explain:" line for a
               likely culprit.
            """).strip(),
-          failure_summary_url=failure_summary_url,
-          retcode=1)
-    return CompileResult(
-        failure_summary='No dependency issues found',
         failure_summary_url=failure_summary_url,
-        retcode=ninja_step_result.exc_result.retcode)
+        retcode=1,
+      )
+    return CompileResult(
+      failure_summary='No dependency issues found',
+      failure_summary_url=failure_summary_url,
+      retcode=ninja_step_result.exc_result.retcode,
+    )
 
   def check_for_clang_warnings(self, build_dir):
     """
@@ -659,8 +714,9 @@ class ChromiumApi(recipe_api.RecipeApi):
     with self.m.step.nest('check for compile warnings'):
       siso_output_path = build_dir / 'siso_output'
       if self.m.path.exists(siso_output_path):
-        siso_output = self.m.file.read_text('read siso_output',
-                                            siso_output_path)
+        siso_output = self.m.file.read_text(
+          'read siso_output', siso_output_path
+        )
       else:
         siso_output = ''
         step_text = str(siso_output_path) + ' does not exist'
@@ -679,12 +735,17 @@ class ChromiumApi(recipe_api.RecipeApi):
       m = re.finditer(r'warning:(.+)', siso_output)
       # Filter out summary lines ("5 warnings emitted")
       warnings = [
-          line for line in m
-          if not re.search(r'\d+ warnings? (emitted|generated)', line.group(0))
+        line
+        for line in m
+        if not re.search(r'\d+ warnings? (emitted|generated)', line.group(0))
       ]
       if not end_match or not warnings:
-        self.m.step.empty('scan siso_output for warnings', self.m.step.SUCCESS,
-                          'No warnings found', '')
+        self.m.step.empty(
+          'scan siso_output for warnings',
+          self.m.step.SUCCESS,
+          'No warnings found',
+          '',
+        )
         return None
 
       first_warning = warnings[0]
@@ -692,10 +753,13 @@ class ChromiumApi(recipe_api.RecipeApi):
 
       plural = 'warnings' if warning_count != 1 else 'warning'
       step_text = (
-          f'Clang emitted {warning_count} {plural} during compilation. '
-          'See siso_output for full details.')
-      log_text = ('Sample warning text (see siso_output for full details):\n' +
-                  first_warning.group(0))
+        f'Clang emitted {warning_count} {plural} during compilation. '
+        'See siso_output for full details.'
+      )
+      log_text = (
+        'Sample warning text (see siso_output for full details):\n'
+        + first_warning.group(0)
+      )
       status = self.m.step.FAILURE
 
       # Extract the output for the first warning for convenient display.
@@ -708,12 +772,13 @@ class ChromiumApi(recipe_api.RecipeApi):
 
       # Find the _last_ instance of `target_re` preceding the warning text
       start_matches = list(
-          re.finditer(target_re, siso_output[:first_warning.start()]))
+        re.finditer(target_re, siso_output[: first_warning.start()])
+      )
       start_match = start_matches[-1] if start_matches else None
 
       failure_summary = 'Failed to extract warning text'
       if start_match:
-        output_blob = siso_output[start_match.start():end_match.end()]
+        output_blob = siso_output[start_match.start() : end_match.end()]
         failure_summary = step_text + '\n\n' + output_blob
 
       if len(log_text) > 1024:
@@ -722,11 +787,12 @@ class ChromiumApi(recipe_api.RecipeApi):
       # Don't raise immediately, so that we can manually raise with
       # a nicer error message.
       self.m.step.empty(
-          'scan siso_output for warnings',
-          status,
-          step_text,
-          log_text,
-          raise_on_failure=False)
+        'scan siso_output for warnings',
+        status,
+        step_text,
+        log_text,
+        raise_on_failure=False,
+      )
 
       if warnings:
         return failure_summary
@@ -769,12 +835,15 @@ class ChromiumApi(recipe_api.RecipeApi):
     build_system = 'siso' if self.m.siso.enabled else 'ninja'
     last_build_system_path = build_dir / _LAST_BUILD_SYSTEM
     if self.m.path.exists(last_build_system_path):
-      last_build_system = self.m.file.read_text('read %s' % _LAST_BUILD_SYSTEM,
-                                                last_build_system_path)
+      last_build_system = self.m.file.read_text(
+        'read %s' % _LAST_BUILD_SYSTEM, last_build_system_path
+      )
       if last_build_system and last_build_system != build_system:
         should_clean = True
-        clean_reason = ('build system switches from %s to %s' %
-                        (last_build_system, build_system))
+        clean_reason = 'build system switches from %s to %s' % (
+          last_build_system,
+          build_system,
+        )
 
     if should_clean:
       self.m.file.rmtree('remove unreliable output dir' + suffix, build_dir)
@@ -782,10 +851,12 @@ class ChromiumApi(recipe_api.RecipeApi):
       clean_step_presentation.step_text = 'reason: ' + clean_reason
 
     self.m.file.ensure_directory('ensure output directory' + suffix, build_dir)
-    self.m.file.write_text('create compile guard' + suffix, guard_path,
-                           _CR_COMPILE_GUARD_CONTENTS)
-    self.m.file.write_text('write %s' % _LAST_BUILD_SYSTEM,
-                           last_build_system_path, build_system)
+    self.m.file.write_text(
+      'create compile guard' + suffix, guard_path, _CR_COMPILE_GUARD_CONTENTS
+    )
+    self.m.file.write_text(
+      'write %s' % _LAST_BUILD_SYSTEM, last_build_system_path, build_system
+    )
 
     try:
       yield
@@ -811,20 +882,22 @@ class ChromiumApi(recipe_api.RecipeApi):
       self.m.step(name='cleandead', cmd=command)
 
   @_with_chromium_layout
-  def compile(self,
-              source_dir: Path,
-              build_dir: Path,
-              *,
-              targets=None,
-              name=None,
-              include_utr_instruction: bool = False,
-              builder_id: chromium.BuilderId | None = None,
-              ninja_path: str = None,
-              extra_ninja_args: list[str] | None = None,
-              siso_args: list[str] | None = None,
-              skip_log_upload: bool = False,
-              resource_usage_output_file: Path | None = None,
-              **kwargs):
+  def compile(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    *,
+    targets=None,
+    name=None,
+    include_utr_instruction: bool = False,
+    builder_id: chromium.BuilderId | None = None,
+    ninja_path: str = None,
+    extra_ninja_args: list[str] | None = None,
+    siso_args: list[str] | None = None,
+    skip_log_upload: bool = False,
+    resource_usage_output_file: Path | None = None,
+    **kwargs,
+  ):
     """Return a compile.py invocation.
 
     Args:
@@ -877,14 +950,16 @@ class ChromiumApi(recipe_api.RecipeApi):
       # needed.
       if self.c.TARGET_PLATFORM == 'win':
         ninja_env['PATH'] = self.m.path.pathsep.join(
-            ('%(PATH)s', str(self._default_ninja_path(source_dir).parent)))
+          ('%(PATH)s', str(self._default_ninja_path(source_dir).parent))
+        )
 
     if ninja_path:
       command = [ninja_path, '-C', str(build_dir)]
     else:
       command = [
-          str(self._default_ninja_path(source_dir)), '-C',
-          str(build_dir)
+        str(self._default_ninja_path(source_dir)),
+        '-C',
+        str(build_dir),
       ]
 
     if self.c.compile_py.build_args:
@@ -899,47 +974,55 @@ class ChromiumApi(recipe_api.RecipeApi):
     with self.m.context(cwd=self.m.context.cwd or source_dir):
       ninja_invocation_id = self.m.uuid.random()
       ninja_result = self._run_ninja(
-          source_dir,
-          build_dir,
-          name=name or 'compile',
-          ninja_command=command,
-          ninja_extra_args=extra_ninja_args,
-          ninja_env=ninja_env,
-          ninja_invocation_id=ninja_invocation_id,
-          include_utr_instruction=include_utr_instruction,
-          builder_id=builder_id,
-          siso_args=siso_args,
-          skip_log_upload=skip_log_upload,
-          resource_usage_output_file=resource_usage_output_file,
-          **kwargs)
+        source_dir,
+        build_dir,
+        name=name or 'compile',
+        ninja_command=command,
+        ninja_extra_args=extra_ninja_args,
+        ninja_env=ninja_env,
+        ninja_invocation_id=ninja_invocation_id,
+        include_utr_instruction=include_utr_instruction,
+        builder_id=builder_id,
+        siso_args=siso_args,
+        skip_log_upload=skip_log_upload,
+        resource_usage_output_file=resource_usage_output_file,
+        **kwargs,
+      )
 
     if ninja_result.retcode:
       footer = ''
       if ninja_result.failure_summary_url:
-        footer = '[Click here for more information](%s)' % ninja_result.failure_summary_url
-      failure_summary = self._format_failures(ninja_result.failure_summary,
-                                              name or 'compile', footer)
+        footer = (
+          '[Click here for more information](%s)'
+          % ninja_result.failure_summary_url
+        )
+      failure_summary = self._format_failures(
+        ninja_result.failure_summary, name or 'compile', footer
+      )
       return result_pb2.RawResult(
-          status=common_pb.FAILURE, summary_markdown=failure_summary)
+        status=common_pb.FAILURE, summary_markdown=failure_summary
+      )
 
     return result_pb2.RawResult(status=common_pb.SUCCESS)
 
   @_with_chromium_layout
-  def runtest(self,
-              checkout_dir: Path,
-              build_dir: Path,
-              test,
-              *,
-              args=None,
-              xvfb=False,
-              name=None,
-              builder_group=None,
-              parse_gtest_output=False,
-              test_type=None,
-              python_mode=False,
-              test_launcher_summary_output=None,
-              resultdb=None,
-              **kwargs):
+  def runtest(
+    self,
+    checkout_dir: Path,
+    build_dir: Path,
+    test,
+    *,
+    args=None,
+    xvfb=False,
+    name=None,
+    builder_group=None,
+    parse_gtest_output=False,
+    test_type=None,
+    python_mode=False,
+    test_launcher_summary_output=None,
+    resultdb=None,
+    **kwargs,
+  ):
     """Return a runtest.py invocation.
 
     Args:
@@ -969,7 +1052,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     step_name = name or t_name
     if test_launcher_summary_output:
       full_args.extend(
-          ['--test-launcher-summary-output', test_launcher_summary_output])
+        ['--test-launcher-summary-output', test_launcher_summary_output]
+      )
 
     # These properties are specified on every bot, so pass them down
     # unconditionally.
@@ -983,7 +1067,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     if ext == '.py' or python_mode:
       full_args.append('--run-python-script')
 
-    if (self.c.runtests.enable_asan or self.c.runtests.run_asan_test):
+    if self.c.runtests.enable_asan or self.c.runtests.run_asan_test:
       full_args.append('--enable-asan')
     if self.c.runtests.enable_lsan:
       full_args.append('--enable-lsan')
@@ -1001,9 +1085,9 @@ class ChromiumApi(recipe_api.RecipeApi):
       if resultdb:
         cmd = resultdb.wrap(self.m, cmd, step_name=name)
       return self.m.step(
-          step_name,
-          cmd,
-          **kwargs,
+        step_name,
+        cmd,
+        **kwargs,
       )
 
   @_with_chromium_layout
@@ -1019,12 +1103,14 @@ class ChromiumApi(recipe_api.RecipeApi):
       if self.c.use_tot_clang:
         cmd.append('--llvm-force-head-revision')
       step_result = self.m.step(
-          name='clang_revision',
-          cmd=cmd,
-          stdout=self.m.raw_io.output_text(),
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-              'llvmorg-whatever-g123456-7'),
-          **kwargs)
+        name='clang_revision',
+        cmd=cmd,
+        stdout=self.m.raw_io.output_text(),
+        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+          'llvmorg-whatever-g123456-7'
+        ),
+        **kwargs,
+      )
       clang_revision = step_result.stdout.strip()
       step_result.presentation.properties['clang_revision'] = clang_revision
       step_result.presentation.step_text = clang_revision
@@ -1041,12 +1127,14 @@ class ChromiumApi(recipe_api.RecipeApi):
       update_script = source_dir / 'tools' / 'rust' / 'update_rust.py'
       cmd = ['python3', update_script, '--print-revision', 'installed']
       step_result = self.m.step(
-          name='rust_revision',
-          cmd=cmd,
-          stdout=self.m.raw_io.output_text(),
-          step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-              '1234-5-llvmorg-whatever-g123456'),
-          **kwargs)
+        name='rust_revision',
+        cmd=cmd,
+        stdout=self.m.raw_io.output_text(),
+        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+          '1234-5-llvmorg-whatever-g123456'
+        ),
+        **kwargs,
+      )
       rust_revision = step_result.stdout.strip()
       step_result.presentation.properties['rust_revision'] = rust_revision
       step_result.presentation.step_text = rust_revision
@@ -1065,8 +1153,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       pkg_version = f'git_revision:{self.mac_toolchain_version}'
     cmd = self.c.mac_toolchain.installer_cmd
     self.m.cipd.ensure(
-        cipd_root,
-        self.m.cipd.EnsureFile().add_package(cipd_pkg, pkg_version))
+      cipd_root, self.m.cipd.EnsureFile().add_package(cipd_pkg, pkg_version)
+    )
     return cipd_root / cmd
 
   def ensure_mac_toolchain(self, checkout_dir: Path):
@@ -1078,34 +1166,39 @@ class ChromiumApi(recipe_api.RecipeApi):
     # For branched builders, xcode version is read from xcode_build_version,
     # when xcode configs file path is not specified.
     xcode_build_version = (
-        self.m.xcode.get_xcode_version(checkout_dir) or
-        self.xcode_build_version or
-        self.m.properties.get('xcode_build_version', None))
+      self.m.xcode.get_xcode_version(checkout_dir)
+      or self.xcode_build_version
+      or self.m.properties.get('xcode_build_version', None)
+    )
 
     if not xcode_build_version:
       raise self.m.step.StepFailure(
-          'No Xcode version was provided as a recipe property.')
+        'No Xcode version was provided as a recipe property.'
+      )
 
     kind = self.c.mac_toolchain.kind or self.c.TARGET_PLATFORM
     # TODO(sergeyberezin): for LUCI migration, this must be a requested named
     # cache. Make sure it exists, to avoid downloading Xcode on every build.
-    xcode_app_path = self.m.path.cache_dir.joinpath('xcode_%s_%s.app' %
-                                                    (kind, xcode_build_version))
+    xcode_app_path = self.m.path.cache_dir.joinpath(
+      'xcode_%s_%s.app' % (kind, xcode_build_version)
+    )
 
     with self.m.step.nest('ensure xcode') as step_result:
-      step_result.step_text = ('Ensuring Xcode version %s in %s' %
-                               (xcode_build_version, xcode_app_path))
+      step_result.step_text = 'Ensuring Xcode version %s in %s' % (
+        xcode_build_version,
+        xcode_app_path,
+      )
 
       mac_toolchain_cmd = self.get_mac_toolchain_installer()
       install_args = [
-          mac_toolchain_cmd,
-          'install',
-          '-kind',
-          kind,
-          '-xcode-version',
-          xcode_build_version,
-          '-output-dir',
-          xcode_app_path,
+        mac_toolchain_cmd,
+        'install',
+        '-kind',
+        kind,
+        '-xcode-version',
+        xcode_build_version,
+        '-output-dir',
+        xcode_app_path,
       ]
 
       if self.m.properties.get('with_metal_toolchain'):
@@ -1113,17 +1206,21 @@ class ChromiumApi(recipe_api.RecipeApi):
 
       self.m.step('install xcode', install_args, infra_step=True)
       self.m.step(
-          'select xcode', ['sudo', 'xcode-select', '-switch', xcode_app_path],
-          infra_step=True)
+        'select xcode',
+        ['sudo', 'xcode-select', '-switch', xcode_app_path],
+        infra_step=True,
+      )
 
       # Kill all ibtoold processes. When multiple Xcode version is used on the
       # same bot, multiple ibtoold processes from different Xcode might cause
       # compile failues. See crbug.com/1297159. The cmd returns 0 if processes
       # found, 1 if not found.
       self.m.step(
-          'kill ibtoold', ['pkill', '-f', '/ibtoold($| )'],
-          ok_ret=(0, 1),
-          infra_step=True)
+        'kill ibtoold',
+        ['pkill', '-f', '/ibtoold($| )'],
+        ok_ret=(0, 1),
+        infra_step=True,
+      )
 
       # (crbug.com/1115022) - When the last running simulator is from XCode
       # version n-1, XCode version n throws a failure message. Running simctl
@@ -1141,13 +1238,13 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @_with_chromium_layout
   def runhooks(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      *,
-      env=None,
-      clobber=None,
-      **kwargs,
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    *,
+    env=None,
+    clobber=None,
+    **kwargs,
   ):
     """Run the build-configuration hooks for chromium.
 
@@ -1175,7 +1272,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     # toolchain is installed in runhooks, which requires the installer binary.
     if self.c.HOST_PLATFORM == 'mac':
       runhooks_env['MAC_TOOLCHAIN_INSTALLER'] = (
-          self.get_mac_toolchain_installer())
+        self.get_mac_toolchain_installer()
+      )
 
     if self.c.use_gyp_env:
       # TODO(sbc): Ideally we would not need gyp_env set during runhooks when
@@ -1188,7 +1286,8 @@ class ChromiumApi(recipe_api.RecipeApi):
     tag = self.m.repro_instructions.get_step_instruction_tag(r'.*bot_update')
     with self.m.gsutil.configure_gsutil():
       with self.m.context(
-          cwd=self.m.context.cwd or source_dir, env=runhooks_env):
+        cwd=self.m.context.cwd or source_dir, env=runhooks_env
+      ):
         step_result = None
         try:
           step_result = self.m.gclient.runhooks(**kwargs)
@@ -1199,14 +1298,14 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @_with_chromium_layout
   def run_gn(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      *,
-      gn_path=None,
-      use_remoteexec=False,
-      extra_args: list[str] | None = None,
-      **kwargs,
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    *,
+    gn_path=None,
+    use_remoteexec=False,
+    extra_args: list[str] | None = None,
+    **kwargs,
   ):
     """Run gn gen to generate the ninja files.
 
@@ -1234,13 +1333,13 @@ class ChromiumApi(recipe_api.RecipeApi):
       assert self.c.TARGET_ARCH in ('arm', 'intel', 'mips')
 
     gn_cpu = {
-        ('intel', 32): 'x86',
-        ('intel', 64): 'x64',
-        ('arm', 32): 'arm',
-        ('arm', 64): 'arm64',
-        ('mips', 32): 'mips',
-        ('mipsel', 32): 'mipsel',
-        ('riscv64', 64): 'riscv64',
+      ('intel', 32): 'x86',
+      ('intel', 64): 'x64',
+      ('arm', 32): 'arm',
+      ('arm', 64): 'arm64',
+      ('mips', 32): 'mips',
+      ('mipsel', 32): 'mipsel',
+      ('riscv64', 64): 'riscv64',
     }.get((self.c.TARGET_ARCH, self.c.TARGET_BITS))
     if gn_cpu:
       gn_args.append('target_cpu="%s"' % gn_cpu)
@@ -1253,11 +1352,11 @@ class ChromiumApi(recipe_api.RecipeApi):
     gn_args.extend(self.c.project_generator.args)
 
     cmd = [
-        gn_path,
-        '--root=%s' % str(source_dir),
-        'gen',
-        build_dir,
-        '--args=%s' % ' '.join(gn_args),
+      gn_path,
+      '--root=%s' % str(source_dir),
+      'gen',
+      build_dir,
+      '--args=%s' % ' '.join(gn_args),
     ]
     if extra_args:
       cmd.extend(extra_args)
@@ -1271,27 +1370,31 @@ class ChromiumApi(recipe_api.RecipeApi):
       yield '--isolate-map-file'
       yield source_dir / isolate_map_path
 
-    if (len(self.c.project_generator.isolate_map_paths) > 1 and
-        self.c.project_generator.allow_dup_isolate_entry):
+    if (
+      len(self.c.project_generator.isolate_map_paths) > 1
+      and self.c.project_generator.allow_dup_isolate_entry
+    ):
       yield '--allow-dup-isolate-entry'
 
   @_with_chromium_layout
-  def run_mb_cmd(self,
-                 name,
-                 mb_command,
-                 source_dir: Path,
-                 builder_id,
-                 *,
-                 mb_path=None,
-                 mb_config_path=None,
-                 chromium_config=None,
-                 phase=None,
-                 android_version_code=None,
-                 android_version_name=None,
-                 additional_args=None,
-                 include_instruction=False,
-                 additional_instructions=None,
-                 **kwargs):
+  def run_mb_cmd(
+    self,
+    name,
+    mb_command,
+    source_dir: Path,
+    builder_id,
+    *,
+    mb_path=None,
+    mb_config_path=None,
+    chromium_config=None,
+    phase=None,
+    android_version_code=None,
+    android_version_name=None,
+    additional_args=None,
+    include_instruction=False,
+    additional_instructions=None,
+    **kwargs,
+  ):
     """Run an arbitrary mb command.
 
     Args:
@@ -1321,25 +1424,30 @@ class ChromiumApi(recipe_api.RecipeApi):
     mb_path = mb_path or source_dir / 'tools/mb'
     if not mb_config_path and chromium_config.project_generator.config_path:
       mb_config_path = (
-          source_dir / chromium_config.project_generator.config_path)
+        source_dir / chromium_config.project_generator.config_path
+      )
     mb_config_path = mb_config_path or mb_path / 'mb_config.pyl'
 
     args = [
-        mb_command,
+      mb_command,
     ]
 
     # If builder_id is not set the gn args already in the path are used
     if builder_id:
-      args.extend([
+      args.extend(
+        [
           '-m',
           builder_id.group,
           '-b',
           builder_id.builder,
-      ])
-    args.extend([
+        ]
+      )
+    args.extend(
+      [
         '--config-file',
         mb_config_path,
-    ])
+      ]
+    )
 
     if phase is not None:
       args += ['--phase', str(phase)]
@@ -1378,7 +1486,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         def remove_arg_pair(flag):
           if flag in cmd:
             index = cmd.index(flag)
-            del cmd[index:index + 2]
+            del cmd[index : index + 2]
 
         remove_arg_pair('--json-output')
         remove_arg_pair('--swarming-targets-file')
@@ -1398,26 +1506,27 @@ class ChromiumApi(recipe_api.RecipeApi):
           instruction_cmd += '<br/>' + additional_instructions
 
         self.m.repro_instructions.add_step_instruction(
-            step_result,
-            local_content=instruction_cmd,
+          step_result,
+          local_content=instruction_cmd,
         )
       return step_result
 
-
   @_with_chromium_layout
-  def mb_analyze(self,
-                 source_dir: Path,
-                 build_dir: Path,
-                 builder_id,
-                 analyze_input,
-                 *,
-                 name=None,
-                 mb_path=None,
-                 mb_config_path=None,
-                 chromium_config=None,
-                 phase=None,
-                 test_analyze_output=None,
-                 **kwargs):
+  def mb_analyze(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    builder_id,
+    analyze_input,
+    *,
+    name=None,
+    mb_path=None,
+    mb_config_path=None,
+    chromium_config=None,
+    phase=None,
+    test_analyze_output=None,
+    **kwargs,
+  ):
     """Determine which targets need to be built and tested.
 
     Args:
@@ -1441,45 +1550,50 @@ class ChromiumApi(recipe_api.RecipeApi):
     mb_args.append(build_dir)
     mb_args.extend([self.m.json.input(analyze_input), self.m.json.output()])
     mb_args.extend(
-        ['--json-output',
-         self.m.json.output(name="failure_summary")])
+      ['--json-output', self.m.json.output(name="failure_summary")]
+    )
 
     test_analyze_output = test_analyze_output or {
-        'status': 'No dependency',
-        'compile_targets': [],
-        'test_targets': [],
+      'status': 'No dependency',
+      'compile_targets': [],
+      'test_targets': [],
     }
-    step_test_data = (lambda: self.m.json.test_api.output(test_analyze_output) +
-                      self.m.json.test_api.output({}, name='failure_summary'))
+    step_test_data = lambda: (
+      self.m.json.test_api.output(test_analyze_output)
+      + self.m.json.test_api.output({}, name='failure_summary')
+    )
     with self.mb_failure_handler(name):
       return self.run_mb_cmd(
-          name,
-          'analyze',
-          source_dir,
-          builder_id,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          chromium_config=chromium_config,
-          phase=phase,
-          additional_args=mb_args,
-          step_test_data=step_test_data,
-          **kwargs)
+        name,
+        'analyze',
+        source_dir,
+        builder_id,
+        mb_path=mb_path,
+        mb_config_path=mb_config_path,
+        chromium_config=chromium_config,
+        phase=phase,
+        additional_args=mb_args,
+        step_test_data=step_test_data,
+        **kwargs,
+      )
 
   @_with_chromium_layout
-  def mb_lookup(self,
-                source_dir: Path,
-                builder_id,
-                *,
-                name=None,
-                mb_path=None,
-                mb_config_path=None,
-                recursive=False,
-                chromium_config=None,
-                phase=None,
-                android_version_code=None,
-                android_version_name=None,
-                gn_args_location=None,
-                gn_args_max_text_lines=None):
+  def mb_lookup(
+    self,
+    source_dir: Path,
+    builder_id,
+    *,
+    name=None,
+    mb_path=None,
+    mb_config_path=None,
+    recursive=False,
+    chromium_config=None,
+    phase=None,
+    android_version_code=None,
+    android_version_name=None,
+    gn_args_location=None,
+    gn_args_max_text_lines=None,
+  ):
     """Lookup the GN args for the build.
 
     Args:
@@ -1516,49 +1630,54 @@ class ChromiumApi(recipe_api.RecipeApi):
     additional_args = ['--recursive' if recursive else '--quiet']
     lookup_test_data = 'target_cpu = "x86"\nuse_remoteexec = true\n'
     result = self.run_mb_cmd(
-        name,
-        'lookup',
-        source_dir,
-        builder_id,
-        mb_path=mb_path,
-        mb_config_path=mb_config_path,
-        chromium_config=chromium_config,
-        phase=phase,
-        android_version_code=android_version_code,
-        android_version_name=android_version_name,
-        additional_args=additional_args,
-        stdout=self.m.raw_io.output_text(),
-        step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
-            lookup_test_data))
+      name,
+      'lookup',
+      source_dir,
+      builder_id,
+      mb_path=mb_path,
+      mb_config_path=mb_config_path,
+      chromium_config=chromium_config,
+      phase=phase,
+      android_version_code=android_version_code,
+      android_version_name=android_version_name,
+      additional_args=additional_args,
+      stdout=self.m.raw_io.output_text(),
+      step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
+        lookup_test_data
+      ),
+    )
 
     gn_args = result.stdout
     reformatted_gn_args = self.m.gn.reformat_args(gn_args)
     self.m.gn.present_args(
-        result,
-        reformatted_gn_args,
-        location=gn_args_location,
-        max_text_lines=gn_args_max_text_lines)
+      result,
+      reformatted_gn_args,
+      location=gn_args_location,
+      max_text_lines=gn_args_max_text_lines,
+    )
 
     return gn_args
 
   @_with_chromium_layout
-  def mb_gen(self,
-             source_dir: Path,
-             build_dir: Path,
-             builder_id,
-             *,
-             name=None,
-             mb_path=None,
-             mb_config_path=None,
-             isolated_targets=None,
-             phase=None,
-             android_version_code=None,
-             android_version_name=None,
-             gn_args_location=None,
-             gn_args_max_text_lines=None,
-             recursive_lookup=False,
-             write_ide_json=False,
-             **kwargs):
+  def mb_gen(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    builder_id,
+    *,
+    name=None,
+    mb_path=None,
+    mb_config_path=None,
+    isolated_targets=None,
+    phase=None,
+    android_version_code=None,
+    android_version_name=None,
+    gn_args_location=None,
+    gn_args_max_text_lines=None,
+    recursive_lookup=False,
+    write_ide_json=False,
+    **kwargs,
+  ):
     """Generate the build files in the source tree.
 
     Args:
@@ -1594,21 +1713,23 @@ class ChromiumApi(recipe_api.RecipeApi):
     # steps fail, developers will have the information about what the GN args
     # are so that they can reproduce the issue locally
     gn_args = self.mb_lookup(
-        source_dir,
-        builder_id,
-        mb_path=mb_path,
-        mb_config_path=mb_config_path,
-        phase=phase,
-        recursive=recursive_lookup,
-        android_version_code=android_version_code,
-        android_version_name=android_version_name,
-        gn_args_location=gn_args_location,
-        gn_args_max_text_lines=gn_args_max_text_lines)
+      source_dir,
+      builder_id,
+      mb_path=mb_path,
+      mb_config_path=mb_config_path,
+      phase=phase,
+      recursive=recursive_lookup,
+      android_version_code=android_version_code,
+      android_version_name=android_version_name,
+      gn_args_location=gn_args_location,
+      gn_args_max_text_lines=gn_args_max_text_lines,
+    )
 
     mb_args = ['--json-output', self.m.json.output(name="failure_summary")]
 
-    step_test_data = (
-        lambda: self.m.json.test_api.output({}, name='failure_summary'))
+    step_test_data = lambda: self.m.json.test_api.output(
+      {}, name='failure_summary'
+    )
 
     mb_args.extend(self._mb_isolate_map_file_args(source_dir))
 
@@ -1626,28 +1747,30 @@ class ChromiumApi(recipe_api.RecipeApi):
     additional_instructions = None
     if gn_args:
       additional_instructions = (
-          '</br>*Note: The gn_args used in this gen:*<br/><li> ' +
-          '</br><li> '.join([arg for arg in gn_args.split('\n') if arg]))
+        '</br>*Note: The gn_args used in this gen:*<br/><li> '
+        + '</br><li> '.join([arg for arg in gn_args.split('\n') if arg])
+      )
 
     name = name or 'generate_build_files'
     result = None
     try:
       with self.mb_failure_handler(name):
         result = self.run_mb_cmd(
-            name,
-            'gen',
-            source_dir,
-            builder_id,
-            mb_path=mb_path,
-            mb_config_path=mb_config_path,
-            phase=phase,
-            android_version_code=android_version_code,
-            android_version_name=android_version_name,
-            additional_args=mb_args,
-            step_test_data=step_test_data,
-            include_instruction=True,
-            additional_instructions=additional_instructions,
-            **kwargs)
+          name,
+          'gen',
+          source_dir,
+          builder_id,
+          mb_path=mb_path,
+          mb_config_path=mb_config_path,
+          phase=phase,
+          android_version_code=android_version_code,
+          android_version_name=android_version_name,
+          additional_args=mb_args,
+          step_test_data=step_test_data,
+          include_instruction=True,
+          additional_instructions=additional_instructions,
+          **kwargs,
+        )
     except self.m.step.StepFailure as f:
       result = f.result
       raise
@@ -1657,7 +1780,8 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     if isolated_targets:
       result.presentation.logs['swarming-targets-file.txt'] = (
-          sorted_isolated_targets)
+        sorted_isolated_targets
+      )
 
     # gn_logs.txt contains debug info for vars with smart defaults. Display
     # its contents in the build for easy debugging.
@@ -1671,12 +1795,12 @@ class ChromiumApi(recipe_api.RecipeApi):
 
   @_with_chromium_layout
   def mb_isolate_everything(
-      self,
-      source_dir: Path,
-      build_dir: Path,
-      builder_id,
-      *,
-      phase=None,
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    builder_id,
+    *,
+    phase=None,
   ):
     """Generate .isolate files for all targets.
 
@@ -1692,12 +1816,13 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     name = 'generate .isolate files'
     self.run_mb_cmd(
-        name,
-        'isolate-everything',
-        source_dir,
-        builder_id,
-        phase=phase,
-        additional_args=args)
+      name,
+      'isolate-everything',
+      source_dir,
+      builder_id,
+      phase=phase,
+      additional_args=args,
+    )
 
   @contextlib.contextmanager
   def mb_failure_handler(self, name):
@@ -1708,19 +1833,20 @@ class ChromiumApi(recipe_api.RecipeApi):
         failure_summary = ex.result.json.outputs['failure_summary']
         if failure_summary and failure_summary['output']:
           ex.reason = self._format_failures(
-              failure_summary['output'],
-              name,
-              footer='More information can be found in the stdout.')
+            failure_summary['output'],
+            name,
+            footer='More information can be found in the stdout.',
+          )
       raise
 
   def get_build_target_arch(self):
     return {
-        ('intel', 32): 'x86',
-        ('intel', 64): 'x64',
-        ('arm', 32): 'arm',
-        ('arm', 64): 'arm64',
-        ('mips', 32): 'mips',
-        ('mips', 64): 'mips64',
-        ('mipsel', 32): 'mipsel',
-        ('mipsel', 64): 'mips64el',
+      ('intel', 32): 'x86',
+      ('intel', 64): 'x64',
+      ('arm', 32): 'arm',
+      ('arm', 64): 'arm64',
+      ('mips', 32): 'mips',
+      ('mips', 64): 'mips64',
+      ('mipsel', 32): 'mipsel',
+      ('mipsel', 64): 'mips64el',
     }[self.m.chromium.c.TARGET_ARCH, self.m.chromium.c.TARGET_BITS]

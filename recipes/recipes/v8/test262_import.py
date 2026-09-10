@@ -6,7 +6,7 @@
 Recipe for importing Test262 changes.
 """
 
-from recipe_engine.post_process import (DropExpectation, MustRun)
+from recipe_engine.post_process import DropExpectation, MustRun
 
 from dataclasses import dataclass
 
@@ -27,18 +27,21 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
 
+
 CONFIG = {
-    "manual_roll_reviewers": [
-        "nikolaos@chromium.org", "olivf@chromium.org", "rezvan@chromium.org"
-    ],
+  "manual_roll_reviewers": [
+    "nikolaos@chromium.org",
+    "olivf@chromium.org",
+    "rezvan@chromium.org",
+  ],
 }
 
 
 def RunSteps(api: DEPS):
   update_result = api.v8_auto_roller.setup_target(
-      'v8',
-      'https://chromium.googlesource.com/v8/v8',
-      requires_chromium_checkout=True,
+    'v8',
+    'https://chromium.googlesource.com/v8/v8',
+    requires_chromium_checkout=True,
   )
   source_dir = update_result.source_root.path
 
@@ -51,11 +54,11 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield (
-    api.test('default') +
-    api.override_step_data(
-        'Update test262 import deps.Update Test262 status file.',
-        api.raw_io.stream_output_text('123..234', stream='stdout'),
-      ) +
-    api.post_process(MustRun, 'Update test262 import deps.gerrit changes') +
-    api.post_process(DropExpectation)
+    api.test('default')
+    + api.override_step_data(
+      'Update test262 import deps.Update Test262 status file.',
+      api.raw_io.stream_output_text('123..234', stream='stdout'),
+    )
+    + api.post_process(MustRun, 'Update test262 import deps.gerrit changes')
+    + api.post_process(DropExpectation)
   )

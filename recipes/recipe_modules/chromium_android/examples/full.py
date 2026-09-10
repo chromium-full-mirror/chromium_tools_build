@@ -16,13 +16,13 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import adb, chromium, chromium_android
 from RECIPE_MODULES.depot_tools import bot_update, gclient
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    properties,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  step,
 )
 
 
@@ -48,56 +48,60 @@ class TEST_DEPS(RecipeTestApi):
   json: json.TEST_API
   properties: properties.TEST_API
 
-BUILDERS = freeze({
+
+BUILDERS = freeze(
+  {
     'basic_builder': {
-        'target': 'Release',
-        'build': True,
+      'target': 'Release',
+      'build': True,
     },
     'tester': {},
     'gerrit_try_builder': {
-        'build': True,
-        'skip_wipe': True,
+      'build': True,
+      'skip_wipe': True,
     },
     'webview_tester': {
-        'android_apply_config': ['remove_all_system_webviews'],
+      'android_apply_config': ['remove_all_system_webviews'],
     },
     'slow_tester': {
-        'timeout_scale': 2,
+      'timeout_scale': 2,
     },
     'no_strict_mode_tester': {
-        'strict_mode': 'off',
+      'strict_mode': 'off',
     },
     'device_flags_builder': {
-        'device_flags': 'device_flags_file',
+      'device_flags': 'device_flags_file',
     },
     'json_results_file': {
-        'json_results_file': 'json_results_file',
+      'json_results_file': 'json_results_file',
     },
     'result_details': {
-        'result_details': True,
-        'store_tombstones': True,
+      'result_details': True,
+      'store_tombstones': True,
     },
     'disable_location_tester': {
-        'disable_location': True,
+      'disable_location': True,
     },
     'use_devil_adb': {
-        'android_apply_config': ['use_devil_adb'],
+      'android_apply_config': ['use_devil_adb'],
     },
     'stackwalker': {
-        'run_stackwalker': True,
+      'run_stackwalker': True,
     },
-})
+  }
+)
 
 
 def RunSteps(api: DEPS):
   config = BUILDERS[api.buildbucket.builder_name]
 
   api.chromium.set_config(
-      'base_config',
-      BUILD_CONFIG='Release',
-      TARGET_ARCH='arm',
-      TARGET_BITS=32,
-      TARGET_PLATFORM='android')
+    'base_config',
+    BUILD_CONFIG='Release',
+    TARGET_ARCH='arm',
+    TARGET_BITS=32,
+    TARGET_PLATFORM='android',
+  )
 
   api.chromium_android.set_config('base_config', INTERNAL=True)
   api.chromium_android.c.logcat_bucket = None
@@ -123,14 +127,16 @@ def RunSteps(api: DEPS):
     if raw_result.status != common_pb.SUCCESS:
       return raw_result
     api.chromium_android.make_zip_archive(
-        'zip_build_product',
-        'archive.zip',
-        build_dir,
-        include_filters=['*.apk'],
-        exclude_filters=['*.so', '*.a'])
+      'zip_build_product',
+      'archive.zip',
+      build_dir,
+      include_filters=['*.apk'],
+      exclude_filters=['*.so', '*.a'],
+    )
   else:
-    api.chromium_android.download_build(source_dir, 'build-bucket',
-                                        'build_product.zip')
+    api.chromium_android.download_build(
+      source_dir, 'build-bucket', 'build_product.zip'
+    )
 
   api.adb.root_devices(api.chromium_android.adb_path(source_dir))
   api.chromium_android.spawn_logcat_monitor(source_dir)
@@ -138,10 +144,11 @@ def RunSteps(api: DEPS):
   failure = False
   try:
     api.chromium_android.provision_devices(
-        source_dir,
-        skip_wipe=config.get('skip_wipe', False),
-        disable_location=config.get('disable_location', False),
-        reboot_timeout=1800)
+      source_dir,
+      skip_wipe=config.get('skip_wipe', False),
+      disable_location=config.get('disable_location', False),
+      reboot_timeout=1800,
+    )
 
     api.chromium_android.common_tests_setup_steps(source_dir, skip_wipe=True)
 
@@ -149,11 +156,12 @@ def RunSteps(api: DEPS):
     failure = f
 
   api.chromium_android.run_test_suite(
-      source_dir,
-      build_dir,
-      'unittests',
-      result_details=config.get('result_details'),
-      store_tombstones=config.get('store_tombstones'))
+    source_dir,
+    build_dir,
+    'unittests',
+    result_details=config.get('result_details'),
+    store_tombstones=config.get('store_tombstones'),
+  )
 
   api.chromium_android.logcat_dump(source_dir, build_dir)
   api.chromium_android.stack_tool_steps(source_dir)
@@ -169,8 +177,8 @@ def RunSteps(api: DEPS):
     api.path.mock_add_paths(microdump_stackwalk_binary)
 
     api.chromium_android.common_tests_final_steps(
-        source_dir, build_dir, run_stackwalker=True)
-
+      source_dir, build_dir, run_stackwalker=True
+    )
 
   if failure:
     # pylint: disable=raising-bad-type
@@ -179,92 +187,96 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   def properties_for(buildername):
-    return sum([
+    return sum(
+      [
         api.chromium.ci_build(
-            builder=buildername,
-            builder_group='chromium.android',
-            revision='4f4b02f6b7fa20a3a25682c457bbc8ad589c8a00',
+          builder=buildername,
+          builder_group='chromium.android',
+          revision='4f4b02f6b7fa20a3a25682c457bbc8ad589c8a00',
         ),
         api.properties(internal=True),
-    ], api.empty_test_data())
+      ],
+      api.empty_test_data(),
+    )
 
   for buildername in BUILDERS:
     yield api.test(
-        '%s_basic' % buildername,
-        properties_for(buildername),
+      '%s_basic' % buildername,
+      properties_for(buildername),
     )
 
   yield api.test(
-      'tester_no_devices_during_recovery',
-      properties_for('tester'),
-      api.step_data('device_recovery', retcode=1),
-      api.expect_status('INFRA_FAILURE'),
+    'tester_no_devices_during_recovery',
+    properties_for('tester'),
+    api.step_data('device_recovery', retcode=1),
+    api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
-      'tester_no_devices_during_status',
-      properties_for('tester'),
-      api.step_data('device_status', retcode=1),
-      api.expect_status('INFRA_FAILURE'),
+    'tester_no_devices_during_status',
+    properties_for('tester'),
+    api.step_data('device_status', retcode=1),
+    api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
-      'tester_other_device_failure_during_recovery',
-      properties_for('tester'),
-      api.step_data('device_recovery', retcode=2),
-      api.expect_status('INFRA_FAILURE'),
+    'tester_other_device_failure_during_recovery',
+    properties_for('tester'),
+    api.step_data('device_recovery', retcode=2),
+    api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
-      'tester_other_device_failure_during_status',
-      properties_for('tester'),
-      api.step_data('device_status', retcode=2),
-      api.expect_status('INFRA_FAILURE'),
+    'tester_other_device_failure_during_status',
+    properties_for('tester'),
+    api.step_data('device_status', retcode=2),
+    api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
-      'tester_with_step_warning',
-      properties_for('tester'),
-      api.step_data('unittests', retcode=88),
-      api.expect_status('FAILURE'),
+    'tester_with_step_warning',
+    properties_for('tester'),
+    api.step_data('unittests', retcode=88),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'handle_error_exit_code',
-      properties_for('tester'),
-      api.step_data('provision_devices', retcode=1),
-      api.expect_status('INFRA_FAILURE'),
+    'handle_error_exit_code',
+    properties_for('tester'),
+    api.step_data('provision_devices', retcode=1),
+    api.expect_status('INFRA_FAILURE'),
   )
 
   yield api.test(
-      'tester_denylisted_devices',
-      properties_for('tester'),
-      api.override_step_data('provision_devices',
-                             api.json.output(['abc123', 'def456'])),
+    'tester_denylisted_devices',
+    properties_for('tester'),
+    api.override_step_data(
+      'provision_devices', api.json.output(['abc123', 'def456'])
+    ),
   )
 
   yield api.test(
-      'tester_offline_devices',
-      properties_for('tester'),
-      api.override_step_data('device_status', api.json.output([{}, {}])),
+    'tester_offline_devices',
+    properties_for('tester'),
+    api.override_step_data('device_status', api.json.output([{}, {}])),
   )
 
   yield api.test(
-      'tombstones_m53',
-      properties_for('tester'),
-      api.chromium.override_version(major=53),
+    'tombstones_m53',
+    properties_for('tester'),
+    api.chromium.override_version(major=53),
   )
 
   yield api.test(
-      'upload_result_details_failures',
-      properties_for('result_details'),
-      api.override_step_data('unittests: generate result details', retcode=1),
+    'upload_result_details_failures',
+    properties_for('result_details'),
+    api.override_step_data('unittests: generate result details', retcode=1),
   )
 
   yield api.test(
-      'compile_failure',
-      properties_for('basic_builder'),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'compile_failure',
+    properties_for('basic_builder'),
+    api.step_data('compile', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

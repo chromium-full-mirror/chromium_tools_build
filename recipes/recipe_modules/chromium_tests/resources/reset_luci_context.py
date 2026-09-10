@@ -18,10 +18,10 @@ os.environ.pop('LUCI_CONTEXT', None)
 # the UTR guarantees the user is already authenticated with that scope.
 # Otherwise the user may have to re-login to use the default scopes.
 args = [
-    'luci-auth',
-    'context',
-    '-scopes',
-    'https://www.googleapis.com/auth/userinfo.email',
-    '--',
+  'luci-auth',
+  'context',
+  '-scopes',
+  'https://www.googleapis.com/auth/userinfo.email',
+  '--',
 ] + sys.argv[1:]
 os.execvp(args[0], args)

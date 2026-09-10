@@ -40,20 +40,24 @@ def main(args):
 
   # Subcommand: copy
   subparser = subparsers.add_parser(
-      'copy',
-      help=('Copy (actually hardlink) the files in the list to the destination '
-            'folder, while keeping the relative path.'))
+    'copy',
+    help=(
+      'Copy (actually hardlink) the files in the list to the destination '
+      'folder, while keeping the relative path.'
+    ),
+  )
   subparser.add_argument(
-      '-d',
-      '--des-dir',
-      required=True,
-      help='Path to the destination directory.')
+    '-d', '--des-dir', required=True, help='Path to the destination directory.'
+  )
   subparser.add_argument(
-      '-b', '--base-dir', required=True, help='Path to the source directory.')
+    '-b', '--base-dir', required=True, help='Path to the source directory.'
+  )
   subparser.add_argument(
-      '-i', '--input-file-list', required=True, help='The input txt file list')
+    '-i', '--input-file-list', required=True, help='The input txt file list'
+  )
   subparser.set_defaults(
-      func=lambda opts: copy(opts.base_dir, opts.des_dir, opts.input_file_list))
+    func=lambda opts: copy(opts.base_dir, opts.des_dir, opts.input_file_list)
+  )
 
   opts = parser.parse_args(args)
   opts.func(opts)

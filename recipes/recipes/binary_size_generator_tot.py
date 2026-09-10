@@ -12,23 +12,23 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    binary_size,
-    builder_group,
-    chromium,
-    chromium_android,
-    chromium_checkout,
-    chromium_tests,
+  binary_size,
+  builder_group,
+  chromium,
+  chromium_android,
+  chromium_checkout,
+  chromium_tests,
 )
 from RECIPE_MODULES.depot_tools import gclient, gsutil
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    path,
-    properties,
-    step,
-    time,
+  buildbucket,
+  context,
+  file,
+  path,
+  properties,
+  step,
+  time,
 )
 
 
@@ -56,6 +56,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   builder_group: builder_group.TEST_API
 
+
 GS_DIRECTORY = 'android-binary-size/commit_size_analysis/'
 
 
@@ -82,12 +83,12 @@ def RunSteps(api: DEPS):
     api.chromium.runhooks(source_dir, build_dir, name='runhooks')
 
     raw_result = api.chromium_tests.run_mb_and_compile(
-        source_dir,
-        build_dir,
-        api.chromium.get_builder_id(),
-        api.binary_size.compile_targets,
-        None,
-        name_suffix='',
+      source_dir,
+      build_dir,
+      api.chromium.get_builder_id(),
+      api.binary_size.compile_targets,
+      None,
+      name_suffix='',
     )
 
     if raw_result.status != common_pb.SUCCESS:
@@ -95,15 +96,18 @@ def RunSteps(api: DEPS):
 
     staging_dir = api.path.mkdtemp('binary-size-generator-tot')
     api.binary_size.android_size_analysis(source_dir, build_dir, staging_dir)
-    api.binary_size.arm64_size_config_json = 'config/TrichromeLibrary64_size_config.json'
-    api.binary_size.android_size_analysis_arm64(source_dir, build_dir,
-                                                staging_dir)
+    api.binary_size.arm64_size_config_json = (
+      'config/TrichromeLibrary64_size_config.json'
+    )
+    api.binary_size.android_size_analysis_arm64(
+      source_dir, build_dir, staging_dir
+    )
 
     zip_path = staging_dir / 'analysis_files.zip'
     api.zip.directory(
-        'Zipping generated files',
-        staging_dir,
-        zip_path,
+      'Zipping generated files',
+      staging_dir,
+      zip_path,
     )
 
     # Timestamp is needed so that clients of these zip files quickly know how
@@ -113,11 +117,11 @@ def RunSteps(api: DEPS):
 
     gs_dest = GS_DIRECTORY + file_name
     api.gsutil.upload(
-        source=zip_path,
-        bucket=api.binary_size.results_bucket,
-        dest=gs_dest,
-        name='Uploading zip file',
-        unauthenticated_url=True,
+      source=zip_path,
+      bucket=api.binary_size.results_bucket,
+      dest=gs_dest,
+      name='Uploading zip file',
+      unauthenticated_url=True,
     )
 
     local_latest_file = api.path.mkstemp()
@@ -127,55 +131,61 @@ def RunSteps(api: DEPS):
 
     latest_dest = GS_DIRECTORY + 'LATEST'
     api.gsutil.upload(
-        source=local_latest_file,
-        bucket=api.binary_size.results_bucket,
-        dest=latest_dest,
-        name='Uploading LATEST file',
-        unauthenticated_url=True,
+      source=local_latest_file,
+      bucket=api.binary_size.results_bucket,
+      dest=latest_dest,
+      name='Uploading LATEST file',
+      unauthenticated_url=True,
     )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.builder_group.for_current('chromium.android'),
-      api.post_check(
-          lambda check, steps: check('gsutil Uploading zip file' in steps)),
-      api.post_check(
-          lambda check, steps: check('gsutil Uploading LATEST file' in steps)),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.builder_group.for_current('chromium.android'),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading zip file' in steps)
+    ),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading LATEST file' in steps)
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'failed_generate_analysis_files',
-      api.builder_group.for_current('chromium.android'),
-      api.override_step_data(
-          'Generate commit size analysis files',
-          retcode=1,
-      ),
-      api.post_process(
-          post_process.StepFailure,
-          'Generate commit size analysis files',
-      ),
-      api.post_check(
-          lambda check, steps: check('gsutil Uploading zip file' not in steps)),
-      api.post_check(lambda check, steps: check('gsutil Uploading LATEST file'
-                                                not in steps)),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'failed_generate_analysis_files',
+    api.builder_group.for_current('chromium.android'),
+    api.override_step_data(
+      'Generate commit size analysis files',
+      retcode=1,
+    ),
+    api.post_process(
+      post_process.StepFailure,
+      'Generate commit size analysis files',
+    ),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading zip file' not in steps)
+    ),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading LATEST file' not in steps)
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'compile failed',
-      api.builder_group.for_current('chromium.android'),
-      api.override_step_data(
-          'compile',
-          retcode=1,
-      ),
-      api.post_check(
-          lambda check, steps: check('gsutil Uploading zip file' not in steps)),
-      api.post_check(lambda check, steps: check('gsutil Uploading LATEST file'
-                                                not in steps)),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'compile failed',
+    api.builder_group.for_current('chromium.android'),
+    api.override_step_data(
+      'compile',
+      retcode=1,
+    ),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading zip file' not in steps)
+    ),
+    api.post_check(
+      lambda check, steps: check('gsutil Uploading LATEST file' not in steps)
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

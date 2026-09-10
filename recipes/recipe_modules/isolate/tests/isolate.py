@@ -23,12 +23,13 @@ class DEPS(RecipeScriptApi):
 
 
 def RunSteps(api: DEPS):
-  api.isolate.isolate('isolate',
-                      api.path.cache_dir / 'builder' / 'src' / 'test.isolate')
+  api.isolate.isolate(
+    'isolate', api.path.cache_dir / 'builder' / 'src' / 'test.isolate'
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

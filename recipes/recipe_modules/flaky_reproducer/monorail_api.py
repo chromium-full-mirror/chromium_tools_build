@@ -8,12 +8,10 @@ report. It's not exported as a shared recipe_module because we only used very
 limited methods in raw JSON without proto.
 """
 
-
 from __future__ import annotations
 
 
 class MonorailApi:
-
   def __init__(self, api):
     """
     Args:
@@ -23,22 +21,23 @@ class MonorailApi:
 
   def _run(self, step_name, rpc_endpoint, request_input):
     args = [
-        'prpc',
-        'call',
-        '-use-id-token',
-        '-audience',
-        'https://monorail-prod.appspot.com',
-        'api-dot-monorail-prod.appspot.com',
-        rpc_endpoint,
+      'prpc',
+      'call',
+      '-use-id-token',
+      '-audience',
+      'https://monorail-prod.appspot.com',
+      'api-dot-monorail-prod.appspot.com',
+      rpc_endpoint,
     ]
     result = self.m.step(
-        step_name,
-        args,
-        stdin=self.m.json.input(request_input),
-        stdout=self.m.json.output(add_json_log=True),
+      step_name,
+      args,
+      stdin=self.m.json.input(request_input),
+      stdout=self.m.json.output(add_json_log=True),
     )
     result.presentation.logs['json.input'] = self.m.json.dumps(
-        request_input, indent=2)
+      request_input, indent=2
+    )
     return result.stdout
 
   @staticmethod
@@ -54,10 +53,13 @@ class MonorailApi:
     Returns:
       Issue object as dict.
     """
-    return self._run('GetIssue {0}'.format(issue_name),
-                     'monorail.v3.Issues.GetIssue', {
-                         'name': issue_name,
-                     })
+    return self._run(
+      'GetIssue {0}'.format(issue_name),
+      'monorail.v3.Issues.GetIssue',
+      {
+        'name': issue_name,
+      },
+    )
 
   def modify_issues(self, issue_name, comment_content=None, labels=None):
     """Modify a issue and add a comment.
@@ -77,11 +79,15 @@ class MonorailApi:
       issue['labels'] = [{'label': v} for v in labels]
 
     return self._run(
-        'ModifyIssues {0}'.format(issue_name),
-        'monorail.v3.Issues.ModifyIssues', {
-            'deltas': [{
-                'issue': issue,
-                'updateMask': ','.join(fields_mask),
-            }],
-            'commentContent': comment_content,
-        })
+      'ModifyIssues {0}'.format(issue_name),
+      'monorail.v3.Issues.ModifyIssues',
+      {
+        'deltas': [
+          {
+            'issue': issue,
+            'updateMask': ','.join(fields_mask),
+          }
+        ],
+        'commentContent': comment_content,
+      },
+    )

@@ -12,10 +12,10 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_swarming, devtools
 from RECIPE_MODULES.recipe_engine import (
-    futures,
-    json,
-    properties,
-    step,
+  futures,
+  json,
+  properties,
+  step,
 )
 
 
@@ -36,7 +36,6 @@ class TEST_DEPS(RecipeTestApi):
 
 
 class MockTask:
-
   def __init__(self, task_ids):
     self._task_ids = list(task_ids)
 
@@ -67,7 +66,11 @@ def RunSteps(api: DEPS):
     coord.run_poller([f1, f2])
 
     assert set(events) == {
-        'r1_start', 'r2_start', 'r1_init_done', 'r1_flake_done', 'r2_done'
+      'r1_start',
+      'r2_start',
+      'r1_init_done',
+      'r1_flake_done',
+      'r2_done',
     }, events
     return
 
@@ -121,7 +124,8 @@ def RunSteps(api: DEPS):
   coord.register_and_wait([])
   coord.register_and_wait([MockTask([])])
   assert len(coord._pending) == 0, (  # pylint: disable=protected-access
-      f'Expected 0 pending, got {len(coord._pending)}')
+    f'Expected 0 pending, got {len(coord._pending)}'
+  )
 
   # Edge Case 4: Zero futures in poller -> terminates immediately
   coord.run_poller([])
@@ -143,14 +147,14 @@ def RunSteps(api: DEPS):
 
   f_fast = api.futures.spawn(no_task_runner)
   f1 = api.futures.spawn(
-      multi_task_runner,
-      [MockTask(['task-1']), MockTask(['task-2'])],
-      'runner1',
+    multi_task_runner,
+    [MockTask(['task-1']), MockTask(['task-2'])],
+    'runner1',
   )
   f2 = api.futures.spawn(
-      multi_task_runner,
-      [MockTask(['task-3'])],
-      'runner2',
+    multi_task_runner,
+    [MockTask(['task-3'])],
+    'runner2',
   )
 
   coord.run_poller([f_fast, f1, f2])
@@ -159,67 +163,78 @@ def RunSteps(api: DEPS):
   assert 'runner1' in completed, completed
   assert 'runner2' in completed, completed
   assert len(coord._pending) == 0, (  # pylint: disable=protected-access
-      coord._pending)
+    coord._pending
+  )
 
   api.step.empty('TaskCoordinator unit tests passed')
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.step_data(
-          'wait for tasks',
-          api.json.output({
-              'attempts': 0,
-              # Reversed order + unknown untracked task set
-              'sets': [['task-2', 'task-1'], ['task-3'], ['untracked-task']],
-          }),
+    'basic',
+    api.step_data(
+      'wait for tasks',
+      api.json.output(
+        {
+          'attempts': 0,
+          # Reversed order + unknown untracked task set
+          'sets': [['task-2', 'task-1'], ['task-3'], ['untracked-task']],
+        }
       ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'staggered_multiphase',
-      api.properties(test_multiphase=True),
-      api.step_data(
-          'wait for tasks',
-          api.json.output({
-              'attempts': 1,
-              'sets': [],
-          }),
+    'staggered_multiphase',
+    api.properties(test_multiphase=True),
+    api.step_data(
+      'wait for tasks',
+      api.json.output(
+        {
+          'attempts': 1,
+          'sets': [],
+        }
       ),
-      api.step_data(
-          'wait for tasks (2)',
-          api.json.output({
-              'attempts': 2,
-              'sets': [['r1-init-2', 'r1-init-1']],
-          }),
+    ),
+    api.step_data(
+      'wait for tasks (2)',
+      api.json.output(
+        {
+          'attempts': 2,
+          'sets': [['r1-init-2', 'r1-init-1']],
+        }
       ),
-      api.step_data(
-          'wait for tasks (3)',
-          api.json.output({
-              'attempts': 0,
-              'sets': [['r2-task'], ['r1-flake']],
-          }),
+    ),
+    api.step_data(
+      'wait for tasks (3)',
+      api.json.output(
+        {
+          'attempts': 0,
+          'sets': [['r2-task'], ['r1-flake']],
+        }
       ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'crash_aborts_pending',
-      api.properties(test_crash_with_pending=True),
-      api.post_process(post_process.DropExpectation),
+    'crash_aborts_pending',
+    api.properties(test_crash_with_pending=True),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'crash_after_task',
-      api.properties(test_crash_after_task=True),
-      api.step_data(
-          'wait for tasks',
-          api.json.output({
-              'attempts': 0,
-              'sets': [['task-done']],
-          }),
+    'crash_after_task',
+    api.properties(test_crash_after_task=True),
+    api.step_data(
+      'wait for tasks',
+      api.json.output(
+        {
+          'attempts': 0,
+          'sets': [['task-done']],
+        }
       ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )

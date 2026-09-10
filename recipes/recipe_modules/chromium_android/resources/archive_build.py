@@ -4,12 +4,12 @@
 # found in the LICENSE file.
 """A tool to archive an Android build.
 
-  This script is used for Debug and Release builds.
+This script is used for Debug and Release builds.
 
-  When this is run, the current directory (cwd) should be the outer build
-  directory (e.g., <clankium>/src).
+When this is run, the current directory (cwd) should be the outer build
+directory (e.g., <clankium>/src).
 
-  For a list of command-line options, call this script with '--help'.
+For a list of command-line options, call this script with '--help'.
 """
 
 from __future__ import annotations
@@ -20,21 +20,26 @@ import subprocess
 import sys
 
 ROOT_DIR = os.path.normpath(
-    os.path.join(__file__, '..', '..', '..', '..', '..'))
-sys.path.extend([
+  os.path.join(__file__, '..', '..', '..', '..', '..')
+)
+sys.path.extend(
+  [
     os.path.join(ROOT_DIR, 'scripts'),
-])
+  ]
+)
 
 from common import chromium_utils
 
 
-def archive_build(build_dir,
-                  name='archive.zip',
-                  location='out',
-                  files=None,
-                  ignore_subfolder_names=False,
-                  include_filters=None,
-                  exclude_filters=None):
+def archive_build(
+  build_dir,
+  name='archive.zip',
+  location='out',
+  files=None,
+  ignore_subfolder_names=False,
+  include_filters=None,
+  exclude_filters=None,
+):
   out_dir = 'out'
   zip_file = os.path.join(location, name)
   expanded_files = []
@@ -69,29 +74,33 @@ def main(argv):
 
   option_parser.add_option('--build-dir', help='Path to the build dir')
   option_parser.add_option(
-      '--name', default='archive.zip', help='name of archive')
+    '--name', default='archive.zip', help='name of archive'
+  )
   option_parser.add_option(
-      '--location', default='out', help='location to store archive in')
+    '--location', default='out', help='location to store archive in'
+  )
   option_parser.add_option(
-      '--files',
-      help='list of files to include - can be file paths '
-      'or globs')
+    '--files', help='list of files to include - can be file paths or globs'
+  )
   option_parser.add_option(
-      '--include-filter',
-      action='append',
-      dest='include_filters',
-      help='glob to include. May be repeated.')
+    '--include-filter',
+    action='append',
+    dest='include_filters',
+    help='glob to include. May be repeated.',
+  )
   option_parser.add_option(
-      '--exclude-filter',
-      action='append',
-      dest='exclude_filters',
-      help='glob to exclude. May be repeated.')
+    '--exclude-filter',
+    action='append',
+    dest='exclude_filters',
+    help='glob to exclude. May be repeated.',
+  )
   option_parser.add_option(
-      '--ignore-subfolder-names',
-      dest='ignore_subfolder_names',
-      action='store_true',
-      default=False,
-      help='archive files without folder structure')
+    '--ignore-subfolder-names',
+    dest='ignore_subfolder_names',
+    action='store_true',
+    default=False,
+    help='archive files without folder structure',
+  )
   options, args = option_parser.parse_args()
   if args:
     raise Exception('Unknown arguments: %s' % args)
@@ -102,13 +111,14 @@ def main(argv):
     options.files = options.files.split(',')
 
   return archive_build(
-      build_dir=options.build_dir,
-      name=options.name,
-      location=options.location,
-      files=options.files,
-      ignore_subfolder_names=options.ignore_subfolder_names,
-      include_filters=options.include_filters,
-      exclude_filters=options.exclude_filters)
+    build_dir=options.build_dir,
+    name=options.name,
+    location=options.location,
+    files=options.files,
+    ignore_subfolder_names=options.ignore_subfolder_names,
+    include_filters=options.include_filters,
+    exclude_filters=options.exclude_filters,
+  )
 
 
 if '__main__' == __name__:

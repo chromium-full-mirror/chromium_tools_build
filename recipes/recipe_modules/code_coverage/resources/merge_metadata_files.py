@@ -28,14 +28,15 @@ def _find_files(input_dirs):
       # coverage data when there are > 1000 files in clang coverage metadata.
       # This is unlikely a problem here since this script is to work for
       # per-CL coverage only.
-      assert not dirs, ('Cannot handle subdirs %s in dir %s' % (dirs, dir_path))
+      assert not dirs, 'Cannot handle subdirs %s in dir %s' % (dirs, dir_path)
       for file_name in files:
         file_path = os.path.join(dir_path, file_name)
         if file_name == _METADATA_FILENAME:
           metadata_files.append(file_path)
         else:
           assert file_name not in other_file_names, (
-              'Same file in different input: %s' % file_name)
+            'Same file in different input: %s' % file_name
+          )
           other_file_names.add(file_name)
           other_files.append(file_path)
   return metadata_files, other_files
@@ -48,7 +49,7 @@ def _read_metadata(metadata_file):
 
 def _verify_metadata(data):
   """Verifies the input metadata to ensure this script can handle it."""
-  assert _FILES_FIELD in data, ('"files" field must exist as a top level key!')
+  assert _FILES_FIELD in data, '"files" field must exist as a top level key!'
 
   # These fields might exist as top level key, but this script will ditch them
   # as the data is not useful for per-CL coverage.
@@ -56,7 +57,7 @@ def _verify_metadata(data):
 
   permitted_fields = optional_fields + [_FILES_FIELD]
   for field in data:
-    assert field in permitted_fields, ('Cannot handle "%s" field!' % field)
+    assert field in permitted_fields, 'Cannot handle "%s" field!' % field
 
 
 def _merge_metadata(metadata_files):
@@ -82,11 +83,12 @@ def _merge_metadata(metadata_files):
     _verify_metadata(metadata)
 
     current_paths = [
-        file_entry['path'] for file_entry in metadata[_FILES_FIELD]
+      file_entry['path'] for file_entry in metadata[_FILES_FIELD]
     ]
     assert not any(path in seen_file_paths for path in current_paths), (
-        'Found duplicate paths in metadata. Current: %s. Seen: %s.' %
-        (current_paths, seen_file_paths))
+      'Found duplicate paths in metadata. Current: %s. Seen: %s.'
+      % (current_paths, seen_file_paths)
+    )
     seen_file_paths.update(current_paths)
 
     merged[_FILES_FIELD].extend(metadata[_FILES_FIELD])
@@ -97,24 +99,29 @@ def _merge_metadata(metadata_files):
 def _argument_parser(*args, **kwargs):
   parser = argparse.ArgumentParser(*args, **kwargs)
   parser.add_argument(
-      '--input-dirs',
-      nargs='+',
-      help='the source metadata folders to merge, at least one')
+    '--input-dirs',
+    nargs='+',
+    help='the source metadata folders to merge, at least one',
+  )
   parser.add_argument(
-      '--output-dir',
-      required=True,
-      type=str,
-      help=('absolute path to the directory to write the merged metadata, '
-            'must exist'))
+    '--output-dir',
+    required=True,
+    type=str,
+    help=(
+      'absolute path to the directory to write the merged metadata, must exist'
+    ),
+  )
   return parser
 
 
 def main():
-  desc = ('merges "files" field from all.json.gz'
-          'metadata files into 1. '
-          'Copies other files to merged output.'
-          'Raises exception if other files with the same '
-          'file name exist in input dirs.')
+  desc = (
+    'merges "files" field from all.json.gz'
+    'metadata files into 1. '
+    'Copies other files to merged output.'
+    'Raises exception if other files with the same '
+    'file name exist in input dirs.'
+  )
   parser = _argument_parser(description=desc)
   params = parser.parse_args()
 

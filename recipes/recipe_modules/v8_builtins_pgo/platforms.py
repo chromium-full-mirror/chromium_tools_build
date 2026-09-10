@@ -11,7 +11,6 @@ D8_OUT_PATH = 'out/build/d8'
 
 
 class UnixPlatform:
-
   @property
   def profile_only_path(self):
     return PROFILE_ONLY_PATH
@@ -22,7 +21,6 @@ class UnixPlatform:
 
 
 class WindowsPlatform:
-
   def _to_windows_path(self, path):
     return path.replace('/', '\\')
 

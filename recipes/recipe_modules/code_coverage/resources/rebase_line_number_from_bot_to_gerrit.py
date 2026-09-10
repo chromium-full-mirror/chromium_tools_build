@@ -42,15 +42,15 @@ _DEFAULT_TIMEOUT = 15 * 60
 
 
 def rebase_line_number(
-    host,
-    project,
-    change,
-    patchset,
-    src_path,
-    sources,
-    token_path=None,
-    project_checkout_path=None,
-    base_checkout_path='src',
+  host,
+  project,
+  change,
+  patchset,
+  src_path,
+  sources,
+  token_path=None,
+  project_checkout_path=None,
+  base_checkout_path='src',
 ):
   """Rebases line number for a list of files from bot to gerrit.
 
@@ -84,8 +84,8 @@ def rebase_line_number(
       valid_sources.append(s)
     else:
       logging.info(
-          'Skipping file "%s" from line-rebase, as it is deleted by the patch',
-          s)
+        'Skipping file "%s" from line-rebase, as it is deleted by the patch', s
+      )
 
   project_prefix = ''
   if project_checkout_path:
@@ -94,21 +94,27 @@ def rebase_line_number(
     base_checkout_path = base_checkout_path.replace('\\', '/')
 
   if project_checkout_path and project_checkout_path.startswith(
-      base_checkout_path + '/'):
-    project_prefix = project_checkout_path[len(base_checkout_path) + 1:]
+    base_checkout_path + '/'
+  ):
+    project_prefix = project_checkout_path[len(base_checkout_path) + 1 :]
     if project_prefix and not project_prefix.endswith('/'):
       project_prefix += '/'
 
   def to_gerrit_path(s):
-    return s[len(project_prefix):] if (project_prefix and
-                                       s.startswith(project_prefix)) else s
+    return (
+      s[len(project_prefix) :]
+      if (project_prefix and s.startswith(project_prefix))
+      else s
+    )
 
   gerrit_sources = [to_gerrit_path(s) for s in valid_sources]
   gerrit_files_content = gerrit_util.fetch_files_content(
-      host, project, change, patchset, gerrit_sources, token_path=token_path)
+    host, project, change, patchset, gerrit_sources, token_path=token_path
+  )
   assert len(valid_sources) == len(gerrit_files_content), (
-      'Number of files to rebase is expected to be the same as number of files '
-      'have file content fetched from Gerrit')
+    'Number of files to rebase is expected to be the same as number of files '
+    'have file content fetched from Gerrit'
+  )
 
   file_to_line_num_mapping = {}
   for filename, content in zip(valid_sources, gerrit_files_content):
@@ -124,11 +130,18 @@ def rebase_line_number(
       gerrit_file_path = gerrit_file.name
     try:
       diff_cmd = [
-          'git', 'diff', '--no-index', local_file_path, gerrit_file_path
+        'git',
+        'diff',
+        '--no-index',
+        local_file_path,
+        gerrit_file_path,
       ]
       diff_output = None
-      logging.info('Calculating diff b/w bot file %s and gerrit file %s',
-                   local_file_path, gerrit_file_path)
+      logging.info(
+        'Calculating diff b/w bot file %s and gerrit file %s',
+        local_file_path,
+        gerrit_file_path,
+      )
       # 'diff' command returns 0 if two files are the same, 1 if differences are
       # found, >1 if an error occurred.
       diff_output = subprocess.check_output(diff_cmd, text=True)
@@ -143,9 +156,9 @@ def rebase_line_number(
     with open(local_file_path) as f:
       local_lines = f.read().splitlines()
     gerrit_lines = content.splitlines()
-    file_to_line_num_mapping[filename] = (
-        diff_util.generate_line_number_mapping(diff_lines, local_lines,
-                                               gerrit_lines))
+    file_to_line_num_mapping[filename] = diff_util.generate_line_number_mapping(
+      diff_lines, local_lines, gerrit_lines
+    )
 
   return file_to_line_num_mapping
 
@@ -155,65 +168,76 @@ def _parse_args():
   arg_parser.usage = __doc__
 
   arg_parser.add_argument(
-      '--host', required=True, type=str, help='The url of the Gerrit host.')
+    '--host', required=True, type=str, help='The url of the Gerrit host.'
+  )
 
   arg_parser.add_argument(
-      '--project', required=True, type=str, help='The Gerrit project name')
+    '--project', required=True, type=str, help='The Gerrit project name'
+  )
 
   arg_parser.add_argument(
-      '--change', required=True, type=int, help='The Gerrit change number.')
+    '--change', required=True, type=int, help='The Gerrit change number.'
+  )
 
   arg_parser.add_argument(
-      '--patchset', required=True, type=int, help='The Gerrit patchset number.')
+    '--patchset', required=True, type=int, help='The Gerrit patchset number.'
+  )
 
   arg_parser.add_argument(
-      '--src-path',
-      required=True,
-      type=str,
-      help='absolute path to the root of the checkout')
+    '--src-path',
+    required=True,
+    type=str,
+    help='absolute path to the root of the checkout',
+  )
 
   arg_parser.add_argument(
-      '--output-file',
-      required=True,
-      type=str,
-      help='Path to a file where the line number mapping is written to, and '
-      'the format of the mapping is a map whose key is a file name that is '
-      'relative to the root of the checkout, and the corresponding value is '
-      'another map that maps from local file\'s line number to Gerrit file\'s '
-      'line number as well as the line itself.')
+    '--output-file',
+    required=True,
+    type=str,
+    help='Path to a file where the line number mapping is written to, and '
+    'the format of the mapping is a map whose key is a file name that is '
+    'relative to the root of the checkout, and the corresponding value is '
+    'another map that maps from local file\'s line number to Gerrit file\'s '
+    'line number as well as the line itself.',
+  )
 
   arg_parser.add_argument(
-      '--token-path',
-      type=str,
-      help='path to file with oauth token string to pass to server')
+    '--token-path',
+    type=str,
+    help='path to file with oauth token string to pass to server',
+  )
 
   arg_parser.add_argument(
-      '--project-checkout-path',
-      type=str,
-      default=None,
-      help='Local path to the repo where gerrit patch will be applied '
-      '(e.g. src/third_party/catapult)')
+    '--project-checkout-path',
+    type=str,
+    default=None,
+    help='Local path to the repo where gerrit patch will be applied '
+    '(e.g. src/third_party/catapult)',
+  )
 
   arg_parser.add_argument(
-      '--base-checkout-path',
-      type=str,
-      default='src',
-      help='Base path of the gclient checkout (e.g. src)')
+    '--base-checkout-path',
+    type=str,
+    default='src',
+    help='Base path of the gclient checkout (e.g. src)',
+  )
 
   arg_parser.add_argument(
-      '--timeout',
-      required=False,
-      type=int,
-      default=_DEFAULT_TIMEOUT,
-      help='Number of seconds after which this command will timeout and raise '
-      'an Exception. Default timeout is 15 minutes.')
+    '--timeout',
+    required=False,
+    type=int,
+    default=_DEFAULT_TIMEOUT,
+    help='Number of seconds after which this command will timeout and raise '
+    'an Exception. Default timeout is 15 minutes.',
+  )
 
   arg_parser.add_argument(
-      'sources',
-      nargs='+',
-      help='Paths of source files to line number mapping for, the paths are '
-      'relative to the root of the checkout, with platform-specific path '
-      'separator.')
+    'sources',
+    nargs='+',
+    help='Paths of source files to line number mapping for, the paths are '
+    'relative to the root of the checkout, with platform-specific path '
+    'separator.',
+  )
 
   return arg_parser.parse_args()
 
@@ -232,18 +256,24 @@ def main():
   args = _parse_args()
 
   logging.basicConfig(
-      level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s')
+    level=logging.INFO, format='[%(asctime)s %(levelname)s] %(message)s'
+  )
   if not os.path.isdir(args.src_path):
     raise RuntimeError('Checkout: "%s" doesn\'t exist.' % args.src_path)
 
   initiate_timer(args.timeout)
 
-  file_to_line_num_mapping = rebase_line_number(args.host, args.project,
-                                                args.change, args.patchset,
-                                                args.src_path, args.sources,
-                                                args.token_path,
-                                                args.project_checkout_path,
-                                                args.base_checkout_path)
+  file_to_line_num_mapping = rebase_line_number(
+    args.host,
+    args.project,
+    args.change,
+    args.patchset,
+    args.src_path,
+    args.sources,
+    args.token_path,
+    args.project_checkout_path,
+    args.base_checkout_path,
+  )
   json_mapping = json.dumps(file_to_line_num_mapping, separators=(',', ':'))
   with open(args.output_file, 'w') as f:
     f.write(json_mapping)

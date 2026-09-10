@@ -28,15 +28,16 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cleanup_dir
 
   api.assertions.assertEqual(
-      api.chromium.targets_spec_dir(source_dir),
-      source_dir / 'testing/buildbot')
+    api.chromium.targets_spec_dir(source_dir), source_dir / 'testing/buildbot'
+  )
   api.assertions.assertEqual(
-      api.chromium.analyze_config_path(source_dir),
-      source_dir / 'testing/buildbot/trybot_analyze_config.json')
+    api.chromium.analyze_config_path(source_dir),
+    source_dir / 'testing/buildbot/trybot_analyze_config.json',
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

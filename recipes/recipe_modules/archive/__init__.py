@@ -12,32 +12,32 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    gn,
-    squashfs,
-    ssci,
-    tar,
+  chromium,
+  gn,
+  squashfs,
+  ssci,
+  tar,
 )
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gitiles,
-    gsutil,
-    tryserver,
+  depot_tools,
+  gitiles,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    bcid_reporter,
-    buildbucket,
-    cipd,
-    commit_position,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    runtime,
-    step,
-    time,
+  bcid_reporter,
+  buildbucket,
+  cipd,
+  commit_position,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  runtime,
+  step,
+  time,
 )
 from RECIPE_MODULES.infra import zip as zip_module
 

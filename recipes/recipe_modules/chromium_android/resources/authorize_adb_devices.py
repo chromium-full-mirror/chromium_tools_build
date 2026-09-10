@@ -29,8 +29,8 @@ def GetCmdOutput(cmd, env=None):
   env = {} if not env else env
   env['HOME'] = os.environ['HOME']
   stdout, stderr = subprocess.Popen(
-      cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
-      env=env).communicate()
+    cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, env=env
+  ).communicate()
   output = stdout.decode('utf-8') + stderr.decode('utf-8')
   return output
 
@@ -39,11 +39,13 @@ def PushHostPubkey(device, adb, env, public_keys_set):
   GetCmdOutput([adb, 'devices'], env)
   GetCmdOutput([adb, '-s', device, 'root'], env)
   adb_ls_output = GetCmdOutput(
-      [adb, '-s', device, 'shell', 'ls', ADB_KEYS_PATH], env)
+    [adb, '-s', device, 'shell', 'ls', ADB_KEYS_PATH], env
+  )
   # If adb_keys file exists on device add its contents to the public keys set.
   if adb_ls_output == ADB_KEYS_PATH:
-    dev_keys = GetCmdOutput([adb, '-s', device, 'shell', 'cat', ADB_KEYS_PATH],
-                            env).splitlines()
+    dev_keys = GetCmdOutput(
+      [adb, '-s', device, 'shell', 'cat', ADB_KEYS_PATH], env
+    ).splitlines()
     public_keys_set.update(dev_keys)
 
   with tempfile.NamedTemporaryFile() as f:
@@ -61,14 +63,16 @@ def main(argv):
   parser = argparse.ArgumentParser()
   parser.add_argument('--adb-path', help='Path to adb binary.', default='adb')
   parser.add_argument(
-      '--adb-keys-dir',
-      help='Point to directory that contains adb keys.',
-      default=os.path.join(os.environ['HOME'], '.android'))
+    '--adb-keys-dir',
+    help='Point to directory that contains adb keys.',
+    default=os.path.join(os.environ['HOME'], '.android'),
+  )
   parser.add_argument(
-      '-v',
-      '--verbose',
-      action='store_true',
-      help='turn on extra debugging information')
+    '-v',
+    '--verbose',
+    action='store_true',
+    help='turn on extra debugging information',
+  )
 
   options = parser.parse_args()
 
@@ -77,14 +81,14 @@ def main(argv):
   dir_contents = os.listdir(options.adb_keys_dir)
   adb_path = options.adb_path
   private_key_files = [
-      os.path.join(options.adb_keys_dir, key)
-      for key in dir_contents
-      if key.endswith('adbkey')
+    os.path.join(options.adb_keys_dir, key)
+    for key in dir_contents
+    if key.endswith('adbkey')
   ]
   public_key_files = [
-      os.path.join(options.adb_keys_dir, key)
-      for key in dir_contents
-      if key.endswith('adbkey.pub')
+    os.path.join(options.adb_keys_dir, key)
+    for key in dir_contents
+    if key.endswith('adbkey.pub')
   ]
   public_keys_set = set()
   for public_key_file in public_key_files:
@@ -98,9 +102,11 @@ def main(argv):
 
   # Kill server launched with ADB_VENDOR_KEYS
   GetCmdOutput([adb_path, 'kill-server']).splitlines()
-  env = ({
-      'ADB_VENDOR_KEYS': ':'.join(private_key_files)
-  } if private_key_files else {})
+  env = (
+    {'ADB_VENDOR_KEYS': ':'.join(private_key_files)}
+    if private_key_files
+    else {}
+  )
   for device in unauthorized_devices:
     logging.debug('Attempting to authorize device %s' % device)
     PushHostPubkey(device, adb_path, env, public_keys_set)

@@ -31,17 +31,18 @@ def _get_cabe_analysis(args):
 
 def parse_args():
   parser = argparse.ArgumentParser(
-      description='Parameters to poll Pinpoint try job analysis results.')
+    description='Parameters to poll Pinpoint try job analysis results.'
+  )
 
   parser.add_argument(
-      '--job_id',
-      type=str,
-      required=True,
-      help='Id of the try job. If empty.',
+    '--job_id',
+    type=str,
+    required=True,
+    help='Id of the try job. If empty.',
   )
   parser.add_argument(
-      '--token',
-      help='Raw IO with oauth token string used for send request.',
+    '--token',
+    help='Raw IO with oauth token string used for send request.',
   )
 
   return parser.parse_args()

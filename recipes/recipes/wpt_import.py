@@ -20,17 +20,17 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    git_cl,
+  bot_update,
+  gclient,
+  git,
+  git_cl,
 )
 from RECIPE_MODULES.infra import cloudkms
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    json,
-    path,
-    step,
+  context,
+  json,
+  path,
+  step,
 )
 
 
@@ -52,6 +52,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   json: json.TEST_API
 
+
 # The credentials JSON is encrypted with KMS_CRYPTO_KEY and then stored in
 # assets/CREDS_NAME.
 # See the following comment for how to update the credentials:
@@ -59,8 +60,9 @@ class TEST_DEPS(RecipeTestApi):
 # Note that the file name and the key name are different.
 CREDS_NAME = 'wpt-import-export'
 KMS_CRYPTO_KEY = (
-    'projects/chops-kms/locations/global/keyRings/%s/cryptoKeys/default' %
-    CREDS_NAME)
+  'projects/chops-kms/locations/global/keyRings/%s/cryptoKeys/default'
+  % CREDS_NAME
+)
 
 
 def RunSteps(api: DEPS):
@@ -69,18 +71,19 @@ def RunSteps(api: DEPS):
   source_dir = update_result.source_root.path
   with api.context(cwd=source_dir):
     api.git(
-        'config',
-        'user.name',
-        'Chromium WPT Sync',
-        name='set git config user.name')
+      'config',
+      'user.name',
+      'Chromium WPT Sync',
+      name='set git config user.name',
+    )
   # LUCI sets user.email automatically.
   api.git_cl.set_default_repo_location(source_dir)
   blink_dir = source_dir.joinpath('third_party', 'blink')
   creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
-      KMS_CRYPTO_KEY,
-      api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
-      creds,
+    KMS_CRYPTO_KEY,
+    api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
+    creds,
   )
 
   @contextlib.contextmanager
@@ -102,17 +105,16 @@ def RunSteps(api: DEPS):
   with new_branch('update_wpt'):
     script = blink_dir.joinpath('tools', 'wpt_import.py')
     args = [
-        '--credentials-json',
-        creds,
-        '--auto-update',
-        '--auto-file-bugs',
+      '--credentials-json',
+      creds,
+      '--auto-update',
+      '--auto-file-bugs',
     ]
 
     try:
       with api.context(cwd=blink_dir):
         cmd = ['vpython3', script] + args
-        api.step(
-            'Import changes from WPT to Chromium', cmd)
+        api.step('Import changes from WPT to Chromium', cmd)
     finally:
       git_cl_issue_link(api)
 
@@ -120,7 +122,8 @@ def RunSteps(api: DEPS):
 def git_cl_issue_link(api: DEPS):
   """Runs a step which adds a link to the current CL if there is one."""
   issue_step = api.git_cl(
-      'issue', ['--json', api.json.output()], name='git cl issue')
+    'issue', ['--json', api.json.output()], name='git cl issue'
+  )
   issue_result = issue_step.json.output
   if not issue_result or not issue_result.get('issue_url'):
     return
@@ -131,23 +134,22 @@ def git_cl_issue_link(api: DEPS):
 # Run `./recipes.py test train` to update wpt-import.json file.
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'wpt-import-with-issue',
-      api.step_data(
-          'git cl issue',
-          api.json.output({
-              'issue': 123456789,
-              'issue_url': 'https://codereview.chromium.org/123456789'
-          }),
+    'wpt-import-with-issue',
+    api.step_data(
+      'git cl issue',
+      api.json.output(
+        {
+          'issue': 123456789,
+          'issue_url': 'https://codereview.chromium.org/123456789',
+        }
       ),
+    ),
   )
 
   yield api.test(
-      'wpt-import-without-issue',
-      api.step_data(
-          'git cl issue',
-          api.json.output({
-              'issue': None,
-              'issue_url': None
-          }),
-      ),
+    'wpt-import-without-issue',
+    api.step_data(
+      'git cl issue',
+      api.json.output({'issue': None, 'issue_url': None}),
+    ),
   )

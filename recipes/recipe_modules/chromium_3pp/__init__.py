@@ -13,17 +13,17 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium_checkout
 from RECIPE_MODULES.depot_tools import (
-    gclient,
-    git,
-    tryserver,
+  gclient,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    bcid_reporter,
-    context,
-    path,
-    raw_io,
-    runtime,
-    step,
+  bcid_reporter,
+  context,
+  path,
+  raw_io,
+  runtime,
+  step,
 )
 from RECIPE_MODULES.infra import support_3pp
 

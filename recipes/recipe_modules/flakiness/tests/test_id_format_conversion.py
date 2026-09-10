@@ -25,11 +25,13 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   IndividualTest = collections.namedtuple(
-      'IndividualTest', ['test_id', 'test_name', 'duration_milliseconds'])
+    'IndividualTest', ['test_id', 'test_name', 'duration_milliseconds']
+  )
 
   def get_filter(test_id, test_name=None):
     return api.flakiness._get_legacy_filter_from_test(
-        IndividualTest(test_id, test_name or test_id, 0))
+      IndividualTest(test_id, test_name or test_id, 0)
+    )
 
   # test_id = None
   api.assertions.assertEqual(get_filter(None), None)
@@ -41,13 +43,17 @@ def RunSteps(api: DEPS):
   api.assertions.assertEqual(get_filter("invalid"), None)
 
   # test_id != test_name
-  test_id = ("://chrome/test/chromedriver:chromedriver_py_tests!pyunit:"
-             "__main__:ChromeDriverW3cTest#testSendKeys")
+  test_id = (
+    "://chrome/test/chromedriver:chromedriver_py_tests!pyunit:"
+    "__main__:ChromeDriverW3cTest#testSendKeys"
+  )
   api.assertions.assertEqual(get_filter(test_id, "different"), None)
 
   # Doesn't match regex.
-  test_id_no_match = ("://chrome/test/chromedriver:chromedriver_py_tests!pyunit"
-                      "ChromeDriverW3cTest#testSendKeys")
+  test_id_no_match = (
+    "://chrome/test/chromedriver:chromedriver_py_tests!pyunit"
+    "ChromeDriverW3cTest#testSendKeys"
+  )
   api.assertions.assertEqual(get_filter(test_id_no_match), None)
 
   # unsupported scheme
@@ -56,12 +62,13 @@ def RunSteps(api: DEPS):
 
   # pyunit success
   api.assertions.assertEqual(
-      get_filter(test_id), "__main__.ChromeDriverW3cTest.testSendKeys")
+    get_filter(test_id), "__main__.ChromeDriverW3cTest.testSendKeys"
+  )
 
   test_id_2 = r"://\:blink_python_tests!pyunit:blinkbuild.name_style_converter_test:NameStyleConverterTest#test_all_cases"
   api.assertions.assertEqual(
-      get_filter(test_id_2),
-      "blinkbuild.name_style_converter_test.NameStyleConverterTest.test_all_cases"
+    get_filter(test_id_2),
+    "blinkbuild.name_style_converter_test.NameStyleConverterTest.test_all_cases",
   )
 
   test_id_3 = r"://m!pyunit:c:f#case\\name"
@@ -73,22 +80,24 @@ def RunSteps(api: DEPS):
 
   # gtest success
   test_id_gtest = (
-      "://chrome/test:sync_integration_tests!gtest::WebAppIntegration"
-      "#WAI_InstallOmniboxIconStandalone/kSyncTheFeature")
+    "://chrome/test:sync_integration_tests!gtest::WebAppIntegration"
+    "#WAI_InstallOmniboxIconStandalone/kSyncTheFeature"
+  )
   api.assertions.assertEqual(
-      get_filter(test_id_gtest),
-      "WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature")
+    get_filter(test_id_gtest),
+    "WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature",
+  )
 
   # test _map_test_object covers line 589
   Results = collections.namedtuple('Results', ['variant_hash', 'all_tests'])
 
   class MockTest:
-
     def __init__(self, variant_hash, test_id):
       self.check_flakiness_for_new_tests = True
       self.name = "suite"
-      self._results = Results(variant_hash,
-                              [IndividualTest(test_id, test_id, 100)])
+      self._results = Results(
+        variant_hash, [IndividualTest(test_id, test_id, 100)]
+      )
 
     def get_rdb_results(self, suffix):
       return self._results
@@ -102,6 +111,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

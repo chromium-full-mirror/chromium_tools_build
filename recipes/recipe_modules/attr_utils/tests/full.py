@@ -11,10 +11,18 @@ from recipe_engine.config_types import Path
 from recipe_engine.engine_types import FrozenDict
 from recipe_engine.util import Placeholder
 
-from RECIPE_MODULES.build.attr_utils import (FieldMapping, attrib, attrs,
-                                             cached_property, callable_,
-                                             command_args, enum, mapping,
-                                             sequence, set_)
+from RECIPE_MODULES.build.attr_utils import (
+  FieldMapping,
+  attrib,
+  attrs,
+  cached_property,
+  callable_,
+  command_args,
+  enum,
+  mapping,
+  sequence,
+  set_,
+)
 
 from dataclasses import dataclass
 
@@ -34,8 +42,10 @@ def RunSteps(api: DEPS):
   # attrib *********************************************************************
   with api.assertions.assertRaises(TypeError) as caught:
     attrib(1)
-  message = ('constraint must be one of a type, a tuple of types '
-             'or an AttributeConstraint, got 1')
+  message = (
+    'constraint must be one of a type, a tuple of types '
+    'or an AttributeConstraint, got 1'
+  )
   api.assertions.assertEqual(str(caught.exception), message)
 
   with api.assertions.assertRaises(TypeError) as caught:
@@ -124,7 +134,8 @@ def RunSteps(api: DEPS):
   with api.assertions.assertRaises(TypeError) as caught:
     SequenceTest(value=[1, 2, 3], typed=[4, 5, 6])
   message = "members of 'typed' must be {} (got 4 that is a {}).".format(
-      str, int)
+    str, int
+  )
   api.assertions.assertEqual(str(caught.exception), message)
 
   # test successful validation
@@ -148,7 +159,8 @@ def RunSteps(api: DEPS):
   with api.assertions.assertRaises(TypeError) as caught:
     SetTest(value=[1, 2, 3], typed=[4, 5, 6])
   message = "members of 'typed' must be {} (got 4 that is a {}).".format(
-      str, int)
+    str, int
+  )
   api.assertions.assertEqual(str(caught.exception), message)
 
   # test successful validation
@@ -166,9 +178,12 @@ def RunSteps(api: DEPS):
     CommandArgsTest([[]])
 
   api.assertions.assertEqual(
-      str(caught.exception),
-      ("members of 'args' must be one of ({}, {}, {}, {}) "
-       "(got [] that is a {}).".format(int, str, Path, Placeholder, list)))
+    str(caught.exception),
+    (
+      "members of 'args' must be one of ({}, {}, {}, {}) "
+      "(got [] that is a {}).".format(int, str, Path, Placeholder, list)
+    ),
+  )
 
   # test that all valid argument types can be passed
   args = [0, 'x', api.path.start_dir, Placeholder('fake-placeholder')]
@@ -178,8 +193,10 @@ def RunSteps(api: DEPS):
   # mapping ********************************************************************
   with api.assertions.assertRaises(TypeError) as caught:
     mapping[str, 1]  # pylint: disable=pointless-statement
-  message = ('value_constraint must be one of a type, a tuple of types, '
-             'an AttributeConstraint or Ellipsis, got 1')
+  message = (
+    'value_constraint must be one of a type, a tuple of types, '
+    'an AttributeConstraint or Ellipsis, got 1'
+  )
   api.assertions.assertEqual(str(caught.exception), message)
 
   @attr.s(frozen=True)
@@ -205,27 +222,20 @@ def RunSteps(api: DEPS):
   with api.assertions.assertRaises(TypeError) as caught:
     MappingTest(typed={'a': 'a'})
   message = "values of 'typed' must be {} (got 'a' that is a {}).".format(
-      int, str)
+    int, str
+  )
   api.assertions.assertEqual(str(caught.exception), message)
 
   # test successful validation
   x = MappingTest(
-      typed={
-          '1': 1,
-          '2': 2
-      },
-      key_typed={
-          '3': 3,
-          '4': '4'
-      },
-      value_typed={
-          '5': 5,
-          6: 6
-      },
-      untyped={
-          '7': 7,
-          8: '8',
-      })
+    typed={'1': 1, '2': 2},
+    key_typed={'3': 3, '4': '4'},
+    value_typed={'5': 5, 6: 6},
+    untyped={
+      '7': 7,
+      8: '8',
+    },
+  )
   api.assertions.assertEqual(x.typed, FrozenDict({'1': 1, '2': 2}))
   api.assertions.assertEqual(x.key_typed, FrozenDict({'3': 3, '4': '4'}))
   api.assertions.assertEqual(x.value_typed, FrozenDict({'5': 5, 6: 6}))
@@ -340,6 +350,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'full',
-      api.post_process(post_process.DropExpectation),
+    'full',
+    api.post_process(post_process.DropExpectation),
   )

@@ -33,14 +33,14 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.properties(data=[('header', 'body')]),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.properties(data=[('header', 'body')]),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'too_many_elements',
-      api.properties(data=[('too', 'many', 'elements')]),
-      api.expect_exception('AssertionError'),
-      api.post_process(post_process.DropExpectation),
+    'too_many_elements',
+    api.properties(data=[('too', 'many', 'elements')]),
+    api.expect_exception('AssertionError'),
+    api.post_process(post_process.DropExpectation),
   )

@@ -32,10 +32,11 @@ class ChromiumBootstrapApi(recipe_api.RecipeApi):
     if '$build/chromium_bootstrap' in self.m.properties:
       result = self.m.step('bootstrapped properties', [])
       result.presentation.step_text = (
-          'This build was bootstrapped, '
-          'see properties log for actual properties')
+        'This build was bootstrapped, see properties log for actual properties'
+      )
       result.presentation.logs['properties'] = self.m.json.dumps(
-          dict(self.m.properties), indent=2)
+        dict(self.m.properties), indent=2
+      )
 
   @property
   def skip_analysis_reasons(self):
@@ -65,11 +66,13 @@ class ChromiumBootstrapApi(recipe_api.RecipeApi):
     if self._commits:
       bootstrap_trigger_props['commit'] = self._commits
     if bootstrap_trigger_props:
-      props.update({
+      props.update(
+        {
           '$bootstrap/trigger': {
-              'commits': [json_format.MessageToDict(c) for c in self._commits],
+            'commits': [json_format.MessageToDict(c) for c in self._commits],
           },
-      })
+        }
+      )
 
   @contextlib.contextmanager
   def update_gclient_config(self, gclient_config=None):
@@ -111,20 +114,22 @@ class ChromiumBootstrapApi(recipe_api.RecipeApi):
     manifest = manifest_holder[0]
     if manifest is not_called:
       raise recipe_api.InfraFailure(
-          'The callback from update_gclient_config'
-          ' must be called with the manifest from bot_update')
+        'The callback from update_gclient_config'
+        ' must be called with the manifest from bot_update'
+      )
 
     if missing_repos:
       checked_out_repos = set()
       for revision in manifest.values():  # pylint: disable=no-member
         repo = revision['repository']
         if repo.endswith('.git'):
-          repo = repo[:-len('.git')]
+          repo = repo[: -len('.git')]
         checked_out_repos.add(repo)
 
       for repo in missing_repos:
         if repo in checked_out_repos:
           raise recipe_api.InfraFailure(
-              f'The bootstrapper and bot_update both checked out {repo},'
-              f' but {repo}'
-              " does not appear in the gclient config's repo_path_map")
+            f'The bootstrapper and bot_update both checked out {repo},'
+            f' but {repo}'
+            " does not appear in the gclient config's repo_path_map"
+          )

@@ -6,17 +6,19 @@ from __future__ import annotations
 
 from recipe_engine import recipe_test_api
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (invocation as
-                                                       rdb_invocation)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (failure_reason as
-                                                       rdb_failure_reason)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       rdb_test_result)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  invocation as rdb_invocation,
+)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  failure_reason as rdb_failure_reason,
+)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as rdb_test_result,
+)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as rdb_common
 
 
 class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
-
   @recipe_test_api.placeholder_step_data
   def gtest_results(self, test_results_json, retcode=None, name=None):
     """Returns mock JSON output for a recipe step.
@@ -72,9 +74,7 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
         },
       ]
 
-    canned_jsonish = {
-      'per_iteration_data': [cur_iteration_data]
-    }
+    canned_jsonish = {'per_iteration_data': [cur_iteration_data]}
     canned_jsonish.update(extra_json or {})
 
     retcode = None if passing else 1
@@ -82,8 +82,9 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
     return ret
 
   # TODO(tansell): https://crbug.com/704066 - Kill simplified JSON format.
-  def generate_simplified_json_results(self, shard_indices,
-                                       isolated_script_passing, valid):
+  def generate_simplified_json_results(
+    self, shard_indices, isolated_script_passing, valid
+  ):
     per_shard_results = []
     for i in shard_indices:
       jsonish_results = {}
@@ -91,26 +92,28 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       # Keep shard 0's results equivalent to the old code to minimize
       # expectation diffs.
       idx = 1 + (2 * i)
-      tests_run = ['test%d.Test%d' % (idx, idx),
-                   'test%d.Test%d' % (idx + 1, idx + 1)]
+      tests_run = [
+        'test%d.Test%d' % (idx, idx),
+        'test%d.Test%d' % (idx + 1, idx + 1),
+      ]
       if isolated_script_passing:
         jsonish_results['failures'] = []
         jsonish_results['successes'] = tests_run
       else:
         jsonish_results['failures'] = tests_run
         jsonish_results['successes'] = []
-      jsonish_results['times'] = {t : 0.1 for t in tests_run}
+      jsonish_results['times'] = {t: 0.1 for t in tests_run}
       per_shard_results.append(jsonish_results)
     return per_shard_results
 
   def canned_isolated_script_output(
-      self,
-      shards=1,
-      shard_indices=None,
-      isolated_script_passing=True,
-      valid=None,
-      missing_shards=None,
-      benchmark_enabled=True,
+    self,
+    shards=1,
+    shard_indices=None,
+    isolated_script_passing=True,
+    valid=None,
+    missing_shards=None,
+    benchmark_enabled=True,
   ):
     """Produces a test results' compatible json for isolated script tests.
 
@@ -137,26 +140,29 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       chartjsonish_results['dummy'] = 'dummy%d' % i
       chartjsonish_results['enabled'] = benchmark_enabled
       chartjsonish_results['charts'] = {
-          'entry%d' % idx: 'chart%d' % idx,
-          'entry%d' % (idx + 1): 'chart%d' % (idx + 1)
+        'entry%d' % idx: 'chart%d' % idx,
+        'entry%d' % (idx + 1): 'chart%d' % (idx + 1),
       }
       per_shard_chartjson_results.append(chartjsonish_results)
     if valid is None:
       valid = True
     per_shard_results = self.generate_simplified_json_results(
-        shard_indices, isolated_script_passing, valid)
+      shard_indices, isolated_script_passing, valid
+    )
 
     return self.m.json.output(per_shard_results[0])
 
-  def rdb_results(self,
-                  suite_name,
-                  passing_tests=None,
-                  failing_tests=None,
-                  expected_failing_tests=None,
-                  skipped_tests=None,
-                  expected_skipped_tests=None,
-                  flaky_failing_tests=None,
-                  flaky_passing_tests=None):
+  def rdb_results(
+    self,
+    suite_name,
+    passing_tests=None,
+    failing_tests=None,
+    expected_failing_tests=None,
+    skipped_tests=None,
+    expected_skipped_tests=None,
+    flaky_failing_tests=None,
+    flaky_passing_tests=None,
+  ):
     """Returns a JSON blob used to override data for 'query test results'.
 
     Args:
@@ -180,20 +186,24 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       failure_reason = None
       if status == rdb_test_result.FAIL:
         failure_reason = rdb_failure_reason.FailureReason(
-            primary_error_message='paint_op_writer.cc(106): Check failed:')
+          primary_error_message='paint_op_writer.cc(106): Check failed:'
+        )
 
       return rdb_test_result.TestResult(
-          test_id='ninja://{}/{}'.format(suite_name, test),
-          tags=[rdb_common.StringPair(key="test_name", value=test)],
-          variant=rdb_common.Variant(**{
-              'def': {
-                  'test_suite': suite_name,
-              },
-          }),
-          expected=expected,
-          variant_hash=suite_name + '_hash',
-          status=status,
-          failure_reason=failure_reason)
+        test_id='ninja://{}/{}'.format(suite_name, test),
+        tags=[rdb_common.StringPair(key="test_name", value=test)],
+        variant=rdb_common.Variant(
+          **{
+            'def': {
+              'test_suite': suite_name,
+            },
+          }
+        ),
+        expected=expected,
+        variant_hash=suite_name + '_hash',
+        status=status,
+        failure_reason=failure_reason,
+      )
 
     test_results = []
     for t in passing_tests or []:
@@ -214,9 +224,10 @@ class TestUtilsTestApi(recipe_test_api.RecipeTestApi):
       test_results.append(_generate_test_result(t, rdb_test_result.PASS, True))
 
     invocation = self.m.resultdb.Invocation(
-        proto=rdb_invocation.Invocation(
-            state=rdb_invocation.Invocation.FINALIZED,
-            name=suite_name + '_results'),
-        test_results=test_results)
+      proto=rdb_invocation.Invocation(
+        state=rdb_invocation.Invocation.FINALIZED, name=suite_name + '_results'
+      ),
+      test_results=test_results,
+    )
     invocations_by_inv_id = {'inv': invocation}
     return self.m.resultdb.serialize(invocations_by_inv_id)

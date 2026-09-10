@@ -12,10 +12,10 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    properties,
+  file,
+  json,
+  path,
+  properties,
 )
 
 
@@ -25,7 +25,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   json: json.API
   properties: properties.API
-
 
 
 from .api import XcodeApi as API

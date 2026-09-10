@@ -34,6 +34,6 @@ def RunSteps(api: DEPS):
 def GenTests(api: RecipeTestApi):
 
   yield api.test(
-      'properties',
-      api.post_process(post_process.DropExpectation),
+    'properties',
+    api.post_process(post_process.DropExpectation),
   )

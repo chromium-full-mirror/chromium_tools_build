@@ -10,21 +10,21 @@ PROPERTIES = properties.InputProperties
 
 # Forward symbols for other modules to import
 from .builder_config import (
-    BuildbucketBuilderId,
-    BuilderConfig,
-    BuilderConfigException,
-    delegate_to_builder_spec,
+  BuildbucketBuilderId,
+  BuilderConfig,
+  BuilderConfigException,
+  delegate_to_builder_spec,
 )
 from .builder_db import BuilderDatabase
 from .builder_spec import BuilderSpec, COMPILE_AND_TEST, TEST
 from .try_spec import (
-    TryDatabase,
-    TryMirror,
-    TrySpec,
-    COMPILE_AND_TEST,
-    COMPILE,
-    ALWAYS,
-    NEVER,
+  TryDatabase,
+  TryMirror,
+  TrySpec,
+  COMPILE_AND_TEST,
+  COMPILE,
+  ALWAYS,
+  NEVER,
 )
 
 from dataclasses import dataclass
@@ -32,13 +32,13 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import (
-    gsutil,
-    tryserver,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    platform,
-    properties,
-    step,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -50,7 +50,6 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   step: step.API
-
 
 
 # These can introduce a circular import, so import them last.

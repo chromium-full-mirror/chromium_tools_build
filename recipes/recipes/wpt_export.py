@@ -35,11 +35,13 @@ class DEPS(RecipeScriptApi):
   path: path.API
   step: step.API
 
+
 # See wpt_import.py for details.
 CREDS_NAME = 'wpt-import-export'
 KMS_CRYPTO_KEY = (
-    'projects/chops-kms/locations/global/keyRings/%s/cryptoKeys/default' %
-    CREDS_NAME)
+  'projects/chops-kms/locations/global/keyRings/%s/cryptoKeys/default'
+  % CREDS_NAME
+)
 
 
 def RunSteps(api: DEPS):
@@ -47,27 +49,29 @@ def RunSteps(api: DEPS):
   update_result = api.bot_update.ensure_checkout()
   creds = api.path.cleanup_dir.joinpath(CREDS_NAME + '.json')
   api.cloudkms.decrypt(
-      KMS_CRYPTO_KEY,
-      api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
-      creds,
+    KMS_CRYPTO_KEY,
+    api.repo_resource('recipes', 'recipes', 'assets', CREDS_NAME),
+    creds,
   )
 
-  script = update_result.source_root.path.joinpath('third_party', 'blink',
-                                                   'tools', 'wpt_export.py')
+  script = update_result.source_root.path.joinpath(
+    'third_party', 'blink', 'tools', 'wpt_export.py'
+  )
   summary_path = api.path.mkstemp()
   args = [
-      '--credentials-json',
-      creds,
-      '--surface-failures-to-gerrit',
-      '--summary-markdown',
-      str(summary_path),
+    '--credentials-json',
+    creds,
+    '--surface-failures-to-gerrit',
+    '--summary-markdown',
+    str(summary_path),
   ]
   cmd = ['vpython3', script] + args
   api.step('Export Chromium commits and in-flight CLs to WPT', cmd)
   summary_contents = api.file.read_text(
-      'read summary of PRs modified',
-      summary_path,
-      test_data='No pull requests modified.\n')
+    'read summary of PRs modified',
+    summary_path,
+    test_data='No pull requests modified.\n',
+  )
   return RawResult(status=common.SUCCESS, summary_markdown=summary_contents)
 
 

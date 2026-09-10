@@ -51,12 +51,13 @@ import llm_prompts
 
 import gemini_client
 
+
 def load_clustering_results(input_file: Path) -> dict:
   """
-    Loads clustering results from a JSON file.
-    Returns:
-        Dictionary with 'metadata' and 'topics' keys.
-    """
+  Loads clustering results from a JSON file.
+  Returns:
+      Dictionary with 'metadata' and 'topics' keys.
+  """
   print(f"Loading clustering results from {input_file}...")
   try:
     with open(input_file, 'r', encoding='utf-8') as f:
@@ -69,24 +70,26 @@ def load_clustering_results(input_file: Path) -> dict:
     sys.exit(1)
 
 
-def call_llm_with_cache(prompt: str,
-                        model_name: str,
-                        client: genai.Client,
-                        cache_dir: Path,
-                        ignore_cache: bool = False,
-                        max_retries: int = 10) -> str | None:
+def call_llm_with_cache(
+  prompt: str,
+  model_name: str,
+  client: genai.Client,
+  cache_dir: Path,
+  ignore_cache: bool = False,
+  max_retries: int = 10,
+) -> str | None:
   """
-    Calls the Gemini API with caching.
-    Args:
-        prompt: The prompt to send
-        model_name: Name of the Gemini model
-        client: Initialized Gemini client
-        cache_dir: Directory for caching responses
-        ignore_cache: If True, bypass cache and force new API call
-        max_retries: Maximum number of retry attempts
-    Returns:
-        Generated text or None if all retries fail
-    """
+  Calls the Gemini API with caching.
+  Args:
+      prompt: The prompt to send
+      model_name: Name of the Gemini model
+      client: Initialized Gemini client
+      cache_dir: Directory for caching responses
+      ignore_cache: If True, bypass cache and force new API call
+      max_retries: Maximum number of retry attempts
+  Returns:
+      Generated text or None if all retries fail
+  """
   cache_key_input = prompt + model_name
   cache_hash = hashlib.sha256(cache_key_input.encode('utf-8')).hexdigest()
   cache_file = cache_dir / f"{cache_hash}.txt"
@@ -101,7 +104,8 @@ def call_llm_with_cache(prompt: str,
   for retry in range(max_retries):
     try:
       response = client.models.generate_content(
-          model=model_name, contents=[prompt])
+        model=model_name, contents=[prompt]
+      )
       result = response.candidates[0].content.parts[0].text.strip()
 
       # Cache the result
@@ -117,29 +121,31 @@ def call_llm_with_cache(prompt: str,
         wait_time = 20
         print(f"\nLLM API error: {e}")
         print(
-            f"Retrying in {wait_time}s (attempt {retry + 2}/{max_retries})...")
+          f"Retrying in {wait_time}s (attempt {retry + 2}/{max_retries})..."
+        )
         time.sleep(wait_time)
       else:
         print(
-            f"Error: LLM call failed after {max_retries} attempts: {e}",
-            file=sys.stderr)
+          f"Error: LLM call failed after {max_retries} attempts: {e}",
+          file=sys.stderr,
+        )
 
   return None
 
 
-def get_topic_summary_and_title(messages: list[str], model_name: str,
-                                client: genai.Client,
-                                cache_dir: Path) -> tuple[str, str]:
+def get_topic_summary_and_title(
+  messages: list[str], model_name: str, client: genai.Client, cache_dir: Path
+) -> tuple[str, str]:
   """
-    Uses a generative LLM to generate a title and summary for a topic.
-    Args:
-        messages: List of commit messages in the topic
-        model_name: Name of the Gemini model
-        client: Initialized Gemini client
-        cache_dir: Directory for caching
-    Returns:
-        Tuple of (title, summary)
-    """
+  Uses a generative LLM to generate a title and summary for a topic.
+  Args:
+      messages: List of commit messages in the topic
+      model_name: Name of the Gemini model
+      client: Initialized Gemini client
+      cache_dir: Directory for caching
+  Returns:
+      Tuple of (title, summary)
+  """
   prompt = llm_prompts.get_summary_and_title_prompt(messages)
   result_str = call_llm_with_cache(prompt, model_name, client, cache_dir)
 
@@ -160,17 +166,17 @@ def get_topic_summary_and_title(messages: list[str], model_name: str,
 
 def chunk_summary(summary: str, chunk_size: int = 3000) -> list[str]:
   """
-    Splits a summary into chunks at newline boundaries.
+  Splits a summary into chunks at newline boundaries.
 
-    A chunk is created once it exceeds chunk_size and a newline is found.
+  A chunk is created once it exceeds chunk_size and a newline is found.
 
-    Args:
-        summary: The summary text to chunk
-        chunk_size: Target size for each chunk in characters
+  Args:
+      summary: The summary text to chunk
+      chunk_size: Target size for each chunk in characters
 
-    Returns:
-        List of summary chunks
-    """
+  Returns:
+      List of summary chunks
+  """
   if not summary:
     return []
 
@@ -181,7 +187,7 @@ def chunk_summary(summary: str, chunk_size: int = 3000) -> list[str]:
 
     if split_pos != -1:
       chunks.append(summary[:split_pos])
-      summary = summary[split_pos + 1:]  # Skip the newline
+      summary = summary[split_pos + 1 :]  # Skip the newline
     else:
       # No newline found, rest is one chunk
       break
@@ -193,19 +199,23 @@ def chunk_summary(summary: str, chunk_size: int = 3000) -> list[str]:
 
 
 def get_summary_embedding_with_cache(
-    text: str, cache_dir: Path, client: genai.Client, model_name: str,
-    output_dimensionality: int) -> list[float] | None:
+  text: str,
+  cache_dir: Path,
+  client: genai.Client,
+  model_name: str,
+  output_dimensionality: int,
+) -> list[float] | None:
   """
-    Gets a retrieval document embedding for a single text, with caching.
-    Args:
-        text: Text to embed
-        cache_dir: Directory for caching embeddings
-        client: Initialized Gemini client
-        model_name: Name of the embedding model to use
-        output_dimensionality: Target dimension size (e.g., 768)
-    Returns:
-        Embedding as a list of floats, or None if failed
-    """
+  Gets a retrieval document embedding for a single text, with caching.
+  Args:
+      text: Text to embed
+      cache_dir: Directory for caching embeddings
+      client: Initialized Gemini client
+      model_name: Name of the embedding model to use
+      output_dimensionality: Target dimension size (e.g., 768)
+  Returns:
+      Embedding as a list of floats, or None if failed
+  """
   summary_embeddings_cache_dir = cache_dir / "summary_embeddings"
   summary_embeddings_cache_dir.mkdir(parents=True, exist_ok=True)
 
@@ -222,11 +232,13 @@ def get_summary_embedding_with_cache(
   for retry in range(5):
     try:
       result = client.models.embed_content(
-          model=model_name,
-          contents=[text],
-          config=types.EmbedContentConfig(
-              task_type="RETRIEVAL_DOCUMENT",
-              output_dimensionality=output_dimensionality))
+        model=model_name,
+        contents=[text],
+        config=types.EmbedContentConfig(
+          task_type="RETRIEVAL_DOCUMENT",
+          output_dimensionality=output_dimensionality,
+        ),
+      )
       embedding = np.array(result.embeddings[0].values)
 
       # Cache the embedding
@@ -239,27 +251,29 @@ def get_summary_embedding_with_cache(
     except Exception as e:
       if retry < 4:
         print(
-            f"Warning: Summary embedding failed, retrying (attempt {retry + 2}/5)...",
-            file=sys.stderr)
+          f"Warning: Summary embedding failed, retrying (attempt {retry + 2}/5)...",
+          file=sys.stderr,
+        )
         time.sleep(20)
       else:
         print(
-            f"Error: Failed to generate summary embedding after 5 retries: {e}",
-            file=sys.stderr)
+          f"Error: Failed to generate summary embedding after 5 retries: {e}",
+          file=sys.stderr,
+        )
 
   return None
 
 
 def extract_topic_keywords(topics: list[dict]) -> dict[int, list[str]]:
   """
-    Extracts keywords for each topic using the c-TF-IDF algorithm.
+  Extracts keywords for each topic using the c-TF-IDF algorithm.
 
-    Args:
-        topics: List of processed topic dictionaries containing 'commits'
+  Args:
+      topics: List of processed topic dictionaries containing 'commits'
 
-    Returns:
-        Dictionary mapping topic_id to list of keywords
-    """
+  Returns:
+      Dictionary mapping topic_id to list of keywords
+  """
   print("\nExtracting keywords using c-TF-IDF...")
 
   # Aggregate messages per topic directly from the topic structure
@@ -267,7 +281,7 @@ def extract_topic_keywords(topics: list[dict]) -> dict[int, list[str]]:
   for topic in topics:
     # distinct messages to avoid skewing TF-IDF with identical cherry-picks
     messages = [
-        c['message'] for c in topic.get('commits', []) if 'message' in c
+      c['message'] for c in topic.get('commits', []) if 'message' in c
     ]
     topic_docs[topic['topic_id']] = " ".join(messages)
 
@@ -282,7 +296,8 @@ def extract_topic_keywords(topics: list[dict]) -> dict[int, list[str]]:
 
   try:
     vectorizer = CountVectorizer(
-        stop_words="english", min_df=min_doc_freq, ngram_range=(1, 2))
+      stop_words="english", min_df=min_doc_freq, ngram_range=(1, 2)
+    )
 
     # values() is not guaranteed order in older python, so we enforce order via keys
     topic_ids = list(topic_docs.keys())
@@ -308,8 +323,9 @@ def extract_topic_keywords(topics: list[dict]) -> dict[int, list[str]]:
   except ValueError as e:
     # Usually happens if vocabulary is empty
     print(
-        f"Warning: Keyword extraction skipped (empty vocabulary?): {e}",
-        file=sys.stderr)
+      f"Warning: Keyword extraction skipped (empty vocabulary?): {e}",
+      file=sys.stderr,
+    )
     return {topic_id: [] for topic_id in topic_docs}
   except Exception as e:
     print(f"Warning: Keyword extraction failed: {e}", file=sys.stderr)
@@ -318,14 +334,14 @@ def extract_topic_keywords(topics: list[dict]) -> dict[int, list[str]]:
 
 def format_code_context(commits: list[dict]) -> str:
   """
-    Aggregates and formats the line data for all commits in a topic.
+  Aggregates and formats the line data for all commits in a topic.
 
-    Args:
-        commits: List of commit dictionaries with 'files' field
+  Args:
+      commits: List of commit dictionaries with 'files' field
 
-    Returns:
-        Formatted string with file paths and line numbers
-    """
+  Returns:
+      Formatted string with file paths and line numbers
+  """
   aggregated_lines = {}
   for commit in commits:
     for file_path, lines in commit['files'].items():
@@ -343,23 +359,28 @@ def format_code_context(commits: list[dict]) -> str:
   return "\n".join(output_parts)
 
 
-def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
-                  client: genai.Client, llm_cache_dir: Path,
-                  embedding_cache_dir: Path,
-                  output_dimensionality: int) -> dict:
+def process_topic(
+  topic_data: dict,
+  model_name: str,
+  embedding_model_name: str,
+  client: genai.Client,
+  llm_cache_dir: Path,
+  embedding_cache_dir: Path,
+  output_dimensionality: int,
+) -> dict:
   """
-    Processes a single topic: generates title, summary, chunks, and embeddings.
-    Args:
-        topic_data: Topic dictionary from clustering results
-        model_name: Name of the Gemini model for summarization
-        embedding_model_name: Name of the Gemini model for embeddings
-        client: Initialized Gemini client
-        llm_cache_dir: Cache directory for LLM responses
-        embedding_cache_dir: Cache directory for embeddings
-        output_dimensionality: The target dimension size for embeddings
-    Returns:
-        Enriched topic dictionary with title, summary, chunks, embeddings
-    """
+  Processes a single topic: generates title, summary, chunks, and embeddings.
+  Args:
+      topic_data: Topic dictionary from clustering results
+      model_name: Name of the Gemini model for summarization
+      embedding_model_name: Name of the Gemini model for embeddings
+      client: Initialized Gemini client
+      llm_cache_dir: Cache directory for LLM responses
+      embedding_cache_dir: Cache directory for embeddings
+      output_dimensionality: The target dimension size for embeddings
+  Returns:
+      Enriched topic dictionary with title, summary, chunks, embeddings
+  """
   topic_id = topic_data['topic_id']
   topic_commits = topic_data['commits']
 
@@ -368,13 +389,14 @@ def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
 
   # Format messages for LLM
   topic_messages = [
-      f"--- Change on '{c['date']}', BUG ids: '{c['metadata'].get('Bug', []) + c['metadata'].get('BUG=', [])}' ---\n{c['message']}"
-      for c in topic_commits
+    f"--- Change on '{c['date']}', BUG ids: '{c['metadata'].get('Bug', []) + c['metadata'].get('BUG=', [])}' ---\n{c['message']}"
+    for c in topic_commits
   ]
 
   # Generate title and summary
-  title, summary = get_topic_summary_and_title(topic_messages, model_name,
-                                               client, llm_cache_dir)
+  title, summary = get_topic_summary_and_title(
+    topic_messages, model_name, client, llm_cache_dir
+  )
 
   # Format code context
   code_context = format_code_context(topic_commits)
@@ -383,9 +405,13 @@ def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
   summary_chunks = chunk_summary(summary)
   chunk_embeddings = []
   for chunk in summary_chunks:
-    embedding = get_summary_embedding_with_cache(chunk, embedding_cache_dir,
-                                                 client, embedding_model_name,
-                                                 output_dimensionality)
+    embedding = get_summary_embedding_with_cache(
+      chunk,
+      embedding_cache_dir,
+      client,
+      embedding_model_name,
+      output_dimensionality,
+    )
     chunk_embeddings.append(embedding)
 
   # Remove 'files' field from commits to reduce output size
@@ -394,77 +420,76 @@ def process_topic(topic_data: dict, model_name: str, embedding_model_name: str,
       del commit['files']
 
   return {
-      "topic_id":
-          int(topic_id),
-      "title":
-          title,
-      "summary":
-          summary,
-      "keywords": [],  # Will be filled in later
-      "commit_count":
-          topic_data['commit_count'],
-      "code_context":
-          code_context,
-      "commits":
-          topic_commits,
-      "summary_chunks":
-          summary_chunks,
-      "chunk_embeddings":
-          chunk_embeddings,
-      "code_context_size":
-          topic_data.get('code_context_size', len(code_context))
+    "topic_id": int(topic_id),
+    "title": title,
+    "summary": summary,
+    "keywords": [],  # Will be filled in later
+    "commit_count": topic_data['commit_count'],
+    "code_context": code_context,
+    "commits": topic_commits,
+    "summary_chunks": summary_chunks,
+    "chunk_embeddings": chunk_embeddings,
+    "code_context_size": topic_data.get('code_context_size', len(code_context)),
   }
 
 
 def main():
   """Main function to orchestrate topic summarization."""
   parser = argparse.ArgumentParser(
-      description="Generate LLM summaries for the top N topics.",
-      formatter_class=argparse.RawTextHelpFormatter)
+    description="Generate LLM summaries for the top N topics.",
+    formatter_class=argparse.RawTextHelpFormatter,
+  )
   parser.add_argument(
-      "clusters_file",
-      type=str,
-      help="Path to the clustering results JSON file.")
+    "clusters_file", type=str, help="Path to the clustering results JSON file."
+  )
   parser.add_argument(
-      "--output-file",
-      type=str,
-      required=True,
-      help="Path to save the summarized topics JSON file.")
+    "--output-file",
+    type=str,
+    required=True,
+    help="Path to save the summarized topics JSON file.",
+  )
   parser.add_argument(
-      "--top-n",
-      type=int,
-      default=100,
-      help="Number of top topics to summarize (default: 100).")
+    "--top-n",
+    type=int,
+    default=100,
+    help="Number of top topics to summarize (default: 100).",
+  )
   parser.add_argument(
-      "--llm-model",
-      type=str,
-      default="gemini-3.1-flash-lite",
-      help="Name of the Gemini model for summarization.")
+    "--llm-model",
+    type=str,
+    default="gemini-3.1-flash-lite",
+    help="Name of the Gemini model for summarization.",
+  )
   parser.add_argument(
-      "--embedding-model",
-      type=str,
-      default="gemini-embedding-001",
-      help="Name of the Gemini model for embeddings.")
+    "--embedding-model",
+    type=str,
+    default="gemini-embedding-001",
+    help="Name of the Gemini model for embeddings.",
+  )
   parser.add_argument(
-      "--output-dimensionality",
-      type=int,
-      default=768,
-      help="Dimension size of the output embeddings (default: 768).")
+    "--output-dimensionality",
+    type=int,
+    default=768,
+    help="Dimension size of the output embeddings (default: 768).",
+  )
   parser.add_argument(
-      "--cache-dir",
-      type=str,
-      default="./.summarization_cache",
-      help="Directory to store cached LLM responses and embeddings.")
+    "--cache-dir",
+    type=str,
+    default="./.summarization_cache",
+    help="Directory to store cached LLM responses and embeddings.",
+  )
   parser.add_argument(
-      "-w",
-      "--workers",
-      type=int,
-      default=10,
-      help="Number of worker threads for parallel processing (default: 10).")
+    "-w",
+    "--workers",
+    type=int,
+    default=10,
+    help="Number of worker threads for parallel processing (default: 10).",
+  )
   parser.add_argument(
-      "--skip-keywords",
-      action="store_true",
-      help="Skip keyword extraction (faster, but no keywords in output).")
+    "--skip-keywords",
+    action="store_true",
+    help="Skip keyword extraction (faster, but no keywords in output).",
+  )
 
   args = parser.parse_args()
 
@@ -472,8 +497,8 @@ def main():
   clusters_file = Path(args.clusters_file).resolve()
   if not clusters_file.exists():
     print(
-        f"Error: Clusters file '{clusters_file}' does not exist.",
-        file=sys.stderr)
+      f"Error: Clusters file '{clusters_file}' does not exist.", file=sys.stderr
+    )
     sys.exit(1)
 
   # Setup cache directories
@@ -495,31 +520,40 @@ def main():
   all_topics.sort(key=lambda t: t['commit_count'], reverse=True)
 
   # Select top N topics to summarize
-  topics_to_summarize = all_topics[:args.top_n]
+  topics_to_summarize = all_topics[: args.top_n]
   print(
-      f"\nSummarizing top {len(topics_to_summarize)} topics (out of {len(all_topics)} total)..."
+    f"\nSummarizing top {len(topics_to_summarize)} topics (out of {len(all_topics)} total)..."
   )
   print(f"Embedding dimensions: {args.output_dimensionality}")
 
   if len(topics_to_summarize) < len(all_topics):
     skipped_count = len(all_topics) - len(topics_to_summarize)
-    skipped_commits = sum(t['commit_count'] for t in all_topics[args.top_n:])
+    skipped_commits = sum(t['commit_count'] for t in all_topics[args.top_n :])
     print(
-        f"Skipping {skipped_count} smaller topics ({skipped_commits} commits).")
+      f"Skipping {skipped_count} smaller topics ({skipped_commits} commits)."
+    )
 
   # Process topics in parallel
   print(f"\nProcessing topics with {args.workers} workers...")
 
   def process_with_args(topic):
-    return process_topic(topic, args.llm_model, args.embedding_model, client,
-                         llm_cache_dir, embedding_cache_dir,
-                         args.output_dimensionality)
+    return process_topic(
+      topic,
+      args.llm_model,
+      args.embedding_model,
+      client,
+      llm_cache_dir,
+      embedding_cache_dir,
+      args.output_dimensionality,
+    )
 
   with concurrent.futures.ThreadPoolExecutor(
-      max_workers=args.workers) as executor:
+    max_workers=args.workers
+  ) as executor:
     # Replaced tqdm with simple list consumption
     summarized_topics = list(
-        executor.map(process_with_args, topics_to_summarize))
+      executor.map(process_with_args, topics_to_summarize)
+    )
     print("Summarization complete.")
 
   # Extract keywords if requested
@@ -532,14 +566,14 @@ def main():
 
   # Prepare output metadata
   metadata = {
-      'num_topics_total': len(all_topics),
-      'num_topics_summarized': len(summarized_topics),
-      'top_n': args.top_n,
-      'llm_model': args.llm_model,
-      'embedding_model': args.embedding_model,
-      'embedding_dim': args.output_dimensionality,
-      'clustering_metadata': cluster_data.get('metadata', {}),
-      'summarized_at': datetime.now().isoformat()
+    'num_topics_total': len(all_topics),
+    'num_topics_summarized': len(summarized_topics),
+    'top_n': args.top_n,
+    'llm_model': args.llm_model,
+    'embedding_model': args.embedding_model,
+    'embedding_dim': args.output_dimensionality,
+    'clustering_metadata': cluster_data.get('metadata', {}),
+    'summarized_at': datetime.now().isoformat(),
   }
 
   # Save results

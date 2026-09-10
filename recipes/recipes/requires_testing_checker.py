@@ -38,6 +38,7 @@ class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   json: json.TEST_API
 
+
 _FOOTER = 'Requires-Testing'
 
 
@@ -45,24 +46,27 @@ def RunSteps(api: DEPS):
   assert api.tryserver.is_tryserver
   if api.tryserver.get_footer('Requires-Testing'):
     return result_pb.RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown=(
-            "The CL requires testing ('{}' footer is set in description)"
-            ' and CQ is not enabled for this branch'.format(_FOOTER)))
+      status=common_pb.FAILURE,
+      summary_markdown=(
+        "The CL requires testing ('{}' footer is set in description)"
+        ' and CQ is not enabled for this branch'.format(_FOOTER)
+      ),
+    )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'requires-testing',
-      api.buildbucket.try_build(),
-      api.override_step_data('parse description',
-                             api.json.output({_FOOTER: 'true'})),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'requires-testing',
+    api.buildbucket.try_build(),
+    api.override_step_data(
+      'parse description', api.json.output({_FOOTER: 'true'})
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'does-not-require-testing',
-      api.buildbucket.try_build(),
-      api.post_process(post_process.DropExpectation),
+    'does-not-require-testing',
+    api.buildbucket.try_build(),
+    api.post_process(post_process.DropExpectation),
   )

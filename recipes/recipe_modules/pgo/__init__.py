@@ -12,26 +12,26 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    code_coverage,
-    gn,
-    profiles,
+  chromium,
+  code_coverage,
+  gn,
+  profiles,
 )
 from RECIPE_MODULES.depot_tools import (
-    git,
-    gitiles,
-    gsutil,
+  git,
+  gitiles,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
+  buildbucket,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -53,7 +53,6 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   raw_io: raw_io.API
   step: step.API
-
 
 
 from .api import PgoApi as API

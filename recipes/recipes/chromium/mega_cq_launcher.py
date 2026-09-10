@@ -35,8 +35,8 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   trybots = api.chromium_mega_cq.read_bots_file(
-      'https://chromium.googlesource.com/chromium/src',
-      'infra/config/generated/cq-usage/mega_cq_bots.txt',
+    'https://chromium.googlesource.com/chromium/src',
+    'infra/config/generated/cq-usage/mega_cq_bots.txt',
   )
 
   api.chromium_mega_cq.sleep_until_off_peak()
@@ -48,7 +48,7 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'basic',
-      api.chromium.try_build(),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.try_build(),
+    api.post_process(post_process.DropExpectation),
   )

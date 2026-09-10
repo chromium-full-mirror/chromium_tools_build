@@ -4,7 +4,6 @@
 
 """Generates BoringSSL documentation and uploads it to Cloud Storage."""
 
-
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
@@ -13,12 +12,12 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    properties,
-    runtime,
-    step,
+  buildbucket,
+  context,
+  path,
+  properties,
+  runtime,
+  step,
 )
 
 
@@ -57,45 +56,53 @@ def RunSteps(api: DEPS):
 
   # Generate and upload documentation.
   with api.context(
-      cwd=util, env={'GOROOT': goroot},
-      env_prefixes={'PATH': [goroot / 'bin']}):
+    cwd=util, env={'GOROOT': goroot}, env_prefixes={'PATH': [goroot / 'bin']}
+  ):
     api.step('generate', ['go', 'run', 'doc.go', '-out', output])
   # Upload docs only if run after commit and on not experimental builds.
   if api.buildbucket.build.builder.bucket == 'ci':
     if api.runtime.is_experimental:
       api.step('skipping uploading docs on experimental build', cmd=None)
     else:
-      api.gsutil(['-m', 'cp', '-a', 'public-read', api.path.join(output, '**'),
-                  'gs://chromium-boringssl-docs/'])
+      api.gsutil(
+        [
+          '-m',
+          'cp',
+          '-a',
+          'public-read',
+          api.path.join(output, '**'),
+          'gs://chromium-boringssl-docs/',
+        ]
+      )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'docs',
-      api.buildbucket.ci_build(
-          project='boringssl',
-          bucket='ci',
-          builder='docs',
-          git_repo='https://boringssl.googlesource.com/boringssl',
-      ),
+    'docs',
+    api.buildbucket.ci_build(
+      project='boringssl',
+      bucket='ci',
+      builder='docs',
+      git_repo='https://boringssl.googlesource.com/boringssl',
+    ),
   )
   yield api.test(
-      'docs-experimental',
-      api.runtime(is_experimental=True),
-      api.buildbucket.ci_build(
-          project='boringssl',
-          bucket='ci',
-          builder='docs',
-          git_repo='https://boringssl.googlesource.com/boringssl',
-      ),
+    'docs-experimental',
+    api.runtime(is_experimental=True),
+    api.buildbucket.ci_build(
+      project='boringssl',
+      bucket='ci',
+      builder='docs',
+      git_repo='https://boringssl.googlesource.com/boringssl',
+    ),
   )
 
   yield api.test(
-      'docs-try',
-      api.buildbucket.try_build(
-          project='boringssl',
-          bucket='try',
-          builder='docs',
-          git_repo='https://boringssl.googlesource.com/boringssl',
-      ),
+    'docs-try',
+    api.buildbucket.try_build(
+      project='boringssl',
+      bucket='try',
+      builder='docs',
+      git_repo='https://boringssl.googlesource.com/boringssl',
+    ),
   )

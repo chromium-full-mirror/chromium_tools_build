@@ -26,14 +26,17 @@ from collections import namedtuple
 
 # Buildbucket v2 API
 BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
-BUILDBUCKET_GET_ENDPOINT = (BUILDBUCKET_RPC + '/buildbucket.v2.Builds/GetBuild')
+BUILDBUCKET_GET_ENDPOINT = BUILDBUCKET_RPC + '/buildbucket.v2.Builds/GetBuild'
 BUILDBUCKET_SCHEDULE_ENDPOINT = (
-    BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild')
+  BUILDBUCKET_RPC + '/buildbucket.v2.Builds/ScheduleBuild'
+)
 BUILDBUCKET_SEARCH_ENDPOINT = (
-    BUILDBUCKET_RPC + '/buildbucket.v2.Builds/SearchBuilds')
+  BUILDBUCKET_RPC + '/buildbucket.v2.Builds/SearchBuilds'
+)
 CONTAINER_METADATA_LOC = 'metadata/containers.jsonpb'
 
 Shard = namedtuple('Shard', ['tr_attempt', 'shard'])
+
 
 def get_oauth_token(json_creds=None):
   """Get an oauth2 token to access infra services."""
@@ -59,7 +62,7 @@ def _call_buildbucket(bb_request_data, json_creds, end_point):
     r.raise_for_status()
     return None
   content = r.content.decode('utf-8')
-  return json.loads(content[content.find('\n') + 1:])
+  return json.loads(content[content.find('\n') + 1 :])
 
 
 def _extract_cros_test_log_url(task_url, child_builds):
@@ -83,16 +86,17 @@ def _extract_cros_test_log_url(task_url, child_builds):
 
 def _list_child_trs_status(ctp_bbid, json_creds):
   bb_request_data = {
-      'predicate': {
-          'childOf': str(ctp_bbid),
-      },
-      'pageSize': 1000,
-      'mask': {
-          'fields': 'id,tags,steps,output.status',
-      },
+    'predicate': {
+      'childOf': str(ctp_bbid),
+    },
+    'pageSize': 1000,
+    'mask': {
+      'fields': 'id,tags,steps,output.status',
+    },
   }
   return _call_buildbucket(
-      json.dumps(bb_request_data), json_creds, BUILDBUCKET_SEARCH_ENDPOINT)
+    json.dumps(bb_request_data), json_creds, BUILDBUCKET_SEARCH_ENDPOINT
+  )
 
 
 def _fix_test_runner_status(task_result):
@@ -101,8 +105,8 @@ def _fix_test_runner_status(task_result):
 
   for v in task_result.prejob_steps:
     if v.verdict not in [
-        taskstate_pb2.TaskState.VERDICT_PASSED,
-        taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY
+      taskstate_pb2.TaskState.VERDICT_PASSED,
+      taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY,
     ]:
       return "INFRA_FAILURE"
   failing_tests = []
@@ -112,8 +116,8 @@ def _fix_test_runner_status(task_result):
       continue
     total_tests.append(v)
     if v.verdict not in [
-        taskstate_pb2.TaskState.VERDICT_PASSED,
-        taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY
+      taskstate_pb2.TaskState.VERDICT_PASSED,
+      taskstate_pb2.TaskState.VERDICT_PASSED_ON_RETRY,
     ]:
       failing_tests.append(v)
 
@@ -139,9 +143,9 @@ def _populate_suite_request_for_autotest(opts, test_suite, shard_idx):
 
   if opts.secondary_boards:
     if any(opts.secondary_lacros_gcs_path):
-      test_args.append([
-          'secondary_lacros_gcs_path', ','.join(opts.secondary_lacros_gcs_path)
-      ])
+      test_args.append(
+        ['secondary_lacros_gcs_path', ','.join(opts.secondary_lacros_gcs_path)]
+      )
 
   for test_arg in test_args:
     arg = test_suite.execution_metadata.args.add()
@@ -187,10 +191,12 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
     sw_kv.key = 'ash_chrome_build_output_dir'
     sw_kv.value = opts.ash_chrome_build_output_dir
   if opts.pool == 'DUT_POOL_QUOTA':
-    if (_if_require_large_bot(opts.ash_chrome_gcs_path) or
-        _if_require_large_bot(opts.lacros_gcs_path)):
+    if _if_require_large_bot(opts.ash_chrome_gcs_path) or _if_require_large_bot(
+      opts.lacros_gcs_path
+    ):
       schedule_targets.hw_target.legacy_hw.swarming_dimensions.append(
-          'label-bot_size:BOT_SIZE_LARGE')
+        'label-bot_size:BOT_SIZE_LARGE'
+      )
 
   if opts.cbx:
     assert False, "Not supported in CTPv2's hw_target"
@@ -202,16 +208,22 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
   if opts.model:
     schedule_targets.hw_target.legacy_hw.model = opts.model
 
-  assert len(opts.secondary_boards) == len(opts.secondary_images) == len(
-      opts.secondary_lacros_gcs_path), (
-          'Length of --secondary-lacros-gcs-path and --secondary-images '
-          'must match --secondary-boards. Pass empty string if not '
-          'require CrOS and Lacros provision.')
+  assert (
+    len(opts.secondary_boards)
+    == len(opts.secondary_images)
+    == len(opts.secondary_lacros_gcs_path)
+  ), (
+    'Length of --secondary-lacros-gcs-path and --secondary-images '
+    'must match --secondary-boards. Pass empty string if not '
+    'require CrOS and Lacros provision.'
+  )
 
   for board, img in zip(opts.secondary_boards, opts.secondary_images):
-    assert opts.autotest_name, ('Multi-DUT must be used together with'
-                                ' autotest_name specified '
-                                '(autotest wrapper).')
+    assert opts.autotest_name, (
+      'Multi-DUT must be used together with'
+      ' autotest_name specified '
+      '(autotest wrapper).'
+    )
     secondary_targets = root_schedule_targets.targets.add()
     secondary_targets.hw_target.legacy_hw.board = board
     secondary_targets.sw_target.legacy_sw.gcs_path = f'gs://{_bucket}/{img}'
@@ -245,8 +257,9 @@ def _tests_from_file(f, board, builder_name):
         include = True
       elif splitted[1] == board:
         include = True
-      elif _clear_builder_name(
-          splitted[1]) == _clear_builder_name(builder_name):
+      elif _clear_builder_name(splitted[1]) == _clear_builder_name(
+        builder_name
+      ):
         include = True
       if not include:
         continue
@@ -268,8 +281,12 @@ def _if_require_large_bot(path):
     return False
   try:
     out = subprocess.check_output(['gsutil', 'ls', '-l', path]).decode('utf-8')
-    size_gb = int(out.split('\n', maxsplit=1)[0].split(
-        ' ', maxsplit=1)[0]) / 1024.0 / 1024.0 / 1024.0
+    size_gb = (
+      int(out.split('\n', maxsplit=1)[0].split(' ', maxsplit=1)[0])
+      / 1024.0
+      / 1024.0
+      / 1024.0
+    )
     # For tar.zstd greater than 3GB, we request a large bot (physical drone
     # or larger cloudbots) to ensure the disk have enough space to extract
     # the tarball.
@@ -297,9 +314,12 @@ def schedule_skylab_tests(opts):
       req = v2req.requests.add()
       _populate_req_common(opts, req, False)
 
-      req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-{i}'
+      req.suite_request.test_suite.name = (
+        f'{opts.chromium_suite_name}-shard-{i}'
+      )
       autotest_name = _populate_suite_request_for_autotest(
-          opts, req.suite_request.test_suite, i)
+        opts, req.suite_request.test_suite, i
+      )
       test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
       test_case.value = autotest_name
   else:
@@ -314,15 +334,27 @@ def schedule_skylab_tests(opts):
     for v in opts.cros_test_tags_exclude:
       req.suite_request.test_suite.test_case_tag_criteria.tag_excludes.append(v)
     for v in set(
-        opts.cros_test_names +
-        _tests_from_files(opts.chromium_src, opts.cros_test_names_from_file,
-                          opts.board, opts.builder_name)):
+      opts.cros_test_names
+      + _tests_from_files(
+        opts.chromium_src,
+        opts.cros_test_names_from_file,
+        opts.board,
+        opts.builder_name,
+      )
+    ):
       req.suite_request.test_suite.test_case_tag_criteria.test_names.append(v)
-    for v in set(opts.cros_test_names_exclude + _tests_from_files(
-        opts.chromium_src, opts.cros_test_names_exclude_from_file, opts.board,
-        opts.builder_name)):
+    for v in set(
+      opts.cros_test_names_exclude
+      + _tests_from_files(
+        opts.chromium_src,
+        opts.cros_test_names_exclude_from_file,
+        opts.board,
+        opts.builder_name,
+      )
+    ):
       req.suite_request.test_suite.test_case_tag_criteria.test_name_excludes.append(
-          v)
+        v
+      )
     if opts.cros_test_max_in_shard > 0:
       req.suite_request.max_in_shard = opts.cros_test_max_in_shard
     for test_arg in opts.test_arg:
@@ -332,22 +364,24 @@ def schedule_skylab_tests(opts):
       arg.value = test_arg[1]
 
   bb_request_data = {
-      'builder': {
-          'project': 'chromeos',
-          'bucket': opts.ctp_bucket,
-          'builder': opts.ctp_builder_name,
-      },
-      'properties': {
-          'ctpv2_request': json_format.MessageToDict(v2req),
-      },
+    'builder': {
+      'project': 'chromeos',
+      'bucket': opts.ctp_bucket,
+      'builder': opts.ctp_builder_name,
+    },
+    'properties': {
+      'ctpv2_request': json_format.MessageToDict(v2req),
+    },
   }
   bb_request_data['priority'] = 20
   if opts.parent_build_id:
-    bb_request_data['tags'] = [{
+    bb_request_data['tags'] = [
+      {
         # "cros_test_platform" uses this tag to track the parent.
         "key": "parent_buildbucket_id",
         "value": opts.parent_build_id,
-    }]
+      }
+    ]
     if not opts.schedule:
       # Use can_outlive_parent so it can be passed to Python-proto bindings.
       bb_request_data['can_outlive_parent'] = 2  # 2 is NO
@@ -360,8 +394,9 @@ def schedule_skylab_tests(opts):
     else:
       logging.info('request to send: %s', bb_request_data_json)
     return
-  resp = _call_buildbucket(bb_request_data_json, opts.json_creds,
-                           BUILDBUCKET_SCHEDULE_ENDPOINT)
+  resp = _call_buildbucket(
+    bb_request_data_json, opts.json_creds, BUILDBUCKET_SCHEDULE_ENDPOINT
+  )
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:
       json.dump({'ctp_build_id': resp['id']}, json_file)
@@ -373,17 +408,21 @@ def read_ctp_results(opts):
   # pylint: disable=import-outside-toplevel
   from chromite.api.gen.test_platform.steps import execution_pb2
 
-  bb_request_data = json.dumps({
+  bb_request_data = json.dumps(
+    {
       'id': opts.ctp_build_id,
       "mask": {
-          "fields": "output.properties",
-      }
-  })
-  resp = _call_buildbucket(bb_request_data, opts.json_creds,
-                           BUILDBUCKET_GET_ENDPOINT)
+        "fields": "output.properties",
+      },
+    }
+  )
+  resp = _call_buildbucket(
+    bb_request_data, opts.json_creds, BUILDBUCKET_GET_ENDPOINT
+  )
 
-  compressed_proto = resp.get('output', {}).get('properties',
-                                                {}).get('compressed_responses')
+  compressed_proto = (
+    resp.get('output', {}).get('properties', {}).get('compressed_responses')
+  )
   if not compressed_proto:
     logging.error('Could not find results in build\'s output properties.')
     return
@@ -413,10 +452,11 @@ def read_ctp_results(opts):
           except:  # pylint: disable=bare-except
             pass
           k = attempt.name
-        is_infra_failure = (_fix_test_runner_status(attempt) == 'INFRA_FAILURE')
-        if k not in task_results or (attempt.attempt
-                                     > task_results[k].tr_attempt.attempt and
-                                     not is_infra_failure):
+        is_infra_failure = _fix_test_runner_status(attempt) == 'INFRA_FAILURE'
+        if k not in task_results or (
+          attempt.attempt > task_results[k].tr_attempt.attempt
+          and not is_infra_failure
+        ):
           task_results[k] = Shard(attempt, shard)
 
   child_builds = {}
@@ -429,24 +469,25 @@ def read_ctp_results(opts):
   for k, task_result in task_results.items():
     if not task_result.tr_attempt:
       res[k] = {
-          'url': '',
-          'shard': task_result.shard,
-          'log_url': '',
-          'status': 'INFRA_FAILURE',
+        'url': '',
+        'shard': task_result.shard,
+        'log_url': '',
+        'status': 'INFRA_FAILURE',
       }
       continue
     cros_test_log_url = _extract_cros_test_log_url(
-        task_result.tr_attempt.task_url, child_builds)
+      task_result.tr_attempt.task_url, child_builds
+    )
     testhaus_url = task_result.tr_attempt.log_data.testhaus_url
     if testhaus_url and 'tests.chromeos.goog' in testhaus_url:
       separator = '&' if '?' in testhaus_url else '?'
       testhaus_url += f'{separator}treeQuery=cros-test'
 
     res[k] = {
-        'url': task_result.tr_attempt.task_url,
-        'shard': task_result.shard,
-        'log_url': cros_test_log_url or '',
-        'status': _fix_test_runner_status(task_result.tr_attempt),
+      'url': task_result.tr_attempt.task_url,
+      'shard': task_result.shard,
+      'log_url': cros_test_log_url or '',
+      'status': _fix_test_runner_status(task_result.tr_attempt),
     }
 
     is_tast = False
@@ -471,8 +512,8 @@ def read_ctp_results(opts):
   # to timeout.
   for tr in child_builds.values():
     if tr.get('output', {}).get('status') not in (
-        'CANCELED',
-        'INFRA_FAILURE',
+      'CANCELED',
+      'INFRA_FAILURE',
     ):
       continue
     name = None
@@ -494,10 +535,10 @@ def read_ctp_results(opts):
       continue
 
     res[f'cancelled-{tr_shard}'] = {
-        'url': f"https://ci.chromium.org/b/{tr['id']}",
-        'shard': tr_shard,
-        'log_url': None,
-        'status': 'INFRA_FAILURE',
+      'url': f"https://ci.chromium.org/b/{tr['id']}",
+      'shard': tr_shard,
+      'log_url': None,
+      'status': 'INFRA_FAILURE',
     }
 
   if opts.json_outfile:
@@ -509,191 +550,225 @@ def read_ctp_results(opts):
 
 def main(args):
   p = argparse.ArgumentParser(
-      description='Call Buildbucket API to schedule chromium test on Skylab.')
+    description='Call Buildbucket API to schedule chromium test on Skylab.'
+  )
   p.add_argument(
-      '--json-outfile', help='Output file to pass results to recipes.')
+    '--json-outfile', help='Output file to pass results to recipes.'
+  )
   p.add_argument(
-      '--json-creds',
-      help='Path to saved credentials file (e.g. for service accounts).')
+    '--json-creds',
+    help='Path to saved credentials file (e.g. for service accounts).',
+  )
   p.add_argument(
-      '--chromium-src',
-      type=str,
-      help='The local path of chromium/src, where we can import the CTP '
-      'request and response proto bindings from third_party/chromite.')
+    '--chromium-src',
+    type=str,
+    help='The local path of chromium/src, where we can import the CTP '
+    'request and response proto bindings from third_party/chromite.',
+  )
   subparsers = p.add_subparsers()
 
   # Subcommand: request
   subparser = subparsers.add_parser(
-      'request', help=('Schedule Skylab test requests via Buildbucket API.'))
-  subparser.add_argument(
-      '--schedule',
-      action='store_true',
-      default=False,
-      help=('Directly send ScheduleBuild request to Buildbucket (for local '
-            'testing). Default is off (only generate/output request JSON).'),
+    'request', help=('Schedule Skylab test requests via Buildbucket API.')
   )
   subparser.add_argument(
-      '--builder-name', type=str, help='Buildbucket builder name.')
+    '--schedule',
+    action='store_true',
+    default=False,
+    help=(
+      'Directly send ScheduleBuild request to Buildbucket (for local '
+      'testing). Default is off (only generate/output request JSON).'
+    ),
+  )
+  subparser.add_argument(
+    '--builder-name', type=str, help='Buildbucket builder name.'
+  )
   subparser.add_argument('--board', type=str, help='ChromeOS board name.')
   subparser.add_argument(
-      '--model', type=str, default=None, help='ChromeOS model name.')
+    '--model', type=str, default=None, help='ChromeOS model name.'
+  )
   subparser.add_argument(
-      '--cbx', action='store_true', help='Require CBX model.')
+    '--cbx', action='store_true', help='Require CBX model.'
+  )
   subparser.add_argument(
-      '--bucket',
-      type=str,
-      default='gs://chromeos-image-archive',
-      help='GCS bucket to pass browser artifacts to Skylab.')
+    '--bucket',
+    type=str,
+    default='gs://chromeos-image-archive',
+    help='GCS bucket to pass browser artifacts to Skylab.',
+  )
   subparser.add_argument(
-      '--ctp-builder-name',
-      type=str,
-      default='cros_test_platform',
-      help='Buildbucket builder for CTP.')
+    '--ctp-builder-name',
+    type=str,
+    default='cros_test_platform',
+    help='Buildbucket builder for CTP.',
+  )
   subparser.add_argument(
-      '--ctp-bucket',
-      type=str,
-      default='testplatform',
-      help='Buildbucket bucket for CTP.')
+    '--ctp-bucket',
+    type=str,
+    default='testplatform',
+    help='Buildbucket bucket for CTP.',
+  )
   subparser.add_argument(
-      '--parent-build-id',
-      type=str,
-      default=None,
-      help='Parent Buildbucket ID if any.')
+    '--parent-build-id',
+    type=str,
+    default=None,
+    help='Parent Buildbucket ID if any.',
+  )
   subparser.add_argument(
-      '--pool', type=str, default='DUT_POOL_QUOTA', help='Skylab pool.')
+    '--pool', type=str, default='DUT_POOL_QUOTA', help='Skylab pool.'
+  )
   subparser.add_argument(
-      '--image', type=str, help='ChromeOS image for the board to run tests.')
+    '--image', type=str, help='ChromeOS image for the board to run tests.'
+  )
   # TODO(fqj): Remove lacros-gcs-path
   subparser.add_argument(
-      '--lacros-gcs-path',
-      type=str,
-      default='',
-      help='The full GCS path to the lacros artifact for the test.')
-  subparser.add_argument(
-      '--ash-chrome-gcs-path',
-      type=str,
-      default='',
-      help='The full GCS path to the lacros artifact for the test.')
-  subparser.add_argument(
-      '--ash-chrome-build-output-dir',
-      type=str,
-      default='',
-      help='Build output dir of Chrome.')
-  subparser.add_argument(
-      '--secondary-boards',
-      type=str,
-      default=[],
-      action='append',
-      help='Secondary board for nearby tests. May be repeated.')
-  subparser.add_argument(
-      '--secondary-images',
-      type=str,
-      default=[],
-      action='append',
-      help='CrOS image for the secondary boards. May be repeated.')
-  subparser.add_argument(
-      '--secondary-lacros-gcs-path',
-      type=str,
-      default=[],
-      action='append',
-      help='The full GCS path to the lacros artifact for secondary board of '
-      'nearby tests. May be repeated.')
-  subparser.add_argument(
-      '--qs-account',
-      type=str,
-      default='',
-      help='Quota account for the tests thus test could get prioritized to run.'
+    '--lacros-gcs-path',
+    type=str,
+    default='',
+    help='The full GCS path to the lacros artifact for the test.',
   )
   subparser.add_argument(
-      '--timeout-mins',
-      type=int,
-      default=60,
-      help='Timeout in minute for the CTP build.')
-  subparser.add_argument(
-      '--retry',
-      type=int,
-      default=-1,
-      help='Specify the maximum number of retries (zero for infinite retries '
-      'until timeout, or negative number for no retry).')
-  subparser.add_argument(
-      '--total-shards', type=int, default=1, help='Total shards.')
-  subparser.add_argument(
-      '--shard-indexes',
-      type=int,
-      action='append',
-      help='Shard index. May be repeated for multiple shards. If specified, '
-      'total shards will be ignored and only invoke assigned shards.')
-  subparser.add_argument(
-      '--chromium-suite-name',
-      type=str,
-      default='',
-      help='Test suite name on Chromium config')
-  subparser.add_argument(
-      '--autotest-name', type=str, default='', help='Autotest wrapper name.')
-  subparser.add_argument(
-      '--cros-test-tags',
-      action='append',
-      default=[],
-      help='Tags of the tests to run.',
+    '--ash-chrome-gcs-path',
+    type=str,
+    default='',
+    help='The full GCS path to the lacros artifact for the test.',
   )
   subparser.add_argument(
-      '--cros-test-tags-exclude',
-      action='append',
-      default=[],
-      help='Tags to exclude for the tests to run.',
+    '--ash-chrome-build-output-dir',
+    type=str,
+    default='',
+    help='Build output dir of Chrome.',
   )
   subparser.add_argument(
-      '--cros-test-names',
-      action='append',
-      default=[],
-      help='Names of the tests to run.',
+    '--secondary-boards',
+    type=str,
+    default=[],
+    action='append',
+    help='Secondary board for nearby tests. May be repeated.',
   )
   subparser.add_argument(
-      '--cros-test-names-exclude',
-      action='append',
-      default=[],
-      help='Names to exclude for the tests to run.',
+    '--secondary-images',
+    type=str,
+    default=[],
+    action='append',
+    help='CrOS image for the secondary boards. May be repeated.',
   )
   subparser.add_argument(
-      '--cros-test-names-from-file',
-      action='append',
-      default=[],
-      help='Names of the tests to run.',
+    '--secondary-lacros-gcs-path',
+    type=str,
+    default=[],
+    action='append',
+    help='The full GCS path to the lacros artifact for secondary board of '
+    'nearby tests. May be repeated.',
   )
   subparser.add_argument(
-      '--cros-test-names-exclude-from-file',
-      action='append',
-      default=[],
-      help='Names to exclude for the tests to run.',
+    '--qs-account',
+    type=str,
+    default='',
+    help='Quota account for the tests thus test could get prioritized to run.',
   )
   subparser.add_argument(
-      '--cros-test-max-in-shard',
-      type=int,
-      default=0,
-      help='maximum number of tests in a shard',
+    '--timeout-mins',
+    type=int,
+    default=60,
+    help='Timeout in minute for the CTP build.',
   )
   subparser.add_argument(
-      '--cros-ctp-suite-name',
-      type=str,
-      default='',
-      help='Use a different suite name in CTP than --chromium-suite-name',
+    '--retry',
+    type=int,
+    default=-1,
+    help='Specify the maximum number of retries (zero for infinite retries '
+    'until timeout, or negative number for no retry).',
   )
   subparser.add_argument(
-      '--test-arg',
-      nargs=2,
-      action='append',
-      metavar=('KEY', 'VALUE'),
-      help=('The test arguments to pass to the autotest wrapper. '
-            'Repeat multiple times for multiple test arguments.'))
+    '--total-shards', type=int, default=1, help='Total shards.'
+  )
   subparser.add_argument(
-      '--strip', action='store_true', help='Strip Chrome before deploy.')
+    '--shard-indexes',
+    type=int,
+    action='append',
+    help='Shard index. May be repeated for multiple shards. If specified, '
+    'total shards will be ignored and only invoke assigned shards.',
+  )
+  subparser.add_argument(
+    '--chromium-suite-name',
+    type=str,
+    default='',
+    help='Test suite name on Chromium config',
+  )
+  subparser.add_argument(
+    '--autotest-name', type=str, default='', help='Autotest wrapper name.'
+  )
+  subparser.add_argument(
+    '--cros-test-tags',
+    action='append',
+    default=[],
+    help='Tags of the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-tags-exclude',
+    action='append',
+    default=[],
+    help='Tags to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-names',
+    action='append',
+    default=[],
+    help='Names of the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-names-exclude',
+    action='append',
+    default=[],
+    help='Names to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-names-from-file',
+    action='append',
+    default=[],
+    help='Names of the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-names-exclude-from-file',
+    action='append',
+    default=[],
+    help='Names to exclude for the tests to run.',
+  )
+  subparser.add_argument(
+    '--cros-test-max-in-shard',
+    type=int,
+    default=0,
+    help='maximum number of tests in a shard',
+  )
+  subparser.add_argument(
+    '--cros-ctp-suite-name',
+    type=str,
+    default='',
+    help='Use a different suite name in CTP than --chromium-suite-name',
+  )
+  subparser.add_argument(
+    '--test-arg',
+    nargs=2,
+    action='append',
+    metavar=('KEY', 'VALUE'),
+    help=(
+      'The test arguments to pass to the autotest wrapper. '
+      'Repeat multiple times for multiple test arguments.'
+    ),
+  )
+  subparser.add_argument(
+    '--strip', action='store_true', help='Strip Chrome before deploy.'
+  )
   subparser.set_defaults(func=schedule_skylab_tests)
 
   # Subcommand: read build results.
   subparser = subparsers.add_parser(
-      'response', help=('Read the result of cros_test_platform build.'))
+    'response', help=('Read the result of cros_test_platform build.')
+  )
   subparser.add_argument(
-      '--ctp-build-id', type=str, help='The CTP build ID to query.')
+    '--ctp-build-id', type=str, help='The CTP build ID to query.'
+  )
   subparser.set_defaults(func=read_ctp_results)
 
   opts = p.parse_args(args)

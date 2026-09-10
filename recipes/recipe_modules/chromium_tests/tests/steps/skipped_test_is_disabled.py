@@ -17,6 +17,7 @@ from RECIPE_MODULES.recipe_engine import assertions
 class DEPS(RecipeScriptApi):
   assertions: assertions.API
 
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build.chromium_tests.steps import SuccessReuseTest
@@ -29,6 +30,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

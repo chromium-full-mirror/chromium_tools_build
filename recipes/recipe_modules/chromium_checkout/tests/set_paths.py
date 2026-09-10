@@ -24,14 +24,16 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   api.chromium_checkout.set_paths(api.path.cleanup_dir, 'fake-repo')
-  api.assertions.assertEqual(api.chromium_checkout.checkout_dir,
-                             api.path.cleanup_dir)
-  api.assertions.assertEqual(api.chromium_checkout.source_dir,
-                             api.path.cleanup_dir / 'fake-repo')
+  api.assertions.assertEqual(
+    api.chromium_checkout.checkout_dir, api.path.cleanup_dir
+  )
+  api.assertions.assertEqual(
+    api.chromium_checkout.source_dir, api.path.cleanup_dir / 'fake-repo'
+  )
 
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

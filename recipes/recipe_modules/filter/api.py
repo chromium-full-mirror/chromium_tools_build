@@ -20,8 +20,9 @@ from RECIPE_MODULES.build import chromium_types
 _AnalyzeInput: typing.TypeAlias = dict[str, Collection[str]]
 _AnalyzeOutput: typing.TypeAlias = dict[str, typing.Any]
 # _AnalyzeOutput is the test data value
-_Analyzer: typing.TypeAlias = Callable[[_AnalyzeInput, _AnalyzeOutput],
-                                       step_data.StepData]
+_Analyzer: typing.TypeAlias = Callable[
+  [_AnalyzeInput, _AnalyzeOutput], step_data.StepData
+]
 
 
 ResultsCallback = Callable[[str, Iterable[str], Iterable[str]], None]
@@ -35,19 +36,17 @@ The callback takes 3 arguments:
 
 
 def _noop_results_callback(
-    reason: str,
-    compile_targets: Iterable[str],
-    test_targets: Iterable[str],
+  reason: str,
+  compile_targets: Iterable[str],
+  test_targets: Iterable[str],
 ) -> None:
   pass
 
 
-
 class FilterApi(recipe_api.RecipeApi):
-
   def _load_analyze_config(
-      self,
-      config_path: config_types.Path,
+    self,
+    config_path: config_types.Path,
   ) -> dict[str, dict[str, list[str]]]:
     """Load the given analyze config.
 
@@ -96,19 +95,17 @@ class FilterApi(recipe_api.RecipeApi):
     chromium_tests requires "chromium" in addition to "base").
     """
     config = self.m.file.read_json(
-        'read filter exclusion spec',
-        config_path,
-        test_data={'base': {
-            'exclusions': []
-        }},
+      'read filter exclusion spec',
+      config_path,
+      test_data={'base': {'exclusions': []}},
     )
     self.m.step.active_result.presentation.step_text = 'path: %r' % config_path
     return config
 
   def _get_path_matchers(
-      self,
-      additional_names: Collection[str],
-      config_path: config_types.Path,
+    self,
+    additional_names: Collection[str],
+    config_path: config_types.Path,
   ) -> tuple[Collection[re.Pattern], Collection[re.Pattern]]:
     """Get the regular expressions for excluding and ignoring paths.
 
@@ -145,8 +142,8 @@ class FilterApi(recipe_api.RecipeApi):
 
   @staticmethod
   def _find_matching_pattern(
-      path: str,
-      regexes: Collection[re.Pattern],
+    path: str,
+    regexes: Collection[re.Pattern],
   ) -> re.Pattern | None:
     """Returns the pattern string that matches a path (if any)."""
     for regex in regexes:
@@ -166,16 +163,16 @@ class FilterApi(recipe_api.RecipeApi):
     return None
 
   def _run_mb_analyze(
-      self,
-      source_dir: config_types.Path,
-      build_dir: config_types.Path,
-      analyze_input: _AnalyzeInput,
-      test_analyze_output: _AnalyzeOutput,
-      *,
-      builder_id: chromium_types.BuilderId | None,
-      mb_path: config_types.Path | None,
-      mb_config_path: config_types.Path | None,
-      phase: str | None,
+    self,
+    source_dir: config_types.Path,
+    build_dir: config_types.Path,
+    analyze_input: _AnalyzeInput,
+    test_analyze_output: _AnalyzeOutput,
+    *,
+    builder_id: chromium_types.BuilderId | None,
+    mb_path: config_types.Path | None,
+    mb_config_path: config_types.Path | None,
+    phase: str | None,
   ) -> step_data.StepData:
     env = {}
 
@@ -186,45 +183,47 @@ class FilterApi(recipe_api.RecipeApi):
     with self.m.context(env=env):
       builder_id = builder_id or self.m.chromium.get_builder_id()
       return self.m.chromium.mb_analyze(
-          source_dir,
-          build_dir,
-          builder_id,
-          analyze_input,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          phase=phase,
-          test_analyze_output=test_analyze_output)
+        source_dir,
+        build_dir,
+        builder_id,
+        analyze_input,
+        mb_path=mb_path,
+        mb_config_path=mb_config_path,
+        phase=phase,
+        test_analyze_output=test_analyze_output,
+      )
 
   def _run_chromium_gyp_analyze(
-      self,
-      source_dir: config_types.Path,
-      analyze_input: _AnalyzeInput,
-      test_analyze_output: _AnalyzeOutput,
+    self,
+    source_dir: config_types.Path,
+    analyze_input: _AnalyzeInput,
+    test_analyze_output: _AnalyzeOutput,
   ) -> step_data.StepData:
     # If building for CrOS, execute through the "chrome_sdk" wrapper. This
     # will override GYP environment variables, so we'll refrain from defining
     # them to avoid confusing output.
     with self.m.context(env=self.m.chromium.c.gyp_env.as_jsonish()):
       return self.m.step(
-          'analyze', [
-              'python3',
-              source_dir / 'build/gyp_chromium',
-              '--analyzer',
-              self.m.json.input(analyze_input),
-              self.m.json.output(),
-          ],
-          step_test_data=lambda: self.m.json.test_api.output(test_analyze_output
-                                                            ))
+        'analyze',
+        [
+          'python3',
+          source_dir / 'build/gyp_chromium',
+          '--analyzer',
+          self.m.json.input(analyze_input),
+          self.m.json.output(),
+        ],
+        step_test_data=lambda: self.m.json.test_api.output(test_analyze_output),
+      )
 
   def _determine_affected_targets(
-      self,
-      results_callback: ResultsCallback,
-      paths: Collection[str],
-      test_targets: Collection[str],
-      additional_compile_targets: Collection[str],
-      exclusions: Mapping[re.Pattern, str],
-      ignores: Collection[re.Pattern],
-      analyzer: _Analyzer,
+    self,
+    results_callback: ResultsCallback,
+    paths: Collection[str],
+    test_targets: Collection[str],
+    additional_compile_targets: Collection[str],
+    exclusions: Mapping[re.Pattern, str],
+    ignores: Collection[re.Pattern],
+    analyzer: _Analyzer,
   ) -> tuple[Collection[str], Collection[str]]:
     for path in paths:
       if self._find_matching_pattern(path, ignores):
@@ -232,52 +231,60 @@ class FilterApi(recipe_api.RecipeApi):
       matched_pattern = self._find_matching_pattern(path, exclusions)
       if matched_pattern:
         self.m.step.empty(
-            'analyze',
-            step_text='Analyze disabled: matched exclusion',
-            log_name='excluded_files',
-            log_text=f'{path} (regex = \'{matched_pattern.pattern}\'), '
-            f'exclusion source: {exclusions[matched_pattern]}')
+          'analyze',
+          step_text='Analyze disabled: matched exclusion',
+          log_name='excluded_files',
+          log_text=f'{path} (regex = \'{matched_pattern.pattern}\'), '
+          f'exclusion source: {exclusions[matched_pattern]}',
+        )
         all_targets = set(test_targets) | set(additional_compile_targets)
 
         all_targets = sorted(all_targets)
         test_targets = sorted(test_targets)
 
         results_callback(
-            ('skipping analyze because an exclusion matched:'
-             f' {path} matched regex "{matched_pattern.pattern}"'
-             f' from {exclusions[matched_pattern]}'),
-            all_targets,
-            test_targets,
+          (
+            'skipping analyze because an exclusion matched:'
+            f' {path} matched regex "{matched_pattern.pattern}"'
+            f' from {exclusions[matched_pattern]}'
+          ),
+          all_targets,
+          test_targets,
         )
 
         return test_targets, all_targets
 
     analyze_input = {
-        'files': paths,
-        'test_targets': test_targets,
-        'additional_compile_targets': additional_compile_targets,
+      'files': paths,
+      'test_targets': test_targets,
+      'additional_compile_targets': additional_compile_targets,
     }
     test_analyze_output = {
-        'status': 'Found dependency',
-        'test_targets': test_targets,
-        'compile_targets': additional_compile_targets,
+      'status': 'Found dependency',
+      'test_targets': test_targets,
+      'compile_targets': additional_compile_targets,
     }
     step_result = analyzer(analyze_input, test_analyze_output)
 
     if 'error' in step_result.json.output:
       step_result.presentation.step_text = (
-          'Error: ' + step_result.json.output['error'])
+        'Error: ' + step_result.json.output['error']
+      )
       step_result.presentation.status = self.m.step.FAILURE
-      raise self.m.step.StepFailure('Error: ' +
-                                    step_result.json.output['error'])
+      raise self.m.step.StepFailure(
+        'Error: ' + step_result.json.output['error']
+      )
 
     if 'invalid_targets' in step_result.json.output:
       raise self.m.step.StepFailure(
-          'Error, following targets were not found: ' +
-          ', '.join(step_result.json.output['invalid_targets']))
+        'Error, following targets were not found: '
+        + ', '.join(step_result.json.output['invalid_targets'])
+      )
 
-    if (step_result.json.output['status'] in ('Found dependency',
-                                              'Found dependency (all)')):
+    if step_result.json.output['status'] in (
+      'Found dependency',
+      'Found dependency (all)',
+    ):
       test_targets = sorted(step_result.json.output['test_targets'])
       compile_targets = step_result.json.output['compile_targets']
 
@@ -295,29 +302,30 @@ class FilterApi(recipe_api.RecipeApi):
 
     step_result.presentation.step_text = 'No compile necessary'
     step_result.presentation.properties['no_compile'] = sorted(
-        itertools.chain(test_targets, additional_compile_targets))
+      itertools.chain(test_targets, additional_compile_targets)
+    )
 
     results_callback('analysis complete, found no dependencies', [], [])
 
     return [], []
 
   def analyze(
-      self,
-      source_dir: config_types.Path,
-      build_dir: config_types.Path,
-      affected_files: Collection[str],
-      test_targets: Collection[str] | None,
-      additional_compile_targets: Collection[str] | None,
-      *,
-      config_path: config_types.Path | None = None,
-      additional_names: Collection[str] | None = None,
-      additional_exclusions: Mapping[str, str] | None = None,
-      ignored_exclusion_patterns: Collection[str] | None = None,
-      builder_id: chromium_types.BuilderId | None = None,
-      mb_path: config_types.Path | None = None,
-      mb_config_path: config_types.Path | None = None,
-      phase: str | None = None,
-      results_callback: ResultsCallback | None = None,
+    self,
+    source_dir: config_types.Path,
+    build_dir: config_types.Path,
+    affected_files: Collection[str],
+    test_targets: Collection[str] | None,
+    additional_compile_targets: Collection[str] | None,
+    *,
+    config_path: config_types.Path | None = None,
+    additional_names: Collection[str] | None = None,
+    additional_exclusions: Mapping[str, str] | None = None,
+    ignored_exclusion_patterns: Collection[str] | None = None,
+    builder_id: chromium_types.BuilderId | None = None,
+    mb_path: config_types.Path | None = None,
+    mb_config_path: config_types.Path | None = None,
+    phase: str | None = None,
+    results_callback: ResultsCallback | None = None,
   ) -> tuple[Collection[str], Collection[str]]:
     """Runs "analyze" step to determine targets affected by the patch.
 
@@ -392,18 +400,20 @@ class FilterApi(recipe_api.RecipeApi):
     if config_path is None:
       config_path = self.m.chromium.analyze_config_path(source_dir)
       assert config_path, (
-          'either config_path must be passed in'
-          ' or the chromium config must set analyze_config_path')
+        'either config_path must be passed in'
+        ' or the chromium config must set analyze_config_path'
+      )
 
     exclusions_from_config, ignores = self._get_path_matchers(
-        additional_names, config_path)
+      additional_names, config_path
+    )
     if ignored_exclusion_patterns:
       ignored_set = set(ignored_exclusion_patterns)
       exclusions_from_config = [
-          e for e in exclusions_from_config if e.pattern not in ignored_set
+        e for e in exclusions_from_config if e.pattern not in ignored_set
       ]
     exclusions = {
-        exclusion: 'analyze config file' for exclusion in exclusions_from_config
+      exclusion: 'analyze config file' for exclusion in exclusions_from_config
     }
     if additional_exclusions:
       for path, source in additional_exclusions.items():
@@ -412,18 +422,18 @@ class FilterApi(recipe_api.RecipeApi):
     # TODO(gbeaty) Check if this is necessary, the documentation for the
     # parameter indicates that they should always have forward slashes
     paths = [
-        p for p in (self._convert_path_to_posix(f) for f in affected_files) if p
+      p for p in (self._convert_path_to_posix(f) for f in affected_files) if p
     ]
 
     if self.m.chromium.c.project_generator.tool == 'mb':
       analyzer = functools.partial(
-          self._run_mb_analyze,
-          source_dir,
-          build_dir,
-          builder_id=builder_id,
-          mb_path=mb_path,
-          mb_config_path=mb_config_path,
-          phase=phase,
+        self._run_mb_analyze,
+        source_dir,
+        build_dir,
+        builder_id=builder_id,
+        mb_path=mb_path,
+        mb_config_path=mb_config_path,
+        phase=phase,
       )
     else:
       analyzer = functools.partial(self._run_chromium_gyp_analyze, source_dir)
@@ -433,22 +443,23 @@ class FilterApi(recipe_api.RecipeApi):
     results_callback = results_callback or _noop_results_callback
 
     analyze_test_targets, analyze_compile_targets = (
-        self._determine_affected_targets(
-            results_callback,
-            paths,
-            test_targets,
-            additional_compile_targets,
-            exclusions,
-            ignores,
-            analyzer,
-        ))
+      self._determine_affected_targets(
+        results_callback,
+        paths,
+        test_targets,
+        additional_compile_targets,
+        exclusions,
+        ignores,
+        analyzer,
+      )
+    )
 
     # Emit more detailed output useful for debugging.
     analyze_details = {
-        'test targets': test_targets,
-        'additional compile targets': additional_compile_targets,
-        'affected test targets': analyze_test_targets,
-        'affected compile targets': analyze_compile_targets,
+      'test targets': test_targets,
+      'additional compile targets': additional_compile_targets,
+      'affected test targets': analyze_test_targets,
+      'affected compile targets': analyze_compile_targets,
     }
     details_json = self.m.json.dumps(analyze_details, indent=2, sort_keys=False)
     step_result = self.m.step.active_result

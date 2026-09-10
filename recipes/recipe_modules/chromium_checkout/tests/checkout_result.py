@@ -26,18 +26,19 @@ def RunSteps(api: DEPS):
 
   # 1. Test CasCheckoutResult
   raw_properties = {
-      'parent_got_revision': 'fake-parent-revision',
-      'revision': 'fake-revision',
+    'parent_got_revision': 'fake-parent-revision',
+    'revision': 'fake-revision',
   }
-  cas_result = checkout_result.CasCheckoutResult(checkout_dir, source_dir,
-                                                 raw_properties, 'src')
+  cas_result = checkout_result.CasCheckoutResult(
+    checkout_dir, source_dir, raw_properties, 'src'
+  )
 
   assert cas_result.checkout_dir == checkout_dir
   assert cas_result.source_root.path == source_dir
   assert cas_result.source_root.name == 'src'
   assert cas_result.patch_root is None
   assert cas_result.properties == {
-      'got_revision': 'fake-parent-revision',
+    'got_revision': 'fake-parent-revision',
   }
   assert cas_result.manifest == {}
   assert cas_result.fixed_revisions == {}
@@ -45,25 +46,25 @@ def RunSteps(api: DEPS):
 
   # Test CasCheckoutResult with 'revision' fallback
   cas_result_fallback = checkout_result.CasCheckoutResult(
-      checkout_dir, source_dir, {'revision': 'fake-revision'}, 'src')
+    checkout_dir, source_dir, {'revision': 'fake-revision'}, 'src'
+  )
   assert cas_result_fallback.properties == {
-      'got_revision': 'fake-revision',
+    'got_revision': 'fake-revision',
   }
 
   # 2. Test BotUpdateResultAdapter
   class MockSourceRoot:
-
     def __init__(self, path, name):
       self.path = path
       self.name = name
 
   class MockBotUpdateResult:
-
     def __init__(self):
       self.checkout_dir = checkout_dir
       self.source_root = MockSourceRoot(source_dir, 'src')
-      self.patch_root = MockSourceRoot(source_dir / 'third_party/some_repo',
-                                       'some_repo')
+      self.patch_root = MockSourceRoot(
+        source_dir / 'third_party/some_repo', 'some_repo'
+      )
       self.properties = {'got_revision': 'fake-revision'}
       self.manifest = {'src': {'revision': 'fake-revision'}}
       self.fixed_revisions = {'src': 'HEAD'}
@@ -90,6 +91,6 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.DropExpectation),
   )

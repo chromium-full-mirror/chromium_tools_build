@@ -10,10 +10,10 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import depot_tools
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    raw_io,
-    step,
+  context,
+  file,
+  raw_io,
+  step,
 )
 
 
@@ -24,6 +24,7 @@ class DEPS(RecipeScriptApi):
   file: file.API
   raw_io: raw_io.API
   step: step.API
+
 
 from .api import GnApi as API
 from .test_api import GnTestApi as TEST_API

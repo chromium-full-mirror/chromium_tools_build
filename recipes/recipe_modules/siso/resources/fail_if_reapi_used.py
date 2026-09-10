@@ -12,12 +12,13 @@ import sys
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Checks siso_metrics.json and fails if remote execution was used.'
+    description='Checks siso_metrics.json and fails if remote execution was used.'
   )
   parser.add_argument(
-      '--siso_metrics_path',
-      required=True,
-      help='Path to the siso_metrics.json file.')
+    '--siso_metrics_path',
+    required=True,
+    help='Path to the siso_metrics.json file.',
+  )
   args = parser.parse_args()
 
   with open(args.siso_metrics_path, 'r', encoding='utf-8') as f:
@@ -27,7 +28,7 @@ def main():
         out = metric.get('output')
         rule = metric.get('rule')
         print(
-            f"Error: Remote execution found. rule: {rule}, output: {out}, line: {line_number}"
+          f"Error: Remote execution found. rule: {rule}, output: {out}, line: {line_number}"
         )
         return 1
     return 0

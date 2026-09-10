@@ -20,21 +20,23 @@ def _execute_migrate(*args):
 
 
 class MigrateIntegrationTest(unittest.TestCase):
-
   def test_invalid_arguments(self):
     with self.assertRaises(subprocess.CalledProcessError) as caught:
       _execute_migrate('no-colon', 'too:many:colons', 'just:right')
     self.assertIn(
-        ("The following builders to migrate are invalid: "
-         "'no-colon', 'too:many:colons'"),
-        caught.exception.output,
+      (
+        "The following builders to migrate are invalid: "
+        "'no-colon', 'too:many:colons'"
+      ),
+      caught.exception.output,
     )
 
   def test_migration_error(self):
     with self.assertRaises(subprocess.CalledProcessError) as caught:
       _execute_migrate('unknown-group:builder')
-    self.assertIn("unknown builder 'unknown-group:builder'",
-                  caught.exception.output)
+    self.assertIn(
+      "unknown builder 'unknown-group:builder'", caught.exception.output
+    )
 
   def test_migration(self):
     try:
@@ -44,8 +46,8 @@ class MigrateIntegrationTest(unittest.TestCase):
       raise
     self.maxDiff = None
     self.assertEqual(
-        output,
-        textwrap.dedent('''\
+      output,
+      textwrap.dedent('''\
             migration.testing:bar
                 builder_spec = builder_config.builder_spec(
                     gclient_config = builder_config.gclient_config(
@@ -72,7 +74,8 @@ class MigrateIntegrationTest(unittest.TestCase):
                     "ci/bar",
                 ],
 
-            '''))
+            '''),
+    )
 
 
 if __name__ == '__main__':

@@ -1,8 +1,7 @@
 # Copyright 2021 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-"""Test to ensure the correctness of get_first_tag
-"""
+"""Test to ensure the correctness of get_first_tag"""
 
 from __future__ import annotations
 
@@ -40,18 +39,19 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.buildbucket.try_build(
-          tags=[common_pb2.StringPair(key='lookup_key', value='recipe_tests')]),
-      api.properties(result='recipe_tests'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.buildbucket.try_build(
+      tags=[common_pb2.StringPair(key='lookup_key', value='recipe_tests')]
+    ),
+    api.properties(result='recipe_tests'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'not found',
-      api.buildbucket.try_build(tags=[
-          common_pb2.StringPair(key='not_lookup_key', value='recipe_tests')
-      ]),
-      api.properties(result=None),
-      api.post_process(post_process.DropExpectation),
+    'not found',
+    api.buildbucket.try_build(
+      tags=[common_pb2.StringPair(key='not_lookup_key', value='recipe_tests')]
+    ),
+    api.properties(result=None),
+    api.post_process(post_process.DropExpectation),
   )

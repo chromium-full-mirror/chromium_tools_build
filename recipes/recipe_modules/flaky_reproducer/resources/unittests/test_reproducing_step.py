@@ -12,7 +12,6 @@ from testdata import get_test_data
 
 
 class ReproducingStepTest(unittest.TestCase):
-
   def test_from_jsonish(self):
     json_data = json.loads(get_test_data('reproducing_step.json'))
     step = ReproducingStep.from_jsonish(json_data)
@@ -33,31 +32,36 @@ class ReproducingStepTest(unittest.TestCase):
     self.maxDiff = None
     step = self.test_from_jsonish()
     self.assertEqual(
-        step.readable_info(),
-        ('The failure could be reproduced (90.0%) with command'
-         ' by repeat strategy:\n\n'
-         'vpython3 ../../testing/test_env.py ./base_unittests.exe'
-         ' --test-launcher-bot-mode --asan=0 --lsan=0 --msan=0 --tsan=0'
-         ' --cfi-diag=0 --test-launcher-retry-limit=0 '
-         '--gtest_filter=MockUnitTests.CrashTest:MockUnitTests.PassTest '
-         '--gtest_repeat=1 '
-         '--test-launcher-batch-limit=0 --test-launcher-jobs=5'))
+      step.readable_info(),
+      (
+        'The failure could be reproduced (90.0%) with command'
+        ' by repeat strategy:\n\n'
+        'vpython3 ../../testing/test_env.py ./base_unittests.exe'
+        ' --test-launcher-bot-mode --asan=0 --lsan=0 --msan=0 --tsan=0'
+        ' --cfi-diag=0 --test-launcher-retry-limit=0 '
+        '--gtest_filter=MockUnitTests.CrashTest:MockUnitTests.PassTest '
+        '--gtest_repeat=1 '
+        '--test-launcher-batch-limit=0 --test-launcher-jobs=5'
+      ),
+    )
 
   def test_readable_info_not_reproduced(self):
     self.maxDiff = None
     step = self.test_from_jsonish()
     step.reproducing_rate = 0
-    self.assertEqual(step.readable_info(),
-                     'This failure was NOT reproduced by repeat strategy.')
+    self.assertEqual(
+      step.readable_info(),
+      'This failure was NOT reproduced by repeat strategy.',
+    )
 
   def test_better_than(self):
     step = self.test_from_jsonish()
     test_binary = step.test_binary
 
     step_0 = ReproducingStep(
-        test_binary,
-        'test',
-        0,
+      test_binary,
+      'test',
+      0,
     )
     step_50 = ReproducingStep(test_binary, 'test', 0.5, 123)
     step_60 = ReproducingStep(test_binary, 'test', 0.6, 123)

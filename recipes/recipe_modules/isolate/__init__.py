@@ -9,28 +9,28 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    siso,
-    swarming_client,
+  chromium,
+  siso,
+  swarming_client,
 )
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    git,
-    gsutil,
+  depot_tools,
+  git,
+  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  buildbucket,
+  cas,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -54,6 +54,7 @@ class DEPS(RecipeScriptApi):
   step: step.API
   siso: siso.API
   swarming_client: swarming_client.API
+
 
 from .api import IsolateApi as API
 from .test_api import IsolateTestApi as TEST_API

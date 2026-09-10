@@ -15,7 +15,6 @@ import summarize_topics
 
 
 class TestSummarizeTopics(unittest.TestCase):
-
   def setUp(self):
     # Create a temporary directory for cache testing
     self.test_dir = tempfile.mkdtemp()
@@ -59,26 +58,29 @@ class TestSummarizeTopics(unittest.TestCase):
   def test_format_code_context(self):
     """Test aggregation and sorting of code context lines."""
     commits = [
-        {
-            'files': {
-                'utils.py': [(10, 'def helper():'), (1, 'import sys')],
-                'main.py': [(5, 'def main():')]
-            }
-        },
-        {
-            'files': {
-                'utils.py': [(2, 'import os')
-                            ]  # Should interleave with utils.py above
-            }
+      {
+        'files': {
+          'utils.py': [(10, 'def helper():'), (1, 'import sys')],
+          'main.py': [(5, 'def main():')],
         }
+      },
+      {
+        'files': {
+          'utils.py': [
+            (2, 'import os')
+          ]  # Should interleave with utils.py above
+        }
+      },
     ]
 
-    expected_output = ("\nmain.py\n"
-                       "5:def main():\n"
-                       "\nutils.py\n"
-                       "1:import sys\n"
-                       "2:import os\n"
-                       "10:def helper():")
+    expected_output = (
+      "\nmain.py\n"
+      "5:def main():\n"
+      "\nutils.py\n"
+      "1:import sys\n"
+      "2:import os\n"
+      "10:def helper():"
+    )
 
     result = summarize_topics.format_code_context(commits)
     self.assertEqual(result, expected_output)
@@ -117,9 +119,9 @@ class TestSummarizeTopics(unittest.TestCase):
     cache_file = self.cache_dir / "testhash.txt"
     cache_file.write_text("Cached Response", encoding='utf-8')
 
-    result = summarize_topics.call_llm_with_cache("prompt", "model",
-                                                  self.mock_client,
-                                                  self.cache_dir)
+    result = summarize_topics.call_llm_with_cache(
+      "prompt", "model", self.mock_client, self.cache_dir
+    )
 
     self.assertEqual(result, "Cached Response")
     self.mock_client.models.generate_content.assert_not_called()
@@ -134,9 +136,9 @@ class TestSummarizeTopics(unittest.TestCase):
     mock_response.candidates[0].content.parts[0].text = "API Response"
     self.mock_client.models.generate_content.return_value = mock_response
 
-    result = summarize_topics.call_llm_with_cache("prompt", "model",
-                                                  self.mock_client,
-                                                  self.cache_dir)
+    result = summarize_topics.call_llm_with_cache(
+      "prompt", "model", self.mock_client, self.cache_dir
+    )
 
     # Verify result and API call
     self.assertEqual(result, "API Response")
@@ -153,7 +155,8 @@ class TestSummarizeTopics(unittest.TestCase):
     mock_call_llm.return_value = ' "My Title" \n This is the summary. '
 
     title, summary = summarize_topics.get_topic_summary_and_title(
-        ["msg"], "model", self.mock_client, self.cache_dir)
+      ["msg"], "model", self.mock_client, self.cache_dir
+    )
 
     self.assertEqual(title, "My Title")
     self.assertEqual(summary, "This is the summary.")
@@ -173,11 +176,12 @@ class TestSummarizeTopics(unittest.TestCase):
     self.mock_client.models.embed_content.return_value = mock_result
 
     embedding = summarize_topics.get_summary_embedding_with_cache(
-        "text",
-        self.cache_dir,
-        self.mock_client,
-        "embedding-model",
-        output_dimensionality=768)
+      "text",
+      self.cache_dir,
+      self.mock_client,
+      "embedding-model",
+      output_dimensionality=768,
+    )
 
     self.assertEqual(embedding, [0.1, 0.2, 0.3])
     self.mock_client.models.embed_content.assert_called_once()
@@ -196,29 +200,28 @@ class TestSummarizeTopics(unittest.TestCase):
 
     # Input data
     topic_data = {
-        'topic_id':
-            123,
-        'commit_count':
-            5,
-        'commits': [{
-            'date': '2025-01-01',
-            'message': 'msg1',
-            'metadata': {},
-            'files': {
-                'test.py': [(1, 'a = 1')]
-            }
-        }]
+      'topic_id': 123,
+      'commit_count': 5,
+      'commits': [
+        {
+          'date': '2025-01-01',
+          'message': 'msg1',
+          'metadata': {},
+          'files': {'test.py': [(1, 'a = 1')]},
+        }
+      ],
     }
 
     # Run process_topic
     result = summarize_topics.process_topic(
-        topic_data,
-        "llm-model-name",
-        "embedding-model-name",
-        self.mock_client,
-        self.cache_dir,
-        self.cache_dir,
-        output_dimensionality=768)
+      topic_data,
+      "llm-model-name",
+      "embedding-model-name",
+      self.mock_client,
+      self.cache_dir,
+      self.cache_dir,
+      output_dimensionality=768,
+    )
 
     # Assertions
     self.assertEqual(result['topic_id'], 123)
@@ -233,25 +236,23 @@ class TestSummarizeTopics(unittest.TestCase):
     # IMPORTANT: Check that 'files' key was removed from commits to save space
     self.assertNotIn('files', result['commits'][0])
 
-    mock_get_embedding.assert_called_with('Summary text', self.cache_dir,
-                                          self.mock_client,
-                                          'embedding-model-name', 768)
+    mock_get_embedding.assert_called_with(
+      'Summary text',
+      self.cache_dir,
+      self.mock_client,
+      'embedding-model-name',
+      768,
+    )
 
   def test_extract_topic_keywords(self):
     """Test keyword extraction returns correct structure."""
-    topics = [{
+    topics = [
+      {
         'topic_id': 1,
-        'commits': [{
-            'message': "fix bug"
-        }, {
-            'message': "fix another bug"
-        }]
-    }, {
-        'topic_id': 2,
-        'commits': [{
-            'message': "feature add"
-        }]
-    }]
+        'commits': [{'message': "fix bug"}, {'message': "fix another bug"}],
+      },
+      {'topic_id': 2, 'commits': [{'message': "feature add"}]},
+    ]
 
     with patch("summarize_topics.CountVectorizer") as mock_cv:
       mock_instance = mock_cv.return_value

@@ -33,8 +33,9 @@ class IsolateApi(recipe_api.RecipeApi):
     version = _CIPD_VERSION
     if self._test_data.enabled:
       version = 'git_revision:mock_infra_git_revision'
-    exe = self.m.cipd.ensure_tool('infra/tools/luci/isolate/${platform}',
-                                  version)
+    exe = self.m.cipd.ensure_tool(
+      'infra/tools/luci/isolate/${platform}', version
+    )
     args = [exe] + args
     return self.m.step(step_name, args, **kwargs)
 
@@ -51,13 +52,15 @@ class IsolateApi(recipe_api.RecipeApi):
     with self.m.step.nest('check swarm_hashes'):
       if self._test_data.enabled:
         self._isolated_tests = {
-          target: '[dummy hash for %s/1]' % target for target in targets}
+          target: '[dummy hash for %s/1]' % target for target in targets
+        }
 
       isolated_tests = self.isolated_tests
       missing = [t for t in targets if not isolated_tests.get(t)]
       if missing:
         raise self.m.step.InfraFailure(
-          'Missing isolated target(s) %s in swarm_hashes' % ', '.join(missing))
+          'Missing isolated target(s) %s in swarm_hashes' % ', '.join(missing)
+        )
 
   def isolate(self, name, isolate_path):
     """Archives a single .isolate file.
@@ -70,33 +73,36 @@ class IsolateApi(recipe_api.RecipeApi):
         CAS digest
     """
     args = [
-        'archive',
-        '--dump-json',
-        self.m.json.output(),
-        '--log-level',
-        'debug',
-        '--cas-instance',
-        self.m.cas.instance,
-        '--isolate',
-        isolate_path,
+      'archive',
+      '--dump-json',
+      self.m.json.output(),
+      '--log-level',
+      'debug',
+      '--cas-instance',
+      self.m.cas.instance,
+      '--isolate',
+      isolate_path,
     ]
     isolate_name = self.m.path.splitext(self.m.path.basename(isolate_path))[0]
     result = self(
-        args,
-        name,
-        step_test_data=lambda: self.test_api.output_json([isolate_name]))
+      args,
+      name,
+      step_test_data=lambda: self.test_api.output_json([isolate_name]),
+    )
     return result.json.output[isolate_name]
 
-  def isolate_tests(self,
-                    build_dir,
-                    targets,
-                    verbose=False,
-                    swarm_hashes_property_name='swarm_hashes',
-                    step_name=None,
-                    suffix='',
-                    source_dir=None,
-                    use_siso_isolate=False,
-                    **kwargs):
+  def isolate_tests(
+    self,
+    build_dir,
+    targets,
+    verbose=False,
+    swarm_hashes_property_name='swarm_hashes',
+    step_name=None,
+    suffix='',
+    source_dir=None,
+    use_siso_isolate=False,
+    **kwargs,
+  ):
     """Archives prepared tests in |build_dir| to isolate server.
 
     src/tools/mb/mb.py is invoked to produce *.isolate and *.isolated.gen.json
@@ -125,17 +131,19 @@ class IsolateApi(recipe_api.RecipeApi):
 
     _step_name = step_name or ('isolate tests%s' % suffix)
     if use_siso_isolate:
-      assert source_dir, ('`source_dir` must be set to use'
-                          'api.siso.isolate_tests().')
-      step_result = self.m.siso.isolate_tests(_step_name, source_dir, build_dir,
-                                              targets, **kwargs)
+      assert source_dir, (
+        '`source_dir` must be set to useapi.siso.isolate_tests().'
+      )
+      step_result = self.m.siso.isolate_tests(
+        _step_name, source_dir, build_dir, targets, **kwargs
+      )
     else:
       # FIXME: Differentiate between bad *.isolate and upload errors.
       # Raise InfraFailure on upload errors.
       args = [
-          'batcharchive',
-          '--dump-json',
-          self.m.json.output(),
+        'batcharchive',
+        '--dump-json',
+        self.m.json.output(),
       ] + (['--verbose'] if verbose else [])
 
       args.extend(['-cas-instance', self.m.cas.instance])
@@ -143,16 +151,19 @@ class IsolateApi(recipe_api.RecipeApi):
       # TODO(b/187913980): this is for investigation of upload failures.
       args.extend(['-log-level', 'debug'])
 
-      args.extend([
+      args.extend(
+        [
           build_dir.joinpath('%s.isolated.gen.json' % t)
           for t in sorted(set(targets))
-      ])
+        ]
+      )
 
       step_result = self(
-          args,
-          _step_name,
-          step_test_data=lambda: self.test_api.output_json(targets),
-          **kwargs)
+        args,
+        _step_name,
+        step_test_data=lambda: self.test_api.output_json(targets),
+        **kwargs,
+      )
 
     swarm_hashes = {}
     if step_result.json.output:
@@ -161,7 +172,7 @@ class IsolateApi(recipe_api.RecipeApi):
         # existing error. This code is currently inside a finally block,
         # meaning it could be executed when an existing error is occurring.
         # See https://chromium-review.googlesource.com/c/437024/
-        #assert k not in swarm_hashes or swarm_hashes[k] == v, (
+        # assert k not in swarm_hashes or swarm_hashes[k] == v, (
         #    "Duplicate hash for target %s was found at step %s."
         #    "Existing hash: %s, New hash: %s") % (
         #        k, step, swarm_hashes[k], v)
@@ -170,16 +181,21 @@ class IsolateApi(recipe_api.RecipeApi):
     if swarm_hashes:
       self.set_isolated_tests(swarm_hashes)
 
-    if (swarm_hashes_property_name and
-        len(swarm_hashes) <= _MAX_SWARM_HASHES_PROPERTY_LENGTH):
-      step_result.presentation.properties[
-          swarm_hashes_property_name] = swarm_hashes
+    if (
+      swarm_hashes_property_name
+      and len(swarm_hashes) <= _MAX_SWARM_HASHES_PROPERTY_LENGTH
+    ):
+      step_result.presentation.properties[swarm_hashes_property_name] = (
+        swarm_hashes
+      )
 
     missing = sorted(t for t, h in self._isolated_tests.items() if not h)
     if missing:
       step_result.presentation.logs['failed to isolate'] = (
-          ['Failed to isolate following targets:'] + missing +
-          ['', 'See logs for more information.'])
+        ['Failed to isolate following targets:']
+        + missing
+        + ['', 'See logs for more information.']
+      )
       for k in missing:
         self._isolated_tests.pop(k)
 
@@ -206,7 +222,7 @@ class IsolateApi(recipe_api.RecipeApi):
     # Be robust in the case where swarm_hashes is an empty string
     # instead of an empty dictionary, or similar.
     if not hashes:
-      return {} # pragma: no covergae
+      return {}  # pragma: no covergae
     return dict(hashes)
 
   @property
@@ -214,23 +230,25 @@ class IsolateApi(recipe_api.RecipeApi):
     """Returns the path to run_isolated.py."""
     return self.m.swarming_client.path.joinpath('run_isolated.py')
 
-  def run_isolated(self,
-                   name,
-                   isolated_input,
-                   args=None,
-                   pre_args=None,
-                   resultdb=None,
-                   env=None,
-                   **kwargs):
+  def run_isolated(
+    self,
+    name,
+    isolated_input,
+    args=None,
+    pre_args=None,
+    resultdb=None,
+    env=None,
+    **kwargs,
+  ):
     """Runs an isolated test."""
     cmd = [
-        'vpython3',
-        self._run_isolated_path,
-        '--verbose',
-        '--cas-instance',
-        self.m.cas.instance,
-        '--cas-digest',
-        isolated_input,
+      'vpython3',
+      self._run_isolated_path,
+      '--verbose',
+      '--cas-instance',
+      self.m.cas.instance,
+      '--cas-digest',
+      isolated_input,
     ]
 
     for k, v in sorted((env or {}).items()):
@@ -246,11 +264,11 @@ class IsolateApi(recipe_api.RecipeApi):
     return self.m.step(name, cmd, **kwargs)
 
   def archive_differences(
-      self,
-      source_dir: Path,
-      first_dir: str,
-      second_dir: str,
-      values,
+    self,
+    source_dir: Path,
+    first_dir: str,
+    second_dir: str,
+    values,
   ):
     """Archive different files of 2 builds."""
     GS_BUCKET = 'chrome-determinism'
@@ -276,11 +294,15 @@ class IsolateApi(recipe_api.RecipeApi):
 
     # TODO(thakis): Temporary, for debugging https://crbug.com/1031993
     # Consider comparing all generated files?
-    diffs.append('gen/third_party/blink/renderer/core/style/computed_style_base.h')
+    diffs.append(
+      'gen/third_party/blink/renderer/core/style/computed_style_base.h'
+    )
 
     t = self.m.path.mkdtemp('deterministic_build')
     output = self.m.path.join(t, TARBALL_NAME)
-    self.m.step('create tarball', [
+    self.m.step(
+      'create tarball',
+      [
         'python3',
         source_dir / 'tools/determinism/create_diffs_tarball.py',
         '--first-build-dir',
@@ -291,54 +313,68 @@ class IsolateApi(recipe_api.RecipeApi):
         self.m.json.input(diffs),
         '--output',
         output,
-    ])
+      ],
+    )
     self.m.gsutil.upload(
-        output, GS_BUCKET,
-        '{}/{}/{}'.format(self.m.properties['buildername'],
-                          self.m.properties['buildnumber'], TARBALL_NAME))
+      output,
+      GS_BUCKET,
+      '{}/{}/{}'.format(
+        self.m.properties['buildername'],
+        self.m.properties['buildnumber'],
+        TARBALL_NAME,
+      ),
+    )
     self.m.file.rmtree('rmtree %s' % t, t)
 
   def compare_build_artifacts(
-      self,
-      source_dir: Path,
-      first_dir: str,
-      second_dir: str,
+    self,
+    source_dir: Path,
+    first_dir: str,
+    second_dir: str,
   ):
     """Compare the artifacts from 2 builds."""
     cmd = [
-        'python3',
-        source_dir / 'tools/determinism/compare_build_artifacts.py',
-        '--first-build-dir',
-        first_dir,
-        '--second-build-dir',
-        second_dir,
-        '--target-platform',
-        self.m.chromium.c.TARGET_PLATFORM,
-        '--json-output',
-        self.m.json.output(),
-        '--ninja-path',
-        source_dir / 'third_party/ninja/ninja',
-        '--use-isolate-files',
+      'python3',
+      source_dir / 'tools/determinism/compare_build_artifacts.py',
+      '--first-build-dir',
+      first_dir,
+      '--second-build-dir',
+      second_dir,
+      '--target-platform',
+      self.m.chromium.c.TARGET_PLATFORM,
+      '--json-output',
+      self.m.json.output(),
+      '--ninja-path',
+      source_dir / 'third_party/ninja/ninja',
+      '--use-isolate-files',
     ]
     try:
       with self.m.context(cwd=self.m.path.start_dir):
         step_result = self.m.step(
-            'compare_build_artifacts',
-            cmd,
-            step_test_data=(lambda: self.m.json.test_api.output({
+          'compare_build_artifacts',
+          cmd,
+          step_test_data=(
+            lambda: self.m.json.test_api.output(
+              {
                 'expected_diffs': ['flatc'],
                 'unexpected_diffs': ['base_unittest'],
-            })))
-      self.archive_differences(source_dir, first_dir, second_dir,
-                               step_result.json.output)
+              }
+            )
+          ),
+        )
+      self.archive_differences(
+        source_dir, first_dir, second_dir, step_result.json.output
+      )
     except self.m.step.StepFailure as e:
       step_result = self.m.step.active_result
       step_result.presentation.step_text = (
-          'See https://chromium.googlesource.com'
-          '/chromium/src/+/HEAD/docs/deterministic_builds.md'
-          '#handling-failures-on-the-deterministic-bots')
-      self.archive_differences(source_dir, first_dir, second_dir,
-                               step_result.json.output)
+        'See https://chromium.googlesource.com'
+        '/chromium/src/+/HEAD/docs/deterministic_builds.md'
+        '#handling-failures-on-the-deterministic-bots'
+      )
+      self.archive_differences(
+        source_dir, first_dir, second_dir, step_result.json.output
+      )
       raise e
 
   def write_isolate_file(self, isolate_path, files_to_isolate):
@@ -349,20 +385,23 @@ class IsolateApi(recipe_api.RecipeApi):
       files_to_isolate ([Path]): List of files to upload.
     """
     self.m.file.write_json(
-        'Write ' + str(isolate_path),
-        isolate_path,
-        {'variables': {
-            'command': '',
-            'files': files_to_isolate,
-        }},
-        indent=2)
+      'Write ' + str(isolate_path),
+      isolate_path,
+      {
+        'variables': {
+          'command': '',
+          'files': files_to_isolate,
+        }
+      },
+      indent=2,
+    )
 
   def write_isolate_files_for_binary_file_paths(
-      self,
-      file_paths,
-      isolate_target_name,
-      source_dir: Path,
-      build_dir: Path,
+    self,
+    file_paths,
+    isolate_target_name,
+    source_dir: Path,
+    build_dir: Path,
   ):
     """Writes .isolate and .isolated.gen.json files for binary files.
 
@@ -375,31 +414,35 @@ class IsolateApi(recipe_api.RecipeApi):
         build_dir (Path): Path to directory of build artifacts
     """
     binaries_to_isolate = [
-        str(self.m.path.relpath(
-            path,
-            build_dir,
-        )) for path in file_paths
+      str(
+        self.m.path.relpath(
+          path,
+          build_dir,
+        )
+      )
+      for path in file_paths
     ]
 
     isolate_path = self.m.path.join(build_dir, isolate_target_name + '.isolate')
     self.write_isolate_file(isolate_path, binaries_to_isolate)
 
     self.m.file.write_json(
-        'Write ' + str(isolate_path) + 'd.gen.json',
-        self.m.path.abs_to_path(str(isolate_path) + 'd.gen.json'),
-        {
-            'args': [
-                '--isolate',
-                str(
-                    self.m.path.relpath(
-                        '%s/%s.isolate' % (build_dir, isolate_target_name),
-                        source_dir,
-                    )),
-            ],
-            'dir': str(source_dir),
-            'version': 1,
-        },
-        indent=2,
+      'Write ' + str(isolate_path) + 'd.gen.json',
+      self.m.path.abs_to_path(str(isolate_path) + 'd.gen.json'),
+      {
+        'args': [
+          '--isolate',
+          str(
+            self.m.path.relpath(
+              '%s/%s.isolate' % (build_dir, isolate_target_name),
+              source_dir,
+            )
+          ),
+        ],
+        'dir': str(source_dir),
+        'version': 1,
+      },
+      indent=2,
     )
 
   def add_files_to_isolate_file(self, isolate_path, files_to_add):
@@ -409,11 +452,13 @@ class IsolateApi(recipe_api.RecipeApi):
       isolate_path (Path): Path of .isolate file to create.
       files_to_add ([Path]): List of additional files to upload.
     """
-    isolate_data = self.m.file.read_json('Read ' + str(isolate_path),
-                                         isolate_path)
+    isolate_data = self.m.file.read_json(
+      'Read ' + str(isolate_path), isolate_path
+    )
     if not isolate_data:
-      raise self.m.step.StepFailure('Missing or empty isolated file: %s' %
-                                    str(isolate_path))
+      raise self.m.step.StepFailure(
+        'Missing or empty isolated file: %s' % str(isolate_path)
+      )
     isolate_data.setdefault('variables', {})
 
     files_to_isolate = isolate_data['variables'].get('files', [])
@@ -421,4 +466,5 @@ class IsolateApi(recipe_api.RecipeApi):
     isolate_data['variables']['files'] = files_to_isolate
 
     self.m.file.write_json(
-        'Write ' + str(isolate_path), isolate_path, isolate_data, indent=2)
+      'Write ' + str(isolate_path), isolate_path, isolate_data, indent=2
+    )

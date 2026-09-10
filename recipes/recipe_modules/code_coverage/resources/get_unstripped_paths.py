@@ -22,16 +22,19 @@ def _parse_args(args):
     The parsed arguments as parameters.
   """
   parser = argparse.ArgumentParser(
-      description='Get all Android/Fuchsia unstripped artifacts paths')
+    description='Get all Android/Fuchsia unstripped artifacts paths'
+  )
   parser.add_argument(
-      '--chromium-output-dir',
-      required=True,
-      help='absolute path to the chromium output directory')
+    '--chromium-output-dir',
+    required=True,
+    help='absolute path to the chromium output directory',
+  )
   parser.add_argument(
-      '--output-json',
-      required=True,
-      help='absoluate path to the file that stores the output, and the format '
-      'is a json list of absolute paths to all unstripped artifacts')
+    '--output-json',
+    required=True,
+    help='absoluate path to the file that stores the output, and the format '
+    'is a json list of absolute paths to all unstripped artifacts',
+  )
   params = parser.parse_args(args=args)
 
   if not os.path.isdir(params.chromium_output_dir):
@@ -50,8 +53,8 @@ def _get_all_paths(chromium_output_dir):
     A list of all found paths.
   """
   search_dirs = [
-      os.path.join(chromium_output_dir, 'lib.unstripped'),
-      os.path.join(chromium_output_dir, 'exe.unstripped')
+    os.path.join(chromium_output_dir, 'lib.unstripped'),
+    os.path.join(chromium_output_dir, 'exe.unstripped'),
   ]
   paths = []
   for search_dir in search_dirs:
@@ -72,5 +75,6 @@ def main():
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

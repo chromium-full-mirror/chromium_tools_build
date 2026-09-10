@@ -11,16 +11,20 @@ import tempfile
 import unittest
 
 ROOT_DIR = os.path.normpath(os.path.join(__file__, '..', '..', '..'))
-sys.path.extend([
+sys.path.extend(
+  [
     os.path.join(ROOT_DIR, 'scripts'),
     os.path.join(ROOT_DIR, 'recipes'),
-])
+  ]
+)
 
 import zip_build
 from common import chromium_utils
 
+
 def _build_dir(options):
   return os.path.join(options.src_dir, 'out', options.target)
+
 
 def _setup_testdir(testdir):
   option_parser = optparse.OptionParser()
@@ -65,8 +69,8 @@ class TestWriteRevisionFile(unittest.TestCase):
       self.assertEqual(revision, open(revision_filename).read().strip())
       self.assertTrue(os.path.exists(revision_filename))
       self.assertEqual(
-          revision_filename,
-          os.path.join(tempdir, chromium_utils.FULL_BUILD_REVISION_FILENAME)
+        revision_filename,
+        os.path.join(tempdir, chromium_utils.FULL_BUILD_REVISION_FILENAME),
       )
     finally:
       shutil.rmtree(tempdir)

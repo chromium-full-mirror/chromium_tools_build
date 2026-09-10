@@ -6,14 +6,20 @@ import re
 
 from recipe_engine import post_process
 from recipe_engine.engine_types import freeze
-from recipe_engine.post_process import (DoesNotRun, MustRun,
-                                        StepCommandContains, StepTextEquals,
-                                        StatusSuccess)
+from recipe_engine.post_process import (
+  DoesNotRun,
+  MustRun,
+  StepCommandContains,
+  StepTextEquals,
+  StatusSuccess,
+)
 from RECIPE_MODULES.build import chromium_types
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from PB.recipes.build.chromium_codesearch import (InputProperties,
-                                                  RecipeProperties)
+from PB.recipes.build.chromium_codesearch import (
+  InputProperties,
+  RecipeProperties,
+)
 
 PROPERTIES = InputProperties
 
@@ -24,27 +30,27 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, gn, siso
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    git,
-    gsutil,
-    tryserver,
+  bot_update,
+  depot_tools,
+  gclient,
+  git,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.infra import codesearch
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    commit_position,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-    time,
+  buildbucket,
+  cipd,
+  commit_position,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
+  time,
 )
 
 
@@ -86,6 +92,7 @@ class TEST_DEPS(RecipeTestApi):
   siso: siso.TEST_API
   step: step.TEST_API
 
+
 # Regular expression to identify a Git hash.
 GIT_COMMIT_HASH_RE = re.compile(r'[a-zA-Z0-9]{40}')
 
@@ -94,8 +101,8 @@ KYTHE_CU_FILENAME_RE = re.compile(r'.+-([0-9a-f]+)\.unit$')
 
 # Allowlist for smaller kzip with minimal set of Rust CUs before wider rollout.
 KYTHE_RUST_CU_ALLOWLIST = [
-    # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (ios)
-    "de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3",
+  # build/rust/tests/test_proc_macro_crate/crate/src/lib.rs (ios)
+  "de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3",
 ]
 
 # Defines the trybots and the mirrored CI builder
@@ -107,32 +114,32 @@ KYTHE_RUST_CU_ALLOWLIST = [
 #                     from SPEC['builders']>,
 #   }
 # }
-TRYBOT_SPEC = freeze({
+TRYBOT_SPEC = freeze(
+  {
     'tryserver.chromium.codesearch': {
-        'gen-android-try': 'codesearch-gen-chromium-android',
-        'gen-chromiumos-try': 'codesearch-gen-chromium-chromiumos',
-        'gen-fuchsia-try': 'codesearch-gen-chromium-fuchsia',
-        'gen-ios-try': 'codesearch-gen-chromium-ios',
-        'gen-lacros-try': 'codesearch-gen-chromium-lacros',
-        'gen-linux-try': 'codesearch-gen-chromium-linux',
-        'gen-mac-try': 'codesearch-gen-chromium-mac',
-        'gen-webview-try': 'codesearch-gen-chromium-webview',
-        'gen-win-try': 'codesearch-gen-chromium-win',
+      'gen-android-try': 'codesearch-gen-chromium-android',
+      'gen-chromiumos-try': 'codesearch-gen-chromium-chromiumos',
+      'gen-fuchsia-try': 'codesearch-gen-chromium-fuchsia',
+      'gen-ios-try': 'codesearch-gen-chromium-ios',
+      'gen-lacros-try': 'codesearch-gen-chromium-lacros',
+      'gen-linux-try': 'codesearch-gen-chromium-linux',
+      'gen-mac-try': 'codesearch-gen-chromium-mac',
+      'gen-webview-try': 'codesearch-gen-chromium-webview',
+      'gen-win-try': 'codesearch-gen-chromium-win',
     }
-})
+  }
+)
 
 
 def _get_revision(api: DEPS):  # pragma: no cover
-  """Returns the git commit hash of the project.
-  """
+  """Returns the git commit hash of the project."""
   commit = api.chromium.build_properties.get('got_revision')
   if commit and GIT_COMMIT_HASH_RE.match(commit):
     return commit
 
 
 def _get_commit_position(api: DEPS):
-  """Returns the commit position of the project.
-  """
+  """Returns the commit position of the project."""
   got_revision_cp = api.chromium.build_properties.get('got_revision_cp')
   if not got_revision_cp:
     # For some downstream bots, the build properties 'got_revision_cp' are not
@@ -143,30 +150,43 @@ def _get_commit_position(api: DEPS):
   return rev
 
 
-def generate_compilation_database(api: DEPS, source_dir, out_path,
-                                  compile_commands_json_file, targets):
+def generate_compilation_database(
+  api: DEPS, source_dir, out_path, compile_commands_json_file, targets
+):
   try:
-    step_result = api.step('generate compilation database', [
-        'python3', '-u',
+    step_result = api.step(
+      'generate compilation database',
+      [
+        'python3',
+        '-u',
         source_dir.joinpath('tools', 'clang', 'scripts', 'generate_compdb.py'),
-        '-p', out_path, '-o', compile_commands_json_file
-    ] + list(targets))
+        '-p',
+        out_path,
+        '-o',
+        compile_commands_json_file,
+      ]
+      + list(targets),
+    )
   except api.step.StepFailure as e:
     raise e
   return step_result
 
 
-def generate_gn_metadata(api: DEPS,
-                         source_dir,
-                         out_path,
-                         export_compile_cmd=False,
-                         export_compile_targets=None):
-  """Generates metadata using gn gen.
-  """
+def generate_gn_metadata(
+  api: DEPS,
+  source_dir,
+  out_path,
+  export_compile_cmd=False,
+  export_compile_targets=None,
+):
+  """Generates metadata using gn gen."""
   with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
     cmd = [
-        'python3', '-u', api.depot_tools.gn_py_path, 'gen',
-        '--export-rust-project'
+      'python3',
+      '-u',
+      api.depot_tools.gn_py_path,
+      'gen',
+      '--export-rust-project',
     ]
     if export_compile_cmd:
       export_compile_flag = '--export-compile-commands'
@@ -177,21 +197,26 @@ def generate_gn_metadata(api: DEPS,
     api.step('run gn gen', cmd, stdout=api.raw_io.output_text())
 
 
-def generate_gn_target_list(api: DEPS,
-                            source_dir,
-                            out_path,
-                            gn_targets_json_file,
-                            targets=None):
+def generate_gn_target_list(
+  api: DEPS, source_dir, out_path, gn_targets_json_file, targets=None
+):
   with api.context(cwd=source_dir, env=api.chromium.get_env(source_dir)):
     targets_cmd = '*'
     if targets:
       targets_cmd = ' '.join(targets)
     output = api.step(
-        'generate gn target list', [
-            'python3', '-u', api.depot_tools.gn_py_path, 'desc', out_path,
-            targets_cmd, '--format=json'
-        ],
-        stdout=api.raw_io.output_text()).stdout
+      'generate gn target list',
+      [
+        'python3',
+        '-u',
+        api.depot_tools.gn_py_path,
+        'desc',
+        out_path,
+        targets_cmd,
+        '--format=json',
+      ],
+      stdout=api.raw_io.output_text(),
+    ).stdout
   api.file.write_raw('write gn target list', gn_targets_json_file, output)
 
 
@@ -211,10 +236,11 @@ def extract_minimal_rust_kzip(api: DEPS, rust_index_pack_path):
   Because we don't want this function to prevent the rest of .kzip generation
   to work, skip remaining work and return None there's any issues.
   """
-  kzip_bin = api.codesearch.ensure_kythe().joinpath(
-      'tools',
-      'kzip') if api.platform.is_linux else api.codesearch.ensure_kythe_go(
-      ).joinpath('kzip')
+  kzip_bin = (
+    api.codesearch.ensure_kythe().joinpath('tools', 'kzip')
+    if api.platform.is_linux
+    else api.codesearch.ensure_kythe_go().joinpath('kzip')
+  )
 
   # Workaround for `kzip view` (without -extract) not outputting the digests
   # for the CUs themselves.
@@ -223,11 +249,11 @@ def extract_minimal_rust_kzip(api: DEPS, rust_index_pack_path):
   # acceptable (adds ~1min to a 1.5-2h builder)
   extract_cus_dir = api.path.mkdtemp()
   extract_cus_args = [
-      kzip_bin,
-      'view',
-      '-extract',
-      extract_cus_dir,
-      rust_index_pack_path,
+    kzip_bin,
+    'view',
+    '-extract',
+    extract_cus_dir,
+    rust_index_pack_path,
   ]
   try:
     api.step('extract CUs', extract_cus_args)
@@ -256,12 +282,12 @@ def extract_minimal_rust_kzip(api: DEPS, rust_index_pack_path):
   # Create a minimal kzip with only this CU.
   filtered_kzip_path = api.path.mkstemp()
   filter_kzip_args = [
-      kzip_bin,
-      'filter',
-      '-input',
-      rust_index_pack_path,
-      '-output',
-      filtered_kzip_path,
+    kzip_bin,
+    'filter',
+    '-input',
+    rust_index_pack_path,
+    '-output',
+    filtered_kzip_path,
   ] + allowed_cus
   try:
     api.step('create minimal kzip', filter_kzip_args)
@@ -277,14 +303,17 @@ def RunSteps(api: DEPS, properties):
   if api.tryserver.is_tryserver:
     name_suffix = ' (with patch)'
     builder = TRYBOT_SPEC.get(builder_id.group, {}).get(builder_id.builder)
-    assert builder is not None, ('Could not find trybot %s:%s in TRYBOT_SPEC' %
-                                 (builder_id.group, builder_id.builder))
+    assert builder is not None, 'Could not find trybot %s:%s in TRYBOT_SPEC' % (
+      builder_id.group,
+      builder_id.builder,
+    )
   else:
     builder = builder_id.builder
 
   bot_config = properties.recipe_properties
   assert bot_config is not None, (
-      'Could not find "recipe_properties" input property')
+    'Could not find "recipe_properties" input property'
+  )
   platform = bot_config.platform or 'linux'
   experimental = bot_config.experimental or False
   corpus = bot_config.corpus or 'chromium-linux'
@@ -298,15 +327,15 @@ def RunSteps(api: DEPS, properties):
 
   project = 'chromium' if not internal else 'chrome'
   api.codesearch.set_config(
-      project,
-      PROJECT=project,
-      PLATFORM=platform,
-      EXPERIMENTAL=experimental,
-      SYNC_GENERATED_FILES=bot_config.sync_generated_files,
-      GEN_REPO_BRANCH=gen_repo_branch,
-      GEN_REPO_OUT_DIR=gen_repo_out_dir,
-      CORPUS=corpus,
-      BUILD_CONFIG=build_config,
+    project,
+    PROJECT=project,
+    PLATFORM=platform,
+    EXPERIMENTAL=experimental,
+    SYNC_GENERATED_FILES=bot_config.sync_generated_files,
+    GEN_REPO_BRANCH=gen_repo_branch,
+    GEN_REPO_OUT_DIR=gen_repo_out_dir,
+    CORPUS=corpus,
+    BUILD_CONFIG=build_config,
   )
 
   # Checkout the repositories that are needed for the compile.
@@ -343,7 +372,8 @@ def RunSteps(api: DEPS, properties):
   checkout_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=checkout_dir, env={'PACKFILE_OFFLOADING': 1}):
     update_result = api.bot_update.ensure_checkout(
-        root_solution_revision=properties.root_solution_revision)
+      root_solution_revision=properties.root_solution_revision
+    )
   api.chromium.set_build_properties(update_result.properties)
   source_dir = update_result.source_root.path
   build_dir = source_dir / 'out' / gen_repo_out_dir
@@ -351,10 +381,11 @@ def RunSteps(api: DEPS, properties):
   gn_targets_json_file = build_dir / 'gn_targets.json'
 
   api.chromium.set_config(
-      'codesearch',
-      BUILD_CONFIG='Debug',
-      TARGET_PLATFORM=target_os,
-      HOST_PLATFORM=host_os)
+    'codesearch',
+    BUILD_CONFIG='Debug',
+    TARGET_PLATFORM=target_os,
+    HOST_PLATFORM=host_os,
+  )
 
   if target_os == 'ios':
     api.chromium.ensure_toolchains(checkout_dir)
@@ -363,7 +394,8 @@ def RunSteps(api: DEPS, properties):
   # entering 'y' to agree to a license.
   with api.context(env={'CHROME_HEADLESS': '1'}):
     api.chromium.runhooks(
-        source_dir, build_dir, name='runhooks%s' % name_suffix)
+      source_dir, build_dir, name='runhooks%s' % name_suffix
+    )
 
   # Cleans up generated files. This is to prevent old generated files from
   # being left in the out directory. Note that this needs to be run *before*
@@ -372,11 +404,13 @@ def RunSteps(api: DEPS, properties):
   api.codesearch.cleanup_old_generated()
 
   api.chromium.mb_gen(
-      source_dir,
-      build_dir,
-      chromium_types.BuilderId.create_for_group(builder_id.group,
-                                                builder_id.builder),
-      name='generate build files')
+    source_dir,
+    build_dir,
+    chromium_types.BuilderId.create_for_group(
+      builder_id.group, builder_id.builder
+    ),
+    name='generate build files',
+  )
 
   if platform == 'webview':
     # Experiment to use gn gen to generate compilation database, it supports
@@ -385,20 +419,23 @@ def RunSteps(api: DEPS, properties):
     # target list.
     webview_gn_targets = ['//android_webview:system_webview_apk']
     generate_gn_metadata(
-        api=api,
-        source_dir=source_dir,
-        out_path=build_dir,
-        export_compile_cmd=True,
-        export_compile_targets=targets)
-    generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file,
-                            webview_gn_targets)
+      api=api,
+      source_dir=source_dir,
+      out_path=build_dir,
+      export_compile_cmd=True,
+      export_compile_targets=targets,
+    )
+    generate_gn_target_list(
+      api, source_dir, build_dir, gn_targets_json_file, webview_gn_targets
+    )
   else:
     generate_compilation_database(
-        api=api,
-        source_dir=source_dir,
-        out_path=build_dir,
-        compile_commands_json_file=compile_commands_json_file,
-        targets=targets)
+      api=api,
+      source_dir=source_dir,
+      out_path=build_dir,
+      compile_commands_json_file=compile_commands_json_file,
+      targets=targets,
+    )
     generate_gn_metadata(api=api, source_dir=source_dir, out_path=build_dir)
     generate_gn_target_list(api, source_dir, build_dir, gn_targets_json_file)
 
@@ -411,13 +448,15 @@ def RunSteps(api: DEPS, properties):
   # validation and doesn't get pushed out anyway, so there's no point in
   # uploading at all.
   with api.context(
-      env={
-          'KYTHE_ROOT_DIRECTORY': source_dir,
-          'KYTHE_OUTPUT_DIRECTORY': kzip_dir,
-          'KYTHE_CORPUS': corpus
-      }):
+    env={
+      'KYTHE_ROOT_DIRECTORY': source_dir,
+      'KYTHE_OUTPUT_DIRECTORY': kzip_dir,
+      'KYTHE_CORPUS': corpus,
+    }
+  ):
     raw_result = api.chromium.compile(
-        source_dir, build_dir, targets=targets, name='compile%s' % name_suffix)
+      source_dir, build_dir, targets=targets, name='compile%s' % name_suffix
+    )
   if raw_result.status != common_pb.SUCCESS:
     return raw_result
 
@@ -426,7 +465,8 @@ def RunSteps(api: DEPS, properties):
 
   # Create the initial kythe index pack.
   initial_index_pack_path = api.codesearch.create_kythe_index_pack(
-      use_siso=True)
+    use_siso=True
+  )
 
   # Create the Rust index pack on supported platforms.
   # The extractor is currently only built for Linux and Mac.
@@ -434,12 +474,14 @@ def RunSteps(api: DEPS, properties):
   if target_os in ('linux', 'mac', 'ios'):
     with api.step.nest('create rust kzip'):
       rust_index_pack_path = api.codesearch.run_rust_project_extractor(
-          source_dir=source_dir)
+        source_dir=source_dir
+      )
       # On iOS, reduce this full kzip to a minimal kzip.
       # (This means the full kzip will be merged on Linux and Mac.)
       if target_os == 'ios':
         rust_index_pack_path = extract_minimal_rust_kzip(
-            api, rust_index_pack_path)
+          api, rust_index_pack_path
+        )
 
   # Run Python extractor. Since it's universal, choose a platform with
   # the most light-weight tasks.
@@ -450,7 +492,9 @@ def RunSteps(api: DEPS, properties):
       extractor_script = api.codesearch.resource('python_extractor.py')
 
       out_json_path = extractor_out_dir / 'python_metadata.json'
-      api.step('extract python metadata', [
+      api.step(
+        'extract python metadata',
+        [
           'vpython3',
           extractor_script,
           source_dir,
@@ -459,30 +503,42 @@ def RunSteps(api: DEPS, properties):
           corpus,
           '--root',
           source_dir,
-      ])
+        ],
+      )
 
-      exec_path = api.cipd.ensure_tool("infra/tools/kzip_builder/${platform}",
-                                       "latest")
+      exec_path = api.cipd.ensure_tool(
+        "infra/tools/kzip_builder/${platform}", "latest"
+      )
       python_kzip_path = extractor_out_dir / 'python_kzip.kzip'
-      api.step('build python kzip', [
-          exec_path, '--output', python_kzip_path, '--root', source_dir,
-          out_json_path
-      ])
+      api.step(
+        'build python kzip',
+        [
+          exec_path,
+          '--output',
+          python_kzip_path,
+          '--root',
+          source_dir,
+          out_json_path,
+        ],
+      )
     except api.step.StepFailure as exc:
       python_kzip_path = None
       if api.step.active_result:
         result = api.step.active_result
-        result.presentation.step_text = 'python kzip extraction failed, skipping'
+        result.presentation.step_text = (
+          'python kzip extraction failed, skipping'
+        )
         result.presentation.logs['exception'] = str(exc).splitlines()
 
   # Merge the index packs when available.
   final_index_pack_path = initial_index_pack_path
   additional_kzips = [
-      kzip for kzip in (rust_index_pack_path, python_kzip_path) if kzip
+    kzip for kzip in (rust_index_pack_path, python_kzip_path) if kzip
   ]
   if additional_kzips:
     final_index_pack_path = api.codesearch.run_kzip_merge(
-        initial_index_pack_path, *additional_kzips)
+      initial_index_pack_path, *additional_kzips
+    )
 
   # Early return if it's tryserver, don't upload and sync repo.
   if api.tryserver.is_tryserver:
@@ -490,23 +546,30 @@ def RunSteps(api: DEPS, properties):
 
   # Upload the initial kythe index pack.
   api.codesearch.upload_kythe_index_pack(
-      index_pack_kythe_path=final_index_pack_path,
-      commit_hash=properties.codesearch_mirror_revision or _get_revision(api),
-      commit_timestamp=int(properties.codesearch_mirror_revision_timestamp or
-                           properties.root_solution_revision_timestamp or
-                           api.time.time()),
-      commit_position=_get_commit_position(api))
+    index_pack_kythe_path=final_index_pack_path,
+    commit_hash=properties.codesearch_mirror_revision or _get_revision(api),
+    commit_timestamp=int(
+      properties.codesearch_mirror_revision_timestamp
+      or properties.root_solution_revision_timestamp
+      or api.time.time()
+    ),
+    commit_position=_get_commit_position(api),
+  )
 
   # Check out the generated files repo and sync the generated files
   # into this checkout. This may fail due to other builders pushing to the
   # remote repo at the same time, so we retry this 3 times before giving up.
   copy_config = {
-      source_dir.joinpath('out', gen_repo_out_dir):
-          api.path.join(gen_repo_out_dir)
+    source_dir.joinpath('out', gen_repo_out_dir): api.path.join(
+      gen_repo_out_dir
+    )
   }
   _RunStepWithRetry(
-      api, lambda: api.codesearch.checkout_generated_files_repo_and_sync(
-          copy_config, _get_revision(api)))
+    api,
+    lambda: api.codesearch.checkout_generated_files_repo_and_sync(
+      copy_config, _get_revision(api)
+    ),
+  )
 
 
 def _RunStepWithRetry(api: DEPS, step_function, max_tries=3):
@@ -518,7 +581,7 @@ def _RunStepWithRetry(api: DEPS, step_function, max_tries=3):
     except api.step.StepFailure as f:
       failures += 1
       if failures == max_tries:
-        raise # pragma: no cover
+        raise  # pragma: no cover
 
       api.step.active_result.presentation.step_text = f.reason_message()
       api.step.active_result.presentation.status = api.step.WARNING
@@ -557,311 +620,363 @@ SAMPLE_GN_DESC_OUTPUT = '''
 def GenTests(api: TEST_DEPS):
 
   def props(platform, internal=False):
-    return api.properties(
+    return (
+      api.properties(
         root_solution_revision='HEAD',
         root_solution_revision_timestamp=1337000001,
         xcode_build_version="123",
         recipe_properties=RecipeProperties(
-            compile_targets=['all'],
-            platform=platform,
-            experimental=False,
-            sync_generated_files=True,
-            corpus='chromium.googlesource.com/chromium/src',
-            build_config=platform,
-            gen_repo_branch='main',
-            gen_repo_out_dir='%s-Debug' % platform,
-            internal=internal,
-        )) + api.siso.properties()
+          compile_targets=['all'],
+          platform=platform,
+          experimental=False,
+          sync_generated_files=True,
+          corpus='chromium.googlesource.com/chromium/src',
+          build_config=platform,
+          gen_repo_branch='main',
+          gen_repo_out_dir='%s-Debug' % platform,
+          internal=internal,
+        ),
+      )
+      + api.siso.properties()
+    )
 
-  for platform in ('android', 'lacros', 'linux', 'fuchsia', 'chromiumos', 'mac',
-                   'ios', 'win', 'webview'):
+  for platform in (
+    'android',
+    'lacros',
+    'linux',
+    'fuchsia',
+    'chromiumos',
+    'mac',
+    'ios',
+    'win',
+    'webview',
+  ):
     for internal in (True, False):
       buildername = _format_builder_name(platform, internal)
       platform_map = {'win': 'win', 'mac': 'mac', 'ios': 'mac'}
       yield api.test(
-          'full_%s' % (_sanitize_nonalpha(buildername)),
-          api.platform(platform_map.get(platform, 'linux'), 64),
-          props(platform, internal),
-          api.chromium.generic_build(builder=buildername),
-          api.step_data('generate gn target list',
-                        api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+        'full_%s' % (_sanitize_nonalpha(buildername)),
+        api.platform(platform_map.get(platform, 'linux'), 64),
+        props(platform, internal),
+        api.chromium.generic_build(builder=buildername),
+        api.step_data(
+          'generate gn target list',
+          api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+        ),
       )
 
       yield api.test(
-          'full_%s_with_revision' % (_sanitize_nonalpha(buildername)),
-          api.platform(platform_map.get(platform, 'linux'), 64),
-          props(platform, internal),
-          api.chromium.generic_build(builder=buildername),
-          api.step_data('generate gn target list',
-                        api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
-          api.properties(
-              root_solution_revision='a' * 40,
-              root_solution_revision_timestamp=1531887759),
+        'full_%s_with_revision' % (_sanitize_nonalpha(buildername)),
+        api.platform(platform_map.get(platform, 'linux'), 64),
+        props(platform, internal),
+        api.chromium.generic_build(builder=buildername),
+        api.step_data(
+          'generate gn target list',
+          api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+        ),
+        api.properties(
+          root_solution_revision='a' * 40,
+          root_solution_revision_timestamp=1531887759,
+        ),
       )
 
   yield api.test(
-      'full_%s_with_patch' % _sanitize_nonalpha('gen-linux-try'),
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.try_build(
-          builder_group='tryserver.chromium.codesearch',
-          builder='gen-linux-try'),
-      api.step_data('generate gn target list',
-                    api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+    'full_%s_with_patch' % _sanitize_nonalpha('gen-linux-try'),
+    api.platform('linux', 64),
+    props('linux'),
+    api.chromium.try_build(
+      builder_group='tryserver.chromium.codesearch', builder='gen-linux-try'
+    ),
+    api.step_data(
+      'generate gn target list',
+      api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+    ),
   )
 
   yield api.test(
-      'full_%s_delete_generated_files_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-win'),
-      api.platform('win', 64),
-      props('win'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
-      api.step_data('delete old generated files', retcode=1),
-      api.step_data('generate gn target list',
-                    api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+    'full_%s_delete_generated_files_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-win'),
+    api.platform('win', 64),
+    props('win'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
+    api.step_data('delete old generated files', retcode=1),
+    api.step_data(
+      'generate gn target list',
+      api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+    ),
   )
 
   yield api.test(
-      'full_%s_compile_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-linux'),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.step_data('compile', retcode=1),
-      api.expect_status('FAILURE'),
+    'full_%s_compile_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-linux'),
+    props('linux'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+    api.step_data('compile', retcode=1),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'full_%s_last_compile_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-linux'),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.path.exists(api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')),
+    'full_%s_last_compile_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-linux'),
+    props('linux'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+    api.path.exists(api.path.cache_dir.joinpath('builder', 'cr-cs-sentinel')),
   )
 
   yield api.test(
-      'full_%s_translation_unit_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-chromiumos'),
-      props('chromiumos'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
-      api.step_data('generate gn target list',
-                    api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+    'full_%s_translation_unit_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-chromiumos'),
+    props('chromiumos'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
+    api.step_data(
+      'generate gn target list',
+      api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+    ),
   )
 
   yield api.test(
-      'full_%s_generate_compile_database_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-chromiumos'),
-      props('chromiumos'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
-      api.step_data('generate compilation database', retcode=1),
-      api.expect_status('FAILURE'),
+    'full_%s_generate_compile_database_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-chromiumos'),
+    props('chromiumos'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-chromiumos'),
+    api.step_data('generate compilation database', retcode=1),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'full_%s_git_config_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-win'),
-      api.platform('win', 64),
-      props('win'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
-      api.step_data('set core.longpaths', retcode=1),
-      api.step_data('generate gn target list',
-                    api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+    'full_%s_git_config_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-win'),
+    api.platform('win', 64),
+    props('win'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-win'),
+    api.step_data('set core.longpaths', retcode=1),
+    api.step_data(
+      'generate gn target list',
+      api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+    ),
   )
 
   yield api.test(
-      'full_%s_sync_generated_files_fail' %
-      _sanitize_nonalpha('codesearch-gen-chromium-linux'),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.step_data('sync generated files', retcode=1),
-      api.step_data('generate gn target list',
-                    api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT)),
+    'full_%s_sync_generated_files_fail'
+    % _sanitize_nonalpha('codesearch-gen-chromium-linux'),
+    props('linux'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+    api.step_data('sync generated files', retcode=1),
+    api.step_data(
+      'generate gn target list',
+      api.raw_io.stream_output_text(SAMPLE_GN_DESC_OUTPUT),
+    ),
   )
 
   yield api.test(
-      'rust_kzip_ignore_extract_cus_fail',
-      api.platform('mac', 64),
-      props('ios'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
-      api.step_data('create rust kzip.extract CUs', retcode=1),
-      api.post_process(StepTextEquals, 'create rust kzip.extract CUs',
-                       'kzip view failed, skipping'),
-      api.post_process(DoesNotRun, ('create rust kzip.'
-                                    'create minimal kzip')),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_ignore_extract_cus_fail',
+    api.platform('mac', 64),
+    props('ios'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
+    api.step_data('create rust kzip.extract CUs', retcode=1),
+    api.post_process(
+      StepTextEquals,
+      'create rust kzip.extract CUs',
+      'kzip view failed, skipping',
+    ),
+    api.post_process(DoesNotRun, ('create rust kzip.create minimal kzip')),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_ignore_zero_rust_cus',
-      api.platform('mac', 64),
-      props('ios'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
-      api.step_data('create rust kzip.list CU metadata',
-                    api.file.glob_paths([])),
-      api.post_process(MustRun, 'create rust kzip.no CUs found, skipping'),
-      api.post_process(DoesNotRun, ('create rust kzip.'
-                                    'create minimal kzip')),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_ignore_zero_rust_cus',
+    api.platform('mac', 64),
+    props('ios'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
+    api.step_data('create rust kzip.list CU metadata', api.file.glob_paths([])),
+    api.post_process(MustRun, 'create rust kzip.no CUs found, skipping'),
+    api.post_process(DoesNotRun, ('create rust kzip.create minimal kzip')),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_ignore_no_allowed_cus',
-      api.platform('mac', 64),
-      props('ios'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
-      api.step_data(
-          'create rust kzip.list CU metadata',
-          api.file.glob_paths([
-              '/tmp/hello-0123456789abcdef.txt',
-              '/tmp/foo-0123456789abcdef.unit'
-          ])),
-      api.post_process(MustRun, ('create rust kzip.'
-                                 'no allowed CUs found, skipping')),
-      api.post_process(DoesNotRun, ('create rust kzip.'
-                                    'create minimal kzip')),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_ignore_no_allowed_cus',
+    api.platform('mac', 64),
+    props('ios'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
+    api.step_data(
+      'create rust kzip.list CU metadata',
+      api.file.glob_paths(
+        ['/tmp/hello-0123456789abcdef.txt', '/tmp/foo-0123456789abcdef.unit']
+      ),
+    ),
+    api.post_process(
+      MustRun, ('create rust kzip.no allowed CUs found, skipping')
+    ),
+    api.post_process(DoesNotRun, ('create rust kzip.create minimal kzip')),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_filter_ignore_filter_fail',
-      api.platform('mac', 64),
-      props('ios'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
-      api.step_data(
-          'create rust kzip.list CU metadata',
-          api.file.glob_paths([
-              '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit'
-          ])),
-      api.step_data('create rust kzip.create minimal kzip', retcode=1),
-      api.post_process(StepTextEquals, ('create rust kzip.'
-                                        'create minimal kzip'),
-                       'kzip filter failed, skipping'),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_filter_ignore_filter_fail',
+    api.platform('mac', 64),
+    props('ios'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
+    api.step_data(
+      'create rust kzip.list CU metadata',
+      api.file.glob_paths(
+        [
+          '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit'
+        ]
+      ),
+    ),
+    api.step_data('create rust kzip.create minimal kzip', retcode=1),
+    api.post_process(
+      StepTextEquals,
+      ('create rust kzip.create minimal kzip'),
+      'kzip filter failed, skipping',
+    ),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_success_linux',
-      api.platform('linux', 64),
-      props('linux'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
-      api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
-      api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'merge kzips'),
-      api.post_process(MustRun, 'get c++ dependencies from siso'),
-      api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_3']),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_3']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_success_linux',
+    api.platform('linux', 64),
+    props('linux'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-linux'),
+    api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
+    api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
+    api.post_process(MustRun, 'merge kzips'),
+    api.post_process(MustRun, 'get c++ dependencies from siso'),
+    api.post_process(
+      StepCommandContains, 'merge kzips', ['--output', '[CLEANUP]/tmp_tmp_3']
+    ),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Note how this path corresponds to the merge kzip output.
+      ['[CLEANUP]/tmp_tmp_3'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_success_mac',
-      api.platform('mac', 64),
-      props('mac'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
-      api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
-      api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'merge kzips'),
-      api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_3']),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_3']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_success_mac',
+    api.platform('mac', 64),
+    props('mac'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-mac'),
+    api.post_process(MustRun, 'create rust kzip.extract Rust kzips'),
+    api.post_process(DoesNotRun, 'create rust kzip.create minimal kzip'),
+    api.post_process(MustRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains, 'merge kzips', ['--output', '[CLEANUP]/tmp_tmp_3']
+    ),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Note how this path corresponds to the merge kzip output.
+      ['[CLEANUP]/tmp_tmp_3'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_success_ios',
-      api.platform('mac', 64),
-      props('ios'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
-      api.step_data(
-          'create rust kzip.list CU metadata',
-          api.file.glob_paths([
-              '/tmp/foo-0123456789abcdef.unit',
-              '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit'
-          ])),
-      api.step_data('create rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'create rust kzip.create minimal kzip'),
-      api.post_process(MustRun, 'merge kzips'),
-      api.post_process(StepCommandContains, 'merge kzips',
-                       ['--output', '[CLEANUP]/tmp_tmp_5']),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Note how this path corresponds to the merge kzip output.
-          ['[CLEANUP]/tmp_tmp_5']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_success_ios',
+    api.platform('mac', 64),
+    props('ios'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-ios'),
+    api.step_data(
+      'create rust kzip.list CU metadata',
+      api.file.glob_paths(
+        [
+          '/tmp/foo-0123456789abcdef.unit',
+          '/tmp/foo-de9204a1600b94dd644c515e73c84feaf35617a8138b975e29cb828326a109d3.unit',
+        ]
+      ),
+    ),
+    api.step_data('create rust kzip.create minimal kzip'),
+    api.post_process(MustRun, 'create rust kzip.create minimal kzip'),
+    api.post_process(MustRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains, 'merge kzips', ['--output', '[CLEANUP]/tmp_tmp_5']
+    ),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Note how this path corresponds to the merge kzip output.
+      ['[CLEANUP]/tmp_tmp_5'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'rust_kzip_disabled_android',
-      api.platform('linux', 64),
-      props('android'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-android'),
-      api.post_process(DoesNotRun,
-                       'create minimal rust kzip.create minimal kzip'),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'rust_kzip_disabled_android',
+    api.platform('linux', 64),
+    props('android'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-android'),
+    api.post_process(
+      DoesNotRun, 'create minimal rust kzip.create minimal kzip'
+    ),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'python_kzip_ignore_extract_fail',
-      api.platform('linux', 64),
-      props('webview'),
-      api.chromium.generic_build(builder='codesearch-gen-chromium-webview'),
-      api.step_data('extract python metadata', retcode=1),
-      api.post_process(StepTextEquals, 'extract python metadata',
-                       'python kzip extraction failed, skipping'),
-      api.post_process(DoesNotRun, 'build python kzip'),
-      api.post_process(DoesNotRun, 'merge kzips'),
-      api.post_process(
-          StepCommandContains,
-          'gsutil upload kythe index pack',
-          # Non-merged original package_index output file.
-          ['[CLEANUP]/tmp_tmp_1']),
-      api.post_process(StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+    'python_kzip_ignore_extract_fail',
+    api.platform('linux', 64),
+    props('webview'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-webview'),
+    api.step_data('extract python metadata', retcode=1),
+    api.post_process(
+      StepTextEquals,
+      'extract python metadata',
+      'python kzip extraction failed, skipping',
+    ),
+    api.post_process(DoesNotRun, 'build python kzip'),
+    api.post_process(DoesNotRun, 'merge kzips'),
+    api.post_process(
+      StepCommandContains,
+      'gsutil upload kythe index pack',
+      # Non-merged original package_index output file.
+      ['[CLEANUP]/tmp_tmp_1'],
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )

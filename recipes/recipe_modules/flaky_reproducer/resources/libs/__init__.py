@@ -4,8 +4,13 @@
 
 from __future__ import annotations
 
-from .result_summary import (create_result_summary_from_output_json,
-                             UnexpectedTestResult)
+from .result_summary import (
+  create_result_summary_from_output_json,
+  UnexpectedTestResult,
+)
 from .strategies import strategies, ReproducingStep
-from .test_binary import (create_test_binary_from_task_request,
-                          TestBinaryWithBatchMixin, TestBinaryWithParallelMixin)
+from .test_binary import (
+  create_test_binary_from_task_request,
+  TestBinaryWithBatchMixin,
+  TestBinaryWithParallelMixin,
+)

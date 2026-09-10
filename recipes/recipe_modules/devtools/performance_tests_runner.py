@@ -8,13 +8,9 @@ from .test_runner_base import DevToolsTests
 
 
 class PerformanceTests(DevToolsTests):
-
-  def __init__(self,
-               api,
-               trigger,
-               builder_config,
-               step_name,
-               target_os='unknown'):
+  def __init__(
+    self, api, trigger, builder_config, step_name, target_os='unknown'
+  ):
     super().__init__(api, trigger, builder_config, False, step_name)
     self.target_os = target_os.lower()
 
@@ -34,17 +30,19 @@ class PerformanceTests(DevToolsTests):
   def commands(self):
     return [self.run_tests_command(['test/perf'])]
 
-
   def _post_collect(self):
     if self.api.properties.get('perf_benchmarks', False):
       self.copy_perf_benchmarks_data()
 
   def copy_perf_benchmarks_data(self):
     shard_output_dir = self.tasks[0].get_task_shard_output_dirs()[0]
-    perf_data_dir = (self.output_dir / shard_output_dir / 'perf-data')
+    perf_data_dir = self.output_dir / shard_output_dir / 'perf-data'
     self.api.file.rmtree(
-        'remove perf data file if it exists',
-        self.api.path.join(self.api.devtools.source_dir, 'perf-data'))
+      'remove perf data file if it exists',
+      self.api.path.join(self.api.devtools.source_dir, 'perf-data'),
+    )
     self.api.file.copytree(
-        'copy perf tests data', perf_data_dir,
-        self.api.path.join(self.api.devtools.source_dir, 'perf-data'))
+      'copy perf tests data',
+      perf_data_dir,
+      self.api.path.join(self.api.devtools.source_dir, 'perf-data'),
+    )

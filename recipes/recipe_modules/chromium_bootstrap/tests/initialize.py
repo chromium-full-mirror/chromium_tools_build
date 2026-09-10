@@ -38,26 +38,27 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
 
   yield api.test(
-      'not-bootstrapped',
-      api.post_check(post_process.DoesNotRun, 'bootstrapped properties'),
-      api.post_process(post_process.DropExpectation),
+    'not-bootstrapped',
+    api.post_check(post_process.DoesNotRun, 'bootstrapped properties'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'bootstrapped',
-      api.chromium_bootstrap.properties(commits=[]),
-      api.properties(foo='bar'),
-      api.post_check(
-          post_process.LogEquals,
-          'bootstrapped properties',
-          'properties',
-          api.json.dumps(
-              {
-                  "$build/chromium_bootstrap": {},
-                  "foo": "bar",
-                  "recipe": "chromium_bootstrap:tests/initialize"
-              },
-              indent=2),
+    'bootstrapped',
+    api.chromium_bootstrap.properties(commits=[]),
+    api.properties(foo='bar'),
+    api.post_check(
+      post_process.LogEquals,
+      'bootstrapped properties',
+      'properties',
+      api.json.dumps(
+        {
+          "$build/chromium_bootstrap": {},
+          "foo": "bar",
+          "recipe": "chromium_bootstrap:tests/initialize",
+        },
+        indent=2,
       ),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )

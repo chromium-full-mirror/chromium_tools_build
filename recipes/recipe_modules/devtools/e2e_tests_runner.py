@@ -5,16 +5,19 @@
 from __future__ import annotations
 
 from .commons import Results
-from .test_runner_base import (ExonerableTests, FLAKE_DETECTION_OPTION,
-                               FLAKE_DETECTION_SKIPPED_TESTS_FOOTER)
+from .test_runner_base import (
+  ExonerableTests,
+  FLAKE_DETECTION_OPTION,
+  FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
+)
 from functools import cached_property
 
 
 class E2ETests(ExonerableTests):
-
   def __init__(self, api, trigger, builder_config, step_name):
     super().__init__(
-        api, trigger, builder_config, False, step_name, shard_count=8)
+      api, trigger, builder_config, False, step_name, shard_count=8
+    )
 
   @property
   def test_patterns(self):
@@ -36,7 +39,6 @@ class E2ETests(ExonerableTests):
 
 
 class RepeatE2EShuffledTests(E2ETests):
-
   def trigger_exoneration(self, test_names):
     pass
 

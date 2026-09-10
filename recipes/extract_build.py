@@ -22,7 +22,6 @@ import build_directory
 
 
 class ExtractHandler:
-
   def __init__(self, url, archive_name, gsutil_py_path):
     self.url = url
     self.archive_name = archive_name
@@ -31,7 +30,7 @@ class ExtractHandler:
   def download(self):
     override_gsutil = [sys.executable, self.gsutil_py_path]
     status = bot_utils.GSUtilCopy(
-        self.url, '.', override_gsutil=override_gsutil
+      self.url, '.', override_gsutil=override_gsutil
     )
     if 0 != status:
       return False
@@ -45,16 +44,16 @@ class ExtractHandler:
 
 def GetBuildUrl(options, build_revision):
   """Compute the url to download the build from.  This will use as a base
-     string, in order of preference:
-     0) options.build_archive_url
-     1) options.build_url
-     2) options.build_properties.build_url
-     3) build url constructed from build_properties.  This last type of
-        construction is not compatible with the 'force build' button.
+  string, in order of preference:
+  0) options.build_archive_url
+  1) options.build_url
+  2) options.build_properties.build_url
+  3) build url constructed from build_properties.  This last type of
+     construction is not compatible with the 'force build' button.
 
-     Args:
-       options: options object as specified by parser below.
-       build_revision: Revision for the build.
+  Args:
+    options: options object as specified by parser below.
+    build_revision: Revision for the build.
   """
   if options.build_archive_url:
     return options.build_archive_url, None
@@ -72,11 +71,11 @@ def GetBuildUrl(options, build_revision):
 
 
 def real_main(options):
-  """ Download a build, extract it to build\\BuildDir\\full-build-win32
-      and rename it to build\\BuildDir\\Target
+  """Download a build, extract it to build\\BuildDir\\full-build-win32
+  and rename it to build\\BuildDir\\Target
   """
   abs_build_dir = os.path.abspath(
-      build_directory.GetBuildOutputDirectory(options.src_dir)
+    build_directory.GetBuildOutputDirectory(options.src_dir)
   )
   target_build_output_dir = os.path.join(abs_build_dir, options.target)
 
@@ -97,15 +96,14 @@ def real_main(options):
 
   if not url.startswith('gs://'):
     print(
-        f'cannot extract build from {url},'
-        ' only Google Storage URLs are supported'
+      f'cannot extract build from {url}, only Google Storage URLs are supported'
     )
     return bot_utils.ERROR_EXIT_CODE
 
   handler = ExtractHandler(
-      url=url,
-      archive_name=archive_name,
-      gsutil_py_path=options.gsutil_py_path,
+    url=url,
+    archive_name=archive_name,
+    gsutil_py_path=options.gsutil_py_path,
   )
 
   # We try to download and extract 3 times.
@@ -127,7 +125,7 @@ def real_main(options):
           output_dir = chrome_dir
 
       print(
-          'Moving build from %s to %s' % (output_dir, target_build_output_dir)
+        'Moving build from %s to %s' % (output_dir, target_build_output_dir)
       )
       shutil.move(output_dir, target_build_output_dir)
     except (OSError, IOError, chromium_utils.ExternalError):
@@ -147,38 +145,35 @@ def main():
   option_parser = optparse.OptionParser()
 
   option_parser.add_option(
-      '--target', help='build target to archive (Debug or Release)'
+    '--target', help='build target to archive (Debug or Release)'
   )
   option_parser.add_option(
-      '--src-dir',
-      default='src',
-      help='path to the top-level sources directory'
+    '--src-dir', default='src', help='path to the top-level sources directory'
   )
   option_parser.add_option('--build-dir', help='ignored')
   option_parser.add_option(
-      '--build-url', help='Base url where to find the build to extract'
+    '--build-url', help='Base url where to find the build to extract'
   )
   option_parser.add_option(
-      '--build-archive-url',
-      help='Exact url where to find the build to extract'
+    '--build-archive-url', help='Exact url where to find the build to extract'
   )
   option_parser.add_option(
-      '--build_revision',
-      help='Revision of the build that is being '
-      'archived. Overrides the revision found on '
-      'the local disk'
+    '--build_revision',
+    help='Revision of the build that is being '
+    'archived. Overrides the revision found on '
+    'the local disk',
   )
   option_parser.add_option(
-      '--revision-dir',
-      help=(
-          'Directory path that shall be used to decide '
-          'the revision number for the archive, '
-          'relative to the src/ dir.'
-      )
+    '--revision-dir',
+    help=(
+      'Directory path that shall be used to decide '
+      'the revision number for the archive, '
+      'relative to the src/ dir.'
+    ),
   )
   option_parser.add_option('--build-output-dir', help='ignored')
   option_parser.add_option(
-      '--gsutil-py-path', help='Specify path to gsutil.py script.'
+    '--gsutil-py-path', help='Specify path to gsutil.py script.'
   )
   chromium_utils.AddPropertiesOptions(option_parser)
 
@@ -195,7 +190,7 @@ def main():
   if not options.target:
     options.target = options.build_properties.get('target', 'Release')
   options.src_dir = (
-      options.build_properties.get('extract_build_src_dir') or options.src_dir
+    options.build_properties.get('extract_build_src_dir') or options.src_dir
   )
 
   if not options.build_archive_url and not options.build_url:

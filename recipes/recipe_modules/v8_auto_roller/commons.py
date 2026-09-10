@@ -6,10 +6,13 @@ from __future__ import annotations
 
 import re
 
+
 def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):
   lines = [
-      ('This roll requires a manual review. See http://go/reviewed-rolls for '
-       'guidance.')
+    (
+      'This roll requires a manual review. See http://go/reviewed-rolls for '
+      'guidance.'
+    )
   ] + commit_msg_lines
 
   if reviewers:
@@ -24,8 +27,8 @@ def roll_origin_line(api):
 
 def discard_local_changes(api, source_dir):
   with api.context(
-      cwd=source_dir,
-      env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}):
+    cwd=source_dir, env_prefixes={'PATH': [api.v8.depot_tools_path(source_dir)]}
+  ):
     api.git('checkout', '-f', 'origin/main')
     api.git('branch', '-D', 'roll', ok_ret='any')
     api.git('clean', '-ffd')

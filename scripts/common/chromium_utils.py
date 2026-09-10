@@ -2,7 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-""" Set of basic operations/utilities that are used by the build. """
+"""Set of basic operations/utilities that are used by the build."""
+
 from __future__ import print_function
 
 import errno
@@ -45,8 +46,9 @@ try:
       print('linking %s -> %s' % (src, dst))
       if os.path.isdir(src):
         if sys.version_info.major == 2:
-          if not ctypes.windll.kernel32.CreateSymbolicLinkA(str(dst), str(
-              os.path.abspath(src)), 1):
+          if not ctypes.windll.kernel32.CreateSymbolicLinkA(
+            str(dst), str(os.path.abspath(src)), 1
+          ):
             raise ctypes.WinError()
         else:
           os.symlink(os.path.abspath(src), dst, target_is_directory=True)
@@ -64,19 +66,27 @@ except ImportError:
 # Local errors.
 class MissingArgument(Exception):
   pass
+
+
 class PathNotFound(Exception):
   pass
+
+
 class ExternalError(Exception):
   pass
+
 
 def IsWindows():
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 
+
 def IsLinux():
   return sys.platform.startswith('linux')
 
+
 def IsMac():
   return sys.platform.startswith('darwin')
+
 
 # For chromeos we need to end up with a different platform name, but the
 # scripts use the values like sys.platform for both the build target and
@@ -113,29 +123,31 @@ FULL_BUILD_REVISION_FILENAME = 'FULL_BUILD_REVISION'
 def MeanAndStandardDeviation(data):
   """Calculates mean and standard deviation for the values in the list.
 
-    Args:
-      data: list of numbers
+  Args:
+    data: list of numbers
 
-    Returns:
-      Mean and standard deviation for the numbers in the list.
+  Returns:
+    Mean and standard deviation for the numbers in the list.
   """
   n = len(data)
   if n == 0:
     return 0.0, 0.0
   mean = float(sum(data)) / n
-  variance = sum([(element - mean)**2 for element in data]) / n
+  variance = sum([(element - mean) ** 2 for element in data]) / n
   return mean, math.sqrt(variance)
+
 
 def HistogramPercentiles(histogram, percentiles):
   if not 'buckets' in histogram or not 'count' in histogram:
     return []
-  computed_percentiles = _ComputePercentiles(histogram['buckets'],
-                                             histogram['count'],
-                                             percentiles)
+  computed_percentiles = _ComputePercentiles(
+    histogram['buckets'], histogram['count'], percentiles
+  )
   output = []
   for p in computed_percentiles:
     output.append({'percentile': p, 'value': computed_percentiles[p]})
   return output
+
 
 def GeomMeanAndStdDevFromHistogram(histogram):
   if not 'buckets' in histogram:
@@ -161,6 +173,7 @@ def GeomMeanAndStdDevFromHistogram(histogram):
       sum_of_squares += (bucket['mean'] - geom_mean) ** 2 * bucket['count']
   return geom_mean, math.sqrt(sum_of_squares / count)
 
+
 def _LinearInterpolate(x0, target, x1, y0, y1):
   """Perform linear interpolation to estimate an intermediate value.
 
@@ -181,10 +194,12 @@ def _LinearInterpolate(x0, target, x1, y0, y1):
   """
   if x0 == x1:
     return (y0 + y1) / 2
-  return  (y1 - y0) * (target - x0) / (x1 - x0) + y0
+  return (y1 - y0) * (target - x0) / (x1 - x0) + y0
 
-def _BucketInterpolate(last_percentage, target, next_percentage, bucket_min,
-                       bucket_max):
+
+def _BucketInterpolate(
+  last_percentage, target, next_percentage, bucket_min, bucket_max
+):
   """Estimate a minimum which should have the target % of samples below it.
 
   We do linear interpolation only if last_percentage and next_percentage are
@@ -209,10 +224,12 @@ def _BucketInterpolate(last_percentage, target, next_percentage, bucket_min,
     bucket_min = math.log(bucket_min)
     bucket_max = math.log(bucket_max)
   result = _LinearInterpolate(
-      last_percentage, target, next_percentage, bucket_min, bucket_max)
+    last_percentage, target, next_percentage, bucket_min, bucket_max
+  )
   if log_domain:
     result = math.exp(result)
   return result
+
 
 def _ComputePercentiles(buckets, total, percentiles):
   """Compute percentiles for the given histogram.
@@ -241,14 +258,22 @@ def _ComputePercentiles(buckets, total, percentiles):
       current_percentage = float(current_count) / total
 
       # Check whether we passed one of the percentiles we're interested in.
-      while (next_percentile_index < len(percentiles) and
-             current_percentage > percentiles[next_percentile_index]):
+      while (
+        next_percentile_index < len(percentiles)
+        and current_percentage > percentiles[next_percentile_index]
+      ):
         if not 'high' in bucket:
           result[percentiles[next_percentile_index]] = bucket['low']
         else:
-          result[percentiles[next_percentile_index]] = float(_BucketInterpolate(
-              old_percentage, percentiles[next_percentile_index],
-              current_percentage, bucket['low'], bucket['high']))
+          result[percentiles[next_percentile_index]] = float(
+            _BucketInterpolate(
+              old_percentage,
+              percentiles[next_percentile_index],
+              current_percentage,
+              bucket['low'],
+              bucket['high'],
+            )
+          )
         next_percentile_index += 1
   return result
 
@@ -353,8 +378,8 @@ def RemoveDirectory(*path):
     file_path = os.path.normcase(file_path)
     for _ in range(3):
       print(
-          'RemoveDirectory running %s' %
-          (' '.join(['cmd.exe', '/c', 'rd', '/q', '/s', file_path]))
+        'RemoveDirectory running %s'
+        % (' '.join(['cmd.exe', '/c', 'rd', '/q', '/s', file_path]))
       )
       if not subprocess.call(['cmd.exe', '/c', 'rd', '/q', '/s', file_path]):
         break
@@ -408,8 +433,10 @@ def RemoveDirectory(*path):
     for name in files:
       remove_with_retry(os.remove, os.path.join(root, name))
     for name in dirs:
-      remove_with_retry(lambda p: shutil.rmtree(p, onerror=RmTreeOnError),
-                        os.path.join(root, name))
+      remove_with_retry(
+        lambda p: shutil.rmtree(p, onerror=RmTreeOnError),
+        os.path.join(root, name),
+      )
 
   remove_with_retry(os.rmdir, file_path)
 
@@ -441,7 +468,7 @@ def _CopyFileToDir(src_path, dest_dir, dest_fn=None, link_ok=False):
 
 
 def _GetZipCommand(
-    lzma_sdk_bin, archive_name, path=None, file_list=None, no_copy_mode=False
+  lzma_sdk_bin, archive_name, path=None, file_list=None, no_copy_mode=False
 ):
   """Generates the zip command depending on the current platform.
 
@@ -481,35 +508,35 @@ def _GetZipCommand(
   possible_7zip_locations = []
   if lzma_sdk_bin is not None:
     possible_7zip_locations.append(
-        os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
+      os.path.join(lzma_sdk_bin, '7za.exe' if IsWindows() else '7za')
     )
   if IsWindows():
     possible_7zip_locations.append('C:\\Program Files\\7-Zip\\7z.exe')
   for possible_7zip_location in possible_7zip_locations:
     if os.path.exists(possible_7zip_location):
       cmd = [
-          possible_7zip_location,
-          'a',  # Add files to archive
-          '-tzip',  # Set type of archive to ZIP
-          '-y',  # Assume "Yes" to all queries (overwrite without prompt)
-          '-mx1',  # Set compression level to 1 (fastest)
-          '-uz0',  # Do not update an archive if all files are already up-to-date
-          '-bt',  # Show execution time statistics
-          '-bb0',  # Set output log level to 0 (no information printed to console)
-          '-mmt=on',
+        possible_7zip_location,
+        'a',  # Add files to archive
+        '-tzip',  # Set type of archive to ZIP
+        '-y',  # Assume "Yes" to all queries (overwrite without prompt)
+        '-mx1',  # Set compression level to 1 (fastest)
+        '-uz0',  # Do not update an archive if all files are already up-to-date
+        '-bt',  # Show execution time statistics
+        '-bb0',  # Set output log level to 0 (no information printed to console)
+        '-mmt=on',
       ]
       if not IsWindows():
         cmd += [
-            '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
+          '-snl',  # Store symbolic link as link (to mirror zip -y behaviour)
         ]
 
       tmpfile = None
       if no_copy_mode:
         assert path is None or path == '.'
         tmpfile = _FileListToTempFile(
-            file_list=file_list,
-            prefix_path=None if path == "." else path,
-            glob_dir_content=False
+          file_list=file_list,
+          prefix_path=None if path == "." else path,
+          glob_dir_content=False,
         )
         cmd += ['-spf', f'-i@{tmpfile.name}', archive_name]
       else:
@@ -521,18 +548,18 @@ def _GetZipCommand(
     return (None, None)
 
   cmd = [
-      'zip',
-      '-yr1',
-      archive_name,
+    'zip',
+    '-yr1',
+    archive_name,
   ]
   tmpfile = None
 
   if no_copy_mode:
     assert path is None or path == '.'
     tmpfile = _FileListToTempFile(
-        file_list,
-        prefix_path=None if path == "." else path,
-        glob_dir_content=True
+      file_list,
+      prefix_path=None if path == "." else path,
+      glob_dir_content=True,
     )
     cmd += ['.', f'-i@{tmpfile.name}']
   else:
@@ -541,15 +568,15 @@ def _GetZipCommand(
 
 
 def MakeZip(
-    output_dir,
-    archive_name,
-    file_list,
-    file_relative_dir,
-    raise_error=True,
-    remove_archive_directory=True,
-    no_root_dir=False,
-    strip_files=None,
-    lzma_sdk_bin=None
+  output_dir,
+  archive_name,
+  file_list,
+  file_relative_dir,
+  raise_error=True,
+  remove_archive_directory=True,
+  no_root_dir=False,
+  strip_files=None,
+  lzma_sdk_bin=None,
 ):
   """Packs files into a new zip archive.
 
@@ -595,8 +622,8 @@ def MakeZip(
   archive_dir = os.path.join(output_dir, archive_name)
   print('output_dir: %s, archive_name: %s' % (output_dir, archive_name))
   print(
-      'archive_dir: %s, remove_archive_directory: %s, exists: %s' %
-      (archive_dir, remove_archive_directory, os.path.exists(archive_dir))
+    'archive_dir: %s, remove_archive_directory: %s, exists: %s'
+    % (archive_dir, remove_archive_directory, os.path.exists(archive_dir))
   )
   if remove_archive_directory and os.path.exists(archive_dir):
     # Move it even if it's not a directory as expected. This can happen with
@@ -610,8 +637,8 @@ def MakeZip(
       print('Removing %s' % archive_dir)
       RemoveDirectory(archive_dir)
       print(
-          'Now, os.path.exists(%s): %s' %
-          (archive_dir, os.path.exists(archive_dir))
+        'Now, os.path.exists(%s): %s'
+        % (archive_dir, os.path.exists(archive_dir))
       )
 
   # Unfortunately, due to special handling of symbolic and hard links,
@@ -653,7 +680,7 @@ def MakeZip(
           raise
   end_time = time.time()
   print(
-      'Took %f seconds to create archive directory.' % (end_time - start_time)
+    'Took %f seconds to create archive directory.' % (end_time - start_time)
   )
 
   # Pack the zip file.
@@ -665,11 +692,11 @@ def MakeZip(
   tmpfile = None
   archive_path = "." if no_root_dir else os.path.basename(archive_dir)
   (zip_cmd, tmpfile) = _GetZipCommand(
-      lzma_sdk_bin=lzma_sdk_bin,
-      archive_name=output_file,
-      path=archive_path,
-      no_copy_mode=no_copy_mode,
-      file_list=file_list
+    lzma_sdk_bin=lzma_sdk_bin,
+    archive_name=output_file,
+    path=archive_path,
+    no_copy_mode=no_copy_mode,
+    file_list=file_list,
   )
 
   # On Windows we use the python zip module; on Linux and Mac, we use the zip
@@ -693,8 +720,9 @@ def MakeZip(
           to_zip_file.write(this_path, archive_name, compress_method)
           print('Adding %s' % archive_name)
 
-    zip_file = zipfile.ZipFile(output_file, 'w', zipfile.ZIP_DEFLATED,
-                               allowZip64=True)
+    zip_file = zipfile.ZipFile(
+      output_file, 'w', zipfile.ZIP_DEFLATED, allowZip64=True
+    )
     saved_dir = None
     try:
       if no_root_dir:
@@ -730,8 +758,7 @@ def MakeZip(
 
 
 def ExtractZip(filename, output_dir, verbose=True):
-  """ Extract the zip archive in the output directory.
-  """
+  """Extract the zip archive in the output directory."""
   MaybeMakeDirectory(output_dir)
 
   # On Linux and Mac, we use the unzip command as it will
@@ -776,8 +803,7 @@ def ExtractZip(filename, output_dir, verbose=True):
       if IsMac():
         # Restore permission bits.
         os.chmod(
-            os.path.join(output_dir, name),
-            zf.getinfo(name).external_attr >> 16
+          os.path.join(output_dir, name), zf.getinfo(name).external_attr >> 16
         )
 
 
@@ -797,15 +823,16 @@ def _FindUpwardParent(start_dir, *desired_list):
     last_dir = cur_dir
     cur_dir = os.path.dirname(cur_dir)
     if last_dir == cur_dir:
-      raise PathNotFound('Unable to find %s above %s' %
-                         (desired_path, start_dir))
+      raise PathNotFound(
+        'Unable to find %s above %s' % (desired_path, start_dir)
+      )
     found_path = os.path.join(cur_dir, desired_path)
   # Strip the entire original desired path from the end of the one found
   # and remove a trailing path separator, if present (unless it's
   # filesystem/drive root).
-  found_path = found_path[:len(found_path) - len(desired_path)]
+  found_path = found_path[: len(found_path) - len(desired_path)]
   if found_path.endswith(os.sep) and os.path.dirname(found_path) != found_path:
-    found_path = found_path[:len(found_path) - 1]
+    found_path = found_path[: len(found_path) - 1]
   return found_path
 
 
@@ -836,6 +863,7 @@ def RunAndPrintDots(function):
         if not counter:
           sys.stdout.write('\n')
         sys.stdout.flush()
+
     t = threading.Thread(target=PrintDots)
     t.start()
     try:
@@ -843,11 +871,13 @@ def RunAndPrintDots(function):
     finally:
       event.set()
       t.join()
+
   return Hook
 
 
 class RunCommandFilter:
   """Class that should be subclassed to provide a filter for RunCommand."""
+
   # Method could be a function
   # pylint: disable=R0201
 
@@ -865,6 +895,7 @@ class RunCommandFilter:
 
 class FilterCapture(RunCommandFilter):
   """Captures the text and places it into an array."""
+
   def __init__(self):
     RunCommandFilter.__init__(self)
     self.text = []
@@ -876,8 +907,16 @@ class FilterCapture(RunCommandFilter):
     self.text.append(remaining_text)
 
 
-def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
-               print_cmd=True, timeout=None, max_time=None, **kwargs):
+def RunCommand(
+  command,
+  parser_func=None,
+  filter_obj=None,
+  pipes=None,
+  print_cmd=True,
+  timeout=None,
+  max_time=None,
+  **kwargs,
+):
   """Runs the command list, printing its output and returning its exit status.
 
   Prints the given command (which should be a list of one or more strings),
@@ -918,8 +957,14 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
         break
     print(threading.currentThread(), 'TimedFlush: Finished')
 
-  def ProcessRead(proc, writefh, parser_func=None, filter_obj=None,
-                  log_event=None, debug=False):
+  def ProcessRead(
+    proc,
+    writefh,
+    parser_func=None,
+    filter_obj=None,
+    log_event=None,
+    debug=False,
+  ):
     writefh.flush()
 
     # Python on Windows writes the buffer only when it reaches 4k.  Ideally
@@ -928,7 +973,8 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
     # network traffic from unbuffered output.
     kill_event = threading.Event()
     flush_thread = threading.Thread(
-        target=TimedFlush, args=(20, writefh, kill_event))
+      target=TimedFlush, args=(20, writefh, kill_event)
+    )
     flush_thread.daemon = True
     flush_thread.start()
 
@@ -1007,8 +1053,9 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
     # Run the command.  The stdout and stderr file handles are passed to the
     # subprocess directly for writing.  No processing happens on the output of
     # the subprocess.
-    proc = subprocess.Popen(command, stdout=sys.stdout, stderr=sys.stderr,
-                            bufsize=0, **kwargs)
+    proc = subprocess.Popen(
+      command, stdout=sys.stdout, stderr=sys.stderr, bufsize=0, **kwargs
+    )
 
     # Wait for the command to terminate.
     proc.wait()
@@ -1020,11 +1067,11 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
 
   # Start the initial process.
   proc = subprocess.Popen(
-      command,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-      bufsize=0,
-      **kwargs
+    command,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    bufsize=0,
+    **kwargs,
   )
   proc_handles = [proc]
 
@@ -1039,10 +1086,10 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
         # Output to a pipe, since another pipe is on top of us.
         stdout = subprocess.PIPE
       pipe_proc = subprocess.Popen(
-          pipe,
-          stdin=proc_handles[0].stdout,
-          stdout=stdout,
-          stderr=subprocess.STDOUT
+        pipe,
+        stdin=proc_handles[0].stdout,
+        stdout=stdout,
+        stderr=subprocess.STDOUT,
       )
       proc_handles.insert(0, pipe_proc)
 
@@ -1054,12 +1101,13 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
 
   # Launch and start the reader thread.
   thread = threading.Thread(
-      target=ProcessRead,
-      args=(proc_handles[0], sys.stdout),
-      kwargs={
-          'parser_func': parser_func, 'filter_obj': filter_obj,
-          'log_event': log_event
-      }
+    target=ProcessRead,
+    args=(proc_handles[0], sys.stdout),
+    kwargs={
+      'parser_func': parser_func,
+      'filter_obj': filter_obj,
+      'log_event': log_event,
+    },
   )
 
   kill_lock = threading.Lock()
@@ -1092,9 +1140,8 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
           print('could not kill pid %d!' % proc_handles[0].pid, file=sys.stderr)
         else:
           print(
-              'program finished with exit code %d' %
-              (proc_handles[0].returncode),
-              file=sys.stderr
+            'program finished with exit code %d' % (proc_handles[0].returncode),
+            file=sys.stderr,
           )
 
         # Prevent other timeouts from double-killing.
@@ -1107,14 +1154,14 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
         return
 
     message = (
-        'command timed out: %d seconds without output, attempting to '
-        'kill' % timeout
+      'command timed out: %d seconds without output, attempting to '
+      'kill' % timeout
     )
     kill_proc(proc_handles, message)
 
   def maxtimeout_func(timeout, proc_handles, finished_event):
     if not finished_event.wait(timeout):
-      message = ('command timed out: %d seconds elapsed' % timeout)
+      message = 'command timed out: %d seconds elapsed' % timeout
       kill_proc(proc_handles, message)
 
   timeout_thread = None
@@ -1123,13 +1170,13 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
 
   if timeout:
     timeout_thread = threading.Thread(
-        target=timeout_func,
-        args=(timeout, proc_handles, log_event, finished_event)
+      target=timeout_func,
+      args=(timeout, proc_handles, log_event, finished_event),
     )
     timeout_thread.daemon = True
   if max_time:
     maxtimeout_thread = threading.Thread(
-        target=maxtimeout_func, args=(max_time, proc_handles, finished_event)
+      target=maxtimeout_func, args=(max_time, proc_handles, finished_event)
     )
     maxtimeout_thread.daemon = True
 
@@ -1163,12 +1210,12 @@ def RunCommand(command, parser_func=None, filter_obj=None, pipes=None,
 def GetStatusOutput(command, **kwargs):
   """Runs the command list, returning its result and output."""
   proc = subprocess.Popen(
-      command,
-      stdout=subprocess.PIPE,
-      stderr=subprocess.STDOUT,
-      bufsize=1,
-      text=True,
-      **kwargs
+    command,
+    stdout=subprocess.PIPE,
+    stderr=subprocess.STDOUT,
+    bufsize=1,
+    text=True,
+    **kwargs,
   )
   output = proc.communicate()[0]
   result = proc.returncode
@@ -1207,22 +1254,28 @@ def AddPropertiesOptions(option_parser):
                    for build properties.
   """
   option_parser.add_option(
-      '--build-properties',
-      action='callback',
-      callback=_convert_json,
-      type='string',
-      nargs=1,
-      default={},
-      help='build properties in JSON format'
+    '--build-properties',
+    action='callback',
+    callback=_convert_json,
+    type='string',
+    nargs=1,
+    default={},
+    help='build properties in JSON format',
   )
 
 
 def FileExclusions():
-  all_platforms = ['.landmines', '.ninja_deps', '.ninja_log',
-                   'gen', '*/gen',
-                   'obj', '*/obj',
-                   'thinlto-cache', '*/thinlto-cache',
-                   ]
+  all_platforms = [
+    '.landmines',
+    '.ninja_deps',
+    '.ninja_log',
+    'gen',
+    '*/gen',
+    'obj',
+    '*/obj',
+    'thinlto-cache',
+    '*/thinlto-cache',
+  ]
   # Skip files that the testers don't care about. Mostly directories.
   if IsWindows():
     # Remove obj or lib dir entries
@@ -1230,7 +1283,8 @@ def FileExclusions():
   if IsMac():
     return all_platforms + [
       # We don't need the arm bits v8 builds.
-      'd8_arm', 'v8_shell_arm',
+      'd8_arm',
+      'v8_shell_arm',
       # pdfsqueeze is a build helper, no need to copy it to testers.
       'pdfsqueeze',
       # We copy the framework into the app bundle, we don't need the second
@@ -1245,13 +1299,21 @@ def FileExclusions():
       'Chromium Helper.app',
       'Google Chrome Helper.app',
       'App Shim Socket',
-      '.deps', 'obj.host', 'obj.target', 'lib'
+      '.deps',
+      'obj.host',
+      'obj.target',
+      'lib',
     ]
   if IsLinux():
     return all_platforms + [
       # intermediate build directories (full of .o, .d, etc.).
-      'appcache', 'glue', 'lib.host', 'obj.host',
-      'obj.target', 'src', '.deps',
+      'appcache',
+      'glue',
+      'lib.host',
+      'obj.host',
+      'obj.target',
+      'src',
+      '.deps',
       # scons build cruft
       '.sconsign.dblite',
       # build helper, not needed on testers

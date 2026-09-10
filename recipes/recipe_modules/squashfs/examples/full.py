@@ -32,14 +32,19 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   if 'binary_not_found' not in api.properties:
     api.path.mock_add_paths(
-        api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs'))
+      api.path.start_dir.joinpath('squashfs', 'squashfs-tools', 'mksquashfs')
+    )
   if 'compression_algorithm' in api.properties:
-    api.squashfs.mksquashfs('some/folder', 'out.squash',
-                            api.properties['compression_algorithm'],
-                            api.properties['compression_level'])
+    api.squashfs.mksquashfs(
+      'some/folder',
+      'out.squash',
+      api.properties['compression_algorithm'],
+      api.properties['compression_level'],
+    )
   if 'block_size' in api.properties:
     api.squashfs.mksquashfs(
-        'some/folder', 'out.squash', block_size=api.properties['block_size'])
+      'some/folder', 'out.squash', block_size=api.properties['block_size']
+    )
   api.squashfs.mksquashfs('some/folder', 'out.squash')
 
 
@@ -47,17 +52,29 @@ def GenTests(api: TEST_DEPS):
   yield api.test('basic')
 
   yield api.test(
-      'zstd',
-      api.properties(compression_algorithm='zstd', compression_level=22),
-      api.post_process(post_process.DropExpectation))
+    'zstd',
+    api.properties(compression_algorithm='zstd', compression_level=22),
+    api.post_process(post_process.DropExpectation),
+  )
 
-  yield api.test('block_size', api.properties(block_size='256K'),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'block_size',
+    api.properties(block_size='256K'),
+    api.post_process(post_process.DropExpectation),
+  )
 
-  yield api.test('fail_on_windows', api.platform('win', 64),
-                 api.expect_status('FAILURE'),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'fail_on_windows',
+    api.platform('win', 64),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
 
-  yield api.test('binary_not_found', api.properties(binary_not_found=True,),
-                 api.expect_status('FAILURE'),
-                 api.post_process(post_process.DropExpectation))
+  yield api.test(
+    'binary_not_found',
+    api.properties(
+      binary_not_found=True,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )

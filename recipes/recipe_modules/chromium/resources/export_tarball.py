@@ -28,65 +28,64 @@ import tarfile
 
 
 nonessential_dirs = (
-    'buildtools/reclient_cfgs/reproxy.cfg',  # file
-    'third_party/blink/tools',
-    'third_party/blink/web_tests',
-    'third_party/devtools-frontend/src/third_party/rollup_libs',
-    'third_party/hunspell_dictionaries',
-    'third_party/hunspell/tests',
-    'third_party/jdk/current',
-    'third_party/jdk/extras',
-    'third_party/liblouis/src/tests/braille-specs',
-    'third_party/xdg-utils/tests',
-    'v8/test',
+  'buildtools/reclient_cfgs/reproxy.cfg',  # file
+  'third_party/blink/tools',
+  'third_party/blink/web_tests',
+  'third_party/devtools-frontend/src/third_party/rollup_libs',
+  'third_party/hunspell_dictionaries',
+  'third_party/hunspell/tests',
+  'third_party/jdk/current',
+  'third_party/jdk/extras',
+  'third_party/liblouis/src/tests/braille-specs',
+  'third_party/xdg-utils/tests',
+  'v8/test',
 )
 
 ESSENTIAL_FILES = (
-    'chrome/test/data/webui/i18n_process_css_test.html',
-    'chrome/test/data/webui/mojo/foobar.mojom',
-
-    # Allows the orchestrator_all target to work with gn gen
-    'v8/test/torque/test-torque.tq',
+  'chrome/test/data/webui/i18n_process_css_test.html',
+  'chrome/test/data/webui/mojo/foobar.mojom',
+  # Allows the orchestrator_all target to work with gn gen
+  'v8/test/torque/test-torque.tq',
 )
 
 TEST_DIRS = (
-    'base/tracing/test/data',
-    'chrome/test/data',
-    'components/test/data',
-    # Some files in content/test/data/ are needed to build content_shell.
-    # The subdirectories listed below are not needed, and take up most of
-    # the space anyway. (https://crbug.com/40213591)
-    'content/test/data/accessibility',
-    'content/test/data/gpu',
-    'content/test/data/media',
-    'courgette/testdata',
-    'extensions/test/data',
-    'media/test/data',
-    'native_client/src/trusted/service_runtime/testdata',
-    'testing/libfuzzer/fuzzers/wasm_corpus',
-    'third_party/blink/manual_tests',
-    'third_party/blink/perf_tests',
-    'third_party/boringssl/src/third_party/wycheproof_testvectors',
-    'third_party/breakpad/breakpad/src/processor/testdata',
-    'third_party/catapult/tracing/test_data',
-    'third_party/dawn/test',
-    'third_party/devtools-frontend/src/front_end/panels/timeline/fixtures',
-    'third_party/expat/src/testdata',
-    'third_party/glslang/src/Test',
-    'third_party/harfbuzz-ng/src/test',
-    'third_party/libc++/src/test/std',
-    'third_party/openh264/src/res',
-    'third_party/opus/tests/resources',
-    'third_party/ots/src/tests/fonts',
-    'third_party/rust-src/src/gcc/gcc/testsuite',
-    'third_party/rust-src/src/llvm-project/clang/test',
-    'third_party/rust-src/src/llvm-project/llvm/test',
-    'third_party/screen-ai/linux/resources',
-    'third_party/sqlite/fuzz',
-    'third_party/sqlite/src/test',
-    'third_party/swiftshader/tests/regres',
-    'third_party/test_fonts/test_fonts',
-    'tools/perf/testdata',
+  'base/tracing/test/data',
+  'chrome/test/data',
+  'components/test/data',
+  # Some files in content/test/data/ are needed to build content_shell.
+  # The subdirectories listed below are not needed, and take up most of
+  # the space anyway. (https://crbug.com/40213591)
+  'content/test/data/accessibility',
+  'content/test/data/gpu',
+  'content/test/data/media',
+  'courgette/testdata',
+  'extensions/test/data',
+  'media/test/data',
+  'native_client/src/trusted/service_runtime/testdata',
+  'testing/libfuzzer/fuzzers/wasm_corpus',
+  'third_party/blink/manual_tests',
+  'third_party/blink/perf_tests',
+  'third_party/boringssl/src/third_party/wycheproof_testvectors',
+  'third_party/breakpad/breakpad/src/processor/testdata',
+  'third_party/catapult/tracing/test_data',
+  'third_party/dawn/test',
+  'third_party/devtools-frontend/src/front_end/panels/timeline/fixtures',
+  'third_party/expat/src/testdata',
+  'third_party/glslang/src/Test',
+  'third_party/harfbuzz-ng/src/test',
+  'third_party/libc++/src/test/std',
+  'third_party/openh264/src/res',
+  'third_party/opus/tests/resources',
+  'third_party/ots/src/tests/fonts',
+  'third_party/rust-src/src/gcc/gcc/testsuite',
+  'third_party/rust-src/src/llvm-project/clang/test',
+  'third_party/rust-src/src/llvm-project/llvm/test',
+  'third_party/screen-ai/linux/resources',
+  'third_party/sqlite/fuzz',
+  'third_party/sqlite/src/test',
+  'third_party/swiftshader/tests/regres',
+  'third_party/test_fonts/test_fonts',
+  'tools/perf/testdata',
 )
 
 
@@ -140,8 +139,12 @@ class MyTarFile(tarfile.TarFile):
       self.__report_skipped(name)
       return
 
-    if file_name in ('.cipd_bin', '.cipd_client', '.cipd_client_cache',
-                     '.disable_auto_update'):
+    if file_name in (
+      '.cipd_bin',
+      '.cipd_client',
+      '.cipd_client_cache',
+      '.disable_auto_update',
+    ):
       self.__report_skipped(name)
       return
 
@@ -173,28 +176,34 @@ class MyTarFile(tarfile.TarFile):
       # targets, even if those targets themselves are not built
       # (crbug.com/1362021).
       keep_file = (
-          re.search(r'\.(gn|gni|grd|grdp|isolate|pydeps)(\.\S+)?$', file_name)
-          or rel_name in ESSENTIAL_FILES)
+        re.search(r'\.(gn|gni|grd|grdp|isolate|pydeps)(\.\S+)?$', file_name)
+        or rel_name in ESSENTIAL_FILES
+      )
 
       # Remove contents of non-essential directories.
       if not keep_file:
-        if any((rel_name == path or rel_name.startswith(path + '/'))
-            for path in (set(nonessential_dirs) | set(TEST_DIRS))) and \
-            (os.path.isfile(name) or os.path.islink(name)):
+        if any(
+          (rel_name == path or rel_name.startswith(path + '/'))
+          for path in (set(nonessential_dirs) | set(TEST_DIRS))
+        ) and (os.path.isfile(name) or os.path.islink(name)):
           self.__report_skipped(name)
           return
 
     self.__report_added(name)
     tarfile.TarFile.add(
-        self, name, arcname=arcname, recursive=recursive, filter=self.__filter)
+      self, name, arcname=arcname, recursive=recursive, filter=self.__filter
+    )
 
 
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option("--basename")
-  parser.add_option("--remove-nonessential-files",
-                    dest="remove_nonessential_files",
-                    action="store_true", default=False)
+  parser.add_option(
+    "--remove-nonessential-files",
+    dest="remove_nonessential_files",
+    action="store_true",
+    default=False,
+  )
   parser.add_option("--test-data", action="store_true")
   # TODO(phajdan.jr): Remove --xz option when it's not needed for compatibility.
   parser.add_option("--xz", action="store_true")
@@ -223,9 +232,10 @@ def main(argv):
 
   tarball = open(output_fullname, 'w')
   xz = subprocess.Popen(
-      ['xz', '-T', '0', '-9'] + (['-v'] if options.progress else []) + ['-'],
-      stdin=subprocess.PIPE,
-      stdout=tarball)
+    ['xz', '-T', '0', '-9'] + (['-v'] if options.progress else []) + ['-'],
+    stdin=subprocess.PIPE,
+    stdout=tarball,
+  )
 
   archive = MyTarFile.open(None, 'w|', xz.stdin)
   archive.set_remove_nonessential_files(options.remove_nonessential_files)
@@ -233,8 +243,8 @@ def main(argv):
   archive.set_src_dir(options.src_dir)
 
   with open(
-      os.path.join(options.src_dir, 'build/util/LASTCHANGE.committime'),
-      'r') as f:
+    os.path.join(options.src_dir, 'build/util/LASTCHANGE.committime'), 'r'
+  ) as f:
     timestamp = int(f.read())
     archive.set_mtime(timestamp)
 
@@ -247,8 +257,7 @@ def main(argv):
           # a tarball for.
           print('"%s" not present; skipping.' % test_dir)
           continue
-        archive.add(test_dir,
-                    arcname=os.path.join(output_basename, directory))
+        archive.add(test_dir, arcname=os.path.join(output_basename, directory))
     else:
       archive.add(options.src_dir, arcname=output_basename)
   finally:

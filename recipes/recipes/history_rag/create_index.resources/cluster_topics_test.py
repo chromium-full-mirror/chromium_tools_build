@@ -14,7 +14,6 @@ import cluster_topics
 
 
 class TestClusterTopics(unittest.TestCase):
-
   def setUp(self):
     # Create dummy embeddings and metadata for reuse
     self.dummy_embeddings = np.random.rand(10, 768)
@@ -23,18 +22,21 @@ class TestClusterTopics(unittest.TestCase):
     # Create dummy documents
     self.dummy_documents = []
     for i in range(10):
-      self.dummy_documents.append({
-          'id':
-              i,
-          'commits': [{
+      self.dummy_documents.append(
+        {
+          'id': i,
+          'commits': [
+            {
               'hash': f'hash_{i}',
               'date': '2025-01-01',
               'files': {
-                  'foo.py': [(1, 'import os'), (2, 'print("hello")')],
-                  'bar.go': [(10, 'func main() {}')]
-              }
-          }]
-      })
+                'foo.py': [(1, 'import os'), (2, 'print("hello")')],
+                'bar.go': [(10, 'func main() {}')],
+              },
+            }
+          ],
+        }
+      )
 
   # -------------------------------------------------------------------------
   # File Loading Tests
@@ -44,8 +46,8 @@ class TestClusterTopics(unittest.TestCase):
   def test_load_embeddings_success(self, mock_np_load):
     # Setup mock
     mock_np_load.return_value = {
-        'embeddings': self.dummy_embeddings,
-        'metadata': [self.dummy_metadata]
+      'embeddings': self.dummy_embeddings,
+      'metadata': [self.dummy_metadata],
     }
 
     path = Path('dummy.npz')
@@ -66,9 +68,10 @@ class TestClusterTopics(unittest.TestCase):
 
   def test_load_prepared_commits_success(self):
     mock_data = [{'id': 1}]
-    with patch('builtins.open', mock_open(read_data=pickle.dumps(mock_data))), \
-         patch('pickle.load', return_value=mock_data):
-
+    with (
+      patch('builtins.open', mock_open(read_data=pickle.dumps(mock_data))),
+      patch('pickle.load', return_value=mock_data),
+    ):
       docs = cluster_topics.load_prepared_commits(Path('commits.pkl'))
       self.assertEqual(docs, mock_data)
 
@@ -83,16 +86,18 @@ class TestClusterTopics(unittest.TestCase):
       mock_umap.UMAP.return_value = mock_reducer
 
       result = cluster_topics.perform_dimensionality_reduction(
-          self.dummy_embeddings, n_neighbors=5, n_components=5)
+        self.dummy_embeddings, n_neighbors=5, n_components=5
+      )
 
       self.assertEqual(result.shape, (10, 5))
       mock_umap.UMAP.assert_called_once_with(
-          n_neighbors=5,
-          n_components=5,
-          min_dist=0.0,
-          metric='cosine',
-          random_state=42,
-          verbose=True)
+        n_neighbors=5,
+        n_components=5,
+        min_dist=0.0,
+        metric='cosine',
+        random_state=42,
+        verbose=True,
+      )
 
   def test_perform_hdbscan_clustering(self):
     # FIX: Patch 'cluster_topics.hdbscan' directly
@@ -103,7 +108,8 @@ class TestClusterTopics(unittest.TestCase):
       mock_hdbscan.HDBSCAN.return_value = mock_clusterer
 
       labels = cluster_topics.perform_hdbscan_clustering(
-          np.zeros((10, 5)), min_cluster_size=2, min_samples=2)
+        np.zeros((10, 5)), min_cluster_size=2, min_samples=2
+      )
 
       self.assertTrue(np.array_equal(labels, mock_clusterer.labels_))
 
@@ -120,7 +126,8 @@ class TestClusterTopics(unittest.TestCase):
       initial_labels = np.array([0, 0, 1, -1, -1])
 
       new_labels = cluster_topics.assign_outliers_with_kmeans(
-          reduced_emb, initial_labels)
+        reduced_emb, initial_labels
+      )
 
       # Indices 3 and 4 should now be 0 and 1 (based on mock prediction)
       self.assertEqual(new_labels[3], 0)
@@ -134,17 +141,17 @@ class TestClusterTopics(unittest.TestCase):
 
   def test_format_code_context(self):
     commits = [
-        {
-            'files': {
-                'a.py': [(10, 'line10'), (20, 'line20')],
-                'b.py': [(5, 'line5')]
-            }
-        },
-        {
-            'files': {
-                'a.py': [(15, 'line15')]  # Merges into a.py
-            }
+      {
+        'files': {
+          'a.py': [(10, 'line10'), (20, 'line20')],
+          'b.py': [(5, 'line5')],
         }
+      },
+      {
+        'files': {
+          'a.py': [(15, 'line15')]  # Merges into a.py
+        }
+      },
     ]
 
     result = cluster_topics.format_code_context(commits)
@@ -158,33 +165,14 @@ class TestClusterTopics(unittest.TestCase):
     self.assertIn('5:line5', result)
 
   def test_create_topics_from_labels(self):
-    labels = np.array([0, 1, 0,
-                       -1])  # Doc 0->T0, Doc 1->T1, Doc 2->T0, Doc 3->Outlier
+    labels = np.array(
+      [0, 1, 0, -1]
+    )  # Doc 0->T0, Doc 1->T1, Doc 2->T0, Doc 3->Outlier
     docs = [
-        {
-            'commits': [{
-                'date': '2025-01-02',
-                'files': {}
-            }]
-        },
-        {
-            'commits': [{
-                'date': '2025-01-01',
-                'files': {}
-            }]
-        },
-        {
-            'commits': [{
-                'date': '2025-01-03',
-                'files': {}
-            }]
-        },
-        {
-            'commits': [{
-                'date': '2025-01-04',
-                'files': {}
-            }]
-        },
+      {'commits': [{'date': '2025-01-02', 'files': {}}]},
+      {'commits': [{'date': '2025-01-01', 'files': {}}]},
+      {'commits': [{'date': '2025-01-03', 'files': {}}]},
+      {'commits': [{'date': '2025-01-04', 'files': {}}]},
     ]
 
     topics = cluster_topics.create_topics_from_labels(labels, docs)
@@ -215,8 +203,9 @@ class TestClusterTopics(unittest.TestCase):
     # Context structure is roughly: "\nf1\n1:aaaa..."
     max_context = 60
 
-    chunks = cluster_topics.split_topic_by_code_context([c1, c2, c3],
-                                                        max_context)
+    chunks = cluster_topics.split_topic_by_code_context(
+      [c1, c2, c3], max_context
+    )
 
     self.assertEqual(len(chunks), 3)
     self.assertEqual(chunks[0][0], c1)
@@ -228,17 +217,20 @@ class TestClusterTopics(unittest.TestCase):
     c1 = {'files': {'f': [(1, 'a' * 100)]}, 'date': '1'}
     c2 = {'files': {'f': [(2, 'b' * 100)]}, 'date': '2'}
 
-    original_topics = [{
+    original_topics = [
+      {
         'topic_id': 1,
         'document_indices': [0, 1],
         'commits': [c1, c2],
         'commit_count': 2,
-        'code_context_size': 999  # Fake size to trigger check
-    }]
+        'code_context_size': 999,  # Fake size to trigger check
+      }
+    ]
 
     # Max context 150 should allow 1 commit but not 2
     new_topics = cluster_topics.split_oversized_topics(
-        original_topics, max_code_context=120)
+      original_topics, max_code_context=120
+    )
 
     self.assertEqual(len(new_topics), 2)
 
@@ -253,7 +245,8 @@ class TestClusterTopics(unittest.TestCase):
   def test_split_oversized_topics_no_split_needed(self):
     original_topics = [{'topic_id': 1, 'commits': [], 'commit_count': 0}]
     new_topics = cluster_topics.split_oversized_topics(
-        original_topics, max_code_context=1000)
+      original_topics, max_code_context=1000
+    )
     self.assertEqual(len(new_topics), 1)
     self.assertEqual(new_topics, original_topics)
 
@@ -270,38 +263,49 @@ class TestClusterTopics(unittest.TestCase):
   @patch('cluster_topics.assign_outliers_with_kmeans')
   @patch('cluster_topics.create_topics_from_labels')
   @patch('json.dump')
-  def test_main_flow(self, mock_json, mock_create, mock_kmeans, mock_hdbscan,
-                     mock_umap, mock_load_commits, mock_load_emb, mock_stat,
-                     mock_mkdir):
+  def test_main_flow(
+    self,
+    mock_json,
+    mock_create,
+    mock_kmeans,
+    mock_hdbscan,
+    mock_umap,
+    mock_load_commits,
+    mock_load_emb,
+    mock_stat,
+    mock_mkdir,
+  ):
 
     # Setup mocks
     mock_load_emb.return_value = (np.zeros((10, 10)), {})
-    mock_load_commits.return_value = [{
-        'id': i,
-        'commits': []
-    } for i in range(10)]
+    mock_load_commits.return_value = [
+      {'id': i, 'commits': []} for i in range(10)
+    ]
     mock_umap.return_value = np.zeros((10, 2))
     mock_hdbscan.return_value = np.zeros(10)
     mock_kmeans.return_value = np.zeros(10)
-    mock_create.return_value = [{
-        'topic_id': 1,
-        'commits': [],
-        'commit_count': 0
-    }]
+    mock_create.return_value = [
+      {'topic_id': 1, 'commits': [], 'commit_count': 0}
+    ]
 
     # Configure stat mock to return a valid size (needed for final print)
     mock_stat.return_value.st_size = 1024
 
     # Mock args
     test_args = [
-        'script_name', 'embeddings.npz', 'commits.pkl', '--output-file',
-        'out.json', '--no-split'
+      'script_name',
+      'embeddings.npz',
+      'commits.pkl',
+      '--output-file',
+      'out.json',
+      '--no-split',
     ]
 
-    with patch('sys.argv', test_args), \
-         patch('pathlib.Path.exists', return_value=True), \
-         patch('builtins.open', mock_open()):
-
+    with (
+      patch('sys.argv', test_args),
+      patch('pathlib.Path.exists', return_value=True),
+      patch('builtins.open', mock_open()),
+    ):
       cluster_topics.main()
 
       # Verify core steps were called

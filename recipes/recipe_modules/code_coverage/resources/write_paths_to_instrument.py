@@ -18,18 +18,21 @@ import sys
 def _make_argument_parser(*args, **kwargs):
   parser = argparse.ArgumentParser(*args, **kwargs)
   parser.add_argument(
-      '--write-to', required=True, help='path to input file to be written')
+    '--write-to', required=True, help='path to input file to be written'
+  )
   parser.add_argument(
-      '--src-path', required=True, help='absolute path to checkout')
+    '--src-path', required=True, help='absolute path to checkout'
+  )
   parser.add_argument(
-      '--build-path', required=True, help='absolute path to build directory')
+    '--build-path', required=True, help='absolute path to build directory'
+  )
   parser.add_argument(
-      'sources',
-      nargs='*',
-      help='paths of source files to instrument relative to '
-      '--src-path, with platform-specific path separator.')
+    'sources',
+    nargs='*',
+    help='paths of source files to instrument relative to '
+    '--src-path, with platform-specific path separator.',
+  )
   return parser
-
 
 
 def _rebase_paths(src_path, build_path, path_list):
@@ -50,14 +53,17 @@ def _rebase_paths(src_path, build_path, path_list):
 
 
 def main():
-  desc = ('make the paths to the given source files relative to the build dir '
-          'and write to a file')
+  desc = (
+    'make the paths to the given source files relative to the build dir '
+    'and write to a file'
+  )
   parser = _make_argument_parser(description=desc)
   params = parser.parse_args()
 
   with open(params.write_to, 'w') as out_file:
-    rebased_paths = _rebase_paths(params.src_path, params.build_path,
-                                  params.sources)
+    rebased_paths = _rebase_paths(
+      params.src_path, params.build_path, params.sources
+    )
     contents = '\n'.join(rebased_paths) + '\n'
     logging.info("Paths to instrument = %r" % rebased_paths)
     out_file.write(contents)

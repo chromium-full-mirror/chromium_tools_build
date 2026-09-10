@@ -17,8 +17,9 @@ from recipe_engine.util import Placeholder
 from RECIPE_MODULES.build.chromium_tests import steps
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (instruction as
-                                                       instruction_pb)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  instruction as instruction_pb,
+)
 from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb
 
 # Instruction content is limited to 10KB
@@ -27,7 +28,6 @@ _TARGET_INSTRUCTIONS_LIMIT = 10240
 
 
 class ReproInstructionsApi(recipe_api.RecipeApi):
-
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._instructions = {}
@@ -36,17 +36,19 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
   def step_ids(self) -> Iterable[str]:
     """Get the ids for instructions of the added steps."""
     return [
-        key for key, value in self._instructions.items()
-        if value.type == instruction_pb.InstructionType.STEP_INSTRUCTION
+      key
+      for key, value in self._instructions.items()
+      if value.type == instruction_pb.InstructionType.STEP_INSTRUCTION
     ]
 
   def _limit_content(self, instructions: str) -> str:
     if not instructions or len(instructions) <= _TARGET_INSTRUCTIONS_LIMIT:
       return instructions
-    return f'{instructions[:_TARGET_INSTRUCTIONS_LIMIT - 3]}...'
+    return f'{instructions[: _TARGET_INSTRUCTIONS_LIMIT - 3]}...'
 
   def update_invocation_instructions(
-      self, *, step_name: str = 'update invocation instructions') -> None:
+    self, *, step_name: str = 'update invocation instructions'
+  ) -> None:
     """Update the rdb invocation to include reproduction instructions.
 
     Attaches all collected steps to the invocation. Each call will overwrite
@@ -59,21 +61,23 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       return
 
     self.m.resultdb.update_invocation(
-        step_name=step_name,
-        instructions=instruction_pb.Instructions(
-            instructions=self._instructions.values()),
-        raise_on_failure=False)
+      step_name=step_name,
+      instructions=instruction_pb.Instructions(
+        instructions=self._instructions.values()
+      ),
+      raise_on_failure=False,
+    )
 
   def create_step_instruction(
-      self,
-      tag: str,
-      description: str,
-      *,
-      local_content: str = None,
-      remote_content: str = None,
-      prebuilt_content: str = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
-      remote_dependency: instruction_pb.InstructionDependency | None = None,
+    self,
+    tag: str,
+    description: str,
+    *,
+    local_content: str = None,
+    remote_content: str = None,
+    prebuilt_content: str = None,
+    local_dependency: instruction_pb.InstructionDependency | None = None,
+    remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> None:
     """Create a reproduction instruction
 
@@ -105,33 +109,36 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     local_instruction = None
     if local_content:
       local_instruction = instruction_pb.TargetedInstruction(
-          content=local_content,
-          targets=[
-              instruction_pb.InstructionTarget.LOCAL,
-          ])
+        content=local_content,
+        targets=[
+          instruction_pb.InstructionTarget.LOCAL,
+        ],
+      )
     remote_instruction = None
     if remote_content:
       remote_instruction = instruction_pb.TargetedInstruction(
-          content=remote_content,
-          targets=[
-              instruction_pb.InstructionTarget.REMOTE,
-          ])
+        content=remote_content,
+        targets=[
+          instruction_pb.InstructionTarget.REMOTE,
+        ],
+      )
     prebuilt_instruction = None
     if prebuilt_content:
       prebuilt_instruction = instruction_pb.TargetedInstruction(
-          content=prebuilt_content,
-          targets=[
-              instruction_pb.InstructionTarget.PREBUILT,
-          ])
+        content=prebuilt_content,
+        targets=[
+          instruction_pb.InstructionTarget.PREBUILT,
+        ],
+      )
     if local_dependency:
       local_instruction.dependencies.append(local_dependency)
     if remote_dependency:
       remote_instruction.dependencies.append(remote_dependency)
 
     instruction = instruction_pb.Instruction(
-        id=tag,
-        descriptive_name=description[:100],
-        type=instruction_pb.InstructionType.STEP_INSTRUCTION,
+      id=tag,
+      descriptive_name=description[:100],
+      type=instruction_pb.InstructionType.STEP_INSTRUCTION,
     )
     if local_content:
       instruction.targeted_instructions.append(local_instruction)
@@ -142,17 +149,17 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     self._instructions[tag] = instruction
 
   def create_test_result_instruction(
-      self,
-      tag: str,
-      description: str,
-      test_invocations: Iterable[str],
-      *,
-      local_content: str = None,
-      remote_content: str = None,
-      prebuilt_content: str = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
-      remote_dependency: instruction_pb.InstructionDependency | None = None,
-      recursive: bool = False,
+    self,
+    tag: str,
+    description: str,
+    test_invocations: Iterable[str],
+    *,
+    local_content: str = None,
+    remote_content: str = None,
+    prebuilt_content: str = None,
+    local_dependency: instruction_pb.InstructionDependency | None = None,
+    remote_dependency: instruction_pb.InstructionDependency | None = None,
+    recursive: bool = False,
   ) -> instruction_pb.Instruction:
     """Create a reproduction instruction
 
@@ -188,34 +195,39 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     prebuilt_content = self._limit_content(prebuilt_content)
 
     local_instruction = instruction_pb.TargetedInstruction(
-        content=local_content,
-        targets=[
-            instruction_pb.InstructionTarget.LOCAL,
-        ])
+      content=local_content,
+      targets=[
+        instruction_pb.InstructionTarget.LOCAL,
+      ],
+    )
     if local_dependency:
       local_instruction.dependencies.append(local_dependency)
 
     remote_instruction = instruction_pb.TargetedInstruction(
-        content=remote_content,
-        targets=[
-            instruction_pb.InstructionTarget.REMOTE,
-        ])
+      content=remote_content,
+      targets=[
+        instruction_pb.InstructionTarget.REMOTE,
+      ],
+    )
     if remote_dependency:
       remote_instruction.dependencies.append(remote_dependency)
 
     prebuilt_instruction = instruction_pb.TargetedInstruction(
-        content=prebuilt_content,
-        targets=[
-            instruction_pb.InstructionTarget.PREBUILT,
-        ])
+      content=prebuilt_content,
+      targets=[
+        instruction_pb.InstructionTarget.PREBUILT,
+      ],
+    )
 
     instruction = instruction_pb.Instruction(
-        id=tag,
-        descriptive_name=description[:100],
-        type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
-        instruction_filter=instruction_pb.InstructionFilter(
-            invocation_ids=instruction_pb.InstructionFilterByInvocationID(
-                invocation_ids=test_invocations, recursive=recursive)),
+      id=tag,
+      descriptive_name=description[:100],
+      type=instruction_pb.InstructionType.TEST_RESULT_INSTRUCTION,
+      instruction_filter=instruction_pb.InstructionFilter(
+        invocation_ids=instruction_pb.InstructionFilterByInvocationID(
+          invocation_ids=test_invocations, recursive=recursive
+        )
+      ),
     )
 
     if remote_content:
@@ -228,17 +240,21 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     self._instructions[tag] = instruction
 
   def tag_for_step(self, step_name: str):
-    return f'{step_name.lower()}_repro_instructions'.replace(' ', '_').replace(
-        '(', '').replace(')', '').replace('|', '')[:100]
+    return (
+      f'{step_name.lower()}_repro_instructions'.replace(' ', '_')
+      .replace('(', '')
+      .replace(')', '')
+      .replace('|', '')[:100]
+    )
 
   def add_step_instruction(
-      self,
-      step_result: step_data.StepData,
-      *,
-      local_content: str | None = None,
-      remote_content: str | None = None,
-      local_dependency: instruction_pb.InstructionDependency | None = None,
-      remote_dependency: instruction_pb.InstructionDependency | None = None,
+    self,
+    step_result: step_data.StepData,
+    *,
+    local_content: str | None = None,
+    remote_content: str | None = None,
+    local_dependency: instruction_pb.InstructionDependency | None = None,
+    remote_dependency: instruction_pb.InstructionDependency | None = None,
   ) -> None:
     """Adds step instructions for a step using its step result
 
@@ -258,12 +274,12 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     """
     tag = self.tag_for_step(step_result.name)
     self.create_step_instruction(
-        tag,
-        f'{step_result.name} instructions',
-        local_content=local_content,
-        remote_content=remote_content,
-        local_dependency=local_dependency,
-        remote_dependency=remote_dependency,
+      tag,
+      f'{step_result.name} instructions',
+      local_content=local_content,
+      remote_content=remote_content,
+      local_dependency=local_dependency,
+      remote_dependency=remote_dependency,
     )
     step_result.presentation.tags['resultdb.instruction.id'] = tag
 
@@ -287,7 +303,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
       self._instructions[instruction.id] = instruction
 
   def trigger_properties(
-      self) -> dict[str, Iterable[instruction_pb.InstructionDependency]]:
+    self,
+  ) -> dict[str, Iterable[instruction_pb.InstructionDependency]]:
     """Provides the instructions on the current build as dependencies in a dict
 
     The dict provided by this will be digested in get_dependency when provided
@@ -297,10 +314,12 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     dependencies = []
     dep_invocation = 'build-' + str(self.m.buildbucket.build.id)
     for instruction in self._instructions.values():
-      dependencies.append({
+      dependencies.append(
+        {
           'invocation_id': dep_invocation,
           'instruction_id': instruction.id,
-      })
+        }
+      )
     return {'instruction_dependencies': dependencies}
 
   def get_step_instruction_tag(self, step_id_re: str) -> str:
@@ -315,8 +334,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     return None
 
   def get_dependency(
-      self,
-      step_id_re: str,
+    self,
+    step_id_re: str,
   ) -> instruction_pb.InstructionDependency:
     """Get a dependency for a targeted step potentially from a parent build
 
@@ -332,18 +351,21 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
 
     # If we have a parent build try for a step on that invocation
     for dependency in reversed(parent_dependencies):
-      if ('invocation_id' in dependency and 'instruction_id' in dependency and
-          re.match(step_id_re, dependency['instruction_id'])):
+      if (
+        'invocation_id' in dependency
+        and 'instruction_id' in dependency
+        and re.match(step_id_re, dependency['instruction_id'])
+      ):
         return instruction_pb.InstructionDependency(
-            invocation_id=dependency['invocation_id'],
-            instruction_id=dependency['instruction_id'],
+          invocation_id=dependency['invocation_id'],
+          instruction_id=dependency['instruction_id'],
         )
 
     dep_invocation = 'build-' + str(self.m.buildbucket.build.id)
     for step_id in reversed(self.step_ids):
       if re.match(step_id_re, step_id):
         return instruction_pb.InstructionDependency(
-            invocation_id=dep_invocation,
-            instruction_id=step_id,
+          invocation_id=dep_invocation,
+          instruction_id=step_id,
         )
     return None

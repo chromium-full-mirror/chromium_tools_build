@@ -81,7 +81,6 @@ class BaseProfileTrack(ABC):
 
 
 class VersionProfileTrack(BaseProfileTrack):
-
   def __init__(self, api, track, profiling_pool, version, revision):
     self.version = '%d.%d.%d.%d' % version
     self.revision = revision
@@ -108,7 +107,6 @@ class VersionProfileTrack(BaseProfileTrack):
 
 
 class RevisionProfileTrack(BaseProfileTrack):
-
   def __init__(self, api, track, profiling_pool, revision):
     self.revision = revision
     super().__init__(api, track, profiling_pool)
@@ -127,7 +125,6 @@ class RevisionProfileTrack(BaseProfileTrack):
 
 
 class ChangeProfileTrack(BaseProfileTrack):
-
   def __init__(self, api, track, profiling_pool, change):
     self.change = change
     super().__init__(api, track, profiling_pool)
@@ -138,7 +135,9 @@ class ChangeProfileTrack(BaseProfileTrack):
 
   @cached_property
   def name(self):
-    return f'crrev.com/c/{self.change.change}/{self.change.patchset} {self.track}'
+    return (
+      f'crrev.com/c/{self.change.change}/{self.change.patchset} {self.track}'
+    )
 
   @cached_property
   def compilator_kwargs(self):

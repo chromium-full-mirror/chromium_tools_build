@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import sys
+
 sys.path.append(sys.argv[1])
 from devil import devil_env
 

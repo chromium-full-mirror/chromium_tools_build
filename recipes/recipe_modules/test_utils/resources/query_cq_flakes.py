@@ -14,7 +14,8 @@ import urllib.request
 # _CQFlakesRequest and _CQFlakeResponse in:
 # https://chromium.googlesource.com/infra/infra/+/7a355f3cbfd08acdb2579e0506924516330e8700/appengine/findit/endpoint_api.py#193
 _FLAKE_SERVICE_ENDPOINT = (
-    'https://findit-for-me.appspot.com/_ah/api/findit/v1/get_cq_flakes')
+  'https://findit-for-me.appspot.com/_ah/api/findit/v1/get_cq_flakes'
+)
 
 
 def query_and_write_flakes(input_path, output_path):
@@ -30,8 +31,10 @@ def query_and_write_flakes(input_path, output_path):
     input_json = json.load(f)
 
   response = urllib.request.urlopen(
-      urllib.request.Request(
-          url=_FLAKE_SERVICE_ENDPOINT, data=json.dumps(input_json).encode()))
+    urllib.request.Request(
+      url=_FLAKE_SERVICE_ENDPOINT, data=json.dumps(input_json).encode()
+    )
+  )
   with open(output_path, 'wb') as f:
     f.write(response.read())
 
@@ -39,15 +42,17 @@ def query_and_write_flakes(input_path, output_path):
 def main():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--input-path',
-      required=True,
-      type=str,
-      help='Absolute path to a file that defines to list of tests to query')
+    '--input-path',
+    required=True,
+    type=str,
+    help='Absolute path to a file that defines to list of tests to query',
+  )
   parser.add_argument(
-      '--output-path',
-      required=True,
-      type=str,
-      help='Absolute path to a file that stores the queries flaky tests on cq')
+    '--output-path',
+    required=True,
+    type=str,
+    help='Absolute path to a file that stores the queries flaky tests on cq',
+  )
 
   args = parser.parse_args()
   if not os.path.isfile(args.input_path):

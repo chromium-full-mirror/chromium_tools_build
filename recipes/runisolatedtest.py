@@ -17,28 +17,34 @@ import subprocess
 import sys
 
 
-USAGE = ('%s [options] /full/path/to/test.exe -- [original test command]' %
-         os.path.basename(sys.argv[0]))
+USAGE = (
+  '%s [options] /full/path/to/test.exe -- [original test command]'
+  % os.path.basename(sys.argv[0])
+)
 
-LINUX_ISOLATE_ENABLED_TESTS = set((
-  'base_unittests',
-  'browser_tests',
-  'interactive_ui_tests',
-  'net_unittests',
-  'unit_tests',
-))
+LINUX_ISOLATE_ENABLED_TESTS = set(
+  (
+    'base_unittests',
+    'browser_tests',
+    'interactive_ui_tests',
+    'net_unittests',
+    'unit_tests',
+  )
+)
 
 # TODO(maruel): Not enabled because of lack of XCode support and missing
 # dependencies for more complex tests.
 MAC_ISOLATE_ENABLED_TESTS = set()
 
-WIN_ISOLATE_ENABLED_TESTS = set((
-  'base_unittests',
-  'browser_tests',
-  'interactive_ui_tests',
-  'net_unittests',
-  'unit_tests',
-))
+WIN_ISOLATE_ENABLED_TESTS = set(
+  (
+    'base_unittests',
+    'browser_tests',
+    'interactive_ui_tests',
+    'net_unittests',
+    'unit_tests',
+  )
+)
 
 ISOLATE_ENABLED_BUILDERS = {
   # CI linux
@@ -49,7 +55,6 @@ ISOLATE_ENABLED_BUILDERS = {
   # CI win
   'Win7 Tests (1)': WIN_ISOLATE_ENABLED_TESTS,
   'Win10 Tests x64': WIN_ISOLATE_ENABLED_TESTS,
-
   # Try Server
   'linux_rel': LINUX_ISOLATE_ENABLED_TESTS,
   'mac_rel': MAC_ISOLATE_ENABLED_TESTS,
@@ -86,13 +91,13 @@ def run_test_isolated(isolate_script, test_exe, original_command):
     return 1
 
   isolate_command = [
-      isolate_script,
-      'run',
-      '-isolate',
-      isolate_file,
-      # Print info log lines, so `isolate` prints the path to
-      # the binary it's about to run, http://crbug.com/311625
-      '-verbose'
+    isolate_script,
+    'run',
+    '-isolate',
+    isolate_file,
+    # Print info log lines, so `isolate` prints the path to
+    # the binary it's about to run, http://crbug.com/311625
+    '-verbose',
   ]
 
   # Start setting the test specific options.
@@ -107,17 +112,26 @@ def run_test_isolated(isolate_script, test_exe, original_command):
 
 def main(argv):
   option_parser = optparse.OptionParser(USAGE)
-  option_parser.add_option('--test_name', default='',
-                           help='The name of the test')
-  option_parser.add_option('--builder_name', default='',
-                           help='The name of the builder that created this'
-                           'test')
-  option_parser.add_option('--checkout_dir',
-                           help='Checkout directory, used to locate the '
-                           'swarm_client scripts.')
-  option_parser.add_option('-v', '--verbose', action='count', default=0,
-                           help='Use to increase log verbosity. Can be passed '
-                           'in multiple times for more detailed logs.')
+  option_parser.add_option(
+    '--test_name', default='', help='The name of the test'
+  )
+  option_parser.add_option(
+    '--builder_name',
+    default='',
+    help='The name of the builder that created thistest',
+  )
+  option_parser.add_option(
+    '--checkout_dir',
+    help='Checkout directory, used to locate the swarm_client scripts.',
+  )
+  option_parser.add_option(
+    '-v',
+    '--verbose',
+    action='count',
+    default=0,
+    help='Use to increase log verbosity. Can be passed '
+    'in multiple times for more detailed logs.',
+  )
 
   options, args = option_parser.parse_args(argv)
 
@@ -126,16 +140,17 @@ def main(argv):
 
   # Initialize logging.
   level = [logging.ERROR, logging.INFO, logging.DEBUG][min(2, options.verbose)]
-  logging.basicConfig(level=level,
-                      format='%(asctime)s %(filename)s:%(lineno)-3d'
-                             ' %(levelname)s %(message)s',
-                      datefmt='%y%m%d %H:%M:%S')
+  logging.basicConfig(
+    level=level,
+    format='%(asctime)s %(filename)s:%(lineno)-3d %(levelname)s %(message)s',
+    datefmt='%y%m%d %H:%M:%S',
+  )
 
   if should_run_as_isolated(options.builder_name, options.test_name):
     logging.info('Running test in isolate mode')
     # Search first in luci-go
     isolate_script = os.path.join(
-        options.checkout_dir, 'src', 'tools', 'luci-go', 'isolate'
+      options.checkout_dir, 'src', 'tools', 'luci-go', 'isolate'
     )
 
     return run_test_isolated(isolate_script, test_exe, original_command)

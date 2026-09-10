@@ -32,9 +32,14 @@ import json
 import re
 
 from recipe_engine.config import Single
-from recipe_engine.post_process import (DoesNotRun, DropExpectation, Filter,
-                                        MustRun, SummaryMarkdown,
-                                        SummaryMarkdownRE)
+from recipe_engine.post_process import (
+  DoesNotRun,
+  DropExpectation,
+  Filter,
+  MustRun,
+  SummaryMarkdown,
+  SummaryMarkdownRE,
+)
 from recipe_engine.recipe_api import Property
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -49,11 +54,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium_swarming
 from RECIPE_MODULES.depot_tools import gitiles, gsutil
 from RECIPE_MODULES.recipe_engine import (
-    json as json_module,
-    path,
-    properties,
-    raw_io,
-    step,
+  json as json_module,
+  path,
+  properties,
+  raw_io,
+  step,
 )
 
 
@@ -77,65 +82,66 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
   step: step.TEST_API
 
+
 PROPERTIES = {
-    # Group of the builder that produced the builds for bisection.
-    'bisect_builder_group': Property(kind=str),
-    # Name of the builder that produced the builds for bisection.
-    'bisect_buildername': Property(kind=str),
-    # Extra arguments to V8's run-tests.py script.
-    'extra_args': Property(default=None, kind=list),
-    # Regular expression that must match in the output of failing tests.
-    'failure_regexp': Property(default=None, kind=str),
-    # The maximum number of calibration attempts (safeguard to prevent infinite
-    # loops). Repetitions are doubled on each attempt until there's enough
-    # confidence.
-    'max_calibration_attempts': Property(default=5, kind=Single((int, float))),
-    # Minimum number of flakes needed to have confidence in a run.
-    'min_flake_threshold': Property(default=4, kind=Single((int, float))),
-    # Name of the isolated file (e.g. bot_default, mjsunit).
-    'isolated_name': Property(kind=str),
-    # Bisection mode: one of {regression|progression|combined|repro}.
-    # Mode regression bisects backwards to determine what introduced a flake.
-    # Mode progression bisects forwards to determine what fixed a flake.
-    # Mode combined runs progression and regression bisection.
-    # Mode repro only checks if a flake reproduces with the given revision.
-    'mode': Property(default='combined', kind=str),
-    # Initial number of swarming shards.
-    'num_shards': Property(default=2, kind=Single((int, float))),
-    # Optional build directory for backwards-compatibility, e.g. 'out/Release'.
-    'outdir': Property(default='out/build', kind=str),
-    # List of tuples (commit position, old flag, new flag regexp).
-    # Can be used to override the recipe-configured list of flags that got
-    # renamed or are new from some commit position onwards.
-    'override_flag_history': Property(default=None, kind=list),
-    # Initial number of test repetitions (passed to --random-seed-stress-count
-    # option).
-    'repetitions': Property(default=5000, kind=Single((int, float))),
-    # Revision known to be bad, where bisection will start. ToT by default.
-    'revision': Property(default=None, kind=str),
-    # Swarming dimensions classifying the type of bot the tests should run on.
-    # Passed as list of strings, each in the format name:value.
-    'swarming_dimensions': Property(default=None, kind=list),
-    # Swarming priority to be used for swarming tasks. The priority is lowered
-    # by 10 (actual numberic value increases) when using higher time than the
-    # one specified in the total_timeout_sec.
-    'swarming_priority': Property(default=25, kind=Single((int, float))),
-    # Expiration used for swarming tasks. Counted from the moment task is
-    # scheduled.
-    'swarming_expiration': Property(default=60 * 60, kind=Single((int, float))),
-    # Fully qualified test name passed to run-tests.py. E.g. mjsunit/foobar.
-    'test_name': Property(kind=str),
-    # Timeout parameter passed to run-tests.py. Keep small when bisecting
-    # fast-running tests that occasionally hang.
-    'timeout_sec': Property(default=60, kind=Single((int, float))),
-    # Initial total timeout for one entire bisect step. During calibration, this
-    # time might be increased for more confidence. Set to 0 to disable and
-    # specify the 'repetitions' property instead.
-    'total_timeout_sec': Property(default=120, kind=Single((int, float))),
-    # TODO(machenbach): Deprecated. Use "revision". Remove after 2022/10/15.
-    'to_revision': Property(default=None, kind=str),
-    # Name of the testing variant passed to run-tests.py.
-    'variant': Property(kind=str),
+  # Group of the builder that produced the builds for bisection.
+  'bisect_builder_group': Property(kind=str),
+  # Name of the builder that produced the builds for bisection.
+  'bisect_buildername': Property(kind=str),
+  # Extra arguments to V8's run-tests.py script.
+  'extra_args': Property(default=None, kind=list),
+  # Regular expression that must match in the output of failing tests.
+  'failure_regexp': Property(default=None, kind=str),
+  # The maximum number of calibration attempts (safeguard to prevent infinite
+  # loops). Repetitions are doubled on each attempt until there's enough
+  # confidence.
+  'max_calibration_attempts': Property(default=5, kind=Single((int, float))),
+  # Minimum number of flakes needed to have confidence in a run.
+  'min_flake_threshold': Property(default=4, kind=Single((int, float))),
+  # Name of the isolated file (e.g. bot_default, mjsunit).
+  'isolated_name': Property(kind=str),
+  # Bisection mode: one of {regression|progression|combined|repro}.
+  # Mode regression bisects backwards to determine what introduced a flake.
+  # Mode progression bisects forwards to determine what fixed a flake.
+  # Mode combined runs progression and regression bisection.
+  # Mode repro only checks if a flake reproduces with the given revision.
+  'mode': Property(default='combined', kind=str),
+  # Initial number of swarming shards.
+  'num_shards': Property(default=2, kind=Single((int, float))),
+  # Optional build directory for backwards-compatibility, e.g. 'out/Release'.
+  'outdir': Property(default='out/build', kind=str),
+  # List of tuples (commit position, old flag, new flag regexp).
+  # Can be used to override the recipe-configured list of flags that got
+  # renamed or are new from some commit position onwards.
+  'override_flag_history': Property(default=None, kind=list),
+  # Initial number of test repetitions (passed to --random-seed-stress-count
+  # option).
+  'repetitions': Property(default=5000, kind=Single((int, float))),
+  # Revision known to be bad, where bisection will start. ToT by default.
+  'revision': Property(default=None, kind=str),
+  # Swarming dimensions classifying the type of bot the tests should run on.
+  # Passed as list of strings, each in the format name:value.
+  'swarming_dimensions': Property(default=None, kind=list),
+  # Swarming priority to be used for swarming tasks. The priority is lowered
+  # by 10 (actual numberic value increases) when using higher time than the
+  # one specified in the total_timeout_sec.
+  'swarming_priority': Property(default=25, kind=Single((int, float))),
+  # Expiration used for swarming tasks. Counted from the moment task is
+  # scheduled.
+  'swarming_expiration': Property(default=60 * 60, kind=Single((int, float))),
+  # Fully qualified test name passed to run-tests.py. E.g. mjsunit/foobar.
+  'test_name': Property(kind=str),
+  # Timeout parameter passed to run-tests.py. Keep small when bisecting
+  # fast-running tests that occasionally hang.
+  'timeout_sec': Property(default=60, kind=Single((int, float))),
+  # Initial total timeout for one entire bisect step. During calibration, this
+  # time might be increased for more confidence. Set to 0 to disable and
+  # specify the 'repetitions' property instead.
+  'total_timeout_sec': Property(default=120, kind=Single((int, float))),
+  # TODO(machenbach): Deprecated. Use "revision". Remove after 2022/10/15.
+  'to_revision': Property(default=None, kind=str),
+  # Name of the testing variant passed to run-tests.py.
+  'variant': Property(kind=str),
 }
 
 # The maximum number of steps for backwards and inwards bisection (safeguard to
@@ -191,40 +197,51 @@ TEST_FAILED_TEMPLATE = """
 # For revisions prior to 120, flags matching --bar=-*, e.g. --bar=10 will be
 # removed.
 FLAG_HISTORY = [
-    (97513, None, r'--framework=.*'),
+  (97513, None, r'--framework=.*'),
 ]
 
 
 class Command:
   """Helper class representing a command line to V8's run-tests.py."""
-  def __init__(self, outdir, test_name, variant, repetitions, repro_only,
-               total_timeout_sec, timeout, extra_args, flag_history,
-               min_flake_threshold):
+
+  def __init__(
+    self,
+    outdir,
+    test_name,
+    variant,
+    repetitions,
+    repro_only,
+    total_timeout_sec,
+    timeout,
+    extra_args,
+    flag_history,
+    min_flake_threshold,
+  ):
     self.repetitions = repetitions
     self.test_name = test_name
     self.total_timeout_sec = total_timeout_sec
     self.min_failures = 1 if repro_only else min_flake_threshold
     self.flag_history = flag_history
     self.base_cmd = [
-        'tools/run-tests.py',
-        '--progress=verbose',
-        f'--outdir={outdir}',
-        f'--timeout={timeout}',
-        '--swarming',
-        f'--variants={variant}',
-        f'--exit-after-n-failures={self.min_failures}',
+      'tools/run-tests.py',
+      '--progress=verbose',
+      f'--outdir={outdir}',
+      f'--timeout={timeout}',
+      '--swarming',
+      f'--variants={variant}',
+      f'--exit-after-n-failures={self.min_failures}',
     ]
     if repro_only:
       # In repro-only mode we keep running skipped tests.
       self.base_cmd.append('--run-skipped')
-    self.base_cmd += (extra_args or [])
+    self.base_cmd += extra_args or []
     self.base_cmd.append(test_name)
 
   @property
   def label(self):
     """Test name for UI output limited to MAX_LABEL_SIZE chars."""
     if len(self.test_name) > MAX_LABEL_SIZE:
-      return self.test_name[:MAX_LABEL_SIZE - 3] + '...'
+      return self.test_name[: MAX_LABEL_SIZE - 3] + '...'
     return self.test_name
 
   def rewrite_command(self, cmd, commit_position):
@@ -269,7 +286,6 @@ class Command:
 
 
 class ReturnException(Exception):
-
   def __init__(self, message):
     super().__init__()
     self.message = message
@@ -277,6 +293,7 @@ class ReturnException(Exception):
 
 def raw_gs_url_template(builder_group, buildername):
   return f'gs://chromium-v8/isolated/{builder_group}/{buildername}/%s.json'
+
 
 def fallback_buildername(buildername):
   """V8-side logic for deducing the name of a builder from its compiling
@@ -290,9 +307,9 @@ def fallback_buildername(buildername):
   exists.
   """
   if buildername.endswith(' - builder'):
-    return buildername[:-len(' - builder')]
+    return buildername[: -len(' - builder')]
   if buildername.endswith(' builder'):
-    return buildername[:-len(' builder')]
+    return buildername[: -len(' builder')]
   return buildername
 
 
@@ -317,21 +334,23 @@ class Depot:
     else:
       # If the script was started without a revision, initialize it to ToT.
       self.head_offset = 0
-      commits = self._fetch_commits(
-          'init head', 'refs/heads/main', 0)
+      commits = self._fetch_commits('init head', 'refs/heads/main', 0)
       self._update_caches(commits, 0)
       self.known_bad_revision = self.revisions[0]
 
   def _parse_commit_position(self, value):
     """Returns (ref, revision_number) tuple."""
     RE_COMMIT_POSITION = re.compile(
-        r'Cr-Commit-Position: (?P<ref>refs/[^@]+)@{#(?P<revision>\d+)}')
+      r'Cr-Commit-Position: (?P<ref>refs/[^@]+)@{#(?P<revision>\d+)}'
+    )
     matches = [
-        match.groupdict() for match in RE_COMMIT_POSITION.finditer(value)
+      match.groupdict() for match in RE_COMMIT_POSITION.finditer(value)
     ]
     if not matches:
-      raise ValueError(f'Commit position "{value}" does not match '
-                       f'r"{RE_COMMIT_POSITION.pattern}"')
+      raise ValueError(
+        f'Commit position "{value}" does not match '
+        f'r"{RE_COMMIT_POSITION.pattern}"'
+      )
     return int(matches[len(matches) - 1]['revision'])
 
   def _update_caches(self, commits, offset):
@@ -367,9 +386,10 @@ class Depot:
           start fetching commits.
     """
     commits, _ = self.api.gitiles.log(
-        REPO, f'{git_ref}~{offset}',
-        limit=1,
-        step_name=f'{step_name} #{offset}',
+      REPO,
+      f'{git_ref}~{offset}',
+      limit=1,
+      step_name=f'{step_name} #{offset}',
     )
     assert commits
     return commits
@@ -382,8 +402,9 @@ class Depot:
   def _guard_large_offset(self, fetch_offset):
     if fetch_offset >= MAX_HEAD_OFFSET:
       raise self.api.step.StepFailure(
-          f'Could not connect the known bad revision to refs/heads/main. '
-          f'Looked in over {MAX_HEAD_OFFSET} commits.')
+        f'Could not connect the known bad revision to refs/heads/main. '
+        f'Looked in over {MAX_HEAD_OFFSET} commits.'
+      )
 
   def get_head_offset(self):
     """Returns the offset from the known bad revision to the revision at
@@ -406,9 +427,9 @@ class Depot:
       fetch_offset = len(all_commits)
       self._guard_large_offset(fetch_offset)
       fetched_commits = self._fetch_commits(
-          'init head',
-          head_revision or 'refs/heads/main',
-          fetch_offset,
+        'init head',
+        head_revision or 'refs/heads/main',
+        fetch_offset,
       )
       all_commits.extend(fetched_commits)
 
@@ -436,7 +457,8 @@ class Depot:
       # when initializing known_bad_revision..refs/heads/main.
       assert offset >= 0
       commits = self._fetch_commits(
-          'get revision', self.known_bad_revision, offset)
+        'get revision', self.known_bad_revision, offset
+      )
       self._update_caches(commits, offset)
 
     return self.revisions[offset]
@@ -445,8 +467,9 @@ class Depot:
 class Builds:
   """Helper class for locating builds in content-addressed storage (CAS)."""
 
-  def __init__(self, api: DEPS, depot, builder_group, buildername,
-               isolated_name):
+  def __init__(
+    self, api: DEPS, depot, builder_group, buildername, isolated_name
+  ):
     """
     Args:
       depot: Helper that maps offsets to revisions.
@@ -460,10 +483,10 @@ class Builds:
     self.isolated_name = isolated_name
     # Two templates for looking up the builder before and after a potential
     # split into builder/tester.
-    self.gs_url_template_first = raw_gs_url_template(
-        builder_group, buildername)
+    self.gs_url_template_first = raw_gs_url_template(builder_group, buildername)
     self.gs_url_template_second = raw_gs_url_template(
-        builder_group, fallback_buildername(buildername))
+      builder_group, fallback_buildername(buildername)
+    )
     # Cache for offsets that exist at fallback build location.
     self.fallback_offsets = set()
     # Cache for cas digests.
@@ -492,9 +515,9 @@ class Builds:
     testdata in specific test cases to make lookups pass.
     """
     return self.api.raw_io.test_api.stream_output_text(
-        GSUTIL_NO_MATCH_TXT,
-        stream='stderr',
-        retcode=1,
+      GSUTIL_NO_MATCH_TXT,
+      stream='stderr',
+      retcode=1,
     )
 
   def _lookup_build(self, gs_url_template, name_suffix, offset):
@@ -502,10 +525,10 @@ class Builds:
     link = f'{REPO}/+/{rev}'
     try:
       self.api.gsutil.list(
-          gs_url_template % rev,
-          name=f'lookup cas_digests for #{offset}{name_suffix}',
-          stderr=self.api.raw_io.output_text(),
-          step_test_data=self._lookup_build_test_data,
+        gs_url_template % rev,
+        name=f'lookup cas_digests for #{offset}{name_suffix}',
+        stderr=self.api.raw_io.output_text(),
+        step_test_data=self._lookup_build_test_data,
       )
       return True
     except self.api.step.StepFailure as e:
@@ -526,13 +549,13 @@ class Builds:
     "fallback_offsets" will indicate if the fallback builder should be used
     at this offset, when downloading the build later.
     """
-    result = self._lookup_build(
-        self.gs_url_template_first, '', offset)
+    result = self._lookup_build(self.gs_url_template_first, '', offset)
     if not result and self.fallback_available:
       # Indicate that this build could potentially be found using the fallback.
       self.fallback_offsets.add(offset)
       result = self._lookup_build(
-          self.gs_url_template_second, ' (fallback)', offset)
+        self.gs_url_template_second, ' (fallback)', offset
+      )
     return result
 
   def find_closest_build(self, offset, max_offset=None):
@@ -562,11 +585,12 @@ class Builds:
       return self.cas_digests[offset]
 
     self.api.gsutil.download_url(
-        self._gs_url(offset),
-        self.api.json.output(),
-        name=f'get cas_digests for #{offset}',
-        step_test_data=lambda: self.api.json.test_api.output(
-            {'foo_isolated': '[dummy hash for foo_isolated]/123'}),
+      self._gs_url(offset),
+      self.api.json.output(),
+      name=f'get cas_digests for #{offset}',
+      step_test_data=lambda: self.api.json.test_api.output(
+        {'foo_isolated': '[dummy hash for foo_isolated]/123'}
+      ),
     )
     step_result = self.api.step.active_result
     self.cas_digests[offset] = step_result.json.output[self.isolated_name]
@@ -577,8 +601,17 @@ class Builds:
 class Runner:
   """Helper class for executing the V8 test runner to check for flakes."""
 
-  def __init__(self, api: DEPS, builds, command, num_shards, repro_only,
-               max_calibration_attempts, min_flake_threshold, failure_regexp):
+  def __init__(
+    self,
+    api: DEPS,
+    builds,
+    command,
+    num_shards,
+    repro_only,
+    max_calibration_attempts,
+    min_flake_threshold,
+    failure_regexp,
+  ):
     self.api = api
     self.builds = builds
     self.command = command
@@ -606,8 +639,11 @@ class Runner:
       # Nest to disambiguate step names during calibration.
       with self.api.step.nest(f'calibration attempt {i + 1}') as parent:
         num_failures = self.check_num_flakes(offset)
-        if (self.repro_only and num_failures or
-            num_failures >= self.min_flake_threshold):
+        if (
+          self.repro_only
+          and num_failures
+          or num_failures >= self.min_flake_threshold
+        ):
           parent.step_text = 'successfully reproduced flaky test'
           return True
         if self.num_shards < MAX_SWARMING_SHARDS:
@@ -623,19 +659,17 @@ class Runner:
     test_data = self.api.chromium_swarming.test_api.canned_summary_output_raw()
     test_data['shards'][0]['output'] = TEST_PASSED_TEXT
     test_data['shards'][0]['exit_code'] = 0
-    return (
-        self.api.chromium_swarming.test_api.summary(
-            self.api.json.test_api.output({}) +
-            self.api.raw_io.test_api.output(''),
-            test_data)
+    return self.api.chromium_swarming.test_api.summary(
+      self.api.json.test_api.output({}) + self.api.raw_io.test_api.output(''),
+      test_data,
     )
 
   def num_failures(self, step_result):
-    """Determine the number of failures from the results of one swarming shard.
-    """
+    """Determine the number of failures from the results of one swarming shard."""
     data = step_result.chromium_swarming.summary['shards'][0]
     assert data.get('state') == 'COMPLETED', (
-        'The bot might have died. Please restart the analysis')
+      'The bot might have died. Please restart the analysis'
+    )
     if data.get('exit_code', 0) == EXIT_CODE_NO_TESTS:
       # The desired test doesn't exist in this revision. This counts
       # as good as no test means no flaky test.
@@ -658,7 +692,8 @@ class Runner:
     no_cas = re.search(r'\w+\/\d+ not found in the CAS', output)
     if no_cas:
       raise ReturnException(
-          'Bisect goes too far back. Builds went out of retention.')
+        'Bisect goes too far back. Builds went out of retention.'
+      )
     match = re.search(r'=== (\d+) tests failed', output)
     assert match
     return int(match.group(1))
@@ -689,16 +724,17 @@ class Runner:
       # cancel the task, such that they are not in the list of pending tasks or
       # override the step names.
       task = self.api.chromium_swarming.task(
-          name=f'{step_prefix} - shard {shard}',
-          task_output_dir=path / f'task_output_dir_{shard}',
-          raw_cmd=self.command.raw_cmd(self.multiplier, commit_position),
-          cas_input_root=cas_digest,
+        name=f'{step_prefix} - shard {shard}',
+        task_output_dir=path / f'task_output_dir_{shard}',
+        raw_cmd=self.command.raw_cmd(self.multiplier, commit_position),
+        cas_input_root=cas_digest,
       )
 
       # Use lower swarming priority given the increased time of the task.
       if self.multiplier > 1:
-        task.request = (task.request.with_priority(
-                          max(task.request.priority + 10, 255)))
+        task.request = task.request.with_priority(
+          max(task.request.priority + 10, 255)
+        )
 
       # Override cpu defaults for Android as such devices don't have this
       # dimension.
@@ -715,7 +751,8 @@ class Runner:
 
     def collect_task(task):
       step_result, _ = self.api.chromium_swarming.collect_task(
-          task, step_test_data=self._default_task_pass_test_data)
+        task, step_test_data=self._default_task_pass_test_data
+      )
       return self.num_failures(step_result)
 
     # TODO(sergiyb): Make bisect more robust to infra failures, e.g. we trigger
@@ -723,15 +760,15 @@ class Runner:
     # whole thing goes purple.
     path = self.api.path.mkdtemp('v8-flake-bisect-')
     with self.api.step.nest(step_prefix) as parent:
-      tasks = [
-        trigger_task(path, shard)
-        for shard in range(self.num_shards)
-      ]
+      tasks = [trigger_task(path, shard) for shard in range(self.num_shards)]
       num_failures = 0
       for task in tasks:
         num_failures += collect_task(task)
-        if (self.repro_only and num_failures or
-            num_failures >= self.min_flake_threshold):
+        if (
+          self.repro_only
+          and num_failures
+          or num_failures >= self.min_flake_threshold
+        ):
           # Stop waiting for more tasks early if already enough failures are
           # found.
           # TODO(machenbach): Cancel the tasks we don't collect. During
@@ -744,7 +781,6 @@ class Runner:
 
 
 class Validator:
-
   def __init__(self, api: DEPS):
     self.api = api
 
@@ -754,7 +790,6 @@ class Validator:
 
 
 class Bisector(Validator):
-
   def __init__(self, api: DEPS, depot, builds, is_bad_func):
     """Collection of bisection helpers.
 
@@ -784,7 +819,8 @@ class Bisector(Validator):
     rev = self.depot.get_revision(offset)
     rev_cp = self.depot.get_commit_position(offset)
     step_result = self.api.step(
-        text % f'#{offset} (commit position: {rev_cp})', cmd=None)
+      text % f'#{offset} (commit position: {rev_cp})', cmd=None
+    )
     step_result.presentation.links[rev[:8]] = f'{REPO}/+/{rev}'
 
   def bisect_back(self, to_offset):
@@ -808,7 +844,8 @@ class Bisector(Validator):
       commit_offset *= 2
 
     raise self.api.step.StepFailure(
-        'Could not find a good revision.')  # pragma: no cover
+      'Could not find a good revision.'
+    )  # pragma: no cover
 
   def bisect_into(self, from_offset, to_offset):
     """Bisects into a given range from_offset..to_offset and determins a
@@ -850,7 +887,6 @@ class RegressionBisector(Bisector):
 
 
 class ProgressionBisector(Bisector):
-
   def __init__(self, api: DEPS, depot, builds, is_bad_func):
     # For progression testing we invert the meaning of "is_bad".
     super().__init__(api, depot, builds, lambda *args: not is_bad_func(*args))
@@ -862,7 +898,8 @@ class ProgressionBisector(Bisector):
     # known bad revision.
     if head_offset == known_bad_offset or not self.is_bad_func(head_offset):
       return RawResult(
-          status=common_pb.FAILURE, summary_markdown='Flake still reproduces.')
+        status=common_pb.FAILURE, summary_markdown='Flake still reproduces.'
+      )
 
     from_offset, to_offset = self.bisect_into(known_bad_offset, head_offset)
     result = self.report_range('Fixed in %s', from_offset, to_offset)
@@ -890,9 +927,10 @@ class CombinedBisector(Validator):
     # report.
     regression_result = self.regression.bisect(known_bad_offset)
     return RawResult(
-        status=regression_result.status,
-        summary_markdown=f'{progression_result.summary_markdown}\n'
-                         f'{regression_result.summary_markdown}')
+      status=regression_result.status,
+      summary_markdown=f'{progression_result.summary_markdown}\n'
+      f'{regression_result.summary_markdown}',
+    )
 
 
 class ReproBisector(Bisector):
@@ -903,19 +941,21 @@ class ReproBisector(Bisector):
 
   def bisect(self, known_bad_offset):
     return RawResult(
-        status=common_pb.SUCCESS, summary_markdown='Flake still reproduces.')
+      status=common_pb.SUCCESS, summary_markdown='Flake still reproduces.'
+    )
 
 
 BISECTORS = {
-    'combined': CombinedBisector,
-    'regression': RegressionBisector,
-    'progression': ProgressionBisector,
-    'repro': ReproBisector,
+  'combined': CombinedBisector,
+  'regression': RegressionBisector,
+  'progression': ProgressionBisector,
+  'repro': ReproBisector,
 }
 
 
-def setup_swarming(api: DEPS, swarming_dimensions, swarming_priority,
-                   swarming_expiration):
+def setup_swarming(
+  api: DEPS, swarming_dimensions, swarming_priority, swarming_expiration
+):
   api.chromium_swarming.default_expiration = swarming_expiration
   api.chromium_swarming.default_hard_timeout = 60 * 60
   api.chromium_swarming.default_io_timeout = 20 * 60
@@ -934,19 +974,41 @@ def setup_swarming(api: DEPS, swarming_dimensions, swarming_priority,
 def create_flakes_pyl_entry_step(api: DEPS, config):
   """Generate config for flakes.pyl."""
   json_config = api.json.dumps(
-      [config], indent=2, separators=(',', ': '), sort_keys=True)
+    [config], indent=2, separators=(',', ': '), sort_keys=True
+  )
   log = re.sub(
-      r'([^,])(?=\n\s*[\}\]])', r'\1,', json_config,  # add trailing commas
-      flags=re.MULTILINE).splitlines()                # split by line
+    r'([^,])(?=\n\s*[\}\]])',
+    r'\1,',
+    json_config,  # add trailing commas
+    flags=re.MULTILINE,
+  ).splitlines()  # split by line
   api.step('flakes.pyl entry', cmd=None).presentation.logs['config'] = log
 
 
-def RunSteps(api: DEPS, bisect_builder_group, bisect_buildername, extra_args,
-             failure_regexp, max_calibration_attempts, min_flake_threshold,
-             isolated_name, mode, num_shards, outdir, override_flag_history,
-             repetitions, revision, swarming_dimensions, swarming_priority,
-             swarming_expiration, test_name, timeout_sec, total_timeout_sec,
-             to_revision, variant):
+def RunSteps(
+  api: DEPS,
+  bisect_builder_group,
+  bisect_buildername,
+  extra_args,
+  failure_regexp,
+  max_calibration_attempts,
+  min_flake_threshold,
+  isolated_name,
+  mode,
+  num_shards,
+  outdir,
+  override_flag_history,
+  repetitions,
+  revision,
+  swarming_dimensions,
+  swarming_priority,
+  swarming_expiration,
+  test_name,
+  timeout_sec,
+  total_timeout_sec,
+  to_revision,
+  variant,
+):
   # Convert floats to ints.
   assert mode in BISECTORS
   repro_only = mode == 'repro'
@@ -961,7 +1023,7 @@ def RunSteps(api: DEPS, bisect_builder_group, bisect_buildername, extra_args,
   flag_history = list(FLAG_HISTORY)
   if override_flag_history:
     flag_history = [
-        (int(num), old, new) for num, old, new in override_flag_history
+      (int(num), old, new) for num, old, new in override_flag_history
     ]
 
   # Sort by commit position, newest first.
@@ -969,17 +1031,36 @@ def RunSteps(api: DEPS, bisect_builder_group, bisect_buildername, extra_args,
 
   # Set up swarming client.
   setup_swarming(
-      api, swarming_dimensions, swarming_priority, swarming_expiration)
+    api, swarming_dimensions, swarming_priority, swarming_expiration
+  )
 
   # Set up bisection helpers.
   depot = Depot(api, revision or to_revision)
   builds = Builds(
-      api, depot, bisect_builder_group, bisect_buildername, isolated_name)
-  command = Command(outdir, test_name, variant, repetitions, repro_only,
-                    total_timeout_sec, timeout_sec, extra_args, flag_history,
-                    min_flake_threshold)
-  runner = Runner(api, builds, command, num_shards, repro_only,
-                  max_calibration_attempts, min_flake_threshold, failure_regexp)
+    api, depot, bisect_builder_group, bisect_buildername, isolated_name
+  )
+  command = Command(
+    outdir,
+    test_name,
+    variant,
+    repetitions,
+    repro_only,
+    total_timeout_sec,
+    timeout_sec,
+    extra_args,
+    flag_history,
+    min_flake_threshold,
+  )
+  runner = Runner(
+    api,
+    builds,
+    command,
+    num_shards,
+    repro_only,
+    max_calibration_attempts,
+    min_flake_threshold,
+    failure_regexp,
+  )
   bisector = BISECTORS[mode](api, depot, builds, runner.check_num_flakes)
 
   known_bad_offset = builds.find_closest_build(0)
@@ -989,84 +1070,93 @@ def RunSteps(api: DEPS, bisect_builder_group, bisect_buildername, extra_args,
   could_reproduce = runner.calibrate(known_bad_offset)
   bisector.validate(could_reproduce)
 
-  create_flakes_pyl_entry_step(api, {
-    'bisect_builder_group': bisect_builder_group,
-    'bisect_buildername': bisect_buildername,
-    'isolated_name': isolated_name,
-    'test_name': test_name,
-    'variant': variant,
-    'extra_args': extra_args,
-    'swarming_dimensions': swarming_dimensions,
-    'timeout_sec': timeout_sec,
-    'num_shards': runner.num_shards,
-    # TODO(sergiyb): Drop total_timeout_sec here and just rely on
-    # repetitions, which is more reliable on Windows. Right now,
-    # however, we can't use it as it's not correctly calibrated when
-    # total_timeout_sec is used. We should only implement this
-    # suggestion once we can extract the actual number of repetitions
-    # used from the test launcher after the calibration is done.
-    'total_timeout_sec': total_timeout_sec * runner.multiplier,
-    'repetitions': repetitions * runner.multiplier,
-    'bug_url': '<bug-url>',
-  })
+  create_flakes_pyl_entry_step(
+    api,
+    {
+      'bisect_builder_group': bisect_builder_group,
+      'bisect_buildername': bisect_buildername,
+      'isolated_name': isolated_name,
+      'test_name': test_name,
+      'variant': variant,
+      'extra_args': extra_args,
+      'swarming_dimensions': swarming_dimensions,
+      'timeout_sec': timeout_sec,
+      'num_shards': runner.num_shards,
+      # TODO(sergiyb): Drop total_timeout_sec here and just rely on
+      # repetitions, which is more reliable on Windows. Right now,
+      # however, we can't use it as it's not correctly calibrated when
+      # total_timeout_sec is used. We should only implement this
+      # suggestion once we can extract the actual number of repetitions
+      # used from the test launcher after the calibration is done.
+      'total_timeout_sec': total_timeout_sec * runner.multiplier,
+      'repetitions': repetitions * runner.multiplier,
+      'bug_url': '<bug-url>',
+    },
+  )
 
   try:
     return bisector.bisect(known_bad_offset)
   except ReturnException as e:
     return RawResult(
-        status=common_pb.FAILURE,
-        summary_markdown=e.message,
+      status=common_pb.FAILURE,
+      summary_markdown=e.message,
     )
 
 
 def GenTests(api: TEST_DEPS):
 
-  def builder_properties(bisect_buildername='V8 Foobar',
-                         mode='regression',
-                         **properties):
+  def builder_properties(
+    bisect_buildername='V8 Foobar', mode='regression', **properties
+  ):
     return api.properties(
-        bisect_builder_group='foo.v8',
-        bisect_buildername=bisect_buildername,
-        extra_args=['--foo-flag', '--bar-flag'],
-        isolated_name='foo_isolated',
-        mode=mode,
-        repetitions=64,
-        swarming_dimensions=['os:Ubuntu-16.04', 'cpu:x86-64'],
-        test_name='mjsunit/foobar',
-        timeout_sec=20,
-        revision='a0',
-        variant='stress_foo',
-        **properties)
+      bisect_builder_group='foo.v8',
+      bisect_buildername=bisect_buildername,
+      extra_args=['--foo-flag', '--bar-flag'],
+      isolated_name='foo_isolated',
+      mode=mode,
+      repetitions=64,
+      swarming_dimensions=['os:Ubuntu-16.04', 'cpu:x86-64'],
+      test_name='mjsunit/foobar',
+      timeout_sec=20,
+      revision='a0',
+      variant='stress_foo',
+      **properties,
+    )
 
   def successful_lookups(*offsets, fallback=False):
     suffix = ' (fallback)' if fallback else ''
     lookups = [
       api.override_step_data(
-          f'gsutil lookup cas_digests for #{offset}{suffix}',
-          api.raw_io.stream_output('', stream='stderr'),
-          retcode=0,
-      ) for offset in offsets
+        f'gsutil lookup cas_digests for #{offset}{suffix}',
+        api.raw_io.stream_output('', stream='stderr'),
+        retcode=0,
+      )
+      for offset in offsets
     ]
     return sum(lookups, api.empty_test_data())
 
   def _gitiles_log(*commit_message_pairs):
-    return api.json.output({
-      'log': [
-        {'commit': commit, 'message': message}
-        for commit, message in commit_message_pairs
-      ],
-    })
+    return api.json.output(
+      {
+        'log': [
+          {'commit': commit, 'message': message}
+          for commit, message in commit_message_pairs
+        ],
+      }
+    )
 
   def _gitiles_lookup(step_name, offset, count):
     return api.step_data(
-        step_name,
-        _gitiles_log(
-           *((
-              f'a{offset + i}',
-              f'Cr-Commit-Position: refs/heads/main@{{#{99 - i - offset}}}',
-            )
-            for i in range(count))
+      step_name,
+      _gitiles_log(
+        *(
+          (
+            f'a{offset + i}',
+            f'Cr-Commit-Position: refs/heads/main@{{#{99 - i - offset}}}',
+          )
+          for i in range(count)
         )
+      ),
     )
 
   def init_head(offset, count, head_offset=0):
@@ -1075,28 +1165,33 @@ def GenTests(api: TEST_DEPS):
   def get_revisions(offset, count):
     return _gitiles_lookup(f'get revision #{offset}', offset, count)
 
-  def is_flaky(offset,
-               shard,
-               flakes,
-               calibration_attempt=0,
-               test_name='mjsunit/foobar',
-               output_prefix='',
-               no_output=False):
+  def is_flaky(
+    offset,
+    shard,
+    flakes,
+    calibration_attempt=0,
+    test_name='mjsunit/foobar',
+    output_prefix='',
+    no_output=False,
+  ):
     test_data = api.chromium_swarming.canned_summary_output_raw()
     if no_output:
       test_data['shards'] = [None]
     else:
       test_data['shards'][0]['output'] = (
-          output_prefix + TEST_FAILED_TEMPLATE % flakes)
+        output_prefix + TEST_FAILED_TEMPLATE % flakes
+      )
       test_data['shards'][0]['exit_code'] = 1
     step_prefix = ''
     if calibration_attempt:
       step_prefix = f'calibration attempt {calibration_attempt}.'
     step_name = f'check {test_name} at #{offset}'
     return api.step_data(
-        f'{step_prefix}{step_name}.{step_name} - shard {shard} on Ubuntu-16.04',
-        api.chromium_swarming.summary(
-            dispatched_task_step_test_data=None, raw_summary=test_data))
+      f'{step_prefix}{step_name}.{step_name} - shard {shard} on Ubuntu-16.04',
+      api.chromium_swarming.summary(
+        dispatched_task_step_test_data=None, raw_summary=test_data
+      ),
+    )
 
   def _verify_result(message, from_offset, to_offset):
     """Verify that the correct reporting step for from_offset..to_offset is
@@ -1104,8 +1199,10 @@ def GenTests(api: TEST_DEPS):
     """
     git_range = f'a{from_offset}..a{to_offset}'
     step_name = f'{message} #{from_offset}..#{to_offset}'
+
     def suspects_internal(check, steps):
       check(steps[step_name].links[git_range] == f'{REPO}/+log/{git_range}')
+
     return api.post_process(suspects_internal)
 
   def verify_suspects(from_offset, to_offset):
@@ -1115,13 +1212,15 @@ def GenTests(api: TEST_DEPS):
     return _verify_result('Fixed in', from_offset, to_offset)
 
   def drop_test_step_expectations():
-    return api.post_process(
-        Filter().include_re(r'(?!^check mjsunit/foobar)'))
+    return api.post_process(Filter().include_re(r'(?!^check mjsunit/foobar)'))
 
   def one_bisect_iteration(index):
     exp_index = 2**index - 1
-    return (get_revisions(exp_index, 1) + successful_lookups(exp_index) +
-            is_flaky(exp_index, 0, 1))
+    return (
+      get_revisions(exp_index, 1)
+      + successful_lookups(exp_index)
+      + is_flaky(exp_index, 0, 1)
+    )
 
   # Full bisect run with some corner cases. Overview of all revisions ordered
   # new -> old.
@@ -1133,206 +1232,209 @@ def GenTests(api: TEST_DEPS):
   # a5: not flaky
   # -> Should result in suspecting range a5..a3.
   yield api.test(
-      'full_bisect',
-      # Test path where total timeout isn't used.
-      builder_properties('V8 Foobar - builder', total_timeout_sec=0),
-      # Data for resolving offsets to git hashes. Simulate gitiles page size of
-      # 3 commits per call.
-      get_revisions(1, 3),
-      get_revisions(4, 3),
-      # CAS digest data simulation for all existing revisions.
-      successful_lookups(1, 2, 3, 5),
-      # Calibration. We check for flakes until enough are found. First only one
-      # shard reports 2 failures.
-      is_flaky(1, 1, 2, calibration_attempt=1),
-      # Then 3 shards report 5 failures total.
-      is_flaky(1, 0, 2, calibration_attempt=2),
-      is_flaky(1, 1, 1, calibration_attempt=2),
-      is_flaky(1, 2, 2, calibration_attempt=2),
-      # Bisect backwards from a1 until good revision a5 is found.
-      is_flaky(2, 0, 3),
-      # Bisect into a5..a2.
-      is_flaky(3, 0, 3),
-      verify_suspects(5, 3),
-      drop_test_step_expectations(),
+    'full_bisect',
+    # Test path where total timeout isn't used.
+    builder_properties('V8 Foobar - builder', total_timeout_sec=0),
+    # Data for resolving offsets to git hashes. Simulate gitiles page size of
+    # 3 commits per call.
+    get_revisions(1, 3),
+    get_revisions(4, 3),
+    # CAS digest data simulation for all existing revisions.
+    successful_lookups(1, 2, 3, 5),
+    # Calibration. We check for flakes until enough are found. First only one
+    # shard reports 2 failures.
+    is_flaky(1, 1, 2, calibration_attempt=1),
+    # Then 3 shards report 5 failures total.
+    is_flaky(1, 0, 2, calibration_attempt=2),
+    is_flaky(1, 1, 1, calibration_attempt=2),
+    is_flaky(1, 2, 2, calibration_attempt=2),
+    # Bisect backwards from a1 until good revision a5 is found.
+    is_flaky(2, 0, 3),
+    # Bisect into a5..a2.
+    is_flaky(3, 0, 3),
+    verify_suspects(5, 3),
+    drop_test_step_expectations(),
   )
 
   # Similar to above but fewer corner cases. This is for simulating bisection
   # going into the upper half of a git range, which has different code paths
   # above.
   yield api.test(
-      'full_bisect_upper',
-      builder_properties(),
-      # Data for resolving offsets to git hashes. Simulate gitiles page size of
-      # 8, fetching all data in the first call.
-      get_revisions(1, 8),
-      # CAS digest data simulation for all revisions.
-      successful_lookups(0, 1, 3, 4, 5, 7),
-      # Calibration.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # Bisect backwards from a0 until good revision a7 is found.
-      is_flaky(1, 0, 3),
-      is_flaky(3, 0, 3),
-      # Bisect into a7..a3.
-      is_flaky(4, 0, 2),
-      verify_suspects(5, 4),
-      api.post_process(DropExpectation),
+    'full_bisect_upper',
+    builder_properties(),
+    # Data for resolving offsets to git hashes. Simulate gitiles page size of
+    # 8, fetching all data in the first call.
+    get_revisions(1, 8),
+    # CAS digest data simulation for all revisions.
+    successful_lookups(0, 1, 3, 4, 5, 7),
+    # Calibration.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # Bisect backwards from a0 until good revision a7 is found.
+    is_flaky(1, 0, 3),
+    is_flaky(3, 0, 3),
+    # Bisect into a7..a3.
+    is_flaky(4, 0, 2),
+    verify_suspects(5, 4),
+    api.post_process(DropExpectation),
   )
 
   # Test bisecting through a large range of missing builds.
   yield api.test(
-      'large_gap',
-      builder_properties(),
-      get_revisions(1, 4),
-      # Simulate a large gap between #0 and #4..
-      successful_lookups(0, 4),
-      # Bad build #0 wile #4 is a good build using default test data.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # Check that bisect continues properly after not finding a build in one
-      # half.
-      api.post_process(MustRun, 'No builds in #4..#2'),
-      api.post_process(MustRun, 'No builds in #2..#1'),
-      # Check that CAS lookup is cached for the negative case. We look only
-      # once for a build that's not found.
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #2'),
-      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2 (2)'),
-      verify_suspects(4, 0),
-      api.post_process(DropExpectation),
+    'large_gap',
+    builder_properties(),
+    get_revisions(1, 4),
+    # Simulate a large gap between #0 and #4..
+    successful_lookups(0, 4),
+    # Bad build #0 wile #4 is a good build using default test data.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # Check that bisect continues properly after not finding a build in one
+    # half.
+    api.post_process(MustRun, 'No builds in #4..#2'),
+    api.post_process(MustRun, 'No builds in #2..#1'),
+    # Check that CAS lookup is cached for the negative case. We look only
+    # once for a build that's not found.
+    api.post_process(MustRun, 'gsutil lookup cas_digests for #2'),
+    api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2 (2)'),
+    verify_suspects(4, 0),
+    api.post_process(DropExpectation),
   )
 
   # Progression testing with the revisions from ToT not overlapping with
   # the known bad revision. The flake is fixed at ToT.
   yield api.test(
-      'progression',
-      builder_properties(mode='progression'),
-      # Progression testing fetches ToT at a-9. No initial overlap with a0.
-      # Iterate until a0 is reached.
-      init_head(-9, 4, head_offset=0),
-      init_head(-5, 4, head_offset=4),
-      init_head(-1, 4, head_offset=8),
-      # Simulate existing builds.
-      successful_lookups(-9, -8, -7, -5, 0),
-      # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # The flake still reproduces until -7.
-      is_flaky(-5, 0, 2),
-      is_flaky(-7, 0, 2),
-      verify_fixed(-7, -8),
-      drop_test_step_expectations(),
+    'progression',
+    builder_properties(mode='progression'),
+    # Progression testing fetches ToT at a-9. No initial overlap with a0.
+    # Iterate until a0 is reached.
+    init_head(-9, 4, head_offset=0),
+    init_head(-5, 4, head_offset=4),
+    init_head(-1, 4, head_offset=8),
+    # Simulate existing builds.
+    successful_lookups(-9, -8, -7, -5, 0),
+    # Calibration with successful repro at offset 0.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # The flake still reproduces until -7.
+    is_flaky(-5, 0, 2),
+    is_flaky(-7, 0, 2),
+    verify_fixed(-7, -8),
+    drop_test_step_expectations(),
   )
 
   # Progression testing with the revisions from ToT overlapping with
   # the known bad revision.
   yield api.test(
-      'progression_overlap',
-      builder_properties(mode='progression'),
-      # Revision at offset 1 is looked up because there is no CAS digest at 0
-      # in this test. The call will fetch some more revisions that we won't
-      # need.
-      get_revisions(1, 3),
-      # Progression testing fetches ToT at a-6. Here we simulate the fetched
-      # range to overlap with what we already fetched above.
-      init_head(-6, 8),
-      # CAS digest data simulation for all revisions. We simulate missing a
-      # couple of builds, e.g. at 0.
-      successful_lookups(-5, -4, -2, 1),
-      # Calibration with successful repro at offset 1.
-      is_flaky(1, 0, 5, calibration_attempt=1),
-      # The flake still reproduces at -2. For -3 there's no build, resulting
-      # in a fixed range of -2..-4.
-      is_flaky(-2, 0, 3),
-      verify_fixed(-2, -4),
-      api.post_process(DropExpectation),
+    'progression_overlap',
+    builder_properties(mode='progression'),
+    # Revision at offset 1 is looked up because there is no CAS digest at 0
+    # in this test. The call will fetch some more revisions that we won't
+    # need.
+    get_revisions(1, 3),
+    # Progression testing fetches ToT at a-6. Here we simulate the fetched
+    # range to overlap with what we already fetched above.
+    init_head(-6, 8),
+    # CAS digest data simulation for all revisions. We simulate missing a
+    # couple of builds, e.g. at 0.
+    successful_lookups(-5, -4, -2, 1),
+    # Calibration with successful repro at offset 1.
+    is_flaky(1, 0, 5, calibration_attempt=1),
+    # The flake still reproduces at -2. For -3 there's no build, resulting
+    # in a fixed range of -2..-4.
+    is_flaky(-2, 0, 3),
+    verify_fixed(-2, -4),
+    api.post_process(DropExpectation),
   )
 
   # Progression testing where flake still reproduces.
   yield api.test(
-      'progression_still_reproduces',
-      builder_properties(mode='progression'),
-      # Initial fetch covers all required revisions.
-      init_head(-3, 4),
-      # Simulate existing builds.
-      successful_lookups(-3, 0),
-      # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # The flake still reproduces.
-      is_flaky(-3, 0, 2),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'progression_still_reproduces',
+    builder_properties(mode='progression'),
+    # Initial fetch covers all required revisions.
+    init_head(-3, 4),
+    # Simulate existing builds.
+    successful_lookups(-3, 0),
+    # Calibration with successful repro at offset 0.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # The flake still reproduces.
+    is_flaky(-3, 0, 2),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Progression testing starting with ToT revision.
   yield api.test(
-      'progression_on_tot_revision',
-      builder_properties(mode='progression'),
-      # Initial fetch covers all required revisions.
-      init_head(0, 1),
-      # Simulate existing builds.
-      successful_lookups(0),
-      # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'progression_on_tot_revision',
+    builder_properties(mode='progression'),
+    # Initial fetch covers all required revisions.
+    init_head(0, 1),
+    # Simulate existing builds.
+    successful_lookups(0),
+    # Calibration with successful repro at offset 0.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Progression testing with a too large gap between known bad revision
   # and ToT.
   yield api.test(
-      'progression_large_gap',
-      builder_properties(mode='progression'),
-      # Progression testing fetches ToT at a commit with an offset to
-      # a0 larger than MAX_HEAD_OFFSET.
-      init_head(-MAX_HEAD_OFFSET - 1, MAX_HEAD_OFFSET, head_offset=0),
-      successful_lookups(0),
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      api.post_process(
-          SummaryMarkdown,
-          f'Could not connect the known bad revision to refs/heads/main. '
-          f'Looked in over {MAX_HEAD_OFFSET} commits.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'progression_large_gap',
+    builder_properties(mode='progression'),
+    # Progression testing fetches ToT at a commit with an offset to
+    # a0 larger than MAX_HEAD_OFFSET.
+    init_head(-MAX_HEAD_OFFSET - 1, MAX_HEAD_OFFSET, head_offset=0),
+    successful_lookups(0),
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    api.post_process(
+      SummaryMarkdown,
+      f'Could not connect the known bad revision to refs/heads/main. '
+      f'Looked in over {MAX_HEAD_OFFSET} commits.',
+    ),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Combine progression and regression testing.
   yield api.test(
-      'combined',
-      builder_properties(mode='combined'),
-      # Initial fetch covers all required revisions.
-      init_head(-3, 4),
-      # Simulate existing builds.
-      successful_lookups(-3, 0, 1, 2, 3),
-      # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # The flake still reproduces.
-      is_flaky(-3, 0, 2),
-      # Data for regression testing.
-      get_revisions(1, 3),
-      is_flaky(1, 0, 3),
-      is_flaky(2, 0, 3),
-      verify_suspects(3, 2),
-      api.post_process(SummaryMarkdownRE, r'Flake still reproduces'),
-      api.post_process(SummaryMarkdownRE,
-                       re.escape(f'Suspecting [#3..#2]({REPO}/+log/a3..a2)')),
-      api.post_process(DropExpectation),
+    'combined',
+    builder_properties(mode='combined'),
+    # Initial fetch covers all required revisions.
+    init_head(-3, 4),
+    # Simulate existing builds.
+    successful_lookups(-3, 0, 1, 2, 3),
+    # Calibration with successful repro at offset 0.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # The flake still reproduces.
+    is_flaky(-3, 0, 2),
+    # Data for regression testing.
+    get_revisions(1, 3),
+    is_flaky(1, 0, 3),
+    is_flaky(2, 0, 3),
+    verify_suspects(3, 2),
+    api.post_process(SummaryMarkdownRE, r'Flake still reproduces'),
+    api.post_process(
+      SummaryMarkdownRE, re.escape(f'Suspecting [#3..#2]({REPO}/+log/a3..a2)')
+    ),
+    api.post_process(DropExpectation),
   )
 
   # Combine progression and regression testing but flake is already fixed.
   yield api.test(
-      'combined_fixed',
-      builder_properties(mode='combined'),
-      # Progression testing fetches ToT at a-3.
-      init_head(-3, 4),
-      # Simulate existing builds.
-      successful_lookups(-3, -2, -1, 0),
-      # Calibration with successful repro at offset 0.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      is_flaky(-1, 0, 2),
-      verify_fixed(-1, -2),
-      api.post_process(SummaryMarkdown,
-                       f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)'),
-      api.post_process(DropExpectation),
+    'combined_fixed',
+    builder_properties(mode='combined'),
+    # Progression testing fetches ToT at a-3.
+    init_head(-3, 4),
+    # Simulate existing builds.
+    successful_lookups(-3, -2, -1, 0),
+    # Calibration with successful repro at offset 0.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    is_flaky(-1, 0, 2),
+    verify_fixed(-1, -2),
+    api.post_process(
+      SummaryMarkdown, f'Fixed in [#-1..#-2]({REPO}/+log/a-1..a-2)'
+    ),
+    api.post_process(DropExpectation),
   )
 
   # TODO(machenbach): Share this with the devtools-frontend recipe.
@@ -1374,179 +1476,191 @@ def GenTests(api: TEST_DEPS):
   def check_arg_not_in_task(check, steps, step, arg):
     check_task_arg(check, steps, step, arg, inverse=True)
 
-  tr_tmpl = ('check mjsunit/foobar at #%d.[trigger] check mjsunit/foobar '
-             'at #%d - shard 1 on Ubuntu-16.04')
+  tr_tmpl = (
+    'check mjsunit/foobar at #%d.[trigger] check mjsunit/foobar '
+    'at #%d - shard 1 on Ubuntu-16.04'
+  )
   yield api.test(
-      'bisect_flag_rewrite',
-      # Test that flags are rewritten according to this history.
-      # --foo-flag -> --baz before position 96 (or offset #3)
-      # --baz -> --baam before position 94 (or offset #5)
-      # --bar-flag removed before position 95 (or offset #4)
-      builder_properties(override_flag_history=[[94, '--baam', '--baz'],
-                                                [96, '--baz', '--foo-.*'],
-                                                [95, None, '--bar-.*']]),
-      # Data for resolving offsets to git hashes. Simulate gitiles page size of
-      # 8, fetching all data in the first call.
-      get_revisions(1, 8),
-      # CAS digest data simulation for all revisions.
-      successful_lookups(0, 1, 3, 4, 5, 7),
-      # Calibration.
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      # Bisect backwards from a0 until good revision a7 is found.
-      is_flaky(1, 0, 3),
-      is_flaky(3, 0, 3),
-      # Bisect into a7..a3.
-      is_flaky(4, 0, 2),
-      verify_suspects(5, 4),
-
-      # Check rewrites work for --foo-flag and --baz.
-      api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--foo-flag'),
-      api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--foo-flag'),
-      api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--baz'),
-      api.post_process(check_arg_in_task, tr_tmpl % (5, 5), '--baz'),
-      api.post_process(check_arg_in_task, tr_tmpl % (7, 7), '--baam'),
-
-      # Check the reverse.
-      api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baz'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baam'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baz'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baam'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--foo-flag'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--baam'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--foo-flag'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--baam'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--foo-flag'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--baz'),
-
-      # Check removal works for the --bar-flag
-      api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--bar-flag'),
-      api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--bar-flag'),
-      api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--bar-flag'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--bar-flag'),
-      api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--bar-flag'),
-      api.post_process(DropExpectation),
+    'bisect_flag_rewrite',
+    # Test that flags are rewritten according to this history.
+    # --foo-flag -> --baz before position 96 (or offset #3)
+    # --baz -> --baam before position 94 (or offset #5)
+    # --bar-flag removed before position 95 (or offset #4)
+    builder_properties(
+      override_flag_history=[
+        [94, '--baam', '--baz'],
+        [96, '--baz', '--foo-.*'],
+        [95, None, '--bar-.*'],
+      ]
+    ),
+    # Data for resolving offsets to git hashes. Simulate gitiles page size of
+    # 8, fetching all data in the first call.
+    get_revisions(1, 8),
+    # CAS digest data simulation for all revisions.
+    successful_lookups(0, 1, 3, 4, 5, 7),
+    # Calibration.
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    # Bisect backwards from a0 until good revision a7 is found.
+    is_flaky(1, 0, 3),
+    is_flaky(3, 0, 3),
+    # Bisect into a7..a3.
+    is_flaky(4, 0, 2),
+    verify_suspects(5, 4),
+    # Check rewrites work for --foo-flag and --baz.
+    api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--foo-flag'),
+    api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--foo-flag'),
+    api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--baz'),
+    api.post_process(check_arg_in_task, tr_tmpl % (5, 5), '--baz'),
+    api.post_process(check_arg_in_task, tr_tmpl % (7, 7), '--baam'),
+    # Check the reverse.
+    api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baz'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (1, 1), '--baam'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baz'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (3, 3), '--baam'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--foo-flag'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (4, 4), '--baam'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--foo-flag'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--baam'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--foo-flag'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--baz'),
+    # Check removal works for the --bar-flag
+    api.post_process(check_arg_in_task, tr_tmpl % (1, 1), '--bar-flag'),
+    api.post_process(check_arg_in_task, tr_tmpl % (3, 3), '--bar-flag'),
+    api.post_process(check_arg_in_task, tr_tmpl % (4, 4), '--bar-flag'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (5, 5), '--bar-flag'),
+    api.post_process(check_arg_not_in_task, tr_tmpl % (7, 7), '--bar-flag'),
+    api.post_process(DropExpectation),
   )
 
   # Simulate not finding any cas_digests.
   yield api.test(
-      'no_cas_digests',
-      builder_properties(),
-      sum((get_revisions(i, 1) for i in range(1, MAX_CAS_OFFSET)),
-          api.empty_test_data()),
-      api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'no_cas_digests',
+    builder_properties(),
+    sum(
+      (get_revisions(i, 1) for i in range(1, MAX_CAS_OFFSET)),
+      api.empty_test_data(),
+    ),
+    api.post_process(SummaryMarkdown, 'Couldn\'t find cas_digests.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate not returning a JSON output after a few iterations.
   yield api.test(
-      'short_bisection_with_no_json_output',
-      builder_properties(),
-      successful_lookups(0),
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      sum((one_bisect_iteration(i) for i in range(1, 5)),
-          api.empty_test_data()),
-      is_flaky(15, 0, 1, no_output=True),
-      api.post_process(SummaryMarkdownRE,
-                       'Infra Failure.*missing shard results.*'),
-      api.post_process(DropExpectation),
-      status='INFRA_FAILURE',
+    'short_bisection_with_no_json_output',
+    builder_properties(),
+    successful_lookups(0),
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    sum((one_bisect_iteration(i) for i in range(1, 5)), api.empty_test_data()),
+    is_flaky(15, 0, 1, no_output=True),
+    api.post_process(
+      SummaryMarkdownRE, 'Infra Failure.*missing shard results.*'
+    ),
+    api.post_process(DropExpectation),
+    status='INFRA_FAILURE',
   )
 
   # Simulate repro-only mode reproducing a flake.
   yield api.test(
-      'repro_only', builder_properties(mode='repro'), successful_lookups(0),
-      is_flaky(0, 0, 1, calibration_attempt=1),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(
-          Filter(
-              'calibration attempt 1.check mjsunit/foobar at #0.'
-              '[trigger] check mjsunit/foobar at #0 - shard 0 on Ubuntu-16.04'))
+    'repro_only',
+    builder_properties(mode='repro'),
+    successful_lookups(0),
+    is_flaky(0, 0, 1, calibration_attempt=1),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(
+      Filter(
+        'calibration attempt 1.check mjsunit/foobar at #0.'
+        '[trigger] check mjsunit/foobar at #0 - shard 0 on Ubuntu-16.04'
+      )
+    ),
   )
 
   # Simulate repro-only mode not reproducing a flake.
   yield api.test(
-      'repro_only_failed',
-      builder_properties(mode='repro'),
-      successful_lookups(0),
-      api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'repro_only_failed',
+    builder_properties(mode='repro'),
+    successful_lookups(0),
+    api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate repro-only mode with no revision property given.
   yield api.test(
-      'repro_only_tot',
-      builder_properties(mode='repro'),
-      api.properties(revision=None),
-      init_head(0, 4, head_offset=0),
-      successful_lookups(0),
-      is_flaky(0, 0, 1, calibration_attempt=1),
-      api.post_process(MustRun, 'init head #0'),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(DropExpectation),
+    'repro_only_tot',
+    builder_properties(mode='repro'),
+    api.properties(revision=None),
+    init_head(0, 4, head_offset=0),
+    successful_lookups(0),
+    is_flaky(0, 0, 1, calibration_attempt=1),
+    api.post_process(MustRun, 'init head #0'),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(DropExpectation),
   )
 
   # Simulate repro-only mode using a fallback debug builder.
   yield api.test(
-      'repro_only_fallback',
-      builder_properties('V8 Foobar - debug builder', mode='repro'),
-      get_revisions(1, 2),
-      successful_lookups(1, fallback=True),
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #0'),
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #0 (fallback)'),
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #1'),
-      api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)'),
-      api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'repro_only_fallback',
+    builder_properties('V8 Foobar - debug builder', mode='repro'),
+    get_revisions(1, 2),
+    successful_lookups(1, fallback=True),
+    api.post_process(MustRun, 'gsutil lookup cas_digests for #0'),
+    api.post_process(MustRun, 'gsutil lookup cas_digests for #0 (fallback)'),
+    api.post_process(MustRun, 'gsutil lookup cas_digests for #1'),
+    api.post_process(MustRun, 'gsutil lookup cas_digests for #1 (fallback)'),
+    api.post_process(DoesNotRun, 'gsutil lookup cas_digests for #2'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate repro-only mode reproducing a flake by regexp.
   yield api.test(
-      'repro_regexp_match',
-      builder_properties(mode='repro', failure_regexp='foo.*bar'),
-      successful_lookups(0),
-      is_flaky(
-          0,
-          0,
-          1,
-          calibration_attempt=1,
-          output_prefix='has foo and bar in the output...\n'),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(DropExpectation),
+    'repro_regexp_match',
+    builder_properties(mode='repro', failure_regexp='foo.*bar'),
+    successful_lookups(0),
+    is_flaky(
+      0,
+      0,
+      1,
+      calibration_attempt=1,
+      output_prefix='has foo and bar in the output...\n',
+    ),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(DropExpectation),
   )
 
   # Simulate digest not found in CAS.
   yield api.test(
-      'repro_digest_not_found',
-      builder_properties(mode='regression'),
-      get_revisions(1, 1),
-      successful_lookups(0, 1),
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      is_flaky(1, 0, 0, output_prefix='abc123/123 not found in the CAS\n'),
-      api.post_process(
-          SummaryMarkdown,
-          'Bisect goes too far back. Builds went out of retention.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'repro_digest_not_found',
+    builder_properties(mode='regression'),
+    get_revisions(1, 1),
+    successful_lookups(0, 1),
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    is_flaky(1, 0, 0, output_prefix='abc123/123 not found in the CAS\n'),
+    api.post_process(
+      SummaryMarkdown, 'Bisect goes too far back. Builds went out of retention.'
+    ),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate repro-only mode not reproducing a flake by regexp.
   yield api.test(
-      'repro_regexp_no_match',
-      builder_properties(mode='repro', failure_regexp='foo.*bar'),
-      successful_lookups(0),
-      is_flaky(0, 0, 1, calibration_attempt=1),
-      api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'repro_regexp_no_match',
+    builder_properties(mode='repro', failure_regexp='foo.*bar'),
+    successful_lookups(0),
+    is_flaky(0, 0, 1, calibration_attempt=1),
+    api.post_process(SummaryMarkdown, 'Could not reproduce flake.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate running tasks on Android and verify correct dimensions.
   def check_dimensions(check, steps):
-    step = ('calibration attempt 1.check mjsunit/foobar at #0.'
-            '[trigger] check mjsunit/foobar at #0 - shard 0 on Android')
+    step = (
+      'calibration attempt 1.check mjsunit/foobar at #0.'
+      '[trigger] check mjsunit/foobar at #0 - shard 0 on Android'
+    )
     if check(step in steps):
       check(all(arg != 'cpu' for arg in steps[step].cmd))
 
@@ -1558,13 +1672,13 @@ def GenTests(api: TEST_DEPS):
     'pool:chromium.tests',
   ]
   yield api.test(
-      'android_dimensions',
-      builder_properties(mode='repro'),
-      api.properties(swarming_dimensions=swarming_dimensions),
-      successful_lookups(0),
-      api.post_process(check_dimensions),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'android_dimensions',
+    builder_properties(mode='repro'),
+    api.properties(swarming_dimensions=swarming_dimensions),
+    successful_lookups(0),
+    api.post_process(check_dimensions),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate not finding enough flakes during calibration.
@@ -1572,68 +1686,77 @@ def GenTests(api: TEST_DEPS):
   long_test_name = (29 * '*') + 'too_long'
   shortened_test_name = (29 * '*') + '...'
   yield api.test(
-      'no_confidence',
-      builder_properties(num_shards=8),
-      api.properties(test_name=long_test_name),
-      successful_lookups(0),
-      is_flaky(0, 0, 0, calibration_attempt=1, test_name=shortened_test_name),
-      is_flaky(0, 1, 2, calibration_attempt=2, test_name=shortened_test_name),
-      is_flaky(0, 2, 1, calibration_attempt=3, test_name=shortened_test_name),
-      is_flaky(0, 1, 3, calibration_attempt=4, test_name=shortened_test_name),
-      is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name),
-      api.post_process(SummaryMarkdown, 'Could not reach enough confidence.'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'no_confidence',
+    builder_properties(num_shards=8),
+    api.properties(test_name=long_test_name),
+    successful_lookups(0),
+    is_flaky(0, 0, 0, calibration_attempt=1, test_name=shortened_test_name),
+    is_flaky(0, 1, 2, calibration_attempt=2, test_name=shortened_test_name),
+    is_flaky(0, 2, 1, calibration_attempt=3, test_name=shortened_test_name),
+    is_flaky(0, 1, 3, calibration_attempt=4, test_name=shortened_test_name),
+    is_flaky(0, 0, 3, calibration_attempt=5, test_name=shortened_test_name),
+    api.post_process(SummaryMarkdown, 'Could not reach enough confidence.'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   # Simulate triggering of the recipe by the flake verification bot.
   yield api.test(
-      'verify_flake',
-      builder_properties(
-          mode='repro',
-          swarming_priority=40,
-          num_shards=2,
-          swarming_expiration=7200,
-          total_timeout_sec=240,
-          max_calibration_attempts=1),
-      successful_lookups(0),
-      is_flaky(0, 0, 0, calibration_attempt=1),
-      is_flaky(0, 1, 1, calibration_attempt=1),
-      api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
-      api.post_process(
-          Filter(
-              'calibration attempt 1.check mjsunit/foobar at #0.'
-              '[trigger] check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
-              'calibration attempt 1.check mjsunit/foobar at #0.'
-              'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04')),
-      status='SUCCESS',
+    'verify_flake',
+    builder_properties(
+      mode='repro',
+      swarming_priority=40,
+      num_shards=2,
+      swarming_expiration=7200,
+      total_timeout_sec=240,
+      max_calibration_attempts=1,
+    ),
+    successful_lookups(0),
+    is_flaky(0, 0, 0, calibration_attempt=1),
+    is_flaky(0, 1, 1, calibration_attempt=1),
+    api.post_process(SummaryMarkdown, 'Flake still reproduces.'),
+    api.post_process(
+      Filter(
+        'calibration attempt 1.check mjsunit/foobar at #0.'
+        '[trigger] check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
+        'calibration attempt 1.check mjsunit/foobar at #0.'
+        'check mjsunit/foobar at #0 - shard 1 on Ubuntu-16.04',
+      )
+    ),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'bisect_attempt_with_wrong_commit_position',
-      builder_properties(),
-      api.step_data(
-          'get revision #1',
-          _gitiles_log(
-              ('a1', 'Cr-Commit-Position-Incorrect: refs/heads/main@{#42}')),
+    'bisect_attempt_with_wrong_commit_position',
+    builder_properties(),
+    api.step_data(
+      'get revision #1',
+      _gitiles_log(
+        ('a1', 'Cr-Commit-Position-Incorrect: refs/heads/main@{#42}')
       ),
-      api.expect_exception('ValueError'),
-      api.post_process(DropExpectation),
-      status='INFRA_FAILURE',
+    ),
+    api.expect_exception('ValueError'),
+    api.post_process(DropExpectation),
+    status='INFRA_FAILURE',
   )
 
   yield api.test(
-      'bisect_attempt_with_revert_commit_position',
-      builder_properties(),
-      api.step_data(
-          'get revision #1',
-          _gitiles_log(('a1', '> Cr-Commit-Position: refs/heads/main@{#42}\n'
-                        'Cr-Commit-Position: refs/heads/main@{#100}')),
+    'bisect_attempt_with_revert_commit_position',
+    builder_properties(),
+    api.step_data(
+      'get revision #1',
+      _gitiles_log(
+        (
+          'a1',
+          '> Cr-Commit-Position: refs/heads/main@{#42}\n'
+          'Cr-Commit-Position: refs/heads/main@{#100}',
+        )
       ),
-      successful_lookups(0, 1),
-      is_flaky(0, 0, 5, calibration_attempt=1),
-      api.post_process(MustRun, 'Checking #1 (commit position: 100)'),
-      api.post_process(DoesNotRun, 'Checking #1 (commit position: 42)'),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    ),
+    successful_lookups(0, 1),
+    is_flaky(0, 0, 5, calibration_attempt=1),
+    api.post_process(MustRun, 'Checking #1 (commit position: 100)'),
+    api.post_process(DoesNotRun, 'Checking #1 (commit position: 42)'),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )

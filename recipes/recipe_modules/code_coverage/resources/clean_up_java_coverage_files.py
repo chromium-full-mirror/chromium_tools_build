@@ -24,17 +24,20 @@ def _parse_args(args):
     The parsed arguments as parameters.
   """
   parser = argparse.ArgumentParser(
-      description='Clean up JaCoCo sources JSON files')
+    description='Clean up JaCoCo sources JSON files'
+  )
   parser.add_argument(
-      '--sources-json-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to traverse'
-      '*__jacoco_sources.json files')
+    '--sources-json-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to traverse'
+    '*__jacoco_sources.json files',
+  )
   parser.add_argument(
-      '--java-coverage-dir',
-      type=str,
-      help='absolute path to the directory to store Java coverage data')
+    '--java-coverage-dir',
+    type=str,
+    help='absolute path to the directory to store Java coverage data',
+  )
   params = parser.parse_args(args=args)
 
   if not os.path.isdir(params.sources_json_dir):
@@ -46,7 +49,8 @@ def _parse_args(args):
 def main():
   params = _parse_args(sys.argv[1:])
   sources_json_files = generator.get_files_with_suffix(
-      params.sources_json_dir, generator.SOURCES_JSON_FILES_SUFFIX)
+    params.sources_json_dir, generator.SOURCES_JSON_FILES_SUFFIX
+  )
   logging.info('Found __jacoco_sources.json files: %s', str(sources_json_files))
 
   for sources_json_file in sources_json_files:
@@ -60,5 +64,6 @@ def main():
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

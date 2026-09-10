@@ -10,15 +10,15 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import isolate
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    file,
-    futures,
-    json,
-    path,
-    platform,
-    raw_io,
-    step,
+  buildbucket,
+  cipd,
+  file,
+  futures,
+  json,
+  path,
+  platform,
+  raw_io,
+  step,
 )
 
 
@@ -34,5 +34,6 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   raw_io: raw_io.API
   step: step.API
+
 
 from .api import ChromiumRtsApi as API

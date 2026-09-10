@@ -22,11 +22,11 @@ import collect_task
 
 
 class CollectTaskTest(unittest.TestCase):
-
   def setUp(self):
     super().setUp()
 
     self.subprocess_calls = []
+
     def mocked_subprocess_call(args, **_):
       self.subprocess_calls.append(args)
       return 0
@@ -35,13 +35,14 @@ class CollectTaskTest(unittest.TestCase):
       self.subprocess_calls.append(args)
 
       class FakeProcess:
-
         def __init__(self):
           self.returncode = 0
+
         def poll(self):
           return True
 
       return FakeProcess()
+
     m = mock.patch('subprocess.call', side_effect=mocked_subprocess_call)
     m.start()
     self.addCleanup(m.stop)
@@ -50,8 +51,7 @@ class CollectTaskTest(unittest.TestCase):
     self.addCleanup(p.stop)
 
     self.temp_dir = tempfile.mkdtemp()
-    self.merge_script_log = os.path.join(
-        self.temp_dir, 'merge_script_log.txt')
+    self.merge_script_log = os.path.join(self.temp_dir, 'merge_script_log.txt')
 
   def tearDown(self):
     shutil.rmtree(self.temp_dir)
@@ -61,8 +61,10 @@ class CollectTaskTest(unittest.TestCase):
     collect_cmd = [
       'swarming.py',
       'positional0',
-      '--swarming-arg0', '0',
-      '--swarming-arg1', '1',
+      '--swarming-arg0',
+      '0',
+      '--swarming-arg1',
+      '1',
       'positional1',
     ]
     build_props_json = os.path.join(self.temp_dir, 'build_properties.json')
@@ -71,44 +73,55 @@ class CollectTaskTest(unittest.TestCase):
     summary_json = os.path.join(task_output_dir, 'summary.json')
     output_json = os.path.join(self.temp_dir, 'output.json')
     exit_code = collect_task.collect_task(
-        collect_cmd, 'merge.py', self.merge_script_log,
-        build_props_json, None, task_output_dir, output_json,
-        summary_json)
+      collect_cmd,
+      'merge.py',
+      self.merge_script_log,
+      build_props_json,
+      None,
+      task_output_dir,
+      output_json,
+      summary_json,
+    )
     self.assertEqual(0, exit_code)
 
     # Should append correct --task-output-dir to args after '--'.
-    self.assertEqual([
+    self.assertEqual(
+      [
         [
-            'swarming.py',
-            'positional0',
-            '--swarming-arg0',
-            '0',
-            '--swarming-arg1',
-            '1',
-            'positional1',
-            '-output-dir',
-            task_output_dir,
-            '-task-summary-json',
-            summary_json,
+          'swarming.py',
+          'positional0',
+          '--swarming-arg0',
+          '0',
+          '--swarming-arg1',
+          '1',
+          'positional1',
+          '-output-dir',
+          task_output_dir,
+          '-task-summary-json',
+          summary_json,
         ],
         [
-            'vpython3',
-            'merge.py',
-            '--build-properties',
-            build_props_json,
-            '--task-output-dir',
-            task_output_dir,
-            '-o',
-            output_json,
+          'vpython3',
+          'merge.py',
+          '--build-properties',
+          build_props_json,
+          '--task-output-dir',
+          task_output_dir,
+          '-o',
+          output_json,
         ],
-    ], self.subprocess_calls)
+      ],
+      self.subprocess_calls,
+    )
 
   def test_task_output_dir_handling(self):
     collect_cmd = [
       'swarming.py',
       'positional0',
-      '--swarming-arg0', '0',
-      '--swarming-arg1', '1',
+      '--swarming-arg0',
+      '0',
+      '--swarming-arg1',
+      '1',
       'positional1',
     ]
     merge_script = os.path.join(RESOURCES_DIR, 'noop_merge.py')
@@ -127,46 +140,57 @@ class CollectTaskTest(unittest.TestCase):
     build_props_json = os.path.join(self.temp_dir, 'build_properties.json')
     output_json = os.path.join(self.temp_dir, 'output.json')
     exit_code = collect_task.collect_task(
-        collect_cmd, merge_script, self.merge_script_log,
-        build_props_json, None, task_output_dir, output_json,
-        summary_json)
+      collect_cmd,
+      merge_script,
+      self.merge_script_log,
+      build_props_json,
+      None,
+      task_output_dir,
+      output_json,
+      summary_json,
+    )
 
     self.assertEqual(0, exit_code)
-    self.assertEqual([
+    self.assertEqual(
+      [
         [
-            'swarming.py',
-            'positional0',
-            '--swarming-arg0',
-            '0',
-            '--swarming-arg1',
-            '1',
-            'positional1',
-            '-output-dir',
-            task_output_dir,
-            '-task-summary-json',
-            summary_json,
+          'swarming.py',
+          'positional0',
+          '--swarming-arg0',
+          '0',
+          '--swarming-arg1',
+          '1',
+          'positional1',
+          '-output-dir',
+          task_output_dir,
+          '-task-summary-json',
+          summary_json,
         ],
         [
-            'vpython3',
-            merge_script,
-            '--build-properties',
-            build_props_json,
-            '--summary-json',
-            summary_json,
-            '--task-output-dir',
-            task_output_dir,
-            '-o',
-            output_json,
-            shard0_output_json,
+          'vpython3',
+          merge_script,
+          '--build-properties',
+          build_props_json,
+          '--summary-json',
+          summary_json,
+          '--task-output-dir',
+          task_output_dir,
+          '-o',
+          output_json,
+          shard0_output_json,
         ],
-    ], self.subprocess_calls)
+      ],
+      self.subprocess_calls,
+    )
 
   def test_custom_merge(self):
     collect_cmd = [
       'swarming.py',
       'positional0',
-      '--swarming-arg0', '0',
-      '--swarming-arg1', '1',
+      '--swarming-arg0',
+      '0',
+      '--swarming-arg1',
+      '1',
       'positional1',
     ]
     merge_script = os.path.join(self.temp_dir, 'fake_custom_merge.py')
@@ -177,43 +201,54 @@ class CollectTaskTest(unittest.TestCase):
     build_props_json = os.path.join(self.temp_dir, 'build_properties.json')
     output_json = os.path.join(self.temp_dir, 'output.json')
     exit_code = collect_task.collect_task(
-        collect_cmd, merge_script, self.merge_script_log,
-        build_props_json, None, task_output_dir, output_json,
-        summary_json)
+      collect_cmd,
+      merge_script,
+      self.merge_script_log,
+      build_props_json,
+      None,
+      task_output_dir,
+      output_json,
+      summary_json,
+    )
 
     self.assertEqual(0, exit_code)
-    self.assertEqual([
+    self.assertEqual(
+      [
         [
-            'swarming.py',
-            'positional0',
-            '--swarming-arg0',
-            '0',
-            '--swarming-arg1',
-            '1',
-            'positional1',
-            '-output-dir',
-            task_output_dir,
-            '-task-summary-json',
-            summary_json,
+          'swarming.py',
+          'positional0',
+          '--swarming-arg0',
+          '0',
+          '--swarming-arg1',
+          '1',
+          'positional1',
+          '-output-dir',
+          task_output_dir,
+          '-task-summary-json',
+          summary_json,
         ],
         [
-            'vpython3',
-            merge_script,
-            '--build-properties',
-            build_props_json,
-            '--task-output-dir',
-            task_output_dir,
-            '-o',
-            output_json,
+          'vpython3',
+          merge_script,
+          '--build-properties',
+          build_props_json,
+          '--task-output-dir',
+          task_output_dir,
+          '-o',
+          output_json,
         ],
-    ], self.subprocess_calls)
+      ],
+      self.subprocess_calls,
+    )
 
   def test_custom_merge_with_args(self):
     collect_cmd = [
       'swarming.py',
       'positional0',
-      '--swarming-arg0', '0',
-      '--swarming-arg1', '1',
+      '--swarming-arg0',
+      '0',
+      '--swarming-arg1',
+      '1',
       'positional1',
     ]
     merge_script = os.path.join(self.temp_dir, 'fake_custom_merge.py')
@@ -221,53 +256,66 @@ class CollectTaskTest(unittest.TestCase):
     os.makedirs(task_output_dir)
     summary_json = os.path.join(task_output_dir, 'summary.json')
 
-    build_props = json.dumps({
-      'sample_build_property': 'sample_value'
-    })
-    merge_args = json.dumps([
-      '--merge-arg0', 'merge-arg0-value',
-    ])
+    build_props = json.dumps({'sample_build_property': 'sample_value'})
+    merge_args = json.dumps(
+      [
+        '--merge-arg0',
+        'merge-arg0-value',
+      ]
+    )
 
     output_json = os.path.join(self.temp_dir, 'output.json')
     exit_code = collect_task.collect_task(
-        collect_cmd, merge_script, self.merge_script_log, build_props,
-        merge_args, task_output_dir, output_json, summary_json)
+      collect_cmd,
+      merge_script,
+      self.merge_script_log,
+      build_props,
+      merge_args,
+      task_output_dir,
+      output_json,
+      summary_json,
+    )
 
     self.assertEqual(0, exit_code)
-    self.assertEqual([
+    self.assertEqual(
+      [
         [
-            'swarming.py',
-            'positional0',
-            '--swarming-arg0',
-            '0',
-            '--swarming-arg1',
-            '1',
-            'positional1',
-            '-output-dir',
-            task_output_dir,
-            '-task-summary-json',
-            summary_json,
+          'swarming.py',
+          'positional0',
+          '--swarming-arg0',
+          '0',
+          '--swarming-arg1',
+          '1',
+          'positional1',
+          '-output-dir',
+          task_output_dir,
+          '-task-summary-json',
+          summary_json,
         ],
         [
-            'vpython3',
-            merge_script,
-            '--build-properties',
-            build_props,
-            '--task-output-dir',
-            task_output_dir,
-            '--merge-arg0',
-            'merge-arg0-value',
-            '-o',
-            output_json,
+          'vpython3',
+          merge_script,
+          '--build-properties',
+          build_props,
+          '--task-output-dir',
+          task_output_dir,
+          '--merge-arg0',
+          'merge-arg0-value',
+          '-o',
+          output_json,
         ],
-    ], self.subprocess_calls)
+      ],
+      self.subprocess_calls,
+    )
 
   def test_empty_output_json(self):
     collect_cmd = [
       'swarming.py',
       'positional0',
-      '--swarming-arg0', '0',
-      '--swarming-arg1', '1',
+      '--swarming-arg0',
+      '0',
+      '--swarming-arg1',
+      '1',
       'positional1',
     ]
     build_props_json = os.path.join(self.temp_dir, 'build_properties.json')
@@ -289,37 +337,47 @@ class CollectTaskTest(unittest.TestCase):
 
     output_json = os.path.join(self.temp_dir, 'output.json')
     exit_code = collect_task.collect_task(
-        collect_cmd, 'merge.py', self.merge_script_log, build_props_json, None,
-        task_output_dir, output_json, summary_json)
+      collect_cmd,
+      'merge.py',
+      self.merge_script_log,
+      build_props_json,
+      None,
+      task_output_dir,
+      output_json,
+      summary_json,
+    )
     self.assertEqual(0, exit_code)
 
     # Should append correct --task-output-dir to args after '--'.
-    self.assertEqual([
+    self.assertEqual(
+      [
         [
-            'swarming.py',
-            'positional0',
-            '--swarming-arg0',
-            '0',
-            '--swarming-arg1',
-            '1',
-            'positional1',
-            '-output-dir',
-            task_output_dir,
-            '-task-summary-json',
-            summary_json,
+          'swarming.py',
+          'positional0',
+          '--swarming-arg0',
+          '0',
+          '--swarming-arg1',
+          '1',
+          'positional1',
+          '-output-dir',
+          task_output_dir,
+          '-task-summary-json',
+          summary_json,
         ],
         [
-            'vpython3',
-            'merge.py',
-            '--build-properties',
-            build_props_json,
-            '--task-output-dir',
-            task_output_dir,
-            '-o',
-            output_json,
-            extant_shard_json,
+          'vpython3',
+          'merge.py',
+          '--build-properties',
+          build_props_json,
+          '--task-output-dir',
+          task_output_dir,
+          '-o',
+          output_json,
+          extant_shard_json,
         ],
-    ], self.subprocess_calls)
+      ],
+      self.subprocess_calls,
+    )
 
 
 if __name__ == '__main__':

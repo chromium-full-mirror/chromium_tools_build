@@ -89,8 +89,10 @@ def _extract_coverage_info(segments):
       wrap_segment = current_line_segments[-1]
 
     current_line_segments = []
-    while (next_segment_index < len(segments) and
-           _get_line_num(segments[next_segment_index]) == current_line_num):
+    while (
+      next_segment_index < len(segments)
+      and _get_line_num(segments[next_segment_index]) == current_line_num
+    ):
       current_line_segments.append(segments[next_segment_index])
       next_segment_index += 1
 
@@ -98,12 +100,16 @@ def _extract_coverage_info(segments):
       return _has_count(segment) and _is_region_entry(segment)
 
     line_starts_new_region = any(
-        _is_start_of_region(segment) for segment in current_line_segments)
+      _is_start_of_region(segment) for segment in current_line_segments
+    )
     is_start_of_skipped_region = (
-        current_line_segments and not _has_count(current_line_segments[0]) and
-        _is_region_entry(current_line_segments[0]))
+      current_line_segments
+      and not _has_count(current_line_segments[0])
+      and _is_region_entry(current_line_segments[0])
+    )
     is_coverable = not is_start_of_skipped_region and (
-        (wrap_segment and _has_count(wrap_segment)) or line_starts_new_region)
+      (wrap_segment and _has_count(wrap_segment)) or line_starts_new_region
+    )
     if not is_coverable:
       continue
 
@@ -126,14 +132,16 @@ def _extract_coverage_info(segments):
 
     col_start = 1
     is_block_not_covered = (
-        wrap_segment and _has_count(wrap_segment) and
-        _get_count(wrap_segment) == 0)
+      wrap_segment
+      and _has_count(wrap_segment)
+      and _get_count(wrap_segment) == 0
+    )
     for segment in current_line_segments:
       col_end = _get_col_num(segment)
       if is_block_not_covered:
         block_data[_get_line_num(segment)].append([col_start, col_end - 1])
 
-      is_block_not_covered = (_has_count(segment) and _get_count(segment) == 0)
+      is_block_not_covered = _has_count(segment) and _get_count(segment) == 0
       col_start = col_end
     # Handle the last segment.
     if is_block_not_covered:
@@ -152,34 +160,42 @@ def _to_compressed_format(line_data, block_data):
   last_index = 0
   for i in range(1, len(line_data) + 1):
     is_continous_line = (
-        i < len(line_data) and line_data[i][0] == line_data[i - 1][0] + 1)
+      i < len(line_data) and line_data[i][0] == line_data[i - 1][0] + 1
+    )
     has_same_count = (
-        i < len(line_data) and line_data[i][1] == line_data[i - 1][1])
+      i < len(line_data) and line_data[i][1] == line_data[i - 1][1]
+    )
 
     # Merge two lines iff they have continous line number and exactly the same
     # count. For example: (101, 10) and (102, 10).
-    if (is_continous_line and has_same_count):
+    if is_continous_line and has_same_count:
       continue
 
-    lines.append({
+    lines.append(
+      {
         'first': line_data[last_index][0],
         'last': line_data[i - 1][0],
         'count': line_data[last_index][1],
-    })
+      }
+    )
     last_index = i
 
   uncovered_blocks = []
   for line_number in sorted(block_data.keys()):
     ranges = []
     for start, end in block_data[line_number]:
-      ranges.append({
+      ranges.append(
+        {
           'first': start,
           'last': end,
-      })
-    uncovered_blocks.append({
+        }
+      )
+    uncovered_blocks.append(
+      {
         'line': line_number,
         'ranges': ranges,
-    })
+      }
+    )
 
   return lines, uncovered_blocks
 
@@ -203,7 +219,6 @@ def _rebase_line_and_block_data(line_data, block_data, line_mapping):
   """
   rebased_line_data = {}
   for line_num, count in line_data.items():
-
     if str(line_num) not in line_mapping:
       continue
 
@@ -221,9 +236,9 @@ def _rebase_line_and_block_data(line_data, block_data, line_mapping):
   return rebased_line_data, rebased_block_data
 
 
-def _to_compressed_file_record(file_coverage_data,
-                               diff_mapping=None,
-                               third_party_inclusion_subdirs=None):
+def _to_compressed_file_record(
+  file_coverage_data, diff_mapping=None, third_party_inclusion_subdirs=None
+):
   """Converts the given Clang file coverage data to coverage metadata format.
 
   Coverage metadata format:
@@ -263,25 +278,27 @@ def _to_compressed_file_record(file_coverage_data,
   """
   coverage_path = file_coverage_data['filename']
   # exclude third_party/ code
-  if ('third_party/' in coverage_path and third_party_inclusion_subdirs and
-      not any(x in coverage_path for x in third_party_inclusion_subdirs)):
+  if (
+    'third_party/' in coverage_path
+    and third_party_inclusion_subdirs
+    and not any(x in coverage_path for x in third_party_inclusion_subdirs)
+  ):
     return None
 
   line_data, block_data = _extract_coverage_info(file_coverage_data['segments'])
 
   if diff_mapping is not None and coverage_path in diff_mapping:
     line_mapping = diff_mapping[coverage_path]
-    line_data, block_data = _rebase_line_and_block_data(line_data, block_data,
-                                                        line_mapping)
+    line_data, block_data = _rebase_line_and_block_data(
+      line_data, block_data, line_mapping
+    )
 
   lines, uncovered_blocks = _to_compressed_format(line_data, block_data)
   data = {
-      'path':  # Convert filesystem path to a source-absolute (GN-style) path.
-          '//' + coverage_path,
-      'lines':
-          lines,
-      'summaries':
-          _get_clang_summary_metrics(file_coverage_data['summary']),
+    'path':  # Convert filesystem path to a source-absolute (GN-style) path.
+    '//' + coverage_path,
+    'lines': lines,
+    'summaries': _get_clang_summary_metrics(file_coverage_data['summary']),
   }
   if uncovered_blocks:
     data['uncovered_blocks'] = uncovered_blocks
@@ -289,15 +306,17 @@ def _to_compressed_file_record(file_coverage_data,
   return data
 
 
-def _compute_llvm_args(profdata_path,
-                       llvm_cov_path,
-                       build_dir,
-                       binaries,
-                       sources=None,
-                       num_threads=None,
-                       exclusions=None,
-                       summary_only=False,
-                       arch=None):
+def _compute_llvm_args(
+  profdata_path,
+  llvm_cov_path,
+  build_dir,
+  binaries,
+  sources=None,
+  num_threads=None,
+  exclusions=None,
+  summary_only=False,
+  arch=None,
+):
   # Use as many cpu cores as possible for parallel processing of huge data.
   # Leave 5 cpu cores out for other processes in the bot.
   num_threads_arg = num_threads or max(10, psutil.cpu_count() - 5)
@@ -308,14 +327,14 @@ def _compute_llvm_args(profdata_path,
     num_threads_arg = 1
 
   args = [
-      llvm_cov_path,
-      'export',
-      '-skip-expansions',
-      '-skip-functions',
-      '-num-threads',
-      str(num_threads_arg),
-      '-compilation-dir',
-      build_dir,
+    llvm_cov_path,
+    'export',
+    '-skip-expansions',
+    '-skip-functions',
+    '-num-threads',
+    str(num_threads_arg),
+    '-compilation-dir',
+    build_dir,
   ]
 
   if exclusions:
@@ -354,49 +373,67 @@ def _show_system_resource_usage(proc):
 
     p_mem = proc.memory_info()
     if IS_WIN or IS_MAC:
-      logging.info('llvm-cov Memory: '
-                   'RSS=%s,  VMS=%s', bytes_to_gb(p_mem.rss),
-                   bytes_to_gb(p_mem.vms))
+      logging.info(
+        'llvm-cov Memory: RSS=%s,  VMS=%s',
+        bytes_to_gb(p_mem.rss),
+        bytes_to_gb(p_mem.vms),
+      )
     else:
-      logging.info('llvm-cov Memory: '
-                   'RSS=%s,  VMS=%s, shared=%s', bytes_to_gb(p_mem.rss),
-                   bytes_to_gb(p_mem.vms), bytes_to_gb(p_mem.shared))
+      logging.info(
+        'llvm-cov Memory: RSS=%s,  VMS=%s, shared=%s',
+        bytes_to_gb(p_mem.rss),
+        bytes_to_gb(p_mem.vms),
+        bytes_to_gb(p_mem.shared),
+      )
 
     os_vm = psutil.virtual_memory()
     if IS_WIN or IS_MAC:
-      logging.info('OS virtual Memory: '
-                   'available=%s, used=%s, free=%s',
-                   bytes_to_gb(os_vm.available), bytes_to_gb(os_vm.used),
-                   bytes_to_gb(os_vm.free))
+      logging.info(
+        'OS virtual Memory: available=%s, used=%s, free=%s',
+        bytes_to_gb(os_vm.available),
+        bytes_to_gb(os_vm.used),
+        bytes_to_gb(os_vm.free),
+      )
     else:
       logging.info(
-          'OS virtual Memory: '
-          'available=%s, used=%s, free=%s, cached=%s, shared=%s',
-          bytes_to_gb(os_vm.available), bytes_to_gb(os_vm.used),
-          bytes_to_gb(os_vm.free), bytes_to_gb(os_vm.cached),
-          bytes_to_gb(os_vm.shared))
+        'OS virtual Memory: '
+        'available=%s, used=%s, free=%s, cached=%s, shared=%s',
+        bytes_to_gb(os_vm.available),
+        bytes_to_gb(os_vm.used),
+        bytes_to_gb(os_vm.free),
+        bytes_to_gb(os_vm.cached),
+        bytes_to_gb(os_vm.shared),
+      )
 
     os_sm = psutil.swap_memory()
-    logging.info('OS swap: '
-                 'used=%s, free=%s', bytes_to_gb(os_sm.used),
-                 bytes_to_gb(os_sm.free))
+    logging.info(
+      'OS swap: used=%s, free=%s',
+      bytes_to_gb(os_sm.used),
+      bytes_to_gb(os_sm.free),
+    )
 
     p_cpu_times = proc.cpu_times()
     cpu_percent = proc.cpu_percent(interval=1)
     logging.info(
-        'llvm-cov CPU: '
-        'user=%.2f hours, sys=%.2f hours, percent=%.2f%%',
-        p_cpu_times.user / 60. / 60, p_cpu_times.system / 60. / 60, cpu_percent)
+      'llvm-cov CPU: user=%.2f hours, sys=%.2f hours, percent=%.2f%%',
+      p_cpu_times.user / 60.0 / 60,
+      p_cpu_times.system / 60.0 / 60,
+      cpu_percent,
+    )
 
     os_disk_io = psutil.disk_io_counters()
-    logging.info('OS-level disk io: write=%s, read=%s',
-                 bytes_to_gb(os_disk_io.write_bytes),
-                 bytes_to_gb(os_disk_io.read_bytes))
+    logging.info(
+      'OS-level disk io: write=%s, read=%s',
+      bytes_to_gb(os_disk_io.write_bytes),
+      bytes_to_gb(os_disk_io.read_bytes),
+    )
     if not IS_MAC:
       p_disk_io = proc.io_counters()
-      logging.info('llvm-cov disk io: write=%s, read=%s',
-                   bytes_to_gb(p_disk_io.write_bytes),
-                   bytes_to_gb(p_disk_io.read_bytes))
+      logging.info(
+        'llvm-cov disk io: write=%s, read=%s',
+        bytes_to_gb(p_disk_io.write_bytes),
+        bytes_to_gb(p_disk_io.read_bytes),
+      )
   except psutil.Error:  # The process might already have finished.
     pass
   # TODO(crbug.com/1203700): Remove the except block after psutil is in a newer
@@ -405,28 +442,41 @@ def _show_system_resource_usage(proc):
     logging.warning('ValueError caught when showing system info: %s', error)
 
 
-def _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir, binaries,
-                           sources, output_dir, exclusions, arch):
+def _get_raw_coverage_data(
+  profdata_path,
+  llvm_cov_path,
+  build_dir,
+  binaries,
+  sources,
+  output_dir,
+  exclusions,
+  arch,
+):
   """Creates a coverage.json object in output_dir and returns its content."""
   coverage_json_file = os.path.join(output_dir, 'coverage_raw.json')
   error_out_file = os.path.join(output_dir, 'llvm_cov.stderr.log')
   p = None
   try:
-
-    with open(coverage_json_file, 'w') as f_out, open(error_out_file,
-                                                      'w') as f_error:
+    with (
+      open(coverage_json_file, 'w') as f_out,
+      open(error_out_file, 'w') as f_error,
+    ):
       args = _compute_llvm_args(
-          profdata_path,
-          llvm_cov_path,
-          build_dir,
-          binaries,
-          sources,
-          exclusions=exclusions,
-          arch=arch)
+        profdata_path,
+        llvm_cov_path,
+        build_dir,
+        binaries,
+        sources,
+        exclusions=exclusions,
+        arch=arch,
+      )
       logging.info('LLVM command = %s', ' '.join(args))
       if os.path.exists(profdata_path):
-        logging.info('profdata file %s exists, size: %d bytes', profdata_path,
-                     os.path.getsize(profdata_path))
+        logging.info(
+          'profdata file %s exists, size: %d bytes',
+          profdata_path,
+          os.path.getsize(profdata_path),
+        )
       else:
         logging.warning('profdata file %s does not exist', profdata_path)
       logging.info('Target binaries count: %d', len(binaries))
@@ -467,16 +517,20 @@ def _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir, binaries,
   logging.info('---------------------Processing metadata--------------------')
   if p and p.returncode == 0:
     if os.path.exists(coverage_json_file):
-      logging.info('coverage_raw.json size: %d bytes',
-                   os.path.getsize(coverage_json_file))
+      logging.info(
+        'coverage_raw.json size: %d bytes', os.path.getsize(coverage_json_file)
+      )
     with open(coverage_json_file, 'r') as f:
       return json.load(f)
 
 
-def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
-                                           compressed_files,
-                                           directory_summaries,
-                                           component_summaries):
+def _split_metadata_in_shards_if_necessary(
+  output_dir,
+  files_dir,
+  compressed_files,
+  directory_summaries,
+  component_summaries,
+):
   """Splits the metadata in a sharded manner if there are too many files.
 
   Args:
@@ -495,13 +549,13 @@ def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
   # 'dirs', 'components' and 'summaries' are only meanningful to full-repo
   # coverage.
   compressed_data = {
-      'dirs':
-          list(directory_summaries.values()) if directory_summaries else None,
-      'components':
-          list(component_summaries.values()) if component_summaries else None,
-      'summaries':
-          directory_summaries['//']['summaries']
-          if directory_summaries else None,
+    'dirs': list(directory_summaries.values()) if directory_summaries else None,
+    'components': list(component_summaries.values())
+    if component_summaries
+    else None,
+    'summaries': directory_summaries['//']['summaries']
+    if directory_summaries
+    else None,
   }
 
   # Try to split the files into 30 shards, with each shard having at least
@@ -520,7 +574,7 @@ def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
       start = index * files_in_a_shard
       if start >= len(compressed_files):
         break
-      files_slice.append(compressed_files[start:start + files_in_a_shard])
+      files_slice.append(compressed_files[start : start + files_in_a_shard])
       index += 1
 
     os.mkdir(os.path.join(output_dir, files_dir))
@@ -528,8 +582,9 @@ def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
     for i, files in enumerate(files_slice):
       file_name = 'files%d.json.gz' % (i + 1)
       with open(os.path.join(output_dir, files_dir, file_name), 'wb') as f:
-        serialized_files = json.dumps({'files': files},
-                                      separators=_JSON_SEPARATORS)
+        serialized_files = json.dumps(
+          {'files': files}, separators=_JSON_SEPARATORS
+        )
         f.write(zlib.compress(serialized_files.encode()))
       path = os.path.normpath(os.path.join(files_dir, file_name))
       file_shard_paths.append(_posix_path(path))
@@ -538,23 +593,27 @@ def _split_metadata_in_shards_if_necessary(output_dir, files_dir,
   return compressed_data
 
 
-def _get_per_target_coverage_summary(profdata_path, llvm_cov_path, build_dir,
-                                     binaries, arch):
+def _get_per_target_coverage_summary(
+  profdata_path, llvm_cov_path, build_dir, binaries, arch
+):
   logging.info('Generating per-target coverage summaries ...')
   summaries = {}
   for binary in binaries:
     args = _compute_llvm_args(
-        profdata_path,
-        llvm_cov_path,
-        build_dir, [binary],
-        summary_only=True,
-        arch=arch)
+      profdata_path,
+      llvm_cov_path,
+      build_dir,
+      [binary],
+      summary_only=True,
+      arch=arch,
+    )
     try:
       output = subprocess.check_output(args, text=True)
       summaries[binary] = json.loads(output)['data'][0]['totals']
     except subprocess.CalledProcessError as e:
-      logging.warning('Summary for binary %s failed with return code %d',
-                      binary, e.returncode)
+      logging.warning(
+        'Summary for binary %s failed with return code %d', binary, e.returncode
+      )
       logging.warning('%s', e.output)
       continue
     except (ValueError, TypeError):
@@ -582,16 +641,16 @@ def _cleanup_coverage_data(src_path, llvm_raw_data):
       if len(sample_raw_filenames) < 5:
         sample_raw_filenames.append(file_coverage_data.get('filename', ''))
       prefixes = [
-          src_path,
-          r'C:\botcode\w',  # crbug.com/1010267
-          '/b/f/w',  # crbug.com/1061603
-          '/b/s/w/ir/cache/builder/src',  # crbug.com/1208128
-          '/this/path/is/set'  # crbug.com/1208128
+        src_path,
+        r'C:\botcode\w',  # crbug.com/1010267
+        '/b/f/w',  # crbug.com/1061603
+        '/b/s/w/ir/cache/builder/src',  # crbug.com/1208128
+        '/this/path/is/set',  # crbug.com/1208128
       ]
       filename = os.path.normpath(file_coverage_data['filename'])
       for prefix in prefixes:
         if filename.startswith(prefix):
-          filename = filename[len(prefix):]
+          filename = filename[len(prefix) :]
           break
       filename = _posix_path(filename).lstrip('/')
       # Do not generate coverage for out/ paths as it consists of automatically
@@ -603,24 +662,31 @@ def _cleanup_coverage_data(src_path, llvm_raw_data):
       if not segments:
         skipped_empty_segments_count += 1
         continue
-      cleaned_file_data.append({
+      cleaned_file_data.append(
+        {
           'filename': filename,
           'segments': segments,
-          'summary': file_coverage_data['summary']
-      })
+          'summary': file_coverage_data['summary'],
+        }
+      )
   if sample_raw_filenames:
-    logging.info('Sample raw filenames from llvm-cov export (first %d): %s',
-                 len(sample_raw_filenames), sample_raw_filenames)
+    logging.info(
+      'Sample raw filenames from llvm-cov export (first %d): %s',
+      len(sample_raw_filenames),
+      sample_raw_filenames,
+    )
   logging.info(
-      'Coverage data cleanup complete: total raw files=%d, retained=%d, '
-      'skipped out/=%d, skipped empty segments=%d', raw_file_count,
-      len(cleaned_file_data), skipped_out_count, skipped_empty_segments_count)
+    'Coverage data cleanup complete: total raw files=%d, retained=%d, '
+    'skipped out/=%d, skipped empty segments=%d',
+    raw_file_count,
+    len(cleaned_file_data),
+    skipped_out_count,
+    skipped_empty_segments_count,
+  )
   return {
-      'data': [{
-          'files': cleaned_file_data
-      }],
-      'type': llvm_raw_data['type'],
-      'version': llvm_raw_data['version']
+    'data': [{'files': cleaned_file_data}],
+    'type': llvm_raw_data['type'],
+    'version': llvm_raw_data['version'],
   }
 
 
@@ -654,13 +720,11 @@ def _split_llvm_data_in_shards(data, shard_size=500):
     files_data = datum['files']
     count = 0
     while count < len(files_data):
-      files_in_shard = files_data[count:count + shard_size]
+      files_in_shard = files_data[count : count + shard_size]
       shard = {
-          'data': [{
-              'files': files_in_shard
-          }],
-          'type': data['type'],
-          'version': data['version']
+        'data': [{'files': files_in_shard}],
+        'type': data['type'],
+        'version': data['version'],
       }
       shards.append(shard)
       count += shard_size
@@ -672,19 +736,21 @@ def _get_data_from_path(data_path):
     return json.load(f)
 
 
-def _generate_metadata(src_path,
-                       output_dir,
-                       profdata_path,
-                       llvm_cov_path,
-                       build_dir,
-                       binaries,
-                       component_mapping,
-                       sources,
-                       diff_mapping=None,
-                       exclusions=None,
-                       third_party_inclusion_subdirs=None,
-                       arch=None,
-                       is_fuzz_coverage=False):
+def _generate_metadata(
+  src_path,
+  output_dir,
+  profdata_path,
+  llvm_cov_path,
+  build_dir,
+  binaries,
+  component_mapping,
+  sources,
+  diff_mapping=None,
+  exclusions=None,
+  third_party_inclusion_subdirs=None,
+  arch=None,
+  is_fuzz_coverage=False,
+):
   """Generates code coverage metadata.
 
   Args:
@@ -719,20 +785,38 @@ def _generate_metadata(src_path,
   """
   logging.info('Generating coverage metadata ...')
   logging.info(
-      'Metadata config: src_path=%s, exclusions=%s, '
-      'third_party_inclusion_subdirs=%s, arch=%s', src_path, exclusions,
-      third_party_inclusion_subdirs, arch)
+    'Metadata config: src_path=%s, exclusions=%s, '
+    'third_party_inclusion_subdirs=%s, arch=%s',
+    src_path,
+    exclusions,
+    third_party_inclusion_subdirs,
+    arch,
+  )
   start_time = time.time()
   raw_data = ''
   if not is_fuzz_coverage:
-    raw_data = _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir,
-                                      binaries, sources, output_dir, exclusions,
-                                      arch)
+    raw_data = _get_raw_coverage_data(
+      profdata_path,
+      llvm_cov_path,
+      build_dir,
+      binaries,
+      sources,
+      output_dir,
+      exclusions,
+      arch,
+    )
   else:
     logging.info('The variable llvm_cov_path is %s' % llvm_cov_path)
-    raw_data = _get_raw_coverage_data(profdata_path, llvm_cov_path, build_dir,
-                                      binaries, sources, output_dir, exclusions,
-                                      arch)
+    raw_data = _get_raw_coverage_data(
+      profdata_path,
+      llvm_cov_path,
+      build_dir,
+      binaries,
+      sources,
+      output_dir,
+      exclusions,
+      arch,
+    )
     third_party_inclusion_subdirs = None
     component_mapping = None
     diff_mapping = None
@@ -749,8 +833,10 @@ def _generate_metadata(src_path,
 
   minutes = (time.time() - start_time) / 60
   logging.info(
-      'Generating & loading coverage metadata with "llvm-cov export" '
-      'took %.0f minutes', minutes)
+    'Generating & loading coverage metadata with "llvm-cov export" '
+    'took %.0f minutes',
+    minutes,
+  )
 
   logging.info('Processing coverage data ...')
   start_time = time.time()
@@ -760,34 +846,42 @@ def _generate_metadata(src_path,
   for datum in data['data']:
     for file_data in datum['files']:
       total_files_evaluated += 1
-      record = _to_compressed_file_record(file_data, diff_mapping,
-                                          third_party_inclusion_subdirs)
+      record = _to_compressed_file_record(
+        file_data, diff_mapping, third_party_inclusion_subdirs
+      )
       if record:
         files_coverage.append(record)
       else:
         third_party_skipped += 1
 
   logging.info(
-      'Processed coverage files: evaluated=%d, added=%d, '
-      'third_party skipped=%d', total_files_evaluated, len(files_coverage),
-      third_party_skipped)
+    'Processed coverage files: evaluated=%d, added=%d, third_party skipped=%d',
+    total_files_evaluated,
+    len(files_coverage),
+    third_party_skipped,
+  )
   if not files_coverage:
     logging.warning(
-        'files_coverage is empty! No valid file coverage records produced.')
+      'files_coverage is empty! No valid file coverage records produced.'
+    )
 
   per_directory_coverage = {}
   per_component_coverage = {}
   if diff_mapping is None:
     per_directory_coverage, per_component_coverage = (
-        aggregation_util.get_aggregated_coverage_data_from_files(
-            files_coverage, component_mapping))
+      aggregation_util.get_aggregated_coverage_data_from_files(
+        files_coverage, component_mapping
+      )
+    )
 
-  summaries = _get_per_target_coverage_summary(profdata_path, llvm_cov_path,
-                                               build_dir, binaries, arch)
+  summaries = _get_per_target_coverage_summary(
+    profdata_path, llvm_cov_path, build_dir, binaries, arch
+  )
 
-  if (diff_mapping is None):
+  if diff_mapping is None:
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
-        files_coverage, src_path, 'DEPS')
+      files_coverage, src_path, 'DEPS'
+    )
 
   minutes = (time.time() - start_time) / 60
   logging.info('Processing coverage data took %.0f minutes', minutes)
@@ -796,8 +890,12 @@ def _generate_metadata(src_path,
   start_time = time.time()
 
   compressed_data = _split_metadata_in_shards_if_necessary(
-      output_dir, 'files_coverage', files_coverage, per_directory_coverage,
-      per_component_coverage)
+    output_dir,
+    'files_coverage',
+    files_coverage,
+    per_directory_coverage,
+    per_component_coverage,
+  )
   minutes = (time.time() - start_time) / 60
   logging.info('Generating coverage metadata took %.0f minutes', minutes)
 
@@ -817,22 +915,22 @@ def _get_clang_summary_metrics(clang_summary):
   # Clang uses 'lines'/'branches'... whereas it's preferrable to use
   # singular forms in metadata format.
   singular = {
-      'lines': 'line',
-      'branches': 'branch',
-      'regions': 'region',
-      'functions': 'function',
-      'instantiations': 'instantiation',
-      # Modified condition/decision coverage
-      # See https://llvm.org/devmtg/2022-11/slides/TechTalk4-MCDC-EnablingSafetyCriticalCodeCoverage.pdf
-      'mcdc': 'mcdc'
+    'lines': 'line',
+    'branches': 'branch',
+    'regions': 'region',
+    'functions': 'function',
+    'instantiations': 'instantiation',
+    # Modified condition/decision coverage
+    # See https://llvm.org/devmtg/2022-11/slides/TechTalk4-MCDC-EnablingSafetyCriticalCodeCoverage.pdf
+    'mcdc': 'mcdc',
   }
   summaries = []
   for k, v in clang_summary.items():
     if k in singular:
       summary = {
-          'name': singular[k],
-          'covered': v['covered'],
-          'total': v['count']
+        'name': singular[k],
+        'covered': v['covered'],
+        'total': v['count'],
       }
       summaries.append(summary)
     else:
@@ -858,70 +956,83 @@ def _create_index_html(output_dir):
 
 def _parse_args(args):
   parser = argparse.ArgumentParser(
-      description='Generate the coverage data in metadata format')
+    description='Generate the coverage data in metadata format'
+  )
   parser.add_argument(
-      '--build-dir',
-      required=True,
-      type=str,
-      help='absolute path to the build directory')
+    '--build-dir',
+    required=True,
+    type=str,
+    help='absolute path to the build directory',
+  )
   parser.add_argument(
-      '--src-path',
-      required=True,
-      type=str,
-      help='absolute path to the code checkout')
+    '--src-path',
+    required=True,
+    type=str,
+    help='absolute path to the code checkout',
+  )
   parser.add_argument(
-      '--output-dir',
-      required=True,
-      type=str,
-      help='absolute path to the directory to store the metadata, must exist')
+    '--output-dir',
+    required=True,
+    type=str,
+    help='absolute path to the directory to store the metadata, must exist',
+  )
   parser.add_argument(
-      '--profdata-path',
-      required=True,
-      type=str,
-      help='absolute path to the merged profdata')
+    '--profdata-path',
+    required=True,
+    type=str,
+    help='absolute path to the merged profdata',
+  )
   parser.add_argument(
-      '--llvm-cov',
-      required=True,
-      type=str,
-      help='absolute path to llvm-cov executable')
+    '--llvm-cov',
+    required=True,
+    type=str,
+    help='absolute path to llvm-cov executable',
+  )
   parser.add_argument(
-      '--binaries',
-      nargs='+',
-      type=str,
-      help='absolute path to binaries to generate the coverage for')
+    '--binaries',
+    nargs='+',
+    type=str,
+    help='absolute path to binaries to generate the coverage for',
+  )
   parser.add_argument(
-      '--dir-metadata-path',
-      type=str,
-      help='absolute path to json file mapping dirs to metadata')
+    '--dir-metadata-path',
+    type=str,
+    help='absolute path to json file mapping dirs to metadata',
+  )
   parser.add_argument(
-      '--sources',
-      nargs='*',
-      type=str,
-      help='the source files to generate the coverage for, path should be '
-      'relative to the root of the code checkout')
+    '--sources',
+    nargs='*',
+    type=str,
+    help='the source files to generate the coverage for, path should be '
+    'relative to the root of the code checkout',
+  )
   parser.add_argument(
-      '--diff-mapping-path',
-      type=str,
-      help='absolute path to the file that stores the diff mapping')
+    '--diff-mapping-path',
+    type=str,
+    help='absolute path to the file that stores the diff mapping',
+  )
   parser.add_argument(
-      '--exclusion-pattern',
-      type=str,
-      help='regex pattern for sources to exclude from aggregation')
+    '--exclusion-pattern',
+    type=str,
+    help='regex pattern for sources to exclude from aggregation',
+  )
   parser.add_argument(
-      '--third-party-inclusion-subdirs',
-      nargs='*',
-      type=str,
-      help='third_party sub directories to include in aggregation')
+    '--third-party-inclusion-subdirs',
+    nargs='*',
+    type=str,
+    help='third_party sub directories to include in aggregation',
+  )
   parser.add_argument(
-      '--arch',
-      type=str,
-      help='architecture of binaries',
+    '--arch',
+    type=str,
+    help='architecture of binaries',
   )
   parser.add_argument('--llvm-raw-data', type=str, help='llvm raw data')
   parser.add_argument(
-      '--fuzz',
-      action='store_true',
-      help='indicates whether we are generating fuzzing coverage')
+    '--fuzz',
+    action='store_true',
+    help='indicates whether we are generating fuzzing coverage',
+  )
   return parser.parse_args(args=args)
 
 
@@ -941,8 +1052,7 @@ def _validate_params_for_code_coverage(params):
   if not os.path.isfile(params.profdata_path):
     raise RuntimeError('Input data %s is missing' % params.profdata_path)
 
-  if (params.dir_metadata_path and
-      not os.path.isfile(params.dir_metadata_path)):
+  if params.dir_metadata_path and not os.path.isfile(params.dir_metadata_path):
     raise RuntimeError('Dir metadata %s is missing' % params.dir_metadata_path)
 
   if params.diff_mapping_path and not os.path.isfile(params.diff_mapping_path):
@@ -957,9 +1067,9 @@ def main():
   if params.dir_metadata_path:
     with open(params.dir_metadata_path) as f:
       component_mapping = {
-          d: md['monorail']['component']
-          for d, md in json.load(f)['dirs'].items()
-          if 'monorail' in md and 'component' in md['monorail']
+        d: md['monorail']['component']
+        for d, md in json.load(f)['dirs'].items()
+        if 'monorail' in md and 'component' in md['monorail']
       }
 
   sources = params.sources or []
@@ -971,34 +1081,38 @@ def main():
       diff_mapping = json.load(f)
 
   assert (component_mapping is None) or (diff_mapping is None), (
-      'component_mapping (for full-repo coverage) and diff_mapping '
-      '(for per-cl coverage) cannot be specified at the same time.')
+    'component_mapping (for full-repo coverage) and diff_mapping '
+    '(for per-cl coverage) cannot be specified at the same time.'
+  )
 
   data, summaries = _generate_metadata(
-      params.src_path,
-      params.output_dir,
-      params.profdata_path,
-      params.llvm_cov,
-      params.build_dir,
-      params.binaries,
-      component_mapping,
-      abs_sources,
-      diff_mapping,
-      params.exclusion_pattern,
-      params.third_party_inclusion_subdirs,
-      params.arch,
-      is_fuzz_coverage=params.fuzz)
+    params.src_path,
+    params.output_dir,
+    params.profdata_path,
+    params.llvm_cov,
+    params.build_dir,
+    params.binaries,
+    component_mapping,
+    abs_sources,
+    diff_mapping,
+    params.exclusion_pattern,
+    params.third_party_inclusion_subdirs,
+    params.arch,
+    is_fuzz_coverage=params.fuzz,
+  )
 
   with open(os.path.join(params.output_dir, 'all.json.gz'), 'wb') as f:
     serialized_metadata = json.dumps(data, separators=_JSON_SEPARATORS)
     f.write(zlib.compress(serialized_metadata.encode()))
-  with open(os.path.join(params.output_dir, 'per_target_summaries.json'),
-            'w') as f:
+  with open(
+    os.path.join(params.output_dir, 'per_target_summaries.json'), 'w'
+  ) as f:
     json.dump(summaries, f, separators=_JSON_SEPARATORS)
   _create_index_html(params.output_dir)
 
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   sys.exit(main())

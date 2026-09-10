@@ -10,13 +10,13 @@ from recipe_engine.config import Single
 
 def BaseConfig():
   return ConfigGroup(
-      priority=Single(int),
-      expiration=Single(int),
-      strategy_timeout=Single(int),
-      io_timeout=Single(int),
-      verify_timeout=Single(int),
-      verify_on_all_buckets=Single(bool),
-      verify_only_cq_sheriff_builders=Single(bool),
+    priority=Single(int),
+    expiration=Single(int),
+    strategy_timeout=Single(int),
+    io_timeout=Single(int),
+    verify_timeout=Single(int),
+    verify_on_all_buckets=Single(bool),
+    verify_only_cq_sheriff_builders=Single(bool),
   )
 
 

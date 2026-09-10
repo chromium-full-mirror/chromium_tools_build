@@ -10,18 +10,18 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_checkout, webrtc
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    gerrit,
-    git,
+  depot_tools,
+  gclient,
+  gerrit,
+  git,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    json,
-    runtime,
-    step,
-    url,
+  buildbucket,
+  context,
+  json,
+  runtime,
+  step,
+  url,
 )
 
 
@@ -61,9 +61,9 @@ def RunSteps(api: DEPS):
     api.gclient.c.target_os.add(os)
 
   output = api.url.get_text(
-      'https://webrtc-roll-cr-rev-status.appspot.com/status',
-      step_name='check roll status',
-      default_test_data='1',
+    'https://webrtc-roll-cr-rev-status.appspot.com/status',
+    step_name='check roll status',
+    default_test_data='1',
   ).output
   api.step.active_result.presentation.logs['output'] = output.splitlines()
   if output.strip() != '1':
@@ -82,22 +82,22 @@ def RunSteps(api: DEPS):
 
     # Check for an open auto-roller CL.
     commits = api.gerrit.get_changes(
-        GERRIT_URL,
-        query_params=[
-            ('project', GERRIT_PROJECT),
-            ('owner', push_account),
-            ('status', 'open'),
-        ],
-        limit=1,
+      GERRIT_URL,
+      query_params=[
+        ('project', GERRIT_PROJECT),
+        ('owner', push_account),
+        ('status', 'open'),
+      ],
+      limit=1,
     )
     if commits:
       cq_commits = api.gerrit.get_changes(
-          GERRIT_URL,
-          query_params=[
-              ('change', commits[0]['_number']),
-              ('label', 'Commit-Queue>=1'),
-          ],
-          limit=1,
+        GERRIT_URL,
+        query_params=[
+          ('change', commits[0]['_number']),
+          ('label', 'Commit-Queue>=1'),
+        ],
+        limit=1,
       )
       if cq_commits:
         assert cq_commits[0]['_number'] == commits[0]['_number']
@@ -108,7 +108,8 @@ def RunSteps(api: DEPS):
         with api.depot_tools.on_path():
           api.git('cl', 'set-close', '-i', commits[0]['_number'])
         api.step.active_result.presentation.step_text = (
-            'Stale roll found. Abandoned.')
+          'Stale roll found. Abandoned.'
+        )
 
     # Enforce a clean state, and discard any local commits from previous runs.
     api.git('checkout', '-f', 'main')
@@ -117,8 +118,9 @@ def RunSteps(api: DEPS):
 
     # Run the roll script. It will take care of branch creation, modifying DEPS,
     # uploading etc. It will also delete any previous roll branch.
-    script_path = source_dir.joinpath('tools_webrtc', 'autoroller',
-                                      'roll_deps.py')
+    script_path = source_dir.joinpath(
+      'tools_webrtc', 'autoroller', 'roll_deps.py'
+    )
 
     params = ['--clean', '--verbose']
     if api.runtime.is_experimental:
@@ -135,39 +137,36 @@ def GenTests(api: TEST_DEPS):
   base = api.buildbucket.generic_build()
 
   yield api.test(
-      'rolling_activated',
-      base,
-      api.override_step_data('gerrit changes', api.json.output([])),
+    'rolling_activated',
+    base,
+    api.override_step_data('gerrit changes', api.json.output([])),
   )
   yield api.test(
-      'rolling_activated_experimental',
-      base,
-      api.override_step_data('gerrit changes', api.json.output([])),
-      api.runtime(is_experimental=True),
+    'rolling_activated_experimental',
+    base,
+    api.override_step_data('gerrit changes', api.json.output([])),
+    api.runtime(is_experimental=True),
   )
   yield api.test(
-      'rolling_deactivated',
-      base,
-      api.url.text('check roll status', '0'),
+    'rolling_deactivated',
+    base,
+    api.url.text('check roll status', '0'),
   )
   yield api.test(
-      'stale_roll',
-      base,
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)', api.json.output([])),
+    'stale_roll',
+    base,
+    api.override_step_data(
+      'gerrit changes', api.json.output([{'_number': '123'}])
+    ),
+    api.override_step_data('gerrit changes (2)', api.json.output([])),
   )
   yield api.test(
-      'previous_roll_in_cq',
-      base,
-      api.override_step_data('gerrit changes',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
-      api.override_step_data('gerrit changes (2)',
-                             api.json.output([{
-                                 '_number': '123'
-                             }])),
+    'previous_roll_in_cq',
+    base,
+    api.override_step_data(
+      'gerrit changes', api.json.output([{'_number': '123'}])
+    ),
+    api.override_step_data(
+      'gerrit changes (2)', api.json.output([{'_number': '123'}])
+    ),
   )

@@ -13,11 +13,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import bot_update, gclient, osx_sdk
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    path,
-    platform,
-    step,
+  buildbucket,
+  context,
+  path,
+  platform,
+  step,
 )
 
 
@@ -69,12 +69,12 @@ def RunSteps(api: DEPS):
   # Sync and pull in everything.
   api.gclient.set_config('boringssl')
   api.gclient.c.solutions[0].custom_vars = {
-      'checkout_bazel': True,
-      # No need for CMake and Ninja.
-      'checkout_cmake': False,
-      # Go and Perl are only needed if running util/pregenerate.
-      'checkout_go': False,
-      'checkout_perl': False,
+    'checkout_bazel': True,
+    # No need for CMake and Ninja.
+    'checkout_cmake': False,
+    # Go and Perl are only needed if running util/pregenerate.
+    'checkout_go': False,
+    'checkout_perl': False,
   }
   cache_dir = api.path.cache_dir / 'builder'
   with api.context(cwd=cache_dir):
@@ -89,79 +89,93 @@ def RunSteps(api: DEPS):
     src = update_result.source_root.path
     bazel = src / 'util/bot/bazel/bazel'
     with api.context(cwd=src), _BazelShutdown(api, bazel):
-      _RetryStepAfterBazelClean(api, bazel, 'bazel build', [
-          bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
-      ])
-      api.step('bazel test', [
-          bazel, 'test', '--verbose_failures', '--lockfile_mode=error',
-          '--test_output=errors', '...'
-      ])
+      _RetryStepAfterBazelClean(
+        api,
+        bazel,
+        'bazel build',
+        [bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'],
+      )
+      api.step(
+        'bazel test',
+        [
+          bazel,
+          'test',
+          '--verbose_failures',
+          '--lockfile_mode=error',
+          '--test_output=errors',
+          '...',
+        ],
+      )
 
     bazel_example = src / "util/bazel-example"
     with api.context(cwd=bazel_example), _BazelShutdown(api, bazel):
-      _RetryStepAfterBazelClean(api, bazel, 'bazel build example', [
-          bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'
-      ])
+      _RetryStepAfterBazelClean(
+        api,
+        bazel,
+        'bazel build example',
+        [bazel, 'build', '--verbose_failures', '--lockfile_mode=error', '...'],
+      )
       # The example consumer has no tests. Just make sure it builds.
 
 
 def _CIBuild(api: TEST_DEPS, builder):
   return api.buildbucket.ci_build(
-      project='boringssl',
-      builder=builder,
-      git_repo='https://boringssl.googlesource.com/boringssl')
+    project='boringssl',
+    builder=builder,
+    git_repo='https://boringssl.googlesource.com/boringssl',
+  )
 
 
 def GenTests(api: TEST_DEPS):
   tests = [
-      ('linux', api.platform('linux', 64)),
-      ('mac', api.platform('mac', 64)),
+    ('linux', api.platform('linux', 64)),
+    ('mac', api.platform('mac', 64)),
   ]
-  for (buildername, host_platform) in tests:
+  for buildername, host_platform in tests:
     yield api.test(
-        buildername,
-        host_platform,
-        _CIBuild(api, buildername),
+      buildername,
+      host_platform,
+      _CIBuild(api, buildername),
     )
 
   yield api.test(
-      'bazel_build_retried',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.override_step_data('bazel build', retcode=1),
-      # The retry succeeded.
+    'bazel_build_retried',
+    api.platform('linux', 64),
+    _CIBuild(api, 'linux'),
+    api.override_step_data('bazel build', retcode=1),
+    # The retry succeeded.
   )
 
   yield api.test(
-      'bazel_build_failed',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.override_step_data('bazel build', retcode=1),
-      api.override_step_data('bazel build (retry)', retcode=1),
-      api.expect_status('FAILURE'),
+    'bazel_build_failed',
+    api.platform('linux', 64),
+    _CIBuild(api, 'linux'),
+    api.override_step_data('bazel build', retcode=1),
+    api.override_step_data('bazel build (retry)', retcode=1),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'bazel_test_failed',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.override_step_data('bazel test', retcode=1),
-      api.expect_status('FAILURE'),
+    'bazel_test_failed',
+    api.platform('linux', 64),
+    _CIBuild(api, 'linux'),
+    api.override_step_data('bazel test', retcode=1),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'bazel_build_example_retried',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.override_step_data('bazel build example', retcode=1),
-      # The retry succeeded.
+    'bazel_build_example_retried',
+    api.platform('linux', 64),
+    _CIBuild(api, 'linux'),
+    api.override_step_data('bazel build example', retcode=1),
+    # The retry succeeded.
   )
 
   yield api.test(
-      'bazel_build_example_failed',
-      api.platform('linux', 64),
-      _CIBuild(api, 'linux'),
-      api.override_step_data('bazel build example', retcode=1),
-      api.override_step_data('bazel build example (retry)', retcode=1),
-      api.expect_status('FAILURE'),
+    'bazel_build_example_failed',
+    api.platform('linux', 64),
+    _CIBuild(api, 'linux'),
+    api.override_step_data('bazel build example', retcode=1),
+    api.override_step_data('bazel build example (retry)', retcode=1),
+    api.expect_status('FAILURE'),
   )

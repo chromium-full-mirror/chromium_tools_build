@@ -7,8 +7,13 @@ from __future__ import annotations
 import attr
 import itertools
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, enum, mapping,
-                                             sequence)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  enum,
+  mapping,
+  sequence,
+)
 
 COMPILE_AND_TEST = 'compile/test'
 TEST = 'test'
@@ -50,38 +55,49 @@ class BuilderSpec:
     if execution_mode != COMPILE_AND_TEST:
       invalid_attrs = get_filtered_attrs('compile_targets')
       assert not invalid_attrs, (
-          "The following fields are ignored unless 'execution_mode' is {!r}: {}"
-          .format(COMPILE_AND_TEST, invalid_attrs))
+        "The following fields are ignored unless 'execution_mode' is {!r}: {}".format(
+          COMPILE_AND_TEST, invalid_attrs
+        )
+      )
 
     if not kwargs.get('cf_archive_build'):
-      invalid_attrs = get_filtered_attrs('cf_gs_bucket', 'cf_archive_name',
-                                         'cf_gs_acl',
-                                         'cf_archive_subdir_suffix',
-                                         'cf_archive_path',
-                                         'cf_use_archive_path')
+      invalid_attrs = get_filtered_attrs(
+        'cf_gs_bucket',
+        'cf_archive_name',
+        'cf_gs_acl',
+        'cf_archive_subdir_suffix',
+        'cf_archive_path',
+        'cf_use_archive_path',
+      )
       assert not invalid_attrs, (
-          'The following fields are ignored unless '
-          "'cf_archive_build' is set to True: {}".format(invalid_attrs))
+        'The following fields are ignored unless '
+        "'cf_archive_build' is set to True: {}".format(invalid_attrs)
+      )
 
     return cls(**kwargs)
 
   def __attrs_post_init__(self):
     if self.execution_mode == TEST:
       assert self.parent_buildername is not None, (
-          'Test-only builder must specify a parent builder')
+        'Test-only builder must specify a parent builder'
+      )
     elif self.execution_mode == COMPILE_AND_TEST:
       assert self.parent_buildername is None, (
-          'Non-test-only builder must not specify a parent builder')
+        'Non-test-only builder must not specify a parent builder'
+      )
       assert self.parent_builder_group is None, (
-          'Non-test-only builder must not specify parent builder group')
+        'Non-test-only builder must not specify parent builder group'
+      )
 
     if self.cf_archive_build:
       assert self.cf_gs_bucket, (
-          "'cf_gs_bucket' must be provided when 'cf_archive_build' is True")
+        "'cf_gs_bucket' must be provided when 'cf_archive_build' is True"
+      )
 
     if self.use_test_trigger_cas:
       assert self.execution_mode == TEST, (
-          'use_test_trigger_cas can only be True for test-only builders')
+        'use_test_trigger_cas can only be True for test-only builders'
+      )
 
   # The execution mode of the builder
   # COMPILE_AND_TEST - Compile targets and optionally run tests and/or trigger
@@ -89,7 +105,8 @@ class BuilderSpec:
   # TEST - Run tests, requires a parent builder, some ancestor must have
   #     COMPILE_AND_TEST execution mode
   execution_mode = attrib(
-      enum([COMPILE_AND_TEST, TEST]), default=COMPILE_AND_TEST)
+    enum([COMPILE_AND_TEST, TEST]), default=COMPILE_AND_TEST
+  )
 
   # If True, the tester will skip checkout and download a test trigger CAS
   # archive containing the necessary specs and scripts instead.
@@ -132,7 +149,6 @@ class BuilderSpec:
   # A bool controlling whether have bot_update perform a clobber of any
   # pre-existing build outputs
   clobber = attrib(bool, default=False)
-
 
   # A bool controlling whether to perform a shallow checkout without history.
   no_history = attrib(bool, default=False)

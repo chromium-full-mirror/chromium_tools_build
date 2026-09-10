@@ -9,10 +9,10 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    step,
+  file,
+  json,
+  path,
+  step,
 )
 
 
@@ -22,6 +22,7 @@ class DEPS(RecipeScriptApi):
   json: json.API
   path: path.API
   step: step.API
+
 
 # Don't set properties, just let the recipes set the properties to the
 # properties proto defined in this module

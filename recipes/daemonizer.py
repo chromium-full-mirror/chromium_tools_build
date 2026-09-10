@@ -35,8 +35,9 @@ def restart(cmd, pid_file_path):
   # Check for the pid_file to see if the daemon's already running
   # and restart it if it is.
   if pid_file_path == None:
-    logging.error('pid_file_path arg must be specified when '
-                  'restarting a daemon')
+    logging.error(
+      'pid_file_path arg must be specified when restarting a daemon'
+    )
     return 1
   try:
     with open(pid_file_path, 'r') as pid_file:
@@ -46,9 +47,10 @@ def restart(cmd, pid_file_path):
 
   if pid:
     logging.info(
-        "%s pid file already exists, attempting to kill process %d",
-        pid_file_path,
-        pid)
+      "%s pid file already exists, attempting to kill process %d",
+      pid_file_path,
+      pid,
+    )
     try:
       os.kill(pid, signal.SIGTERM)
     except OSError:
@@ -68,8 +70,9 @@ def daemonize(cmd, pid_file_path):
       # exit first parent
       sys.exit(0)
   except OSError as e:
-    sys.stderr.write("fork #1 failed, unable to daemonize: %d (%s)\n" %
-                     (e.errno, e.strerror))
+    sys.stderr.write(
+      "fork #1 failed, unable to daemonize: %d (%s)\n" % (e.errno, e.strerror)
+    )
     sys.exit(1)
 
   # decouple from parent environment
@@ -84,8 +87,9 @@ def daemonize(cmd, pid_file_path):
       # exit from second parent
       sys.exit(0)
   except OSError as e:
-    sys.stderr.write("fork #2 failed, unable to daemonize: %d (%s)\n" %
-                     (e.errno, e.strerror))
+    sys.stderr.write(
+      "fork #2 failed, unable to daemonize: %d (%s)\n" % (e.errno, e.strerror)
+    )
     sys.exit(1)
 
   # redirect standard file descriptors
@@ -105,7 +109,7 @@ def daemonize(cmd, pid_file_path):
     try:
       with open(pid_file_path, 'w') as pid_file:
         pid_file.write('%s' % str(proc.pid))
-    except (IOError):
+    except IOError:
       logging.exception("Unable to write pid to file")
 
   proc.communicate()
@@ -128,25 +132,30 @@ def stop(pid_file_path):
 
 def main():
   parser = argparse.ArgumentParser(
-      description='Launch, or shutdown, a daemon process.')
+    description='Launch, or shutdown, a daemon process.'
+  )
   parser.add_argument(
-      '--action',
-      default='daemonize',
-      choices=['restart','stop','daemonize'],
-      help='What action to take. Both restart and stop attempt to write & read '
-      'the pid to a file so it can kill or restart it, while daemonize simply '
-      'fires and forgets.')
+    '--action',
+    default='daemonize',
+    choices=['restart', 'stop', 'daemonize'],
+    help='What action to take. Both restart and stop attempt to write & read '
+    'the pid to a file so it can kill or restart it, while daemonize simply '
+    'fires and forgets.',
+  )
   parser.add_argument(
-      '--pid-file-path',
-      type=str,
-      default=None,
-      help='Path of tmp file to store the daemon\'s pid.')
+    '--pid-file-path',
+    type=str,
+    default=None,
+    help='Path of tmp file to store the daemon\'s pid.',
+  )
   parser.add_argument(
-      '--', dest='',
-      required=False,
-      help='Optional delimiter dividing daemonizer options with the command. '
-      'This is here to ensure it\'s backwards compatible with the previous '
-      'version of daemonizer.')
+    '--',
+    dest='',
+    required=False,
+    help='Optional delimiter dividing daemonizer options with the command. '
+    'This is here to ensure it\'s backwards compatible with the previous '
+    'version of daemonizer.',
+  )
   parser.add_argument('cmd', help='Command (+ args) to daemonize', nargs='*')
   args = parser.parse_args()
 

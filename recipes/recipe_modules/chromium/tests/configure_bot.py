@@ -30,26 +30,25 @@ class TEST_DEPS(RecipeTestApi):
 
 
 _BUILDERS_DICT = {
-    'test_group': {
-        'builders': {
-            'test_buildername':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='chromium_clang',
-                    chromium_apply_config=['mb'],
-                    gclient_apply_config=['android'],
-                ),
-        },
+  'test_group': {
+    'builders': {
+      'test_buildername': chromium_types.BuilderSpec.create(
+        chromium_config='chromium_clang',
+        chromium_apply_config=['mb'],
+        gclient_apply_config=['android'],
+      ),
     },
-    'tryserver_test': {
-        'builders': {
-            'mac_trybot':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='chromium_clang',),
-            'win_trybot':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='chromium_clang',),
-        },
+  },
+  'tryserver_test': {
+    'builders': {
+      'mac_trybot': chromium_types.BuilderSpec.create(
+        chromium_config='chromium_clang',
+      ),
+      'win_trybot': chromium_types.BuilderSpec.create(
+        chromium_config='chromium_clang',
+      ),
     },
+  },
 }
 
 

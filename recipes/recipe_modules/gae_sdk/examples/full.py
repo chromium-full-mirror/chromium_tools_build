@@ -35,30 +35,34 @@ def RunSteps(api: DEPS):
 
   for plat in api.gae_sdk.platforms:
     out = api.gae_sdk.repo_resource(
-        'gae_sdk', '%s_%s' % (plat, api.platform.name))
+      'gae_sdk', '%s_%s' % (plat, api.platform.name)
+    )
     try:
       api.gae_sdk.fetch(plat, out)
     except api.gae_sdk.PackageNotFound:
       api.step.empty(
-          'Failed to fetch',
-          status=api.step.FAILURE,
-          step_text=('No %s package for %s / %s' %
-                     (plat, api.platform.name, api.platform.bits)))
+        'Failed to fetch',
+        status=api.step.FAILURE,
+        step_text=(
+          'No %s package for %s / %s'
+          % (plat, api.platform.name, api.platform.bits)
+        ),
+      )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'win',
-      api.platform('win', 64),
-      api.expect_status('FAILURE'),
+    'win',
+    api.platform('win', 64),
+    api.expect_status('FAILURE'),
   )
 
   yield api.test(
-      'linux',
-      api.platform('linux', 64),
+    'linux',
+    api.platform('linux', 64),
   )
 
   yield api.test(
-      'mac',
-      api.platform('mac', 64),
+    'mac',
+    api.platform('mac', 64),
   )

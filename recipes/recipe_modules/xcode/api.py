@@ -8,7 +8,6 @@ from recipe_engine import recipe_api
 
 
 class XcodeApi(recipe_api.RecipeApi):
-
   def __init__(self, input_properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self.xcode_config_path = input_properties.xcode_config_path
@@ -28,10 +27,11 @@ class XcodeApi(recipe_api.RecipeApi):
         return None
 
       xcode_confg = self.m.file.read_json(
-          'Read xcode_configs from repo',
-          full_path,
-          test_data={
-              'xcode_build_version': '0.0',
-          })
+        'Read xcode_configs from repo',
+        full_path,
+        test_data={
+          'xcode_build_version': '0.0',
+        },
+      )
       return xcode_confg['xcode_build_version']
     return None

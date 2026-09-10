@@ -8,7 +8,6 @@ from recipe_engine import recipe_test_api
 
 
 class ChromiumCheckoutTestApi(recipe_test_api.RecipeTestApi):
-
   @property
   def default_checkout_dir(self):
     return self.m.path.cache_dir / 'builder'

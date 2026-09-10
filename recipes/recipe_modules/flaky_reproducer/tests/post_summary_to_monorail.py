@@ -40,43 +40,41 @@ def GenTests(api: TEST_DEPS):
     if labels is None:
       labels = []
     return {
-        "name":
-            "projects/chromium/issues/1160019",
-        "labels": [{
-            "derivation": "EXPLICIT",
-            "label": label
-        } for label in labels]
+      "name": "projects/chromium/issues/1160019",
+      "labels": [
+        {"derivation": "EXPLICIT", "label": label} for label in labels
+      ],
     }
 
   yield api.test(
-      'good',
-      api.step_data(
-          'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
-          api.json.output_stream(generate_issue_result()),
-      ),
-      api.step_data(
-          'post_summary_to_monorail.ModifyIssues projects/chromium/issues/123',
-          api.json.output_stream(generate_issue_result()),
-      ),
-      api.post_process(post_process.DropExpectation),
+    'good',
+    api.step_data(
+      'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
+      api.json.output_stream(generate_issue_result()),
+    ),
+    api.step_data(
+      'post_summary_to_monorail.ModifyIssues projects/chromium/issues/123',
+      api.json.output_stream(generate_issue_result()),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'already-posted',
-      api.step_data(
-          'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
-          api.json.output_stream(generate_issue_result(['flaky-reproduced'])),
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'already-posted',
+    api.step_data(
+      'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
+      api.json.output_stream(generate_issue_result(['flaky-reproduced'])),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'issue-not-exists',
-      api.step_data(
-          'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
-          retcode=5,
-      ),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'issue-not-exists',
+    api.step_data(
+      'check_monorail_comment_posted.GetIssue projects/chromium/issues/123',
+      retcode=5,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

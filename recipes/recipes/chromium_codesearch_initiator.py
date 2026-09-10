@@ -27,17 +27,17 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.depot_tools import git, gitiles
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    path,
-    properties,
-    raw_io,
-    scheduler,
-    step,
-    time,
-    url,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  path,
+  properties,
+  raw_io,
+  scheduler,
+  step,
+  time,
+  url,
 )
 
 
@@ -72,48 +72,55 @@ class TEST_DEPS(RecipeTestApi):
 
 def RevisionFromGob(api: DEPS, properties):
   commits, _ = api.gitiles.log(
-      properties.source_repo,
-      'refs/heads/main',
-      limit=2,
-      step_name='fetch main revision',
+    properties.source_repo,
+    'refs/heads/main',
+    limit=2,
+    step_name='fetch main revision',
   )
 
   props = {}
   if properties.no_synthetic_commit:
     props["root_solution_revision"] = commits[0]["commit"].strip()
     props["root_solution_revision_timestamp"] = int(
-        datetime.datetime.strptime(
-            commits[0]["committer"]["time"].strip(),
-            "%a %b %d %H:%M:%S %Y").replace(
-                tzinfo=datetime.timezone.utc).timestamp())
+      datetime.datetime.strptime(
+        commits[0]["committer"]["time"].strip(), "%a %b %d %H:%M:%S %Y"
+      )
+      .replace(tzinfo=datetime.timezone.utc)
+      .timestamp()
+    )
 
   else:
     props["codesearch_mirror_revision"] = commits[0]["commit"].strip()
     props["codesearch_mirror_revision_timestamp"] = int(
-        datetime.datetime.strptime(
-            commits[0]["committer"]["time"].strip(),
-            "%a %b %d %H:%M:%S %Y").replace(
-                tzinfo=datetime.timezone.utc).timestamp())
+      datetime.datetime.strptime(
+        commits[0]["committer"]["time"].strip(), "%a %b %d %H:%M:%S %Y"
+      )
+      .replace(tzinfo=datetime.timezone.utc)
+      .timestamp()
+    )
     props["root_solution_revision"] = commits[1]["commit"].strip()
     props["root_solution_revision_timestamp"] = int(
-        datetime.datetime.strptime(
-            commits[1]["committer"]["time"].strip(),
-            "%a %b %d %H:%M:%S %Y").replace(
-                tzinfo=datetime.timezone.utc).timestamp())
+      datetime.datetime.strptime(
+        commits[1]["committer"]["time"].strip(), "%a %b %d %H:%M:%S %Y"
+      )
+      .replace(tzinfo=datetime.timezone.utc)
+      .timestamp()
+    )
 
   return props
 
 
 def RevisionFromGit(api: DEPS, properties):
   env = {
-      # Turn off the low speed limit, since checkout will be long.
-      'GIT_HTTP_LOW_SPEED_LIMIT': '0',
-      'GIT_HTTP_LOW_SPEED_TIME': '0',
+    # Turn off the low speed limit, since checkout will be long.
+    'GIT_HTTP_LOW_SPEED_LIMIT': '0',
+    'GIT_HTTP_LOW_SPEED_TIME': '0',
   }
 
   checkout_dir = api.path.cache_dir / 'builder'
-  if not api.file.glob_paths('Check for existing checkout', checkout_dir,
-                             'src'):
+  if not api.file.glob_paths(
+    'Check for existing checkout', checkout_dir, 'src'
+  ):
     with api.context(cwd=checkout_dir, env=env):
       api.git('clone', '--progress', properties.source_repo, 'src')
 
@@ -126,56 +133,66 @@ def RevisionFromGit(api: DEPS, properties):
     props = {}
     if properties.no_synthetic_commit:
       props['root_solution_revision'] = api.git(
-          'rev-parse',
-          'FETCH_HEAD',
-          name='fetch source hash',
-          stdout=api.raw_io.output_text()).stdout.strip()
+        'rev-parse',
+        'FETCH_HEAD',
+        name='fetch source hash',
+        stdout=api.raw_io.output_text(),
+      ).stdout.strip()
 
       props['root_solution_revision_timestamp'] = int(
-          api.git(
-              'log',
-              '-1',
-              '--format=%ct',
-              'FETCH_HEAD',
-              name='fetch source timestamp',
-              stdout=api.raw_io.output_text()).stdout.strip())
+        api.git(
+          'log',
+          '-1',
+          '--format=%ct',
+          'FETCH_HEAD',
+          name='fetch source timestamp',
+          stdout=api.raw_io.output_text(),
+        ).stdout.strip()
+      )
     else:
       props['codesearch_mirror_revision'] = api.git(
-          'rev-parse',
-          'FETCH_HEAD',
-          name='fetch mirror hash',
-          stdout=api.raw_io.output_text()).stdout.strip()
+        'rev-parse',
+        'FETCH_HEAD',
+        name='fetch mirror hash',
+        stdout=api.raw_io.output_text(),
+      ).stdout.strip()
 
       props['codesearch_mirror_revision_timestamp'] = int(
-          api.git(
-              'log',
-              '-1',
-              '--format=%ct',
-              'FETCH_HEAD',
-              name='fetch mirror timestamp',
-              stdout=api.raw_io.output_text()).stdout.strip())
+        api.git(
+          'log',
+          '-1',
+          '--format=%ct',
+          'FETCH_HEAD',
+          name='fetch mirror timestamp',
+          stdout=api.raw_io.output_text(),
+        ).stdout.strip()
+      )
 
       props['root_solution_revision'] = api.git(
-          'rev-parse',
-          'FETCH_HEAD^',
-          name='fetch source hash',
-          stdout=api.raw_io.output_text()).stdout.strip()
+        'rev-parse',
+        'FETCH_HEAD^',
+        name='fetch source hash',
+        stdout=api.raw_io.output_text(),
+      ).stdout.strip()
 
       props['root_solution_revision_timestamp'] = int(
-          api.git(
-              'log',
-              '-1',
-              '--format=%ct',
-              'FETCH_HEAD^',
-              name='fetch source timestamp',
-              stdout=api.raw_io.output_text()).stdout.strip())
+        api.git(
+          'log',
+          '-1',
+          '--format=%ct',
+          'FETCH_HEAD^',
+          name='fetch source timestamp',
+          stdout=api.raw_io.output_text(),
+        ).stdout.strip()
+      )
 
       # The head of source_repo will be lost the next time a synthetic commit
       # is added to it. Add a ref to the current head so that it doesn't get
       # garbage collected, and references to it in codesearch links stay valid.
       api.git(
-          'push', properties.source_repo,
-          f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}'
+        'push',
+        properties.source_repo,
+        f'{props["codesearch_mirror_revision"]}:refs/kythe/{props["root_solution_revision"]}',
       )
 
       return props
@@ -184,127 +201,163 @@ def RevisionFromGit(api: DEPS, properties):
 def RunSteps(api: DEPS, properties):
   checkout_dir = api.path.cache_dir / 'builder'
   props = (
-      RevisionFromGob(api, properties) if properties.fetch_revision_from_gob
-      else RevisionFromGit(api, properties))
+    RevisionFromGob(api, properties)
+    if properties.fetch_revision_from_gob
+    else RevisionFromGit(api, properties)
+  )
 
-  if api.buildbucket.build.builder.builder == 'codesearch-gen-chrome-internal-initiator':
+  if (
+    api.buildbucket.build.builder.builder
+    == 'codesearch-gen-chrome-internal-initiator'
+  ):
     # Trigger the codesearch builders in the same project.
     # For internal project, do no optimize the workflow
     api.scheduler.emit_trigger(
-        api.scheduler.BuildbucketTrigger(properties=props),
-        project=api.buildbucket.build.builder.project,
-        jobs=properties.builders)
+      api.scheduler.BuildbucketTrigger(properties=props),
+      project=api.buildbucket.build.builder.project,
+      jobs=properties.builders,
+    )
     return
 
   # Fan out the children codesearch builders and wait for completions.
   build_requests = [
-      api.buildbucket.schedule_request(
-          builder=b,
-          properties=props,
-          project=api.buildbucket.build.builder.project,
-      ) for b in properties.builders
+    api.buildbucket.schedule_request(
+      builder=b,
+      properties=props,
+      project=api.buildbucket.build.builder.project,
+    )
+    for b in properties.builders
   ]
   builders = api.buildbucket.schedule(build_requests)
-  api.buildbucket.collect_builds([b.id for b in builders],
-                                 step_name='wait for children builders',
-                                 timeout=14400)
+  api.buildbucket.collect_builds(
+    [b.id for b in builders],
+    step_name='wait for children builders',
+    timeout=14400,
+  )
 
   gcloud_path = checkout_dir / 'gcloudsdk'
   ensure_file = api.cipd.EnsureFile()
-  ensure_file.add_package('infra/3pp/tools/gcloud/${platform}',
-                          'version:2@463.0.0.chromium.4')
+  ensure_file.add_package(
+    'infra/3pp/tools/gcloud/${platform}', 'version:2@463.0.0.chromium.4'
+  )
   api.cipd.ensure(gcloud_path, ensure_file)
   with api.context(env_prefixes={'PATH': [gcloud_path / 'bin']}):
     cmd = [
-        'gcloud',
-        'pubsub',
-        'topics',
-        'publish',
-        'projects/chromium-build-stats/topics/codesearch_luci_notifications',
-        f'--message="{api.buildbucket.build.id}"',
+      'gcloud',
+      'pubsub',
+      'topics',
+      'publish',
+      'projects/chromium-build-stats/topics/codesearch_luci_notifications',
+      f'--message="{api.buildbucket.build.id}"',
     ]
     api.step('notify completion', cmd)
 
 
 def GenTests(api: TEST_DEPS):
-  platforms = ('android', 'chromiumos', 'fuchsia', 'lacros', 'linux', 'mac',
-               'win')
+  platforms = (
+    'android',
+    'chromiumos',
+    'fuchsia',
+    'lacros',
+    'linux',
+    'mac',
+    'win',
+  )
   yield api.test(
-      'basic',
-      api.buildbucket.generic_build(project='infra'),
-      api.properties(
-          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
-          source_repo=(
-              'https://chromium.googlesource.com/codesearch/chromium/src'),
-      ),
-      api.step_data('fetch mirror hash',
-                    api.raw_io.stream_output_text('a' * 40, stream='stdout')),
-      api.step_data('fetch mirror timestamp',
-                    api.raw_io.stream_output_text('100', stream='stdout')),
-      api.step_data('fetch source hash',
-                    api.raw_io.stream_output_text('b' * 40, stream='stdout')),
-      api.step_data('fetch source timestamp',
-                    api.raw_io.stream_output_text('50', stream='stdout')),
+    'basic',
+    api.buildbucket.generic_build(project='infra'),
+    api.properties(
+      builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+      source_repo=('https://chromium.googlesource.com/codesearch/chromium/src'),
+    ),
+    api.step_data(
+      'fetch mirror hash',
+      api.raw_io.stream_output_text('a' * 40, stream='stdout'),
+    ),
+    api.step_data(
+      'fetch mirror timestamp',
+      api.raw_io.stream_output_text('100', stream='stdout'),
+    ),
+    api.step_data(
+      'fetch source hash',
+      api.raw_io.stream_output_text('b' * 40, stream='stdout'),
+    ),
+    api.step_data(
+      'fetch source timestamp',
+      api.raw_io.stream_output_text('50', stream='stdout'),
+    ),
   )
 
   yield api.test(
-      'no-synthetic-commit',
-      api.buildbucket.generic_build(project='infra'),
-      api.properties(
-          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
-          source_repo=('https://chromium.googlesource.com/chromium/src'),
-          no_synthetic_commit=True,
-      ),
-      api.step_data('fetch source hash',
-                    api.raw_io.stream_output_text('b' * 40, stream='stdout')),
-      api.step_data('fetch source timestamp',
-                    api.raw_io.stream_output_text('50', stream='stdout')),
+    'no-synthetic-commit',
+    api.buildbucket.generic_build(project='infra'),
+    api.properties(
+      builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+      source_repo=('https://chromium.googlesource.com/chromium/src'),
+      no_synthetic_commit=True,
+    ),
+    api.step_data(
+      'fetch source hash',
+      api.raw_io.stream_output_text('b' * 40, stream='stdout'),
+    ),
+    api.step_data(
+      'fetch source timestamp',
+      api.raw_io.stream_output_text('50', stream='stdout'),
+    ),
   )
 
   yield api.test(
-      'internal-basic',
-      api.buildbucket.generic_build(
-          project='infra', builder='codesearch-gen-chrome-internal-initiator'),
-      api.properties(
-          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
-          source_repo=(
-              'https://chromium.googlesource.com/codesearch/chromium/src'),
-      ),
-      api.step_data('fetch mirror hash',
-                    api.raw_io.stream_output_text('a' * 40, stream='stdout')),
-      api.step_data('fetch mirror timestamp',
-                    api.raw_io.stream_output_text('100', stream='stdout')),
-      api.step_data('fetch source hash',
-                    api.raw_io.stream_output_text('b' * 40, stream='stdout')),
-      api.step_data('fetch source timestamp',
-                    api.raw_io.stream_output_text('50', stream='stdout')),
-      api.post_process(post_process.DoesNotRun, 'wait for children builders'),
-      api.post_process(post_process.DropExpectation),
+    'internal-basic',
+    api.buildbucket.generic_build(
+      project='infra', builder='codesearch-gen-chrome-internal-initiator'
+    ),
+    api.properties(
+      builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+      source_repo=('https://chromium.googlesource.com/codesearch/chromium/src'),
+    ),
+    api.step_data(
+      'fetch mirror hash',
+      api.raw_io.stream_output_text('a' * 40, stream='stdout'),
+    ),
+    api.step_data(
+      'fetch mirror timestamp',
+      api.raw_io.stream_output_text('100', stream='stdout'),
+    ),
+    api.step_data(
+      'fetch source hash',
+      api.raw_io.stream_output_text('b' * 40, stream='stdout'),
+    ),
+    api.step_data(
+      'fetch source timestamp',
+      api.raw_io.stream_output_text('50', stream='stdout'),
+    ),
+    api.post_process(post_process.DoesNotRun, 'wait for children builders'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'basic-revision-from-gob',
-      api.buildbucket.generic_build(project='infra'),
-      api.properties(
-          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
-          source_repo=(
-              'https://chromium.googlesource.com/codesearch/chromium/src'),
-          fetch_revision_from_gob=True,
-      ),
-      api.step_data('fetch main revision',
-                    api.gitiles.make_log_test_data('main', n=2)),
+    'basic-revision-from-gob',
+    api.buildbucket.generic_build(project='infra'),
+    api.properties(
+      builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+      source_repo=('https://chromium.googlesource.com/codesearch/chromium/src'),
+      fetch_revision_from_gob=True,
+    ),
+    api.step_data(
+      'fetch main revision', api.gitiles.make_log_test_data('main', n=2)
+    ),
   )
 
   yield api.test(
-      'no-synthetic-commit-revision-from-gob',
-      api.buildbucket.generic_build(project='infra'),
-      api.properties(
-          builders=['codesearch-gen-chromium-%s' % p for p in platforms],
-          source_repo=(
-              'https://chromium.googlesource.com/codesearch/chromium/src'),
-          fetch_revision_from_gob=True,
-          no_synthetic_commit=True,
-      ),
-      api.step_data('fetch main revision',
-                    api.gitiles.make_log_test_data('main', n=2)),
+    'no-synthetic-commit-revision-from-gob',
+    api.buildbucket.generic_build(project='infra'),
+    api.properties(
+      builders=['codesearch-gen-chromium-%s' % p for p in platforms],
+      source_repo=('https://chromium.googlesource.com/codesearch/chromium/src'),
+      fetch_revision_from_gob=True,
+      no_synthetic_commit=True,
+    ),
+    api.step_data(
+      'fetch main revision', api.gitiles.make_log_test_data('main', n=2)
+    ),
   )

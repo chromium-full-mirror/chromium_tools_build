@@ -7,7 +7,9 @@ import collections
 import zlib
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from PB.go.chromium.org.luci.common.proto.findings import findings as findings_pb
+from PB.go.chromium.org.luci.common.proto.findings import (
+  findings as findings_pb,
+)
 from recipe_engine import post_process
 
 from dataclasses import dataclass
@@ -18,14 +20,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium
 from RECIPE_MODULES.depot_tools import gerrit, tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    findings,
-    json,
-    platform,
-    proto,
-    random,
-    step,
-    swarming,
+  buildbucket,
+  findings,
+  json,
+  platform,
+  proto,
+  random,
+  step,
+  swarming,
 )
 
 
@@ -55,30 +57,31 @@ class TEST_DEPS(RecipeTestApi):
   random: random.TEST_API
   tryserver: tryserver.TEST_API
 
+
 # TODO(crbug.com/1153919): Figure out which subset of these are the best
 # trade-off between coverage/cost and enable them.
 _CHILD_BUILDERS = (
-    'android-clang-tidy-rel',
-    # TODO(1444563): Add back once error count is brought back down.
-    #'linux-chromeos-clang-tidy-rel',
-    'linux-clang-tidy-rel',
-    #'linux-lacros-clang-tidy-rel',
-    #'fuchsia-clang-tidy-rel',
-    #'ios-clang-tidy-rel',
-    #'mac-clang-tidy-rel',
-    #'win10-clang-tidy-rel',
+  'android-clang-tidy-rel',
+  # TODO(1444563): Add back once error count is brought back down.
+  #'linux-chromeos-clang-tidy-rel',
+  'linux-clang-tidy-rel',
+  #'linux-lacros-clang-tidy-rel',
+  #'fuchsia-clang-tidy-rel',
+  #'ios-clang-tidy-rel',
+  #'mac-clang-tidy-rel',
+  #'win10-clang-tidy-rel',
 )
-_CONDITIONAL_CHILD_BUILDERS = (
-    'mac-clang-tidy-rel',
-)
+_CONDITIONAL_CHILD_BUILDERS = ('mac-clang-tidy-rel',)
 # Probability for including the conditional builder
 _CONDITIONAL_PROBABILITY = 0.20
 
 
 def _should_skip_linting(api: DEPS):
   revision_info = api.gerrit.get_revision_info(
-      'https://%s' % api.tryserver.gerrit_change.host,
-      api.tryserver.gerrit_change.change, api.tryserver.gerrit_change.patchset)
+    'https://%s' % api.tryserver.gerrit_change.host,
+    api.tryserver.gerrit_change.change,
+    api.tryserver.gerrit_change.patchset,
+  )
 
   # TODO(gbiv): It may be nice to be more consistent in how we check for
   # whether something's lintable. At the time of writing, this heuristic is
@@ -113,13 +116,13 @@ def _note_observed_on(platforms, all_platforms, finding):
   some_finding.message += '\n\n(Lint observed on foo, but not bar or baz)'
   """
   msg = 'Lint observed on ' + _build_textual_bot_list(
-      platforms,
-      conjunction='and',
+    platforms,
+    conjunction='and',
   )
   platforms_set = set(platforms)
   not_observed_on = _build_textual_bot_list(
-      (p for p in all_platforms if p not in platforms_set),
-      conjunction='or',
+    (p for p in all_platforms if p not in platforms_set),
+    conjunction='or',
   )
   if not_observed_on:
     msg += ', but not on ' + not_observed_on
@@ -132,7 +135,8 @@ def _fixup_path(file_path):
   # show up when running clang-tidy on changes in their respective gerrit
   # instances where the prefix needs to be stripped.
   third_party_paths_to_strip = [
-      'third_party/dawn/', 'third_party/boringssl/src/'
+    'third_party/dawn/',
+    'third_party/boringssl/src/',
   ]
   for path_to_strip in third_party_paths_to_strip:
     file_path = file_path.removeprefix(path_to_strip)
@@ -155,22 +159,26 @@ def _dedup_findings(api: DEPS, all_platforms, findings_by_platform):
       # fixes and replacements but in different order.
       if f.fixes:
         for fix in f.fixes:
-          fix.replacements.sort(key=lambda r: (
+          fix.replacements.sort(
+            key=lambda r: (
               r.location.file_path,
               r.location.range.start_line,
               r.location.range.start_column,
               r.location.range.end_line,
               r.location.range.end_column,
               r.new_content,
-          ))
-        f.fixes.sort(key=lambda f: (
+            )
+          )
+        f.fixes.sort(
+          key=lambda f: (
             f.replacements[0].location.file_path,
             f.replacements[0].location.range.start_line,
             f.replacements[0].location.range.start_column,
             f.replacements[0].location.range.end_line,
             f.replacements[0].location.range.end_column,
             f.replacements[0].new_content,
-        ))
+          )
+        )
       encoded_finding = api.proto.encode(f, 'BINARY')
       platforms_by_encoded_finding[encoded_finding].append(platform)
 
@@ -203,8 +211,9 @@ def RunSteps(api: DEPS):
   # before the timeout, rather than having the orchestrator itself time out and
   # drop that information on the floor.
   my_execution_timeout = api.buildbucket.build.execution_timeout
-  child_execution_timeout_secs = min(my_execution_timeout.ToSeconds() // 2,
-                                     3600)
+  child_execution_timeout_secs = min(
+    my_execution_timeout.ToSeconds() // 2, 3600
+  )
 
   with api.step.nest('schedule tidy builds'):
     builders_to_schedule = list(_CHILD_BUILDERS)
@@ -212,12 +221,13 @@ def RunSteps(api: DEPS):
     if api.random.random() < _CONDITIONAL_PROBABILITY:
       builders_to_schedule.extend(_CONDITIONAL_CHILD_BUILDERS)
     build_requests = [
-        api.buildbucket.schedule_request(
-            x,
-            swarming_parent_run_id=api.swarming.task_id,
-            tags=api.buildbucket.tags(**{'hide-in-gerrit': 'true'}),
-            as_shadow_if_parent_is_led=True,
-        ) for x in builders_to_schedule
+      api.buildbucket.schedule_request(
+        x,
+        swarming_parent_run_id=api.swarming.task_id,
+        tags=api.buildbucket.tags(**{'hide-in-gerrit': 'true'}),
+        as_shadow_if_parent_is_led=True,
+      )
+      for x in builders_to_schedule
     ]
 
     for req in build_requests:
@@ -226,25 +236,28 @@ def RunSteps(api: DEPS):
     builds = api.buildbucket.schedule(build_requests, step_name='schedule')
     build_ids = [x.id for x in builds]
     build_dict = api.buildbucket.collect_builds(
-        build_ids,
-        fields=('output', 'status'),
-        # Multiply by 1.5 here to account for slack in scheduling/etc.
-        timeout=int(child_execution_timeout_secs * 1.5),
+      build_ids,
+      fields=('output', 'status'),
+      # Multiply by 1.5 here to account for slack in scheduling/etc.
+      timeout=int(child_execution_timeout_secs * 1.5),
     )
 
     num_failures = sum(
-        1 for x in build_dict.values() if x.status != common_pb2.SUCCESS)
+      1 for x in build_dict.values() if x.status != common_pb2.SUCCESS
+    )
     had_failures = num_failures != 0
     all_failures = num_failures == len(builds)
 
     if had_failures:
       presentation = api.step.active_result.presentation
       presentation.status = api.step.WARNING
-      presentation.step_text = "%d/%d builds failed" % (num_failures,
-                                                        len(builds))
+      presentation.step_text = "%d/%d builds failed" % (
+        num_failures,
+        len(builds),
+      )
 
     builds = [
-        (x, build_dict[i]) for x, i in zip(builders_to_schedule, build_ids)
+      (x, build_dict[i]) for x, i in zip(builders_to_schedule, build_ids)
     ]
 
   with api.step.nest('analyze lints'):
@@ -254,9 +267,11 @@ def RunSteps(api: DEPS):
       if 'findings' not in properties:
         continue
       binary_encoded_findings = zlib.decompress(
-          base64.b64decode(properties['findings'].encode()))
+        base64.b64decode(properties['findings'].encode())
+      )
       findings_by_builder[builder_name] = api.proto.decode(
-          binary_encoded_findings, findings_pb.Findings, 'BINARY').findings
+        binary_encoded_findings, findings_pb.Findings, 'BINARY'
+      ).findings
 
     findings = _dedup_findings(api, builders_to_schedule, findings_by_builder)
     if findings:
@@ -269,52 +284,66 @@ def RunSteps(api: DEPS):
     # patch being one of the key ones). That said, if one's patches aren't
     # recent enough (mid-Jun 2022), they may see constant clang-tidy redness.
     # Make the fix obvious for those cases.
-    raise api.step.StepFailure('All sub-linting tasks failed. This may be '
-                               'because your change needs to be rebased past '
-                               'src@522320443539084c901edd659dd29079c8aaadc0. '
-                               'Please note that clang-tidy failures do not '
-                               'block the CQ.')
+    raise api.step.StepFailure(
+      'All sub-linting tasks failed. This may be '
+      'because your change needs to be rebased past '
+      'src@522320443539084c901edd659dd29079c8aaadc0. '
+      'Please note that clang-tidy failures do not '
+      'block the CQ.'
+    )
 
 
 def GenTests(api: TEST_DEPS):
   gerrit_change_ref = findings_pb.Location.GerritChangeReference(
-      host='chromium-review.googlesource.com',
-      project='chromium/src',
-      change=12345,
-      patchset=1)
+    host='chromium-review.googlesource.com',
+    project='chromium/src',
+    change=12345,
+    patchset=1,
+  )
 
-  def test_data(include_conditional=False,
-                findings_by_builder=None,
-                bot_status_overrides=None,
-                commit_message='foo'):
+  def test_data(
+    include_conditional=False,
+    findings_by_builder=None,
+    bot_status_overrides=None,
+    commit_message='foo',
+  ):
     # Determine the full list of builders this test simulation should cover
     simulated_builders = list(_CHILD_BUILDERS)
     if include_conditional:
       simulated_builders.extend(_CONDITIONAL_CHILD_BUILDERS)
-    test_data = sum([
+    test_data = sum(
+      [
         api.chromium.try_build(
-            builder_group='tryserver.chromium.linux',
-            builder='linux_chromium_compile_rel_ng',
-            build_number=1234,
-            change_number=gerrit_change_ref.change,
-            patch_set=gerrit_change_ref.patchset),
+          builder_group='tryserver.chromium.linux',
+          builder='linux_chromium_compile_rel_ng',
+          build_number=1234,
+          change_number=gerrit_change_ref.change,
+          patch_set=gerrit_change_ref.patchset,
+        ),
         api.platform('linux', 64),
         api.override_step_data(
-            'gerrit changes',
-            api.json.output([{
+          'gerrit changes',
+          api.json.output(
+            [
+              {
                 'revisions': {
-                    'a' * 40: {
-                        '_number': 1,
-                        'commit': {
-                            'author': {
-                                'email': 'gbiv@google.com',
-                            },
-                            'message': commit_message,
-                        }
-                    }
+                  'a' * 40: {
+                    '_number': 1,
+                    'commit': {
+                      'author': {
+                        'email': 'gbiv@google.com',
+                      },
+                      'message': commit_message,
+                    },
+                  }
                 }
-            }]))
-    ], api.empty_test_data())
+              }
+            ]
+          ),
+        ),
+      ],
+      api.empty_test_data(),
+    )
 
     if commit_message.startswith('Revert'):
       return test_data
@@ -328,10 +357,11 @@ def GenTests(api: TEST_DEPS):
     base_id = 8922054662172514000
     build_ids = list(range(base_id, base_id + len(simulated_builders)))
     build_output = [
-        api.buildbucket.try_build_message(
-            build_id=i,
-            status=bot_status_overrides.get(builder_name, 'SUCCESS'),
-        ) for i, builder_name in zip(build_ids, simulated_builders)
+      api.buildbucket.try_build_message(
+        build_id=i,
+        status=bot_status_overrides.get(builder_name, 'SUCCESS'),
+      )
+      for i, builder_name in zip(build_ids, simulated_builders)
     ]
 
     if findings_by_builder:
@@ -340,24 +370,28 @@ def GenTests(api: TEST_DEPS):
         if findings is not None:
           n = builder_indices[builder_name]
           build_output[n].output.properties['findings'] = base64.b64encode(
-              zlib.compress(
-                  api.proto.encode(
-                      findings_pb.Findings(findings=findings),
-                      'BINARY'))).decode()
+            zlib.compress(
+              api.proto.encode(
+                findings_pb.Findings(findings=findings), 'BINARY'
+              )
+            )
+          ).decode()
 
     test_data += api.buildbucket.simulated_collect_output(
-        build_output,
-        step_name='schedule tidy builds.buildbucket.collect',
+      build_output,
+      step_name='schedule tidy builds.buildbucket.collect',
     )
     return test_data
 
   def _get_uploaded_findings(steps):
     if 'analyze lints.upload findings' not in steps or (
-        'findings.json' not in steps['analyze lints.upload findings'].logs):
+      'findings.json' not in steps['analyze lints.upload findings'].logs
+    ):
       return []
     findings_json = steps['analyze lints.upload findings'].logs['findings.json']
-    return api.proto.decode(findings_json, findings_pb.Findings,
-                            'JSONPB').findings
+    return api.proto.decode(
+      findings_json, findings_pb.Findings, 'JSONPB'
+    ).findings
 
   def _has_no_finding(check, steps):
     check(not _get_uploaded_findings(steps))
@@ -369,328 +403,365 @@ def GenTests(api: TEST_DEPS):
       check(finding in findings)
 
   yield api.test(
-      'skip_reverted_cl',
-      test_data(findings_by_builder=None, commit_message='Revert foo'),
-      api.post_process(post_process.DoesNotRun, 'schedule tidy builds'),
-      api.post_process(post_process.DropExpectation),
+    'skip_reverted_cl',
+    test_data(findings_by_builder=None, commit_message='Revert foo'),
+    api.post_process(post_process.DoesNotRun, 'schedule tidy builds'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'success_on_no_findings',
-      test_data(findings_by_builder=None),
-      api.post_process(_has_no_finding),
-      api.post_process(post_process.DropExpectation),
+    'success_on_no_findings',
+    test_data(findings_by_builder=None),
+    api.post_process(_has_no_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'success_on_empty_findings_output',
-      test_data(findings_by_builder={name: [] for name in _CHILD_BUILDERS}),
-      api.post_process(_has_no_finding),
-      api.post_process(post_process.DropExpectation),
+    'success_on_empty_findings_output',
+    test_data(findings_by_builder={name: [] for name in _CHILD_BUILDERS}),
+    api.post_process(_has_no_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   finding = findings_pb.Finding(
-      category='some_category',
-      location=findings_pb.Location(
-          gerrit_change_ref=gerrit_change_ref,
-          file_path='foo.cpp',
-      ),
-      message='some message',
-      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+    category='some_category',
+    location=findings_pb.Location(
+      gerrit_change_ref=gerrit_change_ref,
+      file_path='foo.cpp',
+    ),
+    message='some message',
+    severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
   )
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
   _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS, expected_finding)
   yield api.test(
-      'basic_tidy_output_works',
-      test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding]}),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.DropExpectation),
+    'basic_tidy_output_works',
+    test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding]}),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
-  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                    expected_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS, expected_finding
+  )
   yield api.test(
-      'multibot_tidy_output_works',
-      test_data(findings_by_builder={
-          _CHILD_BUILDERS[0]: [finding],
-          _CHILD_BUILDERS[1]: [finding],
-      }),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.DropExpectation),
+    'multibot_tidy_output_works',
+    test_data(
+      findings_by_builder={
+        _CHILD_BUILDERS[0]: [finding],
+        _CHILD_BUILDERS[1]: [finding],
+      }
+    ),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   another_finding = findings_pb.Finding(
-      category='another_category',
-      location=findings_pb.Location(
-          gerrit_change_ref=gerrit_change_ref,
-          file_path='foo2.cpp',
-      ),
-      message='some other message',
-      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING)
+    category='another_category',
+    location=findings_pb.Location(
+      gerrit_change_ref=gerrit_change_ref,
+      file_path='foo2.cpp',
+    ),
+    message='some other message',
+    severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+  )
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
-  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                    expected_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS, expected_finding
+  )
   expected_another_finding = findings_pb.Finding()
   expected_another_finding.CopyFrom(another_finding)
-  _note_observed_on([_CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                    expected_another_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[1]], _CHILD_BUILDERS, expected_another_finding
+  )
   yield api.test(
-      'multibot_multicomment_tidy_output_works',
-      test_data(
-          findings_by_builder={
-              _CHILD_BUILDERS[0]: [finding],
-              _CHILD_BUILDERS[1]: [finding, another_finding],
-          }),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(_has_finding, expected_another_finding),
-      api.post_process(post_process.DropExpectation),
+    'multibot_multicomment_tidy_output_works',
+    test_data(
+      findings_by_builder={
+        _CHILD_BUILDERS[0]: [finding],
+        _CHILD_BUILDERS[1]: [finding, another_finding],
+      }
+    ),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(_has_finding, expected_another_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   finding_with_fixes = findings_pb.Finding(
-      category='some_category',
-      location=findings_pb.Location(
-          gerrit_change_ref=gerrit_change_ref,
-          file_path='foo.cpp',
+    category='some_category',
+    location=findings_pb.Location(
+      gerrit_change_ref=gerrit_change_ref,
+      file_path='foo.cpp',
+    ),
+    message='some message',
+    severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+    fixes=[
+      findings_pb.Fix(
+        replacements=[
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/bar.cc',
+              range=findings_pb.Location.Range(
+                start_line=1,
+                start_column=1,
+                end_line=1,
+                end_column=2,
+              ),
+            ),
+          ),
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/bar.cc',
+              range=findings_pb.Location.Range(
+                start_line=3,
+                start_column=0,
+                end_line=4,
+                end_column=5,
+              ),
+            ),
+          ),
+        ]
       ),
-      message='some message',
-      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-      fixes=[
-          findings_pb.Fix(replacements=[
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/bar.cc',
-                      range=findings_pb.Location.Range(
-                          start_line=1,
-                          start_column=1,
-                          end_line=1,
-                          end_column=2,
-                      ),
-                  ),
-              ),
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/bar.cc',
-                      range=findings_pb.Location.Range(
-                          start_line=3,
-                          start_column=0,
-                          end_line=4,
-                          end_column=5,
-                      ),
-                  ),
-              ),
-          ]),
-          findings_pb.Fix(replacements=[
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/foo.cc',
-                  ),
-              ),
-          ]),
-      ])
+      findings_pb.Fix(
+        replacements=[
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/foo.cc',
+            ),
+          ),
+        ]
+      ),
+    ],
+  )
   finding_with_same_fixes = findings_pb.Finding(
-      category='some_category',
-      location=findings_pb.Location(
-          gerrit_change_ref=gerrit_change_ref,
-          file_path='foo.cpp',
+    category='some_category',
+    location=findings_pb.Location(
+      gerrit_change_ref=gerrit_change_ref,
+      file_path='foo.cpp',
+    ),
+    message='some message',
+    severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+    fixes=[
+      findings_pb.Fix(
+        replacements=[
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/foo.cc',
+            ),
+          ),
+        ]
       ),
-      message='some message',
-      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-      fixes=[
-          findings_pb.Fix(replacements=[
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/foo.cc',
-                  ),
+      findings_pb.Fix(
+        replacements=[
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/bar.cc',
+              range=findings_pb.Location.Range(
+                start_line=3,
+                start_column=0,
+                end_line=4,
+                end_column=5,
               ),
-          ]),
-          findings_pb.Fix(replacements=[
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/bar.cc',
-                      range=findings_pb.Location.Range(
-                          start_line=3,
-                          start_column=0,
-                          end_line=4,
-                          end_column=5,
-                      ),
-                  ),
+            ),
+          ),
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='path/to/bar.cc',
+              range=findings_pb.Location.Range(
+                start_line=1,
+                start_column=1,
+                end_line=1,
+                end_column=2,
               ),
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='path/to/bar.cc',
-                      range=findings_pb.Location.Range(
-                          start_line=1,
-                          start_column=1,
-                          end_line=1,
-                          end_column=2,
-                      ),
-                  ),
-              ),
-          ]),
-      ])
+            ),
+          ),
+        ]
+      ),
+    ],
+  )
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding_with_fixes)
-  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                    expected_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS, expected_finding
+  )
   yield api.test(
-      'deduplicate_semantically_same_findings',
-      test_data(
-          findings_by_builder={
-              _CHILD_BUILDERS[0]: [finding_with_fixes],
-              _CHILD_BUILDERS[1]: [finding_with_same_fixes],
-          }),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.DropExpectation),
+    'deduplicate_semantically_same_findings',
+    test_data(
+      findings_by_builder={
+        _CHILD_BUILDERS[0]: [finding_with_fixes],
+        _CHILD_BUILDERS[1]: [finding_with_same_fixes],
+      }
+    ),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   all_builders_with_cond = list(_CHILD_BUILDERS) + list(
-      _CONDITIONAL_CHILD_BUILDERS)
+    _CONDITIONAL_CHILD_BUILDERS
+  )
   expected_finding_with_cond = findings_pb.Finding()
   expected_finding_with_cond.CopyFrom(finding)
-  _note_observed_on([_CHILD_BUILDERS[1]] + list(_CONDITIONAL_CHILD_BUILDERS),
-                    all_builders_with_cond, expected_finding_with_cond)
+  _note_observed_on(
+    [_CHILD_BUILDERS[1]] + list(_CONDITIONAL_CHILD_BUILDERS),
+    all_builders_with_cond,
+    expected_finding_with_cond,
+  )
   yield api.test(
-      'single_bot_failure_with_conditional',
-      api.random.seed(1),
-      test_data(
-          include_conditional=True,
-          bot_status_overrides={_CHILD_BUILDERS[0]: 'FAILURE'},
-          findings_by_builder={
-              _CHILD_BUILDERS[1]: [finding
-                                  ],  # Findings for successful base builder
-              # Assume conditional builders succeed and also find 'finding'
-              _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
-          }),
-      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(_has_finding, expected_finding_with_cond),
-      api.post_process(post_process.DropExpectation),
+    'single_bot_failure_with_conditional',
+    api.random.seed(1),
+    test_data(
+      include_conditional=True,
+      bot_status_overrides={_CHILD_BUILDERS[0]: 'FAILURE'},
+      findings_by_builder={
+        _CHILD_BUILDERS[1]: [finding],  # Findings for successful base builder
+        # Assume conditional builders succeed and also find 'finding'
+        _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
+      },
+    ),
+    api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+    api.post_process(_has_finding, expected_finding_with_cond),
+    api.post_process(post_process.DropExpectation),
   )
 
   step_failure = 'FAILURE'
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
-  _note_observed_on([_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS,
-                    expected_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0], _CHILD_BUILDERS[1]], _CHILD_BUILDERS, expected_finding
+  )
   yield api.test(
-      'single_bot_failure',
-      api.random.seed(1234),
-      test_data(
-          include_conditional=False,
-          bot_status_overrides={
-              _CHILD_BUILDERS[0]: step_failure,
-          },
-          findings_by_builder={
-              _CHILD_BUILDERS[0]: [finding],
-              _CHILD_BUILDERS[1]: [finding],
-          }),
-      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.DropExpectation),
+    'single_bot_failure',
+    api.random.seed(1234),
+    test_data(
+      include_conditional=False,
+      bot_status_overrides={
+        _CHILD_BUILDERS[0]: step_failure,
+      },
+      findings_by_builder={
+        _CHILD_BUILDERS[0]: [finding],
+        _CHILD_BUILDERS[1]: [finding],
+      },
+    ),
+    api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   all_builders_with_cond_list = list(_CHILD_BUILDERS) + list(
-      _CONDITIONAL_CHILD_BUILDERS)
+    _CONDITIONAL_CHILD_BUILDERS
+  )
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
-  _note_observed_on([_CHILD_BUILDERS[0], _CONDITIONAL_CHILD_BUILDERS[0]],
-                    all_builders_with_cond_list, expected_finding)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0], _CONDITIONAL_CHILD_BUILDERS[0]],
+    all_builders_with_cond_list,
+    expected_finding,
+  )
   yield api.test(
-      'success_with_conditional',
-      api.random.seed(1),
-      test_data(
-          include_conditional=True,
-          findings_by_builder={
-              _CHILD_BUILDERS[0]: [finding],
-              _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
-          }),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.StatusSuccess),
-      api.post_process(post_process.StepSuccess, 'schedule tidy builds'),
-      api.post_process(post_process.DropExpectation),
+    'success_with_conditional',
+    api.random.seed(1),
+    test_data(
+      include_conditional=True,
+      findings_by_builder={
+        _CHILD_BUILDERS[0]: [finding],
+        _CONDITIONAL_CHILD_BUILDERS[0]: [finding],
+      },
+    ),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.StepSuccess, 'schedule tidy builds'),
+    api.post_process(post_process.DropExpectation),
   )
 
   expected_finding = findings_pb.Finding()
   expected_finding.CopyFrom(finding)
   _note_observed_on(_CHILD_BUILDERS, _CHILD_BUILDERS, expected_finding)
   yield api.test(
-      'all_bot_failure',
-      test_data(
-          bot_status_overrides={
-              builder: step_failure for builder in _CHILD_BUILDERS
-          },
-          findings_by_builder={
-              builder: [finding] for builder in _CHILD_BUILDERS
-          }),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(_has_finding, expected_finding),
-      api.post_process(post_process.DropExpectation),
+    'all_bot_failure',
+    test_data(
+      bot_status_overrides={
+        builder: step_failure for builder in _CHILD_BUILDERS
+      },
+      findings_by_builder={builder: [finding] for builder in _CHILD_BUILDERS},
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+    api.post_process(_has_finding, expected_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'all_bot_failure_with_conditional',
-      api.random.seed(1),
-      test_data(
-          include_conditional=True,
-          bot_status_overrides={
-              builder: 'FAILURE'
-              for builder in (list(_CHILD_BUILDERS) +
-                              list(_CONDITIONAL_CHILD_BUILDERS))
-          },
-          findings_by_builder=None),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.StepWarning, 'schedule tidy builds'),
-      api.post_process(post_process.SummaryMarkdownRE,
-                       'All sub-linting tasks failed'),
-      api.post_process(_has_no_finding),
-      api.post_process(post_process.DropExpectation),
+    'all_bot_failure_with_conditional',
+    api.random.seed(1),
+    test_data(
+      include_conditional=True,
+      bot_status_overrides={
+        builder: 'FAILURE'
+        for builder in (
+          list(_CHILD_BUILDERS) + list(_CONDITIONAL_CHILD_BUILDERS)
+        )
+      },
+      findings_by_builder=None,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.StepWarning, 'schedule tidy builds'),
+    api.post_process(
+      post_process.SummaryMarkdownRE, 'All sub-linting tasks failed'
+    ),
+    api.post_process(_has_no_finding),
+    api.post_process(post_process.DropExpectation),
   )
 
   finding_dawn = findings_pb.Finding(
-      category='dawn_category',
-      location=findings_pb.Location(
-          gerrit_change_ref=gerrit_change_ref,
-          file_path='third_party/dawn/src/tint/foo2.cpp',
-      ),
-      message='some message',
-      severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
-      fixes=[
-          findings_pb.Fix(replacements=[
-              findings_pb.Fix.Replacement(
-                  new_content='replaced',
-                  location=findings_pb.Location(
-                      gerrit_change_ref=gerrit_change_ref,
-                      file_path='third_party/dawn/src/tint/foo.cc',
-                  ),
-              ),
-          ])
-      ])
+    category='dawn_category',
+    location=findings_pb.Location(
+      gerrit_change_ref=gerrit_change_ref,
+      file_path='third_party/dawn/src/tint/foo2.cpp',
+    ),
+    message='some message',
+    severity_level=findings_pb.Finding.SEVERITY_LEVEL_WARNING,
+    fixes=[
+      findings_pb.Fix(
+        replacements=[
+          findings_pb.Fix.Replacement(
+            new_content='replaced',
+            location=findings_pb.Location(
+              gerrit_change_ref=gerrit_change_ref,
+              file_path='third_party/dawn/src/tint/foo.cc',
+            ),
+          ),
+        ]
+      )
+    ],
+  )
   expected_finding_dawn = findings_pb.Finding()
   expected_finding_dawn.CopyFrom(finding_dawn)
-  _note_observed_on([_CHILD_BUILDERS[0]], _CHILD_BUILDERS,
-                    expected_finding_dawn)
+  _note_observed_on(
+    [_CHILD_BUILDERS[0]], _CHILD_BUILDERS, expected_finding_dawn
+  )
   expected_finding_dawn.location.file_path = 'src/tint/foo2.cpp'
   expected_finding_dawn.fixes[0].replacements[
-      0].location.file_path = 'src/tint/foo.cc'
+    0
+  ].location.file_path = 'src/tint/foo.cc'
   yield api.test(
-      'filter_dawn_paths',
-      test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding_dawn]}),
-      api.post_process(_has_finding, expected_finding_dawn),
-      api.post_process(post_process.DropExpectation),
+    'filter_dawn_paths',
+    test_data(findings_by_builder={_CHILD_BUILDERS[0]: [finding_dawn]}),
+    api.post_process(_has_finding, expected_finding_dawn),
+    api.post_process(post_process.DropExpectation),
   )

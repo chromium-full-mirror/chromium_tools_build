@@ -10,11 +10,11 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.depot_tools import gsutil
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    platform,
-    step,
+  file,
+  json,
+  path,
+  platform,
+  step,
 )
 
 
@@ -26,5 +26,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   platform: platform.API
   step: step.API
+
 
 from .api import ProfilesApi as API

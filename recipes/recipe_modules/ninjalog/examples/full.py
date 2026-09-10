@@ -28,7 +28,7 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: RecipeTestApi):
   yield api.test(
-      'basic',
-      api.post_check(post_process.MustRun, 'gsutil upload ninja_log'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_check(post_process.MustRun, 'gsutil upload ninja_log'),
+    api.post_process(post_process.DropExpectation),
   )

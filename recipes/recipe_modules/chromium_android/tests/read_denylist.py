@@ -4,8 +4,12 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import (DoesNotRun, DropExpectation,
-                                        StepCommandContains, StepSuccess)
+from recipe_engine.post_process import (
+  DoesNotRun,
+  DropExpectation,
+  StepCommandContains,
+  StepSuccess,
+)
 
 from dataclasses import dataclass
 
@@ -14,11 +18,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_android
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    properties,
-    step,
+  file,
+  json,
+  path,
+  properties,
+  step,
 )
 
 
@@ -49,25 +53,34 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'denylisted_device',
-      api.properties(denylist_exists=True),
-      api.override_step_data('read_denylist_file',
-                             api.file.read_json({'serial1': {}})),
-      api.post_process(StepSuccess, 'read_denylist_file'),
-      api.post_process(StepCommandContains, 'print devices', [
-          'echo',
-          'serial2',
-      ]),
-      api.post_process(DropExpectation),
+    'denylisted_device',
+    api.properties(denylist_exists=True),
+    api.override_step_data(
+      'read_denylist_file', api.file.read_json({'serial1': {}})
+    ),
+    api.post_process(StepSuccess, 'read_denylist_file'),
+    api.post_process(
+      StepCommandContains,
+      'print devices',
+      [
+        'echo',
+        'serial2',
+      ],
+    ),
+    api.post_process(DropExpectation),
   )
   yield api.test(
-      'no_denylist',
-      api.properties(denylist_exists=False),
-      api.post_process(DoesNotRun, 'read_denylist_file'),
-      api.post_process(StepCommandContains, 'print devices', [
-          'echo',
-          'serial1',
-          'serial2',
-      ]),
-      api.post_process(DropExpectation),
+    'no_denylist',
+    api.properties(denylist_exists=False),
+    api.post_process(DoesNotRun, 'read_denylist_file'),
+    api.post_process(
+      StepCommandContains,
+      'print devices',
+      [
+        'echo',
+        'serial1',
+        'serial2',
+      ],
+    ),
+    api.post_process(DropExpectation),
   )

@@ -10,6 +10,7 @@ import re
 
 from recipe_engine import recipe_api
 
+
 class RepoApi(recipe_api.RecipeApi):
   """Provides methods to encapsulate repo operations."""
 
@@ -67,8 +68,9 @@ class RepoApi(recipe_api.RecipeApi):
     """Clean an already-init'd repo."""
     kwargs.setdefault('infra_step', True)
     kwargs.setdefault('name', 'repo forall git clean')
-    return self(['forall', '-c', 'git', 'clean', '-f', '-d'] + list(args),
-                **kwargs)
+    return self(
+      ['forall', '-c', 'git', 'clean', '-f', '-d'] + list(args), **kwargs
+    )
 
   def reset(self, **kwargs):
     """Reset to HEAD an already-init'd repo."""
@@ -77,8 +79,8 @@ class RepoApi(recipe_api.RecipeApi):
 
   def list(self, **kwargs):
     """Return (list): A list of (path, name) project tuples.
-        path (str): The relative path to the project's checkout.
-        name (str): The name of the project in the manifst.
+    path (str): The relative path to the project's checkout.
+    name (str): The name of the project in the manifst.
     """
     kwargs['stdout'] = self.m.raw_io.output_text()
     kwargs.setdefault('name', 'repo list')
@@ -95,5 +97,6 @@ class RepoApi(recipe_api.RecipeApi):
     if result:
       step_result.presentation.step_text = '</br></br>'
       step_result.presentation.step_text += '</br>'.join(
-          '%s : %s' % (path, name) for path, name in result)
+        '%s : %s' % (path, name) for path, name in result
+      )
     return result

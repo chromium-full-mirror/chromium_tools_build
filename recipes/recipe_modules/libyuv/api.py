@@ -14,20 +14,19 @@ from . import builders as libyuv_builders
 
 # Builders that don't use remote compile service.
 _LOCAL_COMPILE_BUILDERS = [
-    'Linux GCC',
-    'Win32 Debug',
-    'Win32 Release',
-    'Win64 Debug',
-    'Win64 Release',
-    'linux_gcc',
-    'win',
-    'win_rel',
-    'win_x64_rel',
+  'Linux GCC',
+  'Win32 Debug',
+  'Win32 Release',
+  'Win64 Debug',
+  'Win64 Release',
+  'linux_gcc',
+  'win',
+  'win_rel',
+  'win_x64_rel',
 ]
 
 
 class LibyuvApi(recipe_api.RecipeApi):
-
   def __init__(self, **kwargs):
     super().__init__(**kwargs)
     self.bot_config = None
@@ -37,7 +36,8 @@ class LibyuvApi(recipe_api.RecipeApi):
 
   def apply_bot_config(self, builder_id, builder_config):
     self.bot_config = libyuv_builders.BUILDERS_DB.builders_by_group[
-        builder_id.group][builder_id.builder]
+      builder_id.group
+    ][builder_id.builder]
     self.bot_type = self.bot_config.bot_type
     self.buildername = builder_id.builder
     self.m.chromium_tests.configure_build(builder_config)
@@ -82,56 +82,63 @@ class LibyuvApi(recipe_api.RecipeApi):
   def maybe_trigger(self):
     triggers = self.bot_config.triggers
     properties = {
-        'revision': self.revision,
-        'parent_got_revision': self.revision,
-        'parent_buildername': self.m.buildbucket.builder_name,
+      'revision': self.revision,
+      'parent_got_revision': self.revision,
+      'parent_buildername': self.m.buildbucket.builder_name,
     }
     if triggers:
       self.m.scheduler.emit_trigger(
-          self.m.scheduler.BuildbucketTrigger(properties=properties),
-          project='libyuv',
-          jobs=[triggers])
-
+        self.m.scheduler.BuildbucketTrigger(properties=properties),
+        project='libyuv',
+        jobs=[triggers],
+      )
 
   def package_build(self, source_dir: Path):
     upload_url = self.m.archive.legacy_upload_url(
-        'chromium-libyuv',
-        extra_url_components=self.m.builder_group.for_current)
+      'chromium-libyuv', extra_url_components=self.m.builder_group.for_current
+    )
     self.m.archive.zip_and_upload_build(
-        'package build',
-        self.m.chromium.c.build_config_fs,
-        source_dir,
-        build_url=upload_url,
-        build_revision=self.revision)
+      'package build',
+      self.m.chromium.c.build_config_fs,
+      source_dir,
+      build_url=upload_url,
+      build_revision=self.revision,
+    )
 
   def extract_build(self, source_dir: Path, build_dir: Path):
     if not self.m.properties.get('parent_got_revision'):
       raise self.m.step.StepFailure(
-         'Testers cannot be forced without providing revision information. '
-         'Please select a previous build and click [Rebuild] or force a build '
-         'for a Builder instead (will trigger new runs for the testers).')
+        'Testers cannot be forced without providing revision information. '
+        'Please select a previous build and click [Rebuild] or force a build '
+        'for a Builder instead (will trigger new runs for the testers).'
+      )
 
     # Ensure old build directory isn't being used by removing it.
     self.m.file.rmtree('build directory', build_dir)
 
     download_url = self.m.archive.legacy_download_url(
-        'chromium-libyuv',
-        extra_url_components=self.m.builder_group.for_current)
+      'chromium-libyuv', extra_url_components=self.m.builder_group.for_current
+    )
     self.m.archive.download_and_unzip_build(
-        'extract build',
-        self.m.chromium.c.build_config_fs,
-        download_url,
-        source_dir,
-        build_revision=self.revision)
-    # The zip_and_upload_build step ignores files in obj folder
+      'extract build',
+      self.m.chromium.c.build_config_fs,
+      download_url,
+      source_dir,
+      build_revision=self.revision,
+    )
+    # The zip_and_upload_build step ignores files in obj folder
     # but it is the binary in obj that is executed.
     self.m.step(
-        'mkdir',
-        ['mkdir', '-p', build_dir / 'exe.unstripped/obj/libyuv_unittest'])
-    self.m.step('cp exe', [
-        'cp', build_dir / 'libyuv_unittest',
-        build_dir / 'exe.unstripped/obj/libyuv_unittest'
-    ])
+      'mkdir', ['mkdir', '-p', build_dir / 'exe.unstripped/obj/libyuv_unittest']
+    )
+    self.m.step(
+      'cp exe',
+      [
+        'cp',
+        build_dir / 'libyuv_unittest',
+        build_dir / 'exe.unstripped/obj/libyuv_unittest',
+      ],
+    )
 
   def runtests(self, build_dir: Path):
     """Add a suite of test steps."""
@@ -140,7 +147,7 @@ class LibyuvApi(recipe_api.RecipeApi):
         if self.m.chromium.c.TARGET_PLATFORM == 'android':
           source_dir = self.m.chromium_checkout.source_dir
 
-          # Below code is a copy of chromium_android.common_tests_setup_steps
+          # Below code is a copy of chromium_android.common_tests_setup_steps
           # without some steps that are failing or flayky in libyuv.
           defer(self.m.chromium_android.create_adb_symlink, source_dir)
           defer(self.m.chromium_android.spawn_logcat_monitor, source_dir)
@@ -148,26 +155,27 @@ class LibyuvApi(recipe_api.RecipeApi):
           defer(self.m.chromium_android.authorize_adb_devices, source_dir)
 
           defer(
-              self.m.chromium_android.run_test_suite,
-              source_dir,
-              build_dir,
-              'libyuv_unittest',
+            self.m.chromium_android.run_test_suite,
+            source_dir,
+            build_dir,
+            'libyuv_unittest',
           )
           defer(self.m.chromium_android.shutdown_device_monitor)
           defer(self.m.chromium_android.logcat_dump, source_dir, build_dir)
           defer(
-              self.m.chromium_android.stack_tool_steps,
-              source_dir,
-              force_latest_version=True)
+            self.m.chromium_android.stack_tool_steps,
+            source_dir,
+            force_latest_version=True,
+          )
         else:
           # Ignoring --no-sandbox because libyuv uses absl/flags which
           # raises an error when flags are unknown to the binary.
           # This is fine, since these tests are not sandbox aware, it is
           # just self.m.chromium.runtest that adds the flag.
           defer(
-              self.m.chromium.runtest,
-              self.m.chromium_checkout.checkout_dir,
-              build_dir,
-              'libyuv_unittest',
-              args=['--undefok=no-sandbox'],
+            self.m.chromium.runtest,
+            self.m.chromium_checkout.checkout_dir,
+            build_dir,
+            'libyuv_unittest',
+            args=['--undefok=no-sandbox'],
           )

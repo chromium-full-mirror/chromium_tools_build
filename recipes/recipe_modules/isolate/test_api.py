@@ -6,8 +6,8 @@ from __future__ import annotations
 
 from recipe_engine import recipe_test_api
 
-class IsolateTestApi(recipe_test_api.RecipeTestApi):
 
+class IsolateTestApi(recipe_test_api.RecipeTestApi):
   def output_json(self, targets, missing=None):
     """Mocked output of 'find_isolated_tests' and 'isolate_tests' steps.
 
@@ -17,7 +17,11 @@ class IsolateTestApi(recipe_test_api.RecipeTestApi):
     'isolate_tests' due to some error.
     """
     missing = missing or ()
-    return self.m.json.output({
-        target: None if target in missing else '[dummy hash for %s/dummy size]' %
-        target for target in targets
-    })
+    return self.m.json.output(
+      {
+        target: None
+        if target in missing
+        else '[dummy hash for %s/dummy size]' % target
+        for target in targets
+      }
+    )

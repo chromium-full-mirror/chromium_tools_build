@@ -8,7 +8,6 @@ from recipe_engine import recipe_api
 
 
 class PresentationUtilsApi(recipe_api.RecipeApi):
-
   @staticmethod
   def format_step_text(data):
     """Returns a string suitable as a step result's presentation step text.
@@ -20,7 +19,8 @@ class PresentationUtilsApi(recipe_api.RecipeApi):
           is not displayed
     """
     assert all(len(s) == 2 for s in data), (
-        'All items in data must be a two-element list.')
+      'All items in data must be a two-element list.'
+    )
     step_text = []
     for section in data:
       # Only displaying the section (even the header) when it's non-empty

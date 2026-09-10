@@ -29,11 +29,14 @@ import tempfile
 import time
 
 ROOT_DIR = os.path.normpath(
-    os.path.join(__file__, '..', '..', '..', '..', '..'))
-sys.path.extend([
+  os.path.join(__file__, '..', '..', '..', '..', '..')
+)
+sys.path.extend(
+  [
     os.path.join(ROOT_DIR, 'recipes'),
     os.path.join(ROOT_DIR, 'scripts'),
-])
+  ]
+)
 
 import bot_utils
 
@@ -59,13 +62,14 @@ def maybe_archive_results_html(args):
   # Get the remote major and minor version number
   with tempfile.TemporaryDirectory() as tmp_dir:
     rc = bot_utils.GSUtilCopy(
-        '/'.join([args.gs_bucket, version_file]),
-        os.path.join(tmp_dir, version_file),
-        mimetype='text/plain',
-        gs_acl=args.gs_acl,
-        cache_control=cache_control,
-        add_quiet_flag=True,
-        compress=False)
+      '/'.join([args.gs_bucket, version_file]),
+      os.path.join(tmp_dir, version_file),
+      mimetype='text/plain',
+      gs_acl=args.gs_acl,
+      cache_control=cache_control,
+      add_quiet_flag=True,
+      compress=False,
+    )
     if rc:
       print("Failed to fetch version file from remote: %d" % rc)
       do_update = True
@@ -89,13 +93,14 @@ def maybe_archive_results_html(args):
       start = time.time()
       print(f"Archive {file_to_archive}...")
       rc = bot_utils.GSUtilCopy(
-          os.path.join(args.results_dir, file_to_archive),
-          '/'.join([args.gs_bucket, file_to_archive]),
-          mimetype=mimetype,
-          gs_acl=args.gs_acl,
-          cache_control=cache_control,
-          add_quiet_flag=True,
-          compress=False)
+        os.path.join(args.results_dir, file_to_archive),
+        '/'.join([args.gs_bucket, file_to_archive]),
+        mimetype=mimetype,
+        gs_acl=args.gs_acl,
+        cache_control=cache_control,
+        add_quiet_flag=True,
+        compress=False,
+      )
       print("took %.1f seconds" % (time.time() - start))
       sys.stdout.flush()
       if rc:
@@ -134,13 +139,14 @@ def archive_layout(args):
       f.write(data)
   print(f"Archive {file_to_archive}...")
   rc = bot_utils.GSUtilCopy(
-      os.path.join(args.results_dir, file_to_archive),
-      '/'.join([gs_build_dir, file_to_archive]),
-      mimetype='text/javascript',
-      gs_acl=gs_acl,
-      cache_control=cache_control,
-      add_quiet_flag=True,
-      compress=True)
+    os.path.join(args.results_dir, file_to_archive),
+    '/'.join([gs_build_dir, file_to_archive]),
+    mimetype='text/javascript',
+    gs_acl=gs_acl,
+    cache_control=cache_control,
+    add_quiet_flag=True,
+    compress=True,
+  )
   print("took %.1f seconds" % (time.time() - start))
   sys.stdout.flush()
   if rc:
@@ -153,26 +159,28 @@ def archive_layout(args):
 def _ParseArgs():
   parser = argparse.ArgumentParser()
   parser.add_argument(
-      '--results-dir', required=True, help='path to layout test results')
+    '--results-dir', required=True, help='path to layout test results'
+  )
   parser.add_argument(
-      '--builder-name',
-      required=True,
-      help='The name of the builder running this script.')
+    '--builder-name',
+    required=True,
+    help='The name of the builder running this script.',
+  )
   parser.add_argument(
-      '--build-number',
-      type=int,
-      required=True,
-      help='Build number of the builder running this script.')
+    '--build-number',
+    type=int,
+    required=True,
+    help='Build number of the builder running this script.',
+  )
   parser.add_argument(
-      '--step-name',
-      help='The name of the test step that produced '
-      'these results.')
+    '--step-name', help='The name of the test step that produced these results.'
+  )
   parser.add_argument(
-      '--gs-bucket',
-      required=True,
-      help='The Google Storage bucket to upload to.')
+    '--gs-bucket', required=True, help='The Google Storage bucket to upload to.'
+  )
   parser.add_argument(
-      '--gs-acl', help='The access policy for Google Storage files.')
+    '--gs-acl', help='The access policy for Google Storage files.'
+  )
   parser.add_argument('--task-ids', help='Task ids used in this test step.')
   bot_utils_callback = bot_utils.AddArgs(parser)
 
@@ -184,10 +192,10 @@ def _ParseArgs():
 def main():
   args = _ParseArgs()
   logging.basicConfig(
-      level=logging.INFO,
-      format='%(asctime)s %(filename)s:%(lineno)-3d'
-      ' %(levelname)s %(message)s',
-      datefmt='%y%m%d %H:%M:%S')
+    level=logging.INFO,
+    format='%(asctime)s %(filename)s:%(lineno)-3d %(levelname)s %(message)s',
+    datefmt='%y%m%d %H:%M:%S',
+  )
   return archive_layout(args)
 
 

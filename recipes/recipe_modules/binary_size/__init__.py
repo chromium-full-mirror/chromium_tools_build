@@ -12,32 +12,32 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_android,
-    chromium_checkout,
-    chromium_tests,
-    filter as filter_module,
+  chromium,
+  chromium_android,
+  chromium_checkout,
+  chromium_tests,
+  filter as filter_module,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    gerrit,
-    gitiles,
-    gsutil,
-    tryserver,
+  bot_update,
+  gclient,
+  gerrit,
+  gitiles,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    commit_position,
-    context,
-    file,
-    json,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-    time,
+  buildbucket,
+  commit_position,
+  context,
+  file,
+  json,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
+  time,
 )
 from RECIPE_MODULES.infra import zip as zip_module
 
@@ -67,7 +67,6 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   step: step.API
   time: time.API
-
 
 
 from .api import BinarySizeApi as API

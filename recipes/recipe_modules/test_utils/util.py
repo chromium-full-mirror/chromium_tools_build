@@ -11,16 +11,21 @@ import sys
 from . import canonical
 from google.protobuf import json_format
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (common as common_pb2)
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (test_result as
-                                                       test_result_pb2)
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb2
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as test_result_pb2,
+)
 
-from RECIPE_MODULES.build.attr_utils import (attrib, attrs, mapping, sequence,
-                                             set_)
+from RECIPE_MODULES.build.attr_utils import (
+  attrib,
+  attrs,
+  mapping,
+  sequence,
+  set_,
+)
 
 
 class GTestResults:
-
   MAX_LOG_LINES = 5000
 
   def __init__(self, jsonish=None):
@@ -53,7 +58,8 @@ class GTestResults:
         # the whole test, but allow for an override that makes a test pass if
         # it passes at least once.
         self.pass_fail_counts.setdefault(
-            test_fullname, {'pass_count': 0, 'fail_count': 0})
+          test_fullname, {'pass_count': 0, 'fail_count': 0}
+        )
         self.logs.setdefault(test_fullname, [])
         for cur_result in results:
           if cur_result['status'] == 'SUCCESS':
@@ -64,11 +70,12 @@ class GTestResults:
             self.pass_fail_counts[test_fullname]['fail_count'] = 0
           self.raw_results[test_fullname].append(cur_result['status'])
 
-          ascii_log = cur_result['output_snippet'].encode('ascii',
-                                                          errors='replace')
+          ascii_log = cur_result['output_snippet'].encode(
+            'ascii', errors='replace'
+          )
           self.logs[test_fullname].extend(
-              self._compress_list(ascii_log.splitlines()))
-
+            self._compress_list(ascii_log.splitlines())
+          )
 
     for test_fullname, results in self.raw_results.items():
       # These strings are defined by base/test/launcher/test_result.cc.
@@ -97,9 +104,11 @@ class GTestResults:
   def _compress_list(self, lines):
     if len(lines) > self.MAX_LOG_LINES:
       remove_from_start = self.MAX_LOG_LINES // 2
-      return (lines[:remove_from_start] +
-              ['<truncated>'] +
-              lines[len(lines) - (self.MAX_LOG_LINES - remove_from_start):])
+      return (
+        lines[:remove_from_start]
+        + ['<truncated>']
+        + lines[len(lines) - (self.MAX_LOG_LINES - remove_from_start) :]
+      )
     return lines
 
   def canonical_result_format(self):
@@ -108,11 +117,12 @@ class GTestResults:
     unreliable = 'UNRELIABLE_RESULTS' in global_tags
     interrupted = 'CAUGHT_TERMINATION_SIGNAL' in global_tags
     return canonical.result_format(
-        valid=self.valid and not unreliable and not interrupted,
-        failures=sorted(self.unique_failures),
-        total_tests_ran=self.total_tests_ran,
-        pass_fail_counts=self.pass_fail_counts,
-        findit_notrun=self.findit_notrun)
+      valid=self.valid and not unreliable and not interrupted,
+      failures=sorted(self.unique_failures),
+      total_tests_ran=self.total_tests_ran,
+      pass_fail_counts=self.pass_fail_counts,
+      findit_notrun=self.findit_notrun,
+    )
 
 
 @attrs()
@@ -169,7 +179,7 @@ class RDBPerIndividualTestResults:
     statuses = [tr.status for tr in test_results]
     expectednesses = [tr.expected for tr in test_results]
     failure_reasons = [
-        tr.failure_reason.primary_error_message or '' for tr in test_results
+      tr.failure_reason.primary_error_message or '' for tr in test_results
     ]
     test_metadata_file_name = ''
 
@@ -179,8 +189,9 @@ class RDBPerIndividualTestResults:
       # considered valid. Use duration of the last passed or expected result
       # with duration.
       if (tr.expected or tr.status == test_result_pb2.PASS) and tr.duration:
-        duration_milliseconds = int(tr.duration.seconds * 1000 +
-                                    int(tr.duration.nanos / 1000000.0))
+        duration_milliseconds = int(
+          tr.duration.seconds * 1000 + int(tr.duration.nanos / 1000000.0)
+        )
       # Use test name tag of the last result with the tag.
       for tag in tr.tags:
         if tag.key == 'test_name':
@@ -195,25 +206,27 @@ class RDBPerIndividualTestResults:
     assert test_id.startswith(test_id_prefix)
     # If not found in tags, use the part after test id prefix in test ID.
     if not test_name:
-      test_name = test_id[len(test_id_prefix):]
+      test_name = test_id[len(test_id_prefix) :]
 
     return cls(
-        test_name=test_name,
-        test_id=test_id,
-        invocation_id=invocation_id,
-        duration_milliseconds=duration_milliseconds,
-        statuses=statuses,
-        expectednesses=expectednesses,
-        failure_reasons=failure_reasons,
-        test_metadata_file_name=test_metadata_file_name,
+      test_name=test_name,
+      test_id=test_id,
+      invocation_id=invocation_id,
+      duration_milliseconds=duration_milliseconds,
+      statuses=statuses,
+      expectednesses=expectednesses,
+      failure_reasons=failure_reasons,
+      test_metadata_file_name=test_metadata_file_name,
     )
 
   def total_test_count(self):
     return len(self.statuses)
 
   def unexpected_unpassed_count(self):
-    return sum((status != test_result_pb2.PASS and not expected)
-               for status, expected in zip(self.statuses, self.expectednesses))
+    return sum(
+      (status != test_result_pb2.PASS and not expected)
+      for status, expected in zip(self.statuses, self.expectednesses)
+    )
 
   def get_size_in_mem(self):
     total = sys.getsizeof(self)
@@ -239,15 +252,15 @@ class RDBPerSuiteResults:
   """Contains results of a single test suite as returned by RDB."""
 
   NEEDED_FIELDS = [
-      'testId',
-      'variant',
-      'variantHash',
-      'status',
-      'tags',
-      'expected',
-      'duration',
-      'failureReason',
-      'testMetadata.location',
+    'testId',
+    'variant',
+    'variantHash',
+    'status',
+    'tags',
+    'expected',
+    'duration',
+    'failureReason',
+    'testMetadata.location',
   ]
 
   # NOTE: If you add an attribute here, make sure to reflect the change in
@@ -269,7 +282,8 @@ class RDBPerSuiteResults:
   # A mapping from test name str to its |RDBPerIndividualTestResults| object
   # for tests without any expected results.
   individual_unexpected_test_by_test_name = attrib(
-      mapping[str, RDBPerIndividualTestResults])
+    mapping[str, RDBPerIndividualTestResults]
+  )
   # A list of all |RDBPerIndividualTestResults| objects within this class.
   all_tests = attrib(sequence[RDBPerIndividualTestResults])
   # |test_id_prefix| from the test specs in testing/buildbot. Empty str if it's
@@ -280,13 +294,15 @@ class RDBPerSuiteResults:
   exists_unexpected_failing_result = attrib(bool, default=False)
 
   @classmethod
-  def create(cls,
-             invocations,
-             suite_name,
-             test_id_prefix,
-             total_tests_ran,
-             allow_flaky_passes=True,
-             failure_on_exit=False):
+  def create(
+    cls,
+    invocations,
+    suite_name,
+    test_id_prefix,
+    total_tests_ran,
+    allow_flaky_passes=True,
+    failure_on_exit=False,
+  ):
     """
     Args:
       invocations, dict of {invocation_id: api.resultdb.Invocation} as
@@ -320,7 +336,9 @@ class RDBPerSuiteResults:
         # from different suites.
         if inv_name and suite_name:
           assert inv_name == suite_name, "Mismatched invocations, %s vs %s" % (
-              inv_name, suite_name)
+            inv_name,
+            suite_name,
+          )
         variant = tr.variant
         variant_hash = tr.variant_hash
         results_by_test_id[tr.test_id].append(tr)
@@ -337,10 +355,11 @@ class RDBPerSuiteResults:
     all_tests = []
     for test_id, test_results in results_by_test_id.items():
       individual_test = RDBPerIndividualTestResults.create(
-          test_id=test_id,
-          test_results=test_results,
-          test_id_prefix=test_id_prefix,
-          invocation_id=test_id_to_invocation_id[test_id])
+        test_id=test_id,
+        test_results=test_results,
+        test_id_prefix=test_id_prefix,
+        invocation_id=test_id_to_invocation_id[test_id],
+      )
       if individual_test.unexpected_unpassed_count() > 0:
         exists_unexpected_failing_result = True
       all_tests.append(individual_test)
@@ -360,8 +379,9 @@ class RDBPerSuiteResults:
           continue
       if all(tr.expected for tr in test_results):
         continue
-      individual_unexpected_test_by_test_name[
-          individual_test.test_name] = individual_test
+      individual_unexpected_test_by_test_name[individual_test.test_name] = (
+        individual_test
+      )
       if all(tr.status != test_result_pb2.PASS for tr in test_results):
         unexpected_failing_tests.add(individual_test)
         if all(tr.status == test_result_pb2.SKIP for tr in test_results):
@@ -375,19 +395,21 @@ class RDBPerSuiteResults:
     invalid = failure_on_exit and not unexpected_failing_tests
 
     return cls(
-        suite_name=suite_name,
-        variant=variant,
-        variant_hash=variant_hash,
-        total_tests_ran=total_tests_ran,
-        unexpected_passing_tests=unexpected_passing_tests,
-        unexpected_failing_tests=unexpected_failing_tests,
-        unexpected_skipped_tests=unexpected_skipped_tests,
-        invalid=invalid,
-        individual_unexpected_test_by_test_name=(
-            individual_unexpected_test_by_test_name),
-        all_tests=all_tests,
-        test_id_prefix=test_id_prefix,
-        exists_unexpected_failing_result=exists_unexpected_failing_result)
+      suite_name=suite_name,
+      variant=variant,
+      variant_hash=variant_hash,
+      total_tests_ran=total_tests_ran,
+      unexpected_passing_tests=unexpected_passing_tests,
+      unexpected_failing_tests=unexpected_failing_tests,
+      unexpected_skipped_tests=unexpected_skipped_tests,
+      invalid=invalid,
+      individual_unexpected_test_by_test_name=(
+        individual_unexpected_test_by_test_name
+      ),
+      all_tests=all_tests,
+      test_id_prefix=test_id_prefix,
+      exists_unexpected_failing_result=exists_unexpected_failing_result,
+    )
 
   def with_failure_on_exit(self, failure_on_exit):
     """Returns a new instance with an updated |invalid| value.
@@ -405,8 +427,8 @@ class RDBPerSuiteResults:
           reported, it indicates invalid test results.
     """
     return attr.evolve(
-        self,
-        invalid=(failure_on_exit and not self.unexpected_failing_tests))
+      self, invalid=(failure_on_exit and not self.unexpected_failing_tests)
+    )
 
   def to_jsonish(self):
 
@@ -414,22 +436,20 @@ class RDBPerSuiteResults:
       return sorted([t.test_name for t in tests])
 
     jsonish_repr = {
-        'suite_name':
-            self.suite_name,
-        'test_id_prefix':
-            self.test_id_prefix,
-        'variant_hash':
-            self.variant_hash,
-        'invalid':
-            str(self.invalid),
-        'total_tests_ran':
-            self.total_tests_ran,
-        'unexpected_passing_tests':
-            _names_of_tests(self.unexpected_passing_tests),
-        'unexpected_failing_tests':
-            _names_of_tests(self.unexpected_failing_tests),
-        'unexpected_skipped_tests':
-            _names_of_tests(self.unexpected_skipped_tests),
+      'suite_name': self.suite_name,
+      'test_id_prefix': self.test_id_prefix,
+      'variant_hash': self.variant_hash,
+      'invalid': str(self.invalid),
+      'total_tests_ran': self.total_tests_ran,
+      'unexpected_passing_tests': _names_of_tests(
+        self.unexpected_passing_tests
+      ),
+      'unexpected_failing_tests': _names_of_tests(
+        self.unexpected_failing_tests
+      ),
+      'unexpected_skipped_tests': _names_of_tests(
+        self.unexpected_skipped_tests
+      ),
     }
     return jsonish_repr
 
@@ -500,10 +520,10 @@ class RDBResults:
 
   def to_jsonish(self):
     jsonish_repr = {
-        'unexpected_failing_suites': [
-            s.suite_name for s in self.unexpected_failing_suites
-        ],
-        'all_suites': [s.to_jsonish() for s in self.all_suites],
+      'unexpected_failing_suites': [
+        s.suite_name for s in self.unexpected_failing_suites
+      ],
+      'all_suites': [s.to_jsonish() for s in self.all_suites],
     }
     return jsonish_repr
 
@@ -540,14 +560,21 @@ class RDBResults:
     lines.append('Size of this RDBResults: {}'.format(total_size_hr))
     for suite in self.all_suites:
       lines.append('')
-      lines.append('\tSize of RDBPerSuiteResults for {}: {}'.format(
-          suite.suite_name, hr_size(suite.get_size_in_mem())))
       lines.append(
-          '\t\tNumber of RDBPerIndividualTestResults entries: {}'.format(
-              len(suite.all_tests)))
+        '\tSize of RDBPerSuiteResults for {}: {}'.format(
+          suite.suite_name, hr_size(suite.get_size_in_mem())
+        )
+      )
       lines.append(
-          '\t\tSize of all RDBPerIndividualTestResults entries: {}'.format(
-              hr_size(sum(t.get_size_in_mem() for t in suite.all_tests))))
+        '\t\tNumber of RDBPerIndividualTestResults entries: {}'.format(
+          len(suite.all_tests)
+        )
+      )
+      lines.append(
+        '\t\tSize of all RDBPerIndividualTestResults entries: {}'.format(
+          hr_size(sum(t.get_size_in_mem() for t in suite.all_tests))
+        )
+      )
 
     return total_size_hr, lines
 
@@ -565,6 +592,7 @@ class IntervalStats:
   # go/src/go.chromium.org/luci/analysis/proto/v1/test_variants.proto in
   # infra/infra.
   """
+
   interval_age = attrib(int)
   # The number of verdicts which had only expected runs.
   # An expected run is a run (e.g. swarming task) which has at least
@@ -583,6 +611,7 @@ class IntervalStats:
 @attrs()
 class StabilityAnalysisPerSuite:
   """Wraps a list of IndividualTestStabilityAnalysis instances per test suite"""
+
   suite_name = attrib(str)
   # List of IndividualTestStabilityAnalysis
   stability_analysis_list = attrib(list)
@@ -594,9 +623,9 @@ class StabilityAnalysisPerSuite:
   def create(cls, suite_name, stability_analysis_list):
     test_ids = set(analysis.test_id for analysis in stability_analysis_list)
     return cls(
-        suite_name=suite_name,
-        stability_analysis_list=stability_analysis_list,
-        test_ids=test_ids,
+      suite_name=suite_name,
+      stability_analysis_list=stability_analysis_list,
+      test_ids=test_ids,
     )
 
   def append_stability_analysis(self, stability_analysis):
@@ -635,14 +664,16 @@ class IndividualTestStabilityAnalysis:
   def create(cls, stability_analysis, suite_name, test_name):
     """Wraps a TestVariantStabilityAnalysis instance for one individual test"""
     return cls(
-        test_id=stability_analysis.test_id,
-        test_name=test_name,
-        suite_name=suite_name,
-        variant_hash=stability_analysis.variant_hash,
-        failure_rate_is_met=stability_analysis.failure_rate.is_met,
-        flake_rate_is_met=stability_analysis.flake_rate.is_met,
-        run_flaky_verdicts_1wd=(
-            stability_analysis.flake_rate.run_flaky_verdicts_1wd),
-        run_flaky_verdicts_12h=(
-            stability_analysis.flake_rate.run_flaky_verdicts_12h),
+      test_id=stability_analysis.test_id,
+      test_name=test_name,
+      suite_name=suite_name,
+      variant_hash=stability_analysis.variant_hash,
+      failure_rate_is_met=stability_analysis.failure_rate.is_met,
+      flake_rate_is_met=stability_analysis.flake_rate.is_met,
+      run_flaky_verdicts_1wd=(
+        stability_analysis.flake_rate.run_flaky_verdicts_1wd
+      ),
+      run_flaky_verdicts_12h=(
+        stability_analysis.flake_rate.run_flaky_verdicts_12h
+      ),
     )

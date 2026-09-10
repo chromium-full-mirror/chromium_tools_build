@@ -32,49 +32,53 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   api.assertions.assertTrue(
-      api.buildbucket.build.input.HasField('gitiles_commit'))
+    api.buildbucket.build.input.HasField('gitiles_commit')
+  )
   api.assertions.assertEqual(api.builder_group.for_current, 'fake-group')
-  api.assertions.assertEqual(api.builder_group.for_parent,
-                             api.properties['expected_parent_builder_group'])
   api.assertions.assertEqual(
-      api.properties.get('parent_buildername', None),
-      api.properties['expected_parent_buildername'])
+    api.builder_group.for_parent,
+    api.properties['expected_parent_builder_group'],
+  )
+  api.assertions.assertEqual(
+    api.properties.get('parent_buildername', None),
+    api.properties['expected_parent_buildername'],
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.chromium.ci_build(builder_group='fake-group'),
-      api.properties(
-          expected_parent_builder_group=None,
-          expected_parent_buildername=None,
-      ),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.chromium.ci_build(builder_group='fake-group'),
+    api.properties(
+      expected_parent_builder_group=None,
+      expected_parent_buildername=None,
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'parent-builder',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          parent_buildername='fake-parent',
-      ),
-      api.properties(
-          expected_parent_builder_group='fake-group',
-          expected_parent_buildername='fake-parent',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'parent-builder',
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      parent_buildername='fake-parent',
+    ),
+    api.properties(
+      expected_parent_builder_group='fake-group',
+      expected_parent_buildername='fake-parent',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'parent-builder-and-group',
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          parent_builder_group='fake-parent-group',
-          parent_buildername='fake-parent',
-      ),
-      api.properties(
-          expected_parent_builder_group='fake-parent-group',
-          expected_parent_buildername='fake-parent',
-      ),
-      api.post_process(post_process.DropExpectation),
+    'parent-builder-and-group',
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      parent_builder_group='fake-parent-group',
+      parent_buildername='fake-parent',
+    ),
+    api.properties(
+      expected_parent_builder_group='fake-parent-group',
+      expected_parent_buildername='fake-parent',
+    ),
+    api.post_process(post_process.DropExpectation),
   )

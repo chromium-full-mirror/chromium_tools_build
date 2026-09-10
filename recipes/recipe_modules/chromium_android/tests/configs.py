@@ -30,44 +30,45 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   chromium_config_kwargs = {
-      'BUILD_CONFIG': 'Debug',
-      'TARGET_ARCH': 'arm',
-      'TARGET_BITS': 32,
-      'TARGET_PLATFORM': 'android',
+    'BUILD_CONFIG': 'Debug',
+    'TARGET_ARCH': 'arm',
+    'TARGET_BITS': 32,
+    'TARGET_PLATFORM': 'android',
   }
   chromium_config_kwargs.update(
-      api.properties.get('chromium_config_kwargs', {}))
+    api.properties.get('chromium_config_kwargs', {})
+  )
 
   api.chromium.set_config(
-      api.properties['chromium_config'],
-      BUILD_CONFIG='Debug',
-      TARGET_ARCH='arm',
-      TARGET_BITS=32,
-      TARGET_PLATFORM='android',
+    api.properties['chromium_config'],
+    BUILD_CONFIG='Debug',
+    TARGET_ARCH='arm',
+    TARGET_BITS=32,
+    TARGET_PLATFORM='android',
   )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'cronet_builder',
-      api.properties(chromium_config='cronet_builder'),
-      api.post_process(post_process.DropExpectation),
+    'cronet_builder',
+    api.properties(chromium_config='cronet_builder'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'cronet_official',
-      api.properties(chromium_config='cronet_official'),
-      api.post_process(post_process.DropExpectation),
+    'cronet_official',
+    api.properties(chromium_config='cronet_official'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'main_builder',
-      api.properties(chromium_config='main_builder'),
-      api.post_process(post_process.DropExpectation),
+    'main_builder',
+    api.properties(chromium_config='main_builder'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'clang_builder',
-      api.properties(chromium_config='clang_builder'),
-      api.post_process(post_process.DropExpectation),
+    'clang_builder',
+    api.properties(chromium_config='clang_builder'),
+    api.post_process(post_process.DropExpectation),
   )

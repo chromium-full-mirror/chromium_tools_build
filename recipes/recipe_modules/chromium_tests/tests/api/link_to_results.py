@@ -37,17 +37,19 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'a-normal-build',
-      api.chromium.ci_build(),
-      api.post_process(post_process.DoesNotRun, 'test results link'),
-      api.post_process(post_process.DropExpectation),
+    'a-normal-build',
+    api.chromium.ci_build(),
+    api.post_process(post_process.DoesNotRun, 'test results link'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'a-led-build',
-      api.properties(**{
-          '$recipe_engine/led': InputProperties(led_run_id='some-led-run'),
-      }),
-      api.post_process(post_process.MustRun, 'test results link'),
-      api.post_process(post_process.DropExpectation),
+    'a-led-build',
+    api.properties(
+      **{
+        '$recipe_engine/led': InputProperties(led_run_id='some-led-run'),
+      }
+    ),
+    api.post_process(post_process.MustRun, 'test results link'),
+    api.post_process(post_process.DropExpectation),
   )

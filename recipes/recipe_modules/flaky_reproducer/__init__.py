@@ -10,19 +10,19 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import isolate
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cas,
-    cipd,
-    file,
-    futures,
-    json,
-    luci_analysis,
-    path,
-    raw_io,
-    resultdb,
-    step,
-    swarming,
-    url,
+  buildbucket,
+  cas,
+  cipd,
+  file,
+  futures,
+  json,
+  luci_analysis,
+  path,
+  raw_io,
+  resultdb,
+  step,
+  swarming,
+  url,
 )
 
 
@@ -42,6 +42,7 @@ class DEPS(RecipeScriptApi):
   swarming: swarming.API
   url: url.API
   isolate: isolate.API
+
 
 from .api import FlakyReproducer as API
 from .test_api import FlakyReproducerTestApi as TEST_API

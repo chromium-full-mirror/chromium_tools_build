@@ -10,16 +10,16 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import libyuv
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    gerrit,
-    git,
+  depot_tools,
+  gclient,
+  gerrit,
+  git,
 )
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    json,
-    runtime,
-    step,
+  context,
+  json,
+  runtime,
+  step,
 )
 
 
@@ -59,25 +59,28 @@ def RunSteps(api: DEPS):
   with api.context(cwd=source_dir):
     # TODO(oprypin): Replace with api.service_account.default().get_email()
     # when https://crbug.com/846923 is resolved.
-    push_account = ('libyuv-ci-autoroll-builder@'
-                    'chops-service-accounts.iam.gserviceaccount.com')
+    push_account = (
+      'libyuv-ci-autoroll-builder@'
+      'chops-service-accounts.iam.gserviceaccount.com'
+    )
 
     # Check for an open auto-roller CL.
     commits = api.gerrit.get_changes(
-        GERRIT_URL,
-        query_params=[
-            ('project', GERRIT_PROJECT),
-            ('owner', push_account),
-            ('status', 'open'),
-        ],
-        limit=1,
+      GERRIT_URL,
+      query_params=[
+        ('project', GERRIT_PROJECT),
+        ('owner', push_account),
+        ('status', 'open'),
+      ],
+      limit=1,
     )
     if commits:
       with api.context(env={'SKIP_GCE_AUTH_FOR_GIT': '1'}):
         with api.depot_tools.on_path():
           api.git('cl', 'set-close', '-i', commits[0]['_number'])
         api.step.active_result.presentation.step_text = (
-            'Stale roll found. Abandoned.')
+          'Stale roll found. Abandoned.'
+        )
 
     # Enforce a clean state, and discard any local commits from previous runs.
     api.git('checkout', '-f', 'main')
@@ -101,13 +104,15 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
   yield (
-      api.test('normal_roll') +
-      api.override_step_data('gerrit changes', api.json.output([]))
+    api.test('normal_roll')
+    + api.override_step_data('gerrit changes', api.json.output([]))
   )
-  yield (api.test('normal_roll_experimental') +
-         api.runtime(is_experimental=True))
   yield (
-      api.test('stale_roll') +
-      api.override_step_data(
-          'gerrit changes', api.json.output([{'_number': '123'}]))
+    api.test('normal_roll_experimental') + api.runtime(is_experimental=True)
+  )
+  yield (
+    api.test('stale_roll')
+    + api.override_step_data(
+      'gerrit changes', api.json.output([{'_number': '123'}])
+    )
   )

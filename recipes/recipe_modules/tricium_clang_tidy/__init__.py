@@ -4,24 +4,29 @@
 
 from __future__ import annotations
 
-_clang_tidy_path = ('third_party', 'llvm-build', 'Release+Asserts', 'bin',
-                    'clang-tidy')
+_clang_tidy_path = (
+  'third_party',
+  'llvm-build',
+  'Release+Asserts',
+  'bin',
+  'clang-tidy',
+)
 
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    siso,
+  chromium,
+  siso,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    findings,
-    path,
-    platform,
-    step,
+  buildbucket,
+  context,
+  file,
+  findings,
+  path,
+  platform,
+  step,
 )
 
 

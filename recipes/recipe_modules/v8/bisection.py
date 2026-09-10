@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import bisect
 
+
 def keyed_bisect(git_range, is_bad):
   """Wrapper for using python's bisection with a generic key function.
 
@@ -18,7 +19,6 @@ def keyed_bisect(git_range, is_bad):
   """
 
   class LazyMap:
-
     def __getitem__(self, i):
       # The function is assumed to return False for good keys and True for bad
       # ones. By initializing bisect with True below, bisection handles the two

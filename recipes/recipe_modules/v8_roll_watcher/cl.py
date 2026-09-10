@@ -10,11 +10,12 @@ from functools import cached_property
 
 from PB.go.chromium.org.luci.buildbucket.proto.common import GerritChange
 
-from PB.go.chromium.org.luci.buildbucket.proto.builds_service import BuildPredicate
+from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
+  BuildPredicate,
+)
 
 
 class GerritCL:
-
   def __init__(self, cl_dict, host, api):
     self.host = host
     self.api = api
@@ -53,16 +54,17 @@ class GerritCL:
 
   def has_mixed_failures(self, allowed_failure_steps):
     return any(
-        b.has_mixed_failures(allowed_failure_steps)
-        for b in self.cq_blocking_builds())
+      b.has_mixed_failures(allowed_failure_steps)
+      for b in self.cq_blocking_builds()
+    )
 
   def gs_location(self, builder):
     gs_path = [
-        'screenshots',
-        builder,
-        str(self.number),
-        str(self.last_patch_number),
-        'screenshot.patch',
+      'screenshots',
+      builder,
+      str(self.number),
+      str(self.last_patch_number),
+      'screenshot.patch',
     ]
     return '/'.join(gs_path)
 
@@ -76,10 +78,10 @@ class GerritCL:
   @property
   def as_query_dict(self):
     return dict(
-        host=self.host,
-        change=self.number,
-        patchset=self.last_patch_number,
-        project=self.project,
+      host=self.host,
+      change=self.number,
+      patchset=self.last_patch_number,
+      project=self.project,
     )
 
   @property
@@ -103,35 +105,34 @@ class GerritCL:
   @cached_property
   def builds(self):
     bb_builds = self.api.buildbucket.search(
-        BuildPredicate(
-            gerrit_changes=[self.as_query_dict],
-            include_experimental=True,
-        ),
-        limit=100,
-        fields=['tags,status,steps'],
-        report_build=False,
+      BuildPredicate(
+        gerrit_changes=[self.as_query_dict],
+        include_experimental=True,
+      ),
+      limit=100,
+      fields=['tags,status,steps'],
+      report_build=False,
     )
     return [BBBuild(b) for b in bb_builds]
 
   def set_tag(self, tag_name, step_name):
     self.api.gerrit.call_raw_api(
-        host=f'https://{self.host}',
-        path=f'/changes/{self.number}/hashtags',
-        method='POST',
-        body={"add": [tag_name]},
-        accept_statuses=[200, 201],
-        name=step_name,
+      host=f'https://{self.host}',
+      path=f'/changes/{self.number}/hashtags',
+      method='POST',
+      body={"add": [tag_name]},
+      accept_statuses=[200, 201],
+      name=step_name,
     )
 
   def add_backlink_comment(self):
     self.api.gerrit.call_raw_api(
-        name='add comment',
-        method='POST',
-        host=f'https://{self.host}',
-        path=f'/changes/{self.number}/revisions/current/review',
-        body={
-            "message": f'Patch created at {self.api.buildbucket.build_url()}'
-        })
+      name='add comment',
+      method='POST',
+      host=f'https://{self.host}',
+      path=f'/changes/{self.number}/revisions/current/review',
+      body={"message": f'Patch created at {self.api.buildbucket.build_url()}'},
+    )
 
   def prepare_local_checkout(self):
     with self.api.step.nest('Prepare local checkout'):

@@ -8,8 +8,11 @@ from __future__ import annotations
 import sys
 
 from api_runner_common import main
-from libs.test_binary import (create_test_binary_from_task_request,
-                              BaseTestBinary, TaskRequest)
+from libs.test_binary import (
+  create_test_binary_from_task_request,
+  BaseTestBinary,
+  TaskRequest,
+)
 from libs.strategies import ReproducingStep
 
 
@@ -24,18 +27,20 @@ def method_create_test_binary_from_task_request(task_request: TaskRequest):
 def get_test_binary_swarming_task_config(test_binary: BaseTestBinary):
   """Get task request configs used to launch test binary in swarming"""
   return {
-      'cas_input_root': test_binary.cas_input_root,
-      'cwd': test_binary.cwd,
-      'dimensions': test_binary.dimensions,
-      'env_vars': test_binary.env_vars,
+    'cas_input_root': test_binary.cas_input_root,
+    'cwd': test_binary.cwd,
+    'dimensions': test_binary.dimensions,
+    'env_vars': test_binary.env_vars,
   }
 
 
-def update_test_binary_with_reproducing_step(test_binary: BaseTestBinary,
-                                             reproducing_step: ReproducingStep):
+def update_test_binary_with_reproducing_step(
+  test_binary: BaseTestBinary, reproducing_step: ReproducingStep
+):
   """Apply reproducing step to test binary."""
   return test_binary.with_options_from_other(
-      reproducing_step.test_binary).to_jsonish()
+    reproducing_step.test_binary
+  ).to_jsonish()
 
 
 def test_binary_as_command(test_binary: BaseTestBinary, output: str):
@@ -44,14 +49,10 @@ def test_binary_as_command(test_binary: BaseTestBinary, output: str):
 
 
 methods = {
-    'create_test_binary_from_task_request':
-        method_create_test_binary_from_task_request,
-    'get_test_binary_swarming_task_config':
-        get_test_binary_swarming_task_config,
-    'update_test_binary_with_reproducing_step':
-        update_test_binary_with_reproducing_step,
-    'test_binary_as_command':
-        test_binary_as_command,
+  'create_test_binary_from_task_request': method_create_test_binary_from_task_request,
+  'get_test_binary_swarming_task_config': get_test_binary_swarming_task_config,
+  'update_test_binary_with_reproducing_step': update_test_binary_with_reproducing_step,
+  'test_binary_as_command': test_binary_as_command,
 }
 
 if __name__ == '__main__':

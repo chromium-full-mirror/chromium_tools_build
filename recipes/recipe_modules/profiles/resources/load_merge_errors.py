@@ -42,8 +42,8 @@ def main():
       steps_with_failed_profiles[step_name] = '- BAD JSON FORMAT'
 
   result = {
-      'total': num_failed_profiles,
-      'failed profiles': steps_with_failed_profiles
+    'total': num_failed_profiles,
+    'failed profiles': steps_with_failed_profiles,
   }
   json.dump(result, sys.stdout)
 

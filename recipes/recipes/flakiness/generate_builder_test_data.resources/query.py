@@ -40,11 +40,14 @@ def fetch_builders(bq, args):
   query_job = bq.query(FETCH_BUILDER_QUERY)
   rows = query_job.result()
   logging.info('Query complete. Processing results.')
-  builders = [{
+  builders = [
+    {
       'builder_name': row.builder_name,
       'builder_project': row.builder_project,
-      'bucket': row.bucket
-  } for row in rows]
+      'bucket': row.bucket,
+    }
+    for row in rows
+  ]
 
   with open(args.output_file, 'w') as f:
     json.dump(builders, f)
@@ -56,8 +59,9 @@ def query_test_history(bq, args):
   builder = args.builder
   project = args.project
   builder_bucket = args.builder_bucket
-  logging.info('Searching test history for %s:%s:%s' %
-               (project, builder_bucket, builder))
+  logging.info(
+    'Searching test history for %s:%s:%s' % (project, builder_bucket, builder)
+  )
   query = TEST_HISTORY_QUERY.format(builder, project, builder_bucket)
   logging.info(query)
   query_job = bq.query(query)
@@ -75,10 +79,12 @@ def query_test_history(bq, args):
   logging.info('Extracting temp table to GS.')
   job_config = bigquery.job.ExtractJobConfig()
   job_config.destination_format = (
-      bigquery.job.DestinationFormat.NEWLINE_DELIMITED_JSON)
+    bigquery.job.DestinationFormat.NEWLINE_DELIMITED_JSON
+  )
 
   extract_job = bq.extract_table(
-      table_ref, gs_bucket_path, job_config=job_config)
+    table_ref, gs_bucket_path, job_config=job_config
+  )
   extract_job.result()
 
 
@@ -112,32 +118,42 @@ def parse_arguments(args):
   subparsers = parser.add_subparsers()
 
   builder_parser = subparsers.add_parser(
-      'builders', help='get list of all supported try builders')
+    'builders', help='get list of all supported try builders'
+  )
   builder_parser.set_defaults(func=fetch_builders)
   builder_parser.add_argument(
-      '--output-file', required=True, help='path to output file for results')
+    '--output-file', required=True, help='path to output file for results'
+  )
 
   test_history_parser = subparsers.add_parser(
-      'history', help='fetch test history')
+    'history', help='fetch test history'
+  )
   test_history_parser.set_defaults(func=query_test_history)
   test_history_parser.add_argument(
-      '--export-gs-path',
-      required=True,
-      help=('GS bucket path to export the table data to.'))
+    '--export-gs-path',
+    required=True,
+    help=('GS bucket path to export the table data to.'),
+  )
   test_history_parser.add_argument(
-      '--builder', required=True, help='try builder name')
+    '--builder', required=True, help='try builder name'
+  )
   test_history_parser.add_argument(
-      '--builder-bucket', required=True, help='try builder bucket in project')
+    '--builder-bucket', required=True, help='try builder bucket in project'
+  )
   test_history_parser.add_argument(
-      '--project', required=True, help='try builder project')
+    '--project', required=True, help='try builder project'
+  )
 
   format_parser = subparsers.add_parser(
-      'format', help='format new line delimited json to json format')
+    'format', help='format new line delimited json to json format'
+  )
   format_parser.set_defaults(func=format_file)
   format_parser.add_argument(
-      '--file', required=True, action='append', help='path(s) to file')
+    '--file', required=True, action='append', help='path(s) to file'
+  )
   format_parser.add_argument(
-      '--output-file', required=True, help='path to output file for result')
+    '--output-file', required=True, help='path to output file for result'
+  )
 
   return parser.parse_args(args)
 
@@ -151,5 +167,6 @@ def main(args):
 
 if __name__ == '__main__':
   logging.basicConfig(
-      format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO)
+    format='[%(asctime)s %(levelname)s] %(message)s', level=logging.INFO
+  )
   main(sys.argv[1:])

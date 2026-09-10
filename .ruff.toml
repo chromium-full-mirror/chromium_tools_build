@@ -1,0 +1,20 @@
+line-length = 80
+indent-width = 2
+
+extend-exclude = [
+  "*_pb2.py",
+  "recipes/recipes.py",
+  # Temporarily excluded from formatting because modifying lines in these files
+  # triggers CheckNoBuildbotPropertiesMethods in PRESUBMIT.py due to deprecated
+  # api.properties.generic / api.properties.tryserver test API calls.
+  # These files will be formatted after migrating those calls.
+  "recipes/recipes/presubmit.py",
+  "recipes/recipes/v8/archive.py",
+  "recipes/recipes/v8/node_integration_ng.py",
+  "recipes/recipe_modules/cronet/tests/run_perf_tests.py",
+  "recipes/recipe_modules/isolate/examples/full.py",
+  "recipes/recipe_modules/v8/test_api.py",
+]
+
+[format]
+quote-style = "preserve"

@@ -31,21 +31,23 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder' / 'src'
   browser_test_path = source_dir / 'out/Release/browser_tests'
 
-  api.isolate.add_files_to_isolate_file(source_dir / 'out/Release/test.isolate',
-                                        [browser_test_path])
+  api.isolate.add_files_to_isolate_file(
+    source_dir / 'out/Release/test.isolate', [browser_test_path]
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'add_files',
-      api.override_step_data(
-          'Read [CACHE]/builder/src/out/Release/test.isolate',
-          api.file.read_json({'cmd': ''})),
-      api.post_process(post_process.DropExpectation),
+    'add_files',
+    api.override_step_data(
+      'Read [CACHE]/builder/src/out/Release/test.isolate',
+      api.file.read_json({'cmd': ''}),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'not_found',
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'not_found',
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

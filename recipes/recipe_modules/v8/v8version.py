@@ -9,7 +9,8 @@ import re
 from datetime import datetime
 
 REF_LINE_RE = re.compile(
-    r'refs\/tags\/(\d+(?:\.\d+){2,3})((?:-pgo)?)\ ([0-9a-f]{40})\ (.*)')
+  r'refs\/tags\/(\d+(?:\.\d+){2,3})((?:-pgo)?)\ ([0-9a-f]{40})\ (.*)'
+)
 
 V8_PATCHED_VERSION_RE = re.compile(r'\d+(?:\.\d+){3}')
 
@@ -37,7 +38,7 @@ def normalize_version(version) -> VersionTuple:
 
   version = tuple(int(c) for c in version)
 
-  return (version + (0, ) * 3)[:4]
+  return (version + (0,) * 3)[:4]
 
 
 def is_patched(version):
@@ -90,20 +91,26 @@ def sorted_improvements(version_revisions, last_version):
   # theoretically allows to roll up to version 899 and then flag new rolls as
   # failure. If this ever happens, this number could be flexed to 999 as a
   # mitigation.
-  assert last_version_normalized[2] < 899,\
-         'Rolling padded versions is not supported.'
+  assert last_version_normalized[2] < 899, (
+    'Rolling padded versions is not supported.'
+  )
 
   timestamp = lambda commit_time: datetime.strptime(
-      commit_time, '%a %b %d %H:%M:%S %Y %z').timestamp()
-  improvements = [(version, revision, timestamp(commit_time))
-                  for version, pgo, revision, commit_time in version_revisions
-                  if not pgo and last_version_normalized < drop_version_padding(
-                      normalize_version(version))]
+    commit_time, '%a %b %d %H:%M:%S %Y %z'
+  ).timestamp()
+  improvements = [
+    (version, revision, timestamp(commit_time))
+    for version, pgo, revision, commit_time in version_revisions
+    if not pgo
+    and last_version_normalized
+    < drop_version_padding(normalize_version(version))
+  ]
   if not improvements:
     return
   major_version = largest_major_version(v for v, _, _ in improvements)
   for version, revision, _ in sorted(
-      improvements, key=prioritize_patched, reverse=True):
+    improvements, key=prioritize_patched, reverse=True
+  ):
     if major_version < drop_version_padding(normalize_version(version)):
       yield version, revision
 
@@ -131,8 +138,7 @@ def choose_revision_to_roll(ref_lines, last_version):
   # Versions with pgo tag.
   pgo_versions = set(v[0] for v in version_revisions if v[1])
 
-  for version, revision in sorted_improvements(
-      version_revisions, last_version):
+  for version, revision in sorted_improvements(version_revisions, last_version):
     if version in pgo_versions:
       return revision, f'found revision to roll: {revision}'
     if is_patched(version):

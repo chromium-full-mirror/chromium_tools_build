@@ -19,15 +19,15 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.recipe_engine import (
-    cipd,
-    file,
-    futures,
-    json,
-    path,
-    platform,
-    raw_io,
-    step,
-    time,
+  cipd,
+  file,
+  futures,
+  json,
+  path,
+  platform,
+  raw_io,
+  step,
+  time,
 )
 
 
@@ -54,6 +54,7 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
   time: time.TEST_API
 
+
 # These are actually 4 week periods
 REJECTION_DATA_MONTHS = 3
 TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
@@ -79,25 +80,33 @@ class SavingsAnalysis:
 def RunSteps(api: DEPS):
   # Install rts-suite-analysis executables.
   exec_path = api.cipd.ensure_tool(
-      'chromium/rts/rts-suite-analysis/${platform}', 'latest')
+    'chromium/rts/rts-suite-analysis/${platform}', 'latest'
+  )
 
   # Fetch the dataset.
   # Ignore today because we might fetch incomplete data.
   yesterday = api.time.utcnow().date() - datetime.timedelta(days=1)
   rejections_dir, durations_dir = _fetch_model_data(
-      api,
-      exec_path,
-      duration_date_range=(
-          yesterday - TEST_DURATION_DATA_WINDOW,
-          yesterday,
-      ))
+    api,
+    exec_path,
+    duration_date_range=(
+      yesterday - TEST_DURATION_DATA_WINDOW,
+      yesterday,
+    ),
+  )
 
   bq_cmd = [
-      "bq", "query", "--project_id=" + _CLOUD_PROJECT_ID, "--format=json",
-      "--max_rows=10000", "--nouse_legacy_sql", builder_suite_query
+    "bq",
+    "query",
+    "--project_id=" + _CLOUD_PROJECT_ID,
+    "--format=json",
+    "--max_rows=10000",
+    "--nouse_legacy_sql",
+    builder_suite_query,
   ]
   step_result = api.step(
-      'get builder suites', bq_cmd, timeout=60, stdout=api.json.output())
+    'get builder suites', bq_cmd, timeout=60, stdout=api.json.output()
+  )
   builder_suites = step_result.stdout
 
   futures = []
@@ -105,9 +114,16 @@ def RunSteps(api: DEPS):
     test_suite = builder_suite['test_suite']
     builder = builder_suite['builder']
     futures.append(
-        api.futures.spawn_immediate(_analyze_builder_suite, api, builder,
-                                    test_suite, rejections_dir, durations_dir,
-                                    exec_path))
+      api.futures.spawn_immediate(
+        _analyze_builder_suite,
+        api,
+        builder,
+        test_suite,
+        rejections_dir,
+        durations_dir,
+        exec_path,
+      )
+    )
 
   analyses = []
   # Check future's exception.
@@ -119,32 +135,38 @@ def RunSteps(api: DEPS):
   # Sort by recall. There will be lots of low savings but it should be easy
   # to scan for the best candidates
   analyses.sort(
-      key=lambda analysis: (analysis.recall, analysis.savings), reverse=True)
+    key=lambda analysis: (analysis.recall, analysis.savings), reverse=True
+  )
 
   summary = 'Analysis Summary (recall, savings):\n\n' + '\n\n'.join(
-      analysis.report() for analysis in analyses)
+    analysis.report() for analysis in analyses
+  )
   return result_pb2.RawResult(
-      status=common_pb.SUCCESS, summary_markdown=summary[:4000])
+    status=common_pb.SUCCESS, summary_markdown=summary[:4000]
+  )
 
 
-def _analyze_builder_suite(api: DEPS, builder, test_suite, rejections_dir,
-                           durations_dir, exec_path):
+def _analyze_builder_suite(
+  api: DEPS, builder, test_suite, rejections_dir, durations_dir, exec_path
+):
   # Request 1 CPU core (1000 millicores) and 2 GiB RAM (2048 MiB) per step.
   # On a 60-core c2-standard-60 VM (60,000 millicores, ~240 GiB RAM), the recipe
   # engine's ResourceWaiter automatically throttles execution to at most 60
   # concurrent processes (60,000 / 1,000 = 60).
   step_result = api.step(
-      f'analyze {test_suite} on {builder}', [
-          exec_path,
-          'analyze',
-          f'-rejections={rejections_dir}',
-          f'-durations={durations_dir}',
-          f'-builder={builder}',
-          f'-testSuite={test_suite}',
-          f'-log-furthest={LOGGED_REJECTIONS}',
-      ],
-      stdout=api.raw_io.output_text(),
-      cost=api.step.ResourceCost(cpu=1000))
+    f'analyze {test_suite} on {builder}',
+    [
+      exec_path,
+      'analyze',
+      f'-rejections={rejections_dir}',
+      f'-durations={durations_dir}',
+      f'-builder={builder}',
+      f'-testSuite={test_suite}',
+      f'-log-furthest={LOGGED_REJECTIONS}',
+    ],
+    stdout=api.raw_io.output_text(),
+    cost=api.step.ResourceCost(cpu=1000),
+  )
   match = re.search(r'(\d+\.\d+)%\s*\|\s*<?(\d+\.\d+)%', step_result.stdout)
   if not match:
     # No summary table implies something went wrong with the analysis
@@ -154,12 +176,13 @@ def _analyze_builder_suite(api: DEPS, builder, test_suite, rejections_dir,
     recall = float(match.group(1))
     savings = float(match.group(2))
     step_result.presentation.step_text = (
-        f'Recall {recall} Savings {savings}\n' + step_result.stdout)
+      f'Recall {recall} Savings {savings}\n' + step_result.stdout
+    )
     return SavingsAnalysis(
-        builder=builder,
-        test_suite=test_suite,
-        recall=recall,
-        savings=savings,
+      builder=builder,
+      test_suite=test_suite,
+      recall=recall,
+      savings=savings,
     )
 
 
@@ -185,31 +208,35 @@ def _fetch_model_data(api: DEPS, exec_path, duration_date_range):
     start = end - datetime.timedelta(weeks=4)
 
     fetches.append(
-        api.futures.spawn_immediate(
-            api.step,
-            'fetch rejections (fast)',
-            [
-                str(exec_path),
-                'fetch-rejections-fast',
-                '-ignore-file',
-                '-append',
-                f'-out={rejections_dir}',
-            ] + _date_range_flags((start, end)),
-        ))
+      api.futures.spawn_immediate(
+        api.step,
+        'fetch rejections (fast)',
+        [
+          str(exec_path),
+          'fetch-rejections-fast',
+          '-ignore-file',
+          '-append',
+          f'-out={rejections_dir}',
+        ]
+        + _date_range_flags((start, end)),
+      )
+    )
 
     end = start
 
   fetches.append(
-      api.futures.spawn_immediate(
-          api.step,
-          'fetch durations',
-          [
-              str(exec_path),
-              'fetch-durations',
-              f'-frac={TEST_DURATION_DATA_PERCENTAGE / 100.0 :.3f}',
-              f'-out={durations_dir}',
-          ] + _date_range_flags(duration_date_range),
-      ))
+    api.futures.spawn_immediate(
+      api.step,
+      'fetch durations',
+      [
+        str(exec_path),
+        'fetch-durations',
+        f'-frac={TEST_DURATION_DATA_PERCENTAGE / 100.0:.3f}',
+        f'-out={durations_dir}',
+      ]
+      + _date_range_flags(duration_date_range),
+    )
+  )
 
   with api.futures.iwait(fetches) as itr:
     for future in itr:
@@ -221,32 +248,33 @@ def _fetch_model_data(api: DEPS, exec_path, duration_date_range):
 def _date_range_flags(date_range):
   from_date, to_date = date_range
   return [
-      f'-from={from_date.strftime("%Y-%m-%d")}',
-      f'-to={to_date.strftime("%Y-%m-%d")}',
+    f'-from={from_date.strftime("%Y-%m-%d")}',
+    f'-to={to_date.strftime("%Y-%m-%d")}',
   ]
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'basic',
-      api.platform.name('linux'),
-      api.platform.arch('intel'),
-      api.platform.bits(64),
-      api.step_data(
-          'get builder suites',
-          stdout=api.json.output([{
-              'builder': 'linux-chromeos-rel',
-              'test_suite': 'browser_tests'
-          }, {
-              'builder': 'android-nougat-x86-rel',
-              'test_suite': 'chrome_public_test_apk'
-          }, {
-              'builder': 'mac',
-              'test_suite': 'suite_fails_to_complete'
-          }])),
-      api.step_data(
-          'analyze browser_tests on linux-chromeos-rel',
-          stdout=api.raw_io.output_text('''
+    'basic',
+    api.platform.name('linux'),
+    api.platform.arch('intel'),
+    api.platform.bits(64),
+    api.step_data(
+      'get builder suites',
+      stdout=api.json.output(
+        [
+          {'builder': 'linux-chromeos-rel', 'test_suite': 'browser_tests'},
+          {
+            'builder': 'android-nougat-x86-rel',
+            'test_suite': 'chrome_public_test_apk',
+          },
+          {'builder': 'mac', 'test_suite': 'suite_fails_to_complete'},
+        ]
+      ),
+    ),
+    api.step_data(
+      'analyze browser_tests on linux-chromeos-rel',
+      stdout=api.raw_io.output_text('''
 Rejection:
      Most affected test: +Inf distance
      https://chromium-review.googlesource.com/c/4398410/4
@@ -259,10 +287,11 @@ Rejection:
  ----------------------
   99.16%      |   8.37% 
  based on 837 rejections, 862565 test failures, 2 years 52 days 20 hours 22 minutes 37 seconds testing time
- ''')),
-      api.step_data(
-          'analyze chrome_public_test_apk on android-nougat-x86-rel',
-          stdout=api.raw_io.output_text('''
+ '''),
+    ),
+    api.step_data(
+      'analyze chrome_public_test_apk on android-nougat-x86-rel',
+      stdout=api.raw_io.output_text('''
 Rejection:
      Most affected test: +Inf distance
      https://chromium-review.googlesource.com/c/4398410/4
@@ -275,33 +304,45 @@ Rejection:
  ----------------------
   100.00%     |  90.37% 
  based on 837 rejections, 862565 test failures, 2 years 52 days 20 hours 22 minutes 37 seconds testing time
- ''')),
-      api.step_data(
-          'analyze suite_fails_to_complete on mac',
-          stdout=api.raw_io.output_text('Failed to run')),
-      api.post_process(post_process.MustRun,
-                       'analyze browser_tests on linux-chromeos-rel'),
-      api.post_process(
-          post_process.MustRun,
-          'analyze chrome_public_test_apk on android-nougat-x86-rel'),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%'
-      ),
-      api.post_process(post_process.StepCommandContains,
-                       'analyze suite_fails_to_complete on mac',
-                       ['-log-furthest=100']),
-      api.post_process(post_process.StepCommandContains,
-                       'fetch rejections (fast)',
-                       ['-from=2012-04-15', '-to=2012-05-13']),
-      api.post_process(post_process.StepCommandContains,
-                       'fetch rejections (fast) (2)',
-                       ['-from=2012-03-18', '-to=2012-04-15']),
-      api.post_process(post_process.StepCommandContains,
-                       'fetch rejections (fast) (3)',
-                       ['-from=2012-02-19', '-to=2012-03-18']),
-      api.post_check(post_process.StatusSuccess),
-      api.post_process(post_process.DropExpectation),
+ '''),
+    ),
+    api.step_data(
+      'analyze suite_fails_to_complete on mac',
+      stdout=api.raw_io.output_text('Failed to run'),
+    ),
+    api.post_process(
+      post_process.MustRun, 'analyze browser_tests on linux-chromeos-rel'
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'analyze chrome_public_test_apk on android-nougat-x86-rel',
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'Analysis Summary (recall, savings):\n\nandroid-nougat-x86-rel:chrome_public_test_apk 100.0%, 90.37%\n\nlinux-chromeos-rel:browser_tests 99.16%, 8.37%',
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'analyze suite_fails_to_complete on mac',
+      ['-log-furthest=100'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'fetch rejections (fast)',
+      ['-from=2012-04-15', '-to=2012-05-13'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'fetch rejections (fast) (2)',
+      ['-from=2012-03-18', '-to=2012-04-15'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'fetch rejections (fast) (3)',
+      ['-from=2012-02-19', '-to=2012-03-18'],
+    ),
+    api.post_check(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
 

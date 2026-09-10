@@ -6,14 +6,15 @@ from __future__ import annotations
 
 from recipe_engine import recipe_test_api
 
-from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
-                                                                try_spec)
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+  builder_db,
+  try_spec,
+)
 
 
 class ANGLETestsApi(recipe_test_api.RecipeTestApi):
-
   @recipe_test_api.mod_test_data
-  #@staticmethod
+  # @staticmethod
   def builders(self, builders):
     """Override test builders for a test.
 
@@ -24,7 +25,7 @@ class ANGLETestsApi(recipe_test_api.RecipeTestApi):
     return builders
 
   @recipe_test_api.mod_test_data
-  #@staticmethod
+  # @staticmethod
   def trybots(self, trybots):
     """Override test builders for a test.
 
@@ -56,5 +57,6 @@ class ANGLETestsApi(recipe_test_api.RecipeTestApi):
     assert 'use_try_db' not in kwargs
     kwargs.setdefault('builder_group', 'angle')
     kwargs.setdefault('project', 'angle')
-    kwargs.setdefault('git_repo',
-                      'https://chromium.googlesource.com/angle/angle/')
+    kwargs.setdefault(
+      'git_repo', 'https://chromium.googlesource.com/angle/angle/'
+    )

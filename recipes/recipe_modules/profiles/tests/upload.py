@@ -27,17 +27,18 @@ class DEPS(RecipeScriptApi):
 def RunSteps(api: DEPS):
   # fake path for start_dir
   api.profiles.upload(
-      'bucket',
-      'path/artifact.txt',
-      '/local/tmp/artifact.txt',
-      args=['-Z'],
-      link_name='artifact.txt')
+    'bucket',
+    'path/artifact.txt',
+    '/local/tmp/artifact.txt',
+    args=['-Z'],
+    link_name='artifact.txt',
+  )
 
 
 def GenTests(api: RecipeTestApi):
 
   yield api.test(
-      'basic',
-      api.post_process(post_process.MustRun, 'gsutil upload artifact to GS'),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    api.post_process(post_process.MustRun, 'gsutil upload artifact to GS'),
+    api.post_process(post_process.DropExpectation),
   )

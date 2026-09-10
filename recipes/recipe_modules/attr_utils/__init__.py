@@ -108,15 +108,16 @@ def _instance_of(type_, name_qualifier=''):
   def inner(obj, attribute, value):
     if not isinstance(value, type_):
       raise TypeError(
-          "{name_qualifier}'{name}' must be {type_qualifier}{type!r} "
-          '(got {value!r} that is a {actual!r}).'.format(
-              name=attribute.name,
-              name_qualifier=name_qualifier,
-              type=type_,
-              type_qualifier=type_qualifier,
-              actual=type(value),
-              value=value,
-          ))
+        "{name_qualifier}'{name}' must be {type_qualifier}{type!r} "
+        '(got {value!r} that is a {actual!r}).'.format(
+          name=attribute.name,
+          name_qualifier=name_qualifier,
+          type=type_,
+          type_qualifier=type_qualifier,
+          actual=type(value),
+          value=value,
+        )
+      )
 
   return inner
 
@@ -126,11 +127,14 @@ def _attrib(default, constraint):
     validator = validators.optional(constraint.validate)
     converter = converters.optional(constraint.convert)
   elif default is _NOTHING:
+
     def validator(obj, attribute, value):
       if value is _NOTHING:
         raise TypeError(
-            "No value provided for required attribute '{name}'".format(
-                name=attribute.name))
+          "No value provided for required attribute '{name}'".format(
+            name=attribute.name
+          )
+        )
       constraint.validate(obj, attribute, value)
 
     converter = constraint.convert
@@ -171,7 +175,6 @@ class AttributeConstraint:
     converter = converter or (lambda value: value)
 
     class _CallableDelegatingAttributeConstraint(AttributeConstraint):
-
       def validate(self, obj, attribute, value):
         validator(obj, attribute, value)
 
@@ -181,10 +184,9 @@ class AttributeConstraint:
     return _CallableDelegatingAttributeConstraint()
 
 
-def _normalize_constraint(constraint,
-                          constraint_id,
-                          name_qualifier='',
-                          allow_ellipsis=False):
+def _normalize_constraint(
+  constraint, constraint_id, name_qualifier='', allow_ellipsis=False
+):
   """Converts an input constraint to an AttributeConstraint.
 
   Args:
@@ -211,18 +213,23 @@ def _normalize_constraint(constraint,
   if isinstance(constraint, tuple):
     non_type_members = [e for e in constraint if not isinstance(e, type)]
     if non_type_members:
-      raise TypeError('All members of constraint must be types, got {}'.format(
-          non_type_members))
+      raise TypeError(
+        'All members of constraint must be types, got {}'.format(
+          non_type_members
+        )
+      )
   elif not isinstance(constraint, type):
     allowed = ['a type', 'a tuple of types', 'an AttributeConstraint']
     if allow_ellipsis:
       allowed.append('Ellipsis')
     message = '{} must be one of {} or {}, got {}'.format(
-        constraint_id, ', '.join(allowed[:-1]), allowed[-1], constraint)
+      constraint_id, ', '.join(allowed[:-1]), allowed[-1], constraint
+    )
     raise TypeError(message)
 
   return AttributeConstraint.from_callables(
-      validator=_instance_of(constraint, name_qualifier))
+    validator=_instance_of(constraint, name_qualifier)
+  )
 
 
 def attrib(constraint, default=_NOTHING):
@@ -244,27 +251,29 @@ def attrib(constraint, default=_NOTHING):
 def enum(values):
   """A constraint allowing only specific values."""
   return AttributeConstraint.from_callables(
-      validator=validators.in_(tuple(values)))
+    validator=validators.in_(tuple(values))
+  )
 
 
 @attr.s(frozen=True, slots=True)
 class _Sequence(AttributeConstraint):
-
   _member_constraint = attr.ib()
 
   @classmethod
   def create(cls, member_constraint=Ellipsis):
     member_constraint = _normalize_constraint(
-        member_constraint,
-        constraint_id='member_constraint',
-        name_qualifier='members of ',
-        allow_ellipsis=True)
+      member_constraint,
+      constraint_id='member_constraint',
+      name_qualifier='members of ',
+      allow_ellipsis=True,
+    )
     return cls(member_constraint)
 
   def validate(self, obj, attribute, value):
     validator = validators.deep_iterable(
-        iterable_validator=_instance_of(tuple),
-        member_validator=self._member_constraint.validate)
+      iterable_validator=_instance_of(tuple),
+      member_validator=self._member_constraint.validate,
+    )
     validator(obj, attribute, value)
 
   def convert(self, value):
@@ -277,7 +286,6 @@ class _Sequence(AttributeConstraint):
 
 
 class _UnparameterizedSequence(_Sequence):
-
   @staticmethod
   def __getitem__(member_constraint):
     return _Sequence.create(member_constraint)
@@ -294,22 +302,23 @@ command_args = sequence[(int, str, Path, Placeholder)]
 
 @attr.s(frozen=True, slots=True)
 class _Set(AttributeConstraint):
-
   _member_constraint = attr.ib()
 
   @classmethod
   def create(cls, member_constraint=Ellipsis):
     member_constraint = _normalize_constraint(
-        member_constraint,
-        constraint_id='member_constraint',
-        name_qualifier='members of ',
-        allow_ellipsis=True)
+      member_constraint,
+      constraint_id='member_constraint',
+      name_qualifier='members of ',
+      allow_ellipsis=True,
+    )
     return cls(member_constraint)
 
   def validate(self, obj, attribute, value):
     validator = validators.deep_iterable(
-        iterable_validator=_instance_of(frozenset),
-        member_validator=self._member_constraint.validate)
+      iterable_validator=_instance_of(frozenset),
+      member_validator=self._member_constraint.validate,
+    )
     validator(obj, attribute, value)
 
   def convert(self, value):
@@ -322,7 +331,6 @@ class _Set(AttributeConstraint):
 
 
 class _UnparameterizedSet(_Set):
-
   @staticmethod
   def __getitem__(member_constraint):
     return _Set.create(member_constraint)
@@ -333,29 +341,31 @@ set_ = _UnparameterizedSet.create()
 
 @attr.s(frozen=True, slots=True)
 class _Mapping(AttributeConstraint):
-
   _key_constraint = attr.ib()
   _value_constraint = attr.ib()
 
   @classmethod
   def create(cls, key_constraint=Ellipsis, value_constraint=Ellipsis):
     key_constraint = _normalize_constraint(
-        key_constraint,
-        constraint_id='key_constraint',
-        name_qualifier='keys of ',
-        allow_ellipsis=True)
+      key_constraint,
+      constraint_id='key_constraint',
+      name_qualifier='keys of ',
+      allow_ellipsis=True,
+    )
     value_constraint = _normalize_constraint(
-        value_constraint,
-        constraint_id='value_constraint',
-        name_qualifier='values of ',
-        allow_ellipsis=True)
+      value_constraint,
+      constraint_id='value_constraint',
+      name_qualifier='values of ',
+      allow_ellipsis=True,
+    )
     return cls(key_constraint, value_constraint)
 
   def validate(self, obj, attribute, value):
     validator = validators.deep_mapping(
-        mapping_validator=_instance_of(FrozenDict),
-        key_validator=self._key_constraint.validate,
-        value_validator=self._value_constraint.validate)
+      mapping_validator=_instance_of(FrozenDict),
+      key_validator=self._key_constraint.validate,
+      value_validator=self._value_constraint.validate,
+    )
     validator(obj, attribute, value)
 
   def convert(self, value):
@@ -364,24 +374,28 @@ class _Mapping(AttributeConstraint):
     except AttributeError:
       # Let the validator provide a more helpful exception message
       return value
-    return freeze({
+    return freeze(
+      {
         self._key_constraint.convert(k): self._value_constraint.convert(v)
         for k, v in itr
-    })
+      }
+    )
 
 
 class _UnparameterizedMapping(_Mapping):
-
   @staticmethod
   def __getitem__(constraints):
     # __getitem__ is interesting: for multiple parameters, they actually
     # get packed up into a tuple
-    assert isinstance(constraints, tuple), \
-        ('constraints must be specified for both keys and values, '
-         'use ... for no constraint')
+    assert isinstance(constraints, tuple), (
+      'constraints must be specified for both keys and values, '
+      'use ... for no constraint'
+    )
     assert len(constraints) == 2, (
-        'expected exactly 2 constraints (keys and values), got {} {}'.format(
-            len(constraints), constraints))
+      'expected exactly 2 constraints (keys and values), got {} {}'.format(
+        len(constraints), constraints
+      )
+    )
     return _Mapping.create(*constraints)
 
 
@@ -389,7 +403,8 @@ mapping = _UnparameterizedMapping.create()
 
 
 callable_ = AttributeConstraint.from_callables(
-    validator=validators.is_callable())
+  validator=validators.is_callable()
+)
 
 
 def cached_property(getter):
@@ -416,7 +431,6 @@ def cached_property(getter):
   cache = {}
 
   class CachedProperty:
-
     def __get__(self, obj, objtype=None):
       """Descriptor for computing cached properties.
 

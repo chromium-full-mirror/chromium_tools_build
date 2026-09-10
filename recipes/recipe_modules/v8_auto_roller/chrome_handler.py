@@ -26,16 +26,19 @@ class CfTPinRollHandler(RollHandler):
     new_value = self.get_latest_version(self.api)
     needs_update = self.should_roll(current_value, new_value)
     if needs_update:
-      self.api.gclient(f'set {CHROME_VAR} deps',
-                       ['setdep', f'--var={CHROME_VAR}={new_value}'])
+      self.api.gclient(
+        f'set {CHROME_VAR} deps', ['setdep', f'--var={CHROME_VAR}={new_value}']
+      )
       return f'Chromium pin updated to {new_value}'
     return None
 
   def current_raw_value(self, api):
     try:
       step_result = api.gclient(
-          f'get {CHROME_VAR} deps', ['getdep', f'--var={CHROME_VAR}'],
-          stdout=api.raw_io.output_text(''))
+        f'get {CHROME_VAR} deps',
+        ['getdep', f'--var={CHROME_VAR}'],
+        stdout=api.raw_io.output_text(''),
+      )
       # The first line contains the commit position number. Strip the rest.
       return step_result.stdout.strip().splitlines()[0].strip()
     except Exception:
@@ -44,22 +47,18 @@ class CfTPinRollHandler(RollHandler):
 
   def get_latest_version(self, api):
     return api.url.get_json(
-        CFT_LKGR_URL,
-        step_name=f'check latest {CHROME_VAR}',
-        default_test_data={
-            'channels': {
-                'Canary': {
-                    'version': '123.0.4500.6'
-                }
-            }
-        }).output['channels']['Canary']['version']
+      CFT_LKGR_URL,
+      step_name=f'check latest {CHROME_VAR}',
+      default_test_data={'channels': {'Canary': {'version': '123.0.4500.6'}}},
+    ).output['channels']['Canary']['version']
 
   def version_tuple(self, version):
     return tuple(map(int, version.split('.')))
 
   def should_roll(self, current, latest):
-    return current and (self.version_tuple(current) <
-                        self.version_tuple(latest))
+    return current and (
+      self.version_tuple(current) < self.version_tuple(latest)
+    )
 
   def get_subject(self):
     return CFT_PIN_CL_SUBJECT

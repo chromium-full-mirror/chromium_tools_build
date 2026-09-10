@@ -30,17 +30,20 @@ class TEST_DEPS(RecipeTestApi):
 def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   version = api.chromium.get_version(source_dir)
-  api.assertions.assertEqual(version, {
+  api.assertions.assertEqual(
+    version,
+    {
       'MAJOR': '123',
       'MINOR': '1',
       'BUILD': '9876',
       'PATCH': '2',
-  })
+    },
+  )
 
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-      'override_version',
-      api.chromium.override_version(major=123, minor=1, build=9876, patch=2),
-      api.post_process(post_process.DropExpectation),
+    'override_version',
+    api.chromium.override_version(major=123, minor=1, build=9876, patch=2),
+    api.post_process(post_process.DropExpectation),
   )

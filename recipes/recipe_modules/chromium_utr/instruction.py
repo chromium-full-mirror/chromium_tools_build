@@ -12,15 +12,17 @@ from collections.abc import Iterable
 from RECIPE_MODULES.build import chromium_types
 
 
-def get_utr_instruction(command: str,
-                        project: str,
-                        bucket: str,
-                        builder: str,
-                        test_names: Iterable[str],
-                        utr_flags: Iterable[str] | None = None,
-                        extra_args: Iterable[str] | None = None,
-                        include_preface_text: bool = True) -> str:
-  """ Provides the Universal Test Runner (UTR) steps to reproduce a step
+def get_utr_instruction(
+  command: str,
+  project: str,
+  bucket: str,
+  builder: str,
+  test_names: Iterable[str],
+  utr_flags: Iterable[str] | None = None,
+  extra_args: Iterable[str] | None = None,
+  include_preface_text: bool = True,
+) -> str:
+  """Provides the Universal Test Runner (UTR) steps to reproduce a step
 
   Adds any provided local and remote instructions for to the provided by
   attaching the tag and instruction id. This must be called before the step
@@ -48,14 +50,14 @@ def get_utr_instruction(command: str,
 
   def gen_cmd(skip_siso=False):
     utr_cmd = [
-        'vpython3',
-        'tools/utr',
-        '-p',
-        project,
-        '-B',
-        bucket,
-        '-b',
-        builder,
+      'vpython3',
+      'tools/utr',
+      '-p',
+      project,
+      '-B',
+      bucket,
+      '-b',
+      builder,
     ]
     if skip_siso:
       utr_cmd += ['--no-siso']
@@ -72,24 +74,28 @@ def get_utr_instruction(command: str,
   if include_preface_text:
     utr_readme_url = 'https://chromium.googlesource.com/chromium/src/+/main/tools/utr/README.md'
     lines.append(
-        f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
-        'checkout:')
+      f'[UTR]({utr_readme_url}) command to reproduce from your Chromium '
+      'checkout:'
+    )
   lines.append('```' + gen_cmd() + '```')
   lines.append('')
 
   if not project.startswith('chrome'):
     non_googler_cmd = gen_cmd(skip_siso=True)
     non_googler_line = (
-        '<details><summary>For non-Googlers, use this command</summary>')
+      '<details><summary>For non-Googlers, use this command</summary>'
+    )
     non_googler_line += f'```{non_googler_cmd}```</details>'
     lines.append(non_googler_line)
 
   return '<br/>'.join(lines)
 
 
-def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
-                                step_result: step_data.StepData,
-                                builder_id: chromium_types.BuilderId) -> None:
+def get_utr_compile_instruction(
+  chromium_api: recipe_api.RecipeApi,
+  step_result: step_data.StepData,
+  builder_id: chromium_types.BuilderId,
+) -> None:
   """Apply the compile instruction for the provided step_result
 
   Creates and adds the instruction for compiling using the UTR for the provided
@@ -102,41 +108,47 @@ def get_utr_compile_instruction(chromium_api: recipe_api.RecipeApi,
     builder_id: ID of the builder to use for the instruction
   """
   # UTR prefers orch builder names when running a compilator's compile.
-  orch_name = chromium_api.m.properties.get('orchestrator',
-                                            {}).get('builder_name')
+  orch_name = chromium_api.m.properties.get('orchestrator', {}).get(
+    'builder_name'
+  )
   builder_name = orch_name if orch_name else builder_id.builder
   # Include instructions with no targets to compile all. This can cause
   # the instruction to reproduce failures in compile targets that are being
   # filtered on the builder. This is preferable to plumbing the test names
   # through compile functions for now
   utr_instructions = get_utr_instruction(
-      'compile',
-      chromium_api.m.buildbucket.build.builder.project,
-      (chromium_api.m.led.shadowed_bucket or
-       chromium_api.m.buildbucket.build.builder.bucket),
-      builder_name,
-      [],
+    'compile',
+    chromium_api.m.buildbucket.build.builder.project,
+    (
+      chromium_api.m.led.shadowed_bucket
+      or chromium_api.m.buildbucket.build.builder.bucket
+    ),
+    builder_name,
+    [],
   )
   utr_instructions += '<br/>To run in your own build dir:<br/>'
   utr_instructions += get_utr_instruction(
-      'compile',
-      chromium_api.m.buildbucket.build.builder.project,
-      (chromium_api.m.led.shadowed_bucket or
-       chromium_api.m.buildbucket.build.builder.bucket),
-      builder_name,
-      [],
-      utr_flags=['--build-dir', '${YOUR_BUILD_DIR_HERE}'],
-      include_preface_text=False,
+    'compile',
+    chromium_api.m.buildbucket.build.builder.project,
+    (
+      chromium_api.m.led.shadowed_bucket
+      or chromium_api.m.buildbucket.build.builder.bucket
+    ),
+    builder_name,
+    [],
+    utr_flags=['--build-dir', '${YOUR_BUILD_DIR_HERE}'],
+    include_preface_text=False,
   )
   local_instructions = (
-      utr_instructions + '<br/>*To force non-remote services '
-      'append --no-rbe and --no-siso, this will dramatically slow the build*')
+    utr_instructions + '<br/>*To force non-remote services '
+    'append --no-rbe and --no-siso, this will dramatically slow the build*'
+  )
   dependency = chromium_api.m.repro_instructions.get_dependency(r'.*bot_update')
   chromium_api.m.repro_instructions.add_step_instruction(
-      step_result,
-      remote_content=utr_instructions,
-      remote_dependency=dependency,
-      local_content=local_instructions,
-      local_dependency=dependency,
+    step_result,
+    remote_content=utr_instructions,
+    remote_dependency=dependency,
+    local_content=local_instructions,
+    local_dependency=dependency,
   )
   step_result.presentation.step_text += utr_instructions.replace('<br/>', '\n')

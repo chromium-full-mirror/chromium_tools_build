@@ -40,18 +40,18 @@ BUGANIZER_FILE_BUG_TEMPLATE = f'{BUGANIZER_SEARCH_BUGS_TEMPLATE}/new'
 FLAKO_LINK_TEMPLATE = 'Link to Flako run: <insert>'
 
 FAILURE_BUG_DEFAULTS = {
-    'title': 'starts failing',
-    'footer': '',
+  'title': 'starts failing',
+  'footer': '',
 }
 
 FLAKE_BUG_DEFAULTS = {
-    'title': 'starts flaking',
-    'footer': FLAKO_LINK_TEMPLATE,
+  'title': 'starts flaking',
+  'footer': FLAKO_LINK_TEMPLATE,
 }
 
 FLAGFUZZ_BUG_DEFAULTS = {
-    'title': 'starts failing (flag fuzzer)',
-    'footer': FLAKO_LINK_TEMPLATE,
+  'title': 'starts failing (flag fuzzer)',
+  'footer': FLAKO_LINK_TEMPLATE,
 }
 
 MAX_BUG_LINKS = 5
@@ -60,8 +60,8 @@ REPRO_TOTAL_TIMEOUT_DEFAULT = 120
 
 # Exonerate builds with flaky crashes if all types are in this list.
 EXONERATED_CRASH_TYPES = [
-    # We keep this dummy to ease recipe testing.
-    '_Magically_exonerated_crash_type_for_testing_',
+  # We keep this dummy to ease recipe testing.
+  '_Magically_exonerated_crash_type_for_testing_',
 ]
 
 # pylint: disable=abstract-method
@@ -69,6 +69,7 @@ EXONERATED_CRASH_TYPES = [
 
 class V8Variant:
   """Immutable class representing testing variants passed to v8."""
+
   def __init__(self, *variants):
     self.variants = variants
 
@@ -99,154 +100,155 @@ def test_args_from_variants(*variants):
   """
   specific_variants = [v for v in variants if v]
   if specific_variants:
-    _variants = sorted(list(set(itertools.chain(
-        *[v.variants for v in specific_variants]))))
+    _variants = sorted(
+      list(set(itertools.chain(*[v.variants for v in specific_variants])))
+    )
   else:
     _variants = ['more', 'dev']
   assert _variants
   return ['--variants=' + ','.join(_variants)]
 
 
-TEST_CONFIGS = freeze({
+TEST_CONFIGS = freeze(
+  {
     'benchmarks': {
-        'name': 'Benchmarks',
-        'tests': ['benchmarks'],
+      'name': 'Benchmarks',
+      'tests': ['benchmarks'],
     },
     'bigint': {
-        'name': 'Bigint',
-        'tests': ['bigint'],
+      'name': 'Bigint',
+      'tests': ['bigint'],
     },
     'check-bytecode-baseline': {
-        'tool': 'check-bytecode-baseline',
-        'isolated_target': 'generate-bytecode-expectations',
+      'tool': 'check-bytecode-baseline',
+      'isolated_target': 'generate-bytecode-expectations',
     },
     'd8testing': {
-        'name': 'Check - d8',
-        'tests': ['d8_default'],
-        'suite_mapping': [
-            'debugger',
-            'intl',
-            'message',
-            'mjsunit',
-            'webkit',
-        ],
+      'name': 'Check - d8',
+      'tests': ['d8_default'],
+      'suite_mapping': [
+        'debugger',
+        'intl',
+        'message',
+        'mjsunit',
+        'webkit',
+      ],
     },
     'd8testing_random_gc': {
-        'name': 'Check - d8',
-        'tests': ['d8_default'],
-        'suite_mapping': [
-            'debugger',
-            'intl',
-            'message',
-            'mjsunit',
-            'webkit',
-        ],
-        'test_args': ['--random-gc-stress'],
+      'name': 'Check - d8',
+      'tests': ['d8_default'],
+      'suite_mapping': [
+        'debugger',
+        'intl',
+        'message',
+        'mjsunit',
+        'webkit',
+      ],
+      'test_args': ['--random-gc-stress'],
     },
     'jetstream3': {
-        'tool': 'run-jetstream3',
-        'isolated_target': 'jetstream3',
+      'tool': 'run-jetstream3',
+      'isolated_target': 'jetstream3',
     },
     'jsfunfuzz': {
-        'tool': 'jsfunfuzz',
-        'isolated_target': 'jsfunfuzz',
+      'tool': 'jsfunfuzz',
+      'isolated_target': 'jsfunfuzz',
     },
     'gcmole_v2': {
-        'tool': 'run-gcmole-v2',
-        'isolated_target': 'run-gcmole',
+      'tool': 'run-gcmole-v2',
+      'isolated_target': 'run-gcmole',
     },
     'gcmole_v3': {
-        'tool': 'run-gcmole-v3',
-        'isolated_target': 'run-gcmole',
+      'tool': 'run-gcmole-v3',
+      'isolated_target': 'run-gcmole',
     },
     'mjsunit': {
-        'name': 'Mjsunit',
-        'tests': ['mjsunit'],
+      'name': 'Mjsunit',
+      'tests': ['mjsunit'],
     },
     'mjsunit_sp_frame_access': {
-        'name': 'Mjsunit - sp frame access',
-        'tests': ['mjsunit'],
-        'test_args': ['--extra-flags=--turbo_sp_frame_access'],
-        'variants': V8Variant('default'),
+      'name': 'Mjsunit - sp frame access',
+      'tests': ['mjsunit'],
+      'test_args': ['--extra-flags=--turbo_sp_frame_access'],
+      'variants': V8Variant('default'),
     },
     'mozilla': {
-        'name': 'Mozilla',
-        'tests': ['mozilla'],
+      'name': 'Mozilla',
+      'tests': ['mozilla'],
     },
     'numfuzz': {
-        'name': 'Num Fuzz',
-        'tool': 'run-num-fuzzer',
-        'isolated_target': 'run-num-fuzzer',
-        'idempotent': False,
-        'use_random_seed': False,
-        'variants': V8Variant('default'),
-        'test_id_prefix': 'numfuzz//',
+      'name': 'Num Fuzz',
+      'tool': 'run-num-fuzzer',
+      'isolated_target': 'run-num-fuzzer',
+      'idempotent': False,
+      'use_random_seed': False,
+      'variants': V8Variant('default'),
+      'test_id_prefix': 'numfuzz//',
     },
     'optimize_for_size': {
-        'name': 'OptimizeForSize',
-        'tests': ['optimize_for_size'],
-        'suite_mapping': [
-            'cctest',
-            'debugger',
-            'mjsunit',
-            'inspector',
-            'intl',
-            'webkit',
-        ],
-        'test_args': ['--extra-flags=--optimize-for-size'],
-        'variants': V8Variant('default'),
+      'name': 'OptimizeForSize',
+      'tests': ['optimize_for_size'],
+      'suite_mapping': [
+        'cctest',
+        'debugger',
+        'mjsunit',
+        'inspector',
+        'intl',
+        'webkit',
+      ],
+      'test_args': ['--extra-flags=--optimize-for-size'],
+      'variants': V8Variant('default'),
     },
     'perf_integration': {
-        'tool': 'run-perf',
-        'isolated_target': 'perf_integration',
+      'tool': 'run-perf',
+      'isolated_target': 'perf_integration',
     },
     'pgo_instrumentation': {
-        'tool': 'run-perf',
-        'isolated_target': 'd8_pgo',
+      'tool': 'run-perf',
+      'isolated_target': 'd8_pgo',
     },
     'test262': {
-        'name': 'Test262',
-        'tests': ['test262'],
+      'name': 'Test262',
+      'tests': ['test262'],
     },
     'unittests': {
-        'name': 'Unittests',
-        'tests': ['unittests'],
+      'name': 'Unittests',
+      'tests': ['unittests'],
     },
     'v8initializers': {
-        'tool': 'check-static-initializers',
-        'isolated_target': 'check-static-initializers',
+      'tool': 'check-static-initializers',
+      'isolated_target': 'check-static-initializers',
     },
     'fuchsia-unittests': {
-        'tool': 'fuchsia-unittests',
-        'isolated_target': 'fuchsia-unittests',
+      'tool': 'fuchsia-unittests',
+      'isolated_target': 'fuchsia-unittests',
     },
     'v8testing': {
-        'name':
-            'Check',
-        'tests': ['bot_default'],
-        'suite_mapping': [
-            'cctest',
-            'debugger',
-            'fuzzer',
-            'inspector',
-            'intl',
-            'message',
-            'mjsunit',
-            'mkgrokdump',
-            'unittests',
-            'wasm-spec-tests',
-            'webkit',
-        ],
+      'name': 'Check',
+      'tests': ['bot_default'],
+      'suite_mapping': [
+        'cctest',
+        'debugger',
+        'fuzzer',
+        'inspector',
+        'intl',
+        'message',
+        'mjsunit',
+        'mkgrokdump',
+        'unittests',
+        'wasm-spec-tests',
+        'webkit',
+      ],
     },
     'webkit': {
-        'name': 'Webkit',
-        'tests': ['webkit'],
+      'name': 'Webkit',
+      'tests': ['webkit'],
     },
-})
+  }
+)
 
 
 class BaseTest:
-
   def __init__(self, test_step_config, api):
     self.test_step_config = test_step_config
     self.name = test_step_config.name
@@ -273,15 +275,17 @@ class BaseTest:
       raw_cmd = ['vpython3', '-u'] + raw_cmd
 
     task = self.api.chromium_swarming.task(
-        cas_input_root=cas_digest, raw_cmd=raw_cmd, **kwargs)
+      cas_input_root=cas_digest, raw_cmd=raw_cmd, **kwargs
+    )
     if self.api.v8_tests.resultdb:
       request = task.request.with_resultdb()
       wrapperd_cmd = self.api.v8_tests.resultdb.wrap(
-          self.api,
-          raw_cmd,
-          base_variant=self.base_variant(),
-          exonerate_unexpected_pass=False,
-          test_id_prefix=test.get('test_id_prefix', '//'))
+        self.api,
+        raw_cmd,
+        base_variant=self.base_variant(),
+        exonerate_unexpected_pass=False,
+        test_id_prefix=test.get('test_id_prefix', '//'),
+      )
 
       request_slice = request[0].with_command(wrapperd_cmd)
       task.request = request.with_slice(0, request_slice)
@@ -290,8 +294,8 @@ class BaseTest:
 
   def base_variant(self):
     vatiant_tags = {
-        'bucket': self.api.buildbucket.build.builder.bucket,
-        'builder': self.api.buildbucket.builder_name,
+      'bucket': self.api.buildbucket.build.builder.bucket,
+      'builder': self.api.buildbucket.builder_name,
     }
     if self.test_step_config.suffix:
       vatiant_tags['test_config'] = self.test_step_config.suffix
@@ -331,7 +335,8 @@ class V8Test(BaseTest):
   def apply_filter(self):
     test_config = self.api.v8_tests.test_configs[self.name]
     self.applied_test_filter = self.api.v8_tests._applied_test_filter(
-        test_config)
+      test_config
+    )
     if self.api.v8_tests.test_filter and not self.applied_test_filter:
       self.api.step(test_config['name'] + ' - skipped', cmd=None)
       return False
@@ -341,7 +346,8 @@ class V8Test(BaseTest):
     test = test or self.api.v8_tests.test_configs[self.name]
 
     full_args, env = self.api.v8_tests._setup_test_runner(
-        test, self.applied_test_filter, self.test_step_config)
+      test, self.applied_test_filter, self.test_step_config
+    )
     full_args += [
       '--json-test-results',
       self.api.json.output(add_json_log=False),
@@ -353,7 +359,7 @@ class V8Test(BaseTest):
           test['name'] + self.test_step_config.step_name_suffix,
           ['vpython3', '-u', script] + full_args,
           step_test_data=self.api.v8_tests.test_api.output_json,
-          **kwargs
+          **kwargs,
         )
       except self.api.step.StepFailure as e:
         if e.retcode != 1:
@@ -377,9 +383,11 @@ class V8Test(BaseTest):
     self.api.v8_tests.update_max_vms(json_output, step_result.presentation)
     failure_factory = Failure.factory_func(self)
     failure_log, failures, flake_log, flakes = (
-        self.api.v8_tests._get_failure_logs(json_output, failure_factory))
+      self.api.v8_tests._get_failure_logs(json_output, failure_factory)
+    )
     self.api.v8_tests._update_failure_presentation(
-        failure_log, failures, step_result.presentation)
+      failure_log, failures, step_result.presentation
+    )
     self._add_bug_links(failures, step_result.presentation)
 
     if failure_log and failures:
@@ -396,16 +404,19 @@ class V8Test(BaseTest):
       # Emit a separate step to show flakes from the previous step
       # to not close the tree.
       step_result = self.api.step(
-          test['name'] + self.test_step_config.step_name_suffix + ' (flakes)',
-          cmd=None)
+        test['name'] + self.test_step_config.step_name_suffix + ' (flakes)',
+        cmd=None,
+      )
       # TODO(sergiyb): Use WARNING result type after crbug.com/854099 is fixed.
       step_result.presentation.status = self.api.step.FAILURE
       self.api.v8_tests._update_failure_presentation(
-            flake_log, flakes, step_result.presentation)
+        flake_log, flakes, step_result.presentation
+      )
       self._add_bug_links(flakes, step_result.presentation)
 
-    return TestResults(failures, flakes, infra_failures,
-                       json_output['test_total'])
+    return TestResults(
+      failures, flakes, infra_failures, json_output['test_total']
+    )
 
   def _add_bug_links(self, failures, presentation):
     """Adds links to search/file bugs for up to MAX_BUG_LINKS tests."""
@@ -413,7 +424,8 @@ class V8Test(BaseTest):
       link = PreparedRequest()
       ui_label = self.api.v8_tests.ui_test_label(failure.name)
       link_params = failure.get_buganizer_params(
-          self.api.buildbucket.build_url())
+        self.api.buildbucket.build_url()
+      )
 
       search_query = ' -status:Fixed -status:Verified'
       bug_description = BUGANIZER_FILE_BUG_DESCRIPTION
@@ -424,15 +436,15 @@ class V8Test(BaseTest):
         search_query = '"{name}"' + search_query
 
       bug_search_link_params = {
-          'q': search_query.format(**link_params),
+        'q': search_query.format(**link_params),
       }
 
       bug_file_link_params = {
-          'priority': 'P1',
-          'component': 1456824,  # Chromium > Blink > JavaScript
-          'type': 'Bug',
-          'title': f'{link_params["name"]} {link_params["title"]}',
-          'description': bug_description.format(**link_params),
+        'priority': 'P1',
+        'component': 1456824,  # Chromium > Blink > JavaScript
+        'type': 'Bug',
+        'title': f'{link_params["name"]} {link_params["title"]}',
+        'description': bug_description.format(**link_params),
       }
 
       link.prepare_url(BUGANIZER_SEARCH_BUGS_TEMPLATE, bug_search_link_params)
@@ -441,7 +453,8 @@ class V8Test(BaseTest):
       presentation.links['%s (new)' % ui_label] = link.url
     if len(failures) > MAX_BUG_LINKS:
       presentation.step_text += (
-          'too many failures, only showing some links below<br/>')
+        'too many failures, only showing some links below<br/>'
+      )
 
   def _setup_rerun_config(self, failure_dict):
     """Return: A test config that reproduces a specific failure."""
@@ -456,10 +469,12 @@ class V8Test(BaseTest):
     # the original list. We need to set it explicitly now, as the tests
     # parameter changes on rerun, but the isolated target is still the same.
     isolated_target = orig_config.get(
-        'isolated_target', orig_config['tests'][0])
+      'isolated_target', orig_config['tests'][0]
+    )
 
     test_args = list(orig_config.get('test_args', [])) + [
-      '--random-seed', str(failure_dict['random_seed']),
+      '--random-seed',
+      str(failure_dict['random_seed']),
     ]
 
     rerun_config = {
@@ -467,7 +482,7 @@ class V8Test(BaseTest):
       'isolated_target': isolated_target,
       'tests': [failure_dict['name']],
       'test_args': test_args,
-      'variants': V8Variant(failure_dict['variant'])
+      'variants': V8Variant(failure_dict['variant']),
     }
 
     # Switch off test filters on rerun.
@@ -476,7 +491,8 @@ class V8Test(BaseTest):
 
   def rerun(self, source_dir, failure_dict, **kwargs):
     return self.run(
-        source_dir, test=self._setup_rerun_config(failure_dict), **kwargs)
+      source_dir, test=self._setup_rerun_config(failure_dict), **kwargs
+    )
 
 
 def _trigger_swarming_task(api, task, test_step_config):
@@ -501,20 +517,23 @@ def _trigger_swarming_task(api, task, test_step_config):
 
   task_slice = task_slice.with_dimensions(**task_dimensions)
 
-  override_swarming_attrs(task, task_slice,
-                          test_step_config.swarming_task_attrs)
+  override_swarming_attrs(
+    task, task_slice, test_step_config.swarming_task_attrs
+  )
 
   api.chromium_swarming.trigger_task(task)
 
   # Remove 'invocations/' because it is added again in include_invocations.
   api.resultdb.include_invocations(
-      [i[len('invocations/'):] for i in task.get_invocation_names()])
+    [i[len('invocations/') :] for i in task.get_invocation_names()]
+  )
 
 
 def override_swarming_attrs(task, task_slice, attrs):
   if attrs.get('hard_timeout'):
     task_slice = task_slice.with_execution_timeout_secs(
-        int(attrs['hard_timeout']))
+      int(attrs['hard_timeout'])
+    )
   if attrs.get('expiration'):
     task_slice = task_slice.with_expiration_secs(int(attrs['expiration']))
   task.request = task.request.with_slice(0, task_slice)
@@ -543,28 +562,29 @@ class V8SwarmingTest(V8Test):
 
     # Shim script's own arguments.
     args = [
-        '--temp-root-dir',
-        self.api.path.tmp_base_dir,
-        '--merged-test-output',
-        json_output,
-        '--warnings-json',
-        warnings_json,
+      '--temp-root-dir',
+      self.api.path.tmp_base_dir,
+      '--merged-test-output',
+      json_output,
+      '--warnings-json',
+      warnings_json,
     ]
 
     # Arguments for actual 'collect' command.
     args.append('--')
     args.extend(
-        self.api.chromium_swarming.get_collect_cmd_args(
-            task.collect_cmd_input()))
+      self.api.chromium_swarming.get_collect_cmd_args(task.collect_cmd_input())
+    )
 
     with self.api.swarming.on_path():
       with self.api.context(infra_steps=True):
         script = self.api.v8_tests.resource('collect_v8_task.py')
         return self.api.step(
-            self.test['name'] + self.test_step_config.step_name_suffix,
-            ['python3', '-u', script] + args,
-            step_test_data=kwargs.pop('step_test_data', None),
-            **kwargs)
+          self.test['name'] + self.test_step_config.step_name_suffix,
+          ['python3', '-u', script] + args,
+          step_test_data=kwargs.pop('step_test_data', None),
+          **kwargs,
+        )
 
   def _post_process_warnings(self):
     step_result = self.api.step.active_result
@@ -576,14 +596,15 @@ class V8SwarmingTest(V8Test):
     # Set up arguments for test runner.
     self.test = test or self.api.v8_tests.test_configs[self.name]
     extra_args, _ = self.api.v8_tests._setup_test_runner(
-        self.test, self.applied_test_filter, self.test_step_config)
+      self.test, self.applied_test_filter, self.test_step_config
+    )
 
     # Let json results be stored in swarming's output folder. The collect
     # step will copy the folder's contents back to the client.
     extra_args += [
-        '--swarming',
-        '--json-test-results',
-        '${ISOLATED_OUTDIR}/output.json',
+      '--swarming',
+      '--json-test-results',
+      '${ISOLATED_OUTDIR}/output.json',
     ]
 
     # Initialize number of shards, either per test or per builder.
@@ -597,12 +618,12 @@ class V8SwarmingTest(V8Test):
     # Initialize swarming task with custom data-collection step for v8
     # test-runner output.
     self.task = self.create_task(
-        self.test,
-        name=self.test['name'] + self.test_step_config.step_name_suffix,
-        idempotent=idempotent,
-        shards=shards,
-        raw_cmd=command + extra_args,
-        **kwargs
+      self.test,
+      name=self.test['name'] + self.test_step_config.step_name_suffix,
+      idempotent=idempotent,
+      shards=shards,
+      raw_cmd=command + extra_args,
+      **kwargs,
     )
     self.task.collect_step = self._v8_collect_step
 
@@ -636,9 +657,9 @@ class V8GenericSwarmingTest(BaseTest):
   def __init__(self, test_step_config, api, title=None, command=None):
     super().__init__(test_step_config, api)
     self._command = command or []
-    self._title = (
-        title or
-        self.api.v8_tests.test_configs[self.name].get('name', 'Generic test'))
+    self._title = title or self.api.v8_tests.test_configs[self.name].get(
+      'name', 'Generic test'
+    )
     self.test = None
     self.task = None
 
@@ -663,11 +684,11 @@ class V8GenericSwarmingTest(BaseTest):
   def pre_run(self, test=None, **kwargs):
     self.test = test or self.api.v8_tests.test_configs[self.name]
     self.task = self.create_task(
-        self.test,
-        name=self.title,
-        task_output_dir=self.task_output_dir,
-        raw_cmd=self.command or [],
-        **kwargs
+      self.test,
+      name=self.title,
+      task_output_dir=self.task_output_dir,
+      raw_cmd=self.command or [],
+      **kwargs,
     )
 
     _trigger_swarming_task(self.api, self.task, self.test_step_config)
@@ -740,13 +761,13 @@ class V82PhaseGenericSwarmingTest(BaseTest):
     self.output_dir = self.api.path.mkdtemp('swarming_output')
 
     self.task = self.create_task(
-        self.test,
-        name=f'{self.title} - prepare',
-        idempotent=self.idempotent,
-        shards=self.shards,
-        task_output_dir=self.output_dir,
-        raw_cmd=self.command_phase1,
-        **kwargs
+      self.test,
+      name=f'{self.title} - prepare',
+      idempotent=self.idempotent,
+      shards=self.shards,
+      task_output_dir=self.output_dir,
+      raw_cmd=self.command_phase1,
+      **kwargs,
     )
 
     _trigger_swarming_task(self.api, self.task, self.test_step_config)
@@ -765,7 +786,9 @@ class V82PhaseGenericSwarmingTest(BaseTest):
     could split this method into two, doing all workspace preparations in
     sequence first, before waiting for the first phase-1 task.
     """
-    with self.api.step.nest(f'{self.title} - local',):
+    with self.api.step.nest(
+      f'{self.title} - local',
+    ):
       workspace = self.api.path.mkdtemp('workspace')
 
       with self.api.context(cwd=workspace):
@@ -778,11 +801,11 @@ class V82PhaseGenericSwarmingTest(BaseTest):
         self.run_local(workspace)
 
       self.task = self.create_task(
-          self.test,
-          name=self.title,
-          idempotent=self.idempotent,
-          shards=self.shards,
-          raw_cmd=self.command_phase2,
+        self.test,
+        name=self.title,
+        idempotent=self.idempotent,
+        shards=self.shards,
+        raw_cmd=self.command_phase2,
       )
 
       _trigger_swarming_task(self.api, self.task, self.test_step_config)
@@ -835,6 +858,7 @@ class V8CheckInitializers(V8GenericSwarmingTest):
       self.api.v8_tests.relative_path_to_d8,
     ]
 
+
 class V8FuchsiaUnittests(V8GenericSwarmingTest):
   @property
   def title(self):
@@ -843,9 +867,9 @@ class V8FuchsiaUnittests(V8GenericSwarmingTest):
   @property
   def command(self):
     return [
-      self.api.path.join(
-          'out', 'build', 'bin', 'run_v8_unittests'),
+      self.api.path.join('out', 'build', 'bin', 'run_v8_unittests'),
     ]
+
 
 class V8CheckBytecodeBaseline(V8GenericSwarmingTest):
   @property
@@ -855,27 +879,26 @@ class V8CheckBytecodeBaseline(V8GenericSwarmingTest):
   @property
   def command(self):
     return [
-      self.api.path.join(
-          'out', 'build', 'generate-bytecode-expectations'),
+      self.api.path.join('out', 'build', 'generate-bytecode-expectations'),
       '--check-baseline',
     ]
 
 
 class V8Fuzzer(V8GenericSwarmingTest):
-  def __init__(self, test_step_config, api, title='Generic test',
-               command=None):
+  def __init__(self, test_step_config, api, title='Generic test', command=None):
     self.output_dir = api.path.mkdtemp('swarming_output')
-    self.archive = 'fuzz-results-%s.tar.bz2' % (
-        api.properties['parent_got_revision'])
+    self.archive = (
+      'fuzz-results-%s.tar.bz2' % (api.properties['parent_got_revision'])
+    )
     super().__init__(
-        test_step_config,
-        api,
-        title='Fuzz',
-        command=[
-            'tools/jsfunfuzz/fuzz-harness.sh',
-            api.v8_tests.relative_path_to_d8,
-            '${ISOLATED_OUTDIR}/%s' % self.archive,
-        ],
+      test_step_config,
+      api,
+      title='Fuzz',
+      command=[
+        'tools/jsfunfuzz/fuzz-harness.sh',
+        api.v8_tests.relative_path_to_d8,
+        '${ISOLATED_OUTDIR}/%s' % self.archive,
+      ],
     )
 
   @property
@@ -887,10 +910,11 @@ class V8Fuzzer(V8GenericSwarmingTest):
       super().run(test, **kwargs)
     except self.api.step.StepFailure as e:
       self.api.gsutil.upload(
-          self.output_dir.joinpath(self.task.get_task_shard_output_dirs()[0],
-                                   self.archive),
-          'chromium-v8',
-          self.api.path.join('fuzzer-archives', self.archive),
+        self.output_dir.joinpath(
+          self.task.get_task_shard_output_dirs()[0], self.archive
+        ),
+        'chromium-v8',
+        self.api.path.join('fuzzer-archives', self.archive),
       )
       raise e
     return TestResults.not_empty()
@@ -904,8 +928,8 @@ class V8GCMoleV2(V8GenericSwarmingTest):
   @property
   def command(self):
     return [
-        'tools/gcmole/run-gcmole.py',
-        str(self.test_step_config.variants),
+      'tools/gcmole/run-gcmole.py',
+      str(self.test_step_config.variants),
     ] + self.test_step_config.test_args
 
 
@@ -920,7 +944,8 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
       'tools/gcmole/run-gcmole.py',
       'collect',
       str(self.test_step_config.variants),
-      '--output', '${ISOLATED_OUTDIR}/callgraph.bin',
+      '--output',
+      '${ISOLATED_OUTDIR}/callgraph.bin',
     ] + self.test_step_config.test_args
 
   @property
@@ -954,11 +979,11 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
     upload results to CAS.
     """
     command = [
-        'python3',
-        '-u',
-        workspace.joinpath('tools', 'gcmole', 'run-gcmole.py'),
-        'merge',
-        str(self.test_step_config.variants),
+      'python3',
+      '-u',
+      workspace.joinpath('tools', 'gcmole', 'run-gcmole.py'),
+      'merge',
+      str(self.test_step_config.variants),
     ] + self.test_step_config.test_args
     for taskdir in self.task.get_task_shard_output_dirs():
       command += ['--input', self.output_dir.joinpath(taskdir, 'callgraph.bin')]
@@ -966,8 +991,9 @@ class V8GCMoleV3(V82PhaseGenericSwarmingTest):
     self.api.step('Merge callgraphs', command)
 
     with self.api.context(cwd=workspace):
-      isolate_file = self.api.path.join(workspace,
-                                        'merged_gcmole_files.isolate')
+      isolate_file = self.api.path.join(
+        workspace, 'merged_gcmole_files.isolate'
+      )
       self.api.isolate.write_isolate_file(isolate_file, ['.'])
       digest = self.api.isolate.isolate('Archive workspace', isolate_file)
       target = self.test.get('isolated_target')
@@ -979,47 +1005,52 @@ class V8RunPerf(V8CompositeSwarmingTest):
   def composite_tests(self):
     return [
       V8GenericSwarmingTest(
-          self.test_step_config, self.api,
-          title='JSTests%d' % i,
-          command=[
-            'tools/run_perf.py',
-            'test/js-perf-test/JSTests%d.json' % i,
-            '--arch', 'x64',
-            '--buildbot',
-            # Low run-count for more throughput. Run fastest shard (1) twice
-            # to cover code adding up multiple results.
-            '--run-count=%d' % (2 if i == 1 else 1),
-          ],
-      ) for i in range(1, 6)
+        self.test_step_config,
+        self.api,
+        title='JSTests%d' % i,
+        command=[
+          'tools/run_perf.py',
+          'test/js-perf-test/JSTests%d.json' % i,
+          '--arch',
+          'x64',
+          '--buildbot',
+          # Low run-count for more throughput. Run fastest shard (1) twice
+          # to cover code adding up multiple results.
+          '--run-count=%d' % (2 if i == 1 else 1),
+        ],
+      )
+      for i in range(1, 6)
     ]
 
 
 class V8RunJetStream3(V8CompositeSwarmingTest):
-
   @property
   def composite_tests(self):
     return [
-        V8GenericSwarmingTest(
-            self.test_step_config,
-            self.api,
-            title='JetStream3',
-            command=[
-                'tools/run_perf.py',
-                'test/benchmarks/JetStream3.json',
-                '--arch',
-                'x64',
-                '--buildbot',
-            ],
-        )
+      V8GenericSwarmingTest(
+        self.test_step_config,
+        self.api,
+        title='JetStream3',
+        command=[
+          'tools/run_perf.py',
+          'test/benchmarks/JetStream3.json',
+          '--arch',
+          'x64',
+          '--buildbot',
+        ],
+      )
     ]
 
 
-TOOL_TO_TEST = freeze({
-  'run-tests': V8Test,
-})
+TOOL_TO_TEST = freeze(
+  {
+    'run-tests': V8Test,
+  }
+)
 
 
-TOOL_TO_TEST_SWARMING = freeze({
+TOOL_TO_TEST_SWARMING = freeze(
+  {
     'check-bytecode-baseline': V8CheckBytecodeBaseline,
     'check-static-initializers': V8CheckInitializers,
     'jsfunfuzz': V8Fuzzer,
@@ -1030,12 +1061,13 @@ TOOL_TO_TEST_SWARMING = freeze({
     'run-perf': V8RunPerf,
     'run-tests': V8SwarmingTest,
     'fuchsia-unittests': V8FuchsiaUnittests,
-})
+  }
+)
 
 
 class Failure:
-  """Represents a test run leading to a failure (possibly re-run several times).
-  """
+  """Represents a test run leading to a failure (possibly re-run several times)."""
+
   def __init__(self, test, results):
     """
     Args:
@@ -1051,7 +1083,8 @@ class Failure:
     self.results = results
     # A failure is flaky if not all results are the same (e.g. all 'FAIL').
     self.is_flaky = not all(
-        x['result'] == results[0]['result'] for x in results)
+      x['result'] == results[0]['result'] for x in results
+    )
 
   def get_buganizer_params(self, build_link):
     if self.framework_name == 'num_fuzzer':
@@ -1064,16 +1097,18 @@ class Failure:
     if self.crash_state in analysis_failure_values:
       crash_analysis_hash = None
     else:
-      crash_analysis_hash = md5((self.crash_type + self.crash_state +
-                                 '1').encode('utf-8')).hexdigest()
+      crash_analysis_hash = md5(
+        (self.crash_type + self.crash_state + '1').encode('utf-8')
+      ).hexdigest()
     return dict(
-        link_params,
-        name=self.name,
-        build_link=build_link,
-        crash_type=self.crash_type,
-        crash_state=self.crash_state,
-        stderr='\n'.join(self.stderr.splitlines()[:20])[:2000],
-        crash_analysis_hash=crash_analysis_hash)
+      link_params,
+      name=self.name,
+      build_link=build_link,
+      crash_type=self.crash_type,
+      crash_state=self.crash_state,
+      stderr='\n'.join(self.stderr.splitlines()[:20])[:2000],
+      crash_analysis_hash=crash_analysis_hash,
+    )
 
   @property
   def failure_dict(self):
@@ -1146,39 +1181,31 @@ class Failure:
       variant = self.failure_dict['variant']
 
     properties = {
-        # This assumes the builder's group is the same as the tester.
-        'bisect_builder_group':
-            self.api.builder_group.for_current,
-        # Use builds from parent builder to bisect if any.
-        'bisect_buildername':
-            self.api.properties.get('parent_buildername')
-            or self.api.buildbucket.builder_name,
-        # Start bisecting backwards at the revision that was tested.
-        'revision':
-            self.api.buildbucket.gitiles_commit.id,
-        # Use the same dimensions as the swarming task that ran this test.
-        'swarming_dimensions':
-            self._format_swarming_dimensions(
-                self.test.task.request[0].dimensions),
-        # The isolated name is either specified in the test configurations or
-        # corresponds to the name of the test suite.
-        'isolated_name':
-            test_config.get('isolated_target') or test_config['tests'][0],
-        # Full qualified test name that failed (e.g. mjsunit/foo/bar).
-        'test_name':
-            self.name,
-        # Add timeout default for convenience.
-        'timeout_sec':
-            REPRO_TIMEOUT_DEFAULT,
-        # Add total timeout default for convenience.
-        'total_timeout_sec':
-            REPRO_TOTAL_TIMEOUT_DEFAULT,
-        # The variant the failing test ran in.
-        'variant':
-            variant,
-        # Extra arguments passed to the V8 test runner.
-        'extra_args':
-            extra_args,
+      # This assumes the builder's group is the same as the tester.
+      'bisect_builder_group': self.api.builder_group.for_current,
+      # Use builds from parent builder to bisect if any.
+      'bisect_buildername': self.api.properties.get('parent_buildername')
+      or self.api.buildbucket.builder_name,
+      # Start bisecting backwards at the revision that was tested.
+      'revision': self.api.buildbucket.gitiles_commit.id,
+      # Use the same dimensions as the swarming task that ran this test.
+      'swarming_dimensions': self._format_swarming_dimensions(
+        self.test.task.request[0].dimensions
+      ),
+      # The isolated name is either specified in the test configurations or
+      # corresponds to the name of the test suite.
+      'isolated_name': test_config.get('isolated_target')
+      or test_config['tests'][0],
+      # Full qualified test name that failed (e.g. mjsunit/foo/bar).
+      'test_name': self.name,
+      # Add timeout default for convenience.
+      'timeout_sec': REPRO_TIMEOUT_DEFAULT,
+      # Add total timeout default for convenience.
+      'total_timeout_sec': REPRO_TOTAL_TIMEOUT_DEFAULT,
+      # The variant the failing test ran in.
+      'variant': variant,
+      # Extra arguments passed to the V8 test runner.
+      'extra_args': extra_args,
     }
 
     return properties
@@ -1187,11 +1214,12 @@ class Failure:
     """Returns the command line for reproducing the flake locally."""
     test_properties = self._flako_properties()
     base_cmd = [
-        'tools/run-tests.py', '--outdir=SET_OUTDIR_HERE',
-        '--variants=%s' % test_properties['variant'],
-        '--random-seed-stress-count=1000000',
-        '--total-timeout-sec=%d' % test_properties['total_timeout_sec'],
-        '--exit-after-n-failures=1'
+      'tools/run-tests.py',
+      '--outdir=SET_OUTDIR_HERE',
+      '--variants=%s' % test_properties['variant'],
+      '--random-seed-stress-count=1000000',
+      '--total-timeout-sec=%d' % test_properties['total_timeout_sec'],
+      '--exit-after-n-failures=1',
     ]
 
     base_cmd += test_properties['extra_args']
@@ -1202,8 +1230,9 @@ class Failure:
   def _flako_cmd_line(self):
     """Returns the command line for bisecting this failure with flako."""
     return 'bb add v8/try.triggered/v8_flako %s' % ' '.join(
-        '-p \'%s=%s\'' % (k, json.dumps(v, sort_keys=True))
-        for k, v in self._flako_properties().items())
+      '-p \'%s=%s\'' % (k, json.dumps(v, sort_keys=True))
+      for k, v in self._flako_properties().items()
+    )
 
   def log_lines(self):
     """Return a list of lines for logging all runs of this failure."""
@@ -1223,14 +1252,17 @@ class Failure:
     lines.append('GN arguments:')
     if self.api.v8_tests.gn_args is None:
       lines.append(
-          'Not available. Please look up the builder\'s configuration.')
+        'Not available. Please look up the builder\'s configuration.'
+      )
     else:
       lines.extend(self.api.v8_tests.gn_args)
     lines.append('')
 
     # Print the command line for flake bisect.
-    if (isinstance(self.test, V8SwarmingTest) and
-        not self.api.tryserver.is_tryserver):
+    if (
+      isinstance(self.test, V8SwarmingTest)
+      and not self.api.tryserver.is_tryserver
+    ):
       lines.append('Trigger flake bisect on command line:')
       lines.append(self._flako_cmd_line())
       lines.append('')
@@ -1242,7 +1274,7 @@ class Failure:
     # Add results for each run of a command.
     for result in sorted(self.results, key=lambda r: int(r['run'])):
       lines.append('Run #%d' % int(result['run']))
-      hex_value = '0x%02X' % (result['exit_code'] & 0xffffffff)
+      hex_value = '0x%02X' % (result['exit_code'] & 0xFFFFFFFF)
       lines.append('Exit code: %s [%s]' % (result['exit_code'], hex_value))
       lines.append('Result: %s' % result['result'])
       if result.get('expected'):
@@ -1271,11 +1303,11 @@ class Failure:
   def factory_func(test):
     def create(results):
       return Failure(test, results)
+
     return create
 
 
 class TestResults:
-
   def __init__(self, failures, flakes, infra_failures, num_tests):
     self.failures = failures
     self.flakes = flakes
@@ -1297,7 +1329,8 @@ class TestResults:
   @property
   def is_negative(self):
     flakes_not_exonerated = not all(
-        flake.is_exonerated for flake in self.flakes)
+      flake.is_exonerated for flake in self.flakes
+    )
     return bool(self.failures or flakes_not_exonerated or self.infra_failures)
 
   @property
@@ -1306,15 +1339,14 @@ class TestResults:
 
   def __add__(self, other):
     return TestResults(
-        self.failures + other.failures,
-        self.flakes + other.flakes,
-        self.infra_failures + other.infra_failures,
-        self.num_tests + other.num_tests,
+      self.failures + other.failures,
+      self.flakes + other.flakes,
+      self.infra_failures + other.infra_failures,
+      self.num_tests + other.num_tests,
     )
 
 
 class TestGroup:
-
   def __init__(self, api, tests):
     self.api = api
     self.tests = tests
@@ -1351,7 +1383,8 @@ class TestGroup:
   def raise_on_failure(self):
     if self.failed_tests:
       raise self.api.step.StepFailure(
-          '%d tests failed: %r' % (len(self.failed_tests), self.failed_tests))
+        '%d tests failed: %r' % (len(self.failed_tests), self.failed_tests)
+      )
 
   def raise_on_empty(self):
     if self.test_results.num_tests == 0:
@@ -1366,6 +1399,7 @@ def create_test(test_step_config, api):
 
   # The tool the test is going to use. Default: V8 test runner (run-tests).
   tool = api.v8_tests.test_configs[test_step_config.name].get(
-      'tool', 'run-tests')
+    'tool', 'run-tests'
+  )
   test_cls = tools_mapping[tool]
   return test_cls(test_step_config, api)

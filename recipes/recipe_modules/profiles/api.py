@@ -10,7 +10,6 @@ from recipe_engine import recipe_api
 
 
 class ProfilesApi(recipe_api.RecipeApi):
-
   def __init__(self, *args, **kwargs):
     super().__init__(*args, **kwargs)
     # Directory storing the merge scripts for profile generation
@@ -41,7 +40,8 @@ class ProfilesApi(recipe_api.RecipeApi):
     # profiles folder
     if not self._merge_scripts_dir:  # pragma: no cover
       self._merge_scripts_dir = (
-          self.source_dir / 'testing/merge_scripts/code_coverage')
+        self.source_dir / 'testing/merge_scripts/code_coverage'
+      )
     return self._merge_scripts_dir
 
   @property
@@ -59,7 +59,8 @@ class ProfilesApi(recipe_api.RecipeApi):
   def llvm_exec_path(self, name):
     if not self._llvm_base_path:
       self._llvm_base_path = (
-          self.source_dir / 'third_party/llvm-build/Release+Asserts/bin')
+        self.source_dir / 'third_party/llvm-build/Release+Asserts/bin'
+      )
     name += '.exe' if self.m.platform.is_win else ''
     return self._llvm_base_path / name
 
@@ -114,18 +115,21 @@ class ProfilesApi(recipe_api.RecipeApi):
     if not identifier in self._profile_subdirs:
       path = self.normalize(identifier)
       new_subdir = self._root_profile_dir / path
-      self.m.file.ensure_directory('ensure profile dir for %s' % identifier,
-                                   new_subdir)
+      self.m.file.ensure_directory(
+        'ensure profile dir for %s' % identifier, new_subdir
+      )
 
       self._profile_subdirs[identifier] = new_subdir
 
     return self._profile_subdirs[identifier]
 
-  def merge_profdata(self,
-                     output_artifact,
-                     profdata_filename_pattern=None,
-                     sparse=False,
-                     weights=None):
+  def merge_profdata(
+    self,
+    output_artifact,
+    profdata_filename_pattern=None,
+    sparse=False,
+    weights=None,
+  ):
     """Helper function to invoke 'merge_steps.py'.
 
     Args:
@@ -137,32 +141,32 @@ class ProfilesApi(recipe_api.RecipeApi):
       weights (dictionary): maps from benchmark to weight.
     """
     cmd = [
-        'python3',
-        self.merge_steps_script,
-        '--input-dir',
-        self.profile_dir(),
-        '--output-file',
-        output_artifact,
-        '--llvm-profdata',
-        self.llvm_profdata_exec,
+      'python3',
+      self.merge_steps_script,
+      '--input-dir',
+      self.profile_dir(),
+      '--output-file',
+      output_artifact,
+      '--llvm-profdata',
+      self.llvm_profdata_exec,
     ]
 
     if profdata_filename_pattern:
       cmd += [
-          '--profdata-filename-pattern',
-          profdata_filename_pattern,
+        '--profdata-filename-pattern',
+        profdata_filename_pattern,
       ]
 
     if sparse:
       cmd += [
-          '--sparse',
+        '--sparse',
       ]
 
     if weights:
       for benchmark, weight in weights.items():
         cmd += [
-            '--weight',
-            f'{benchmark}:{weight}',
+          '--weight',
+          f'{benchmark}:{weight}',
         ]
 
     self.m.step('merge all profile files into a single .profdata', cmd)
@@ -183,22 +187,25 @@ class ProfilesApi(recipe_api.RecipeApi):
       https://cloud.google.com/storage/docs/quickstart-gsutil
     """
     upload_step = self.m.gsutil.upload(
-        local_artifact,
-        bucket,
-        path,
-        args=args,
-        link_name=link_name,
-        name='upload artifact to GS')
+      local_artifact,
+      bucket,
+      path,
+      args=args,
+      link_name=link_name,
+      name='upload artifact to GS',
+    )
 
     return upload_step
 
   def find_merge_errors(self):
     """Search for any profiles that failed to merge"""
     self.m.step(
-        'Finding profile merge errors', [
-            'python3',
-            self.resource('load_merge_errors.py'),
-            '--root-dir',
-            self.profile_dir(),
-        ],
-        stdout=self.m.json.output())
+      'Finding profile merge errors',
+      [
+        'python3',
+        self.resource('load_merge_errors.py'),
+        '--root-dir',
+        self.profile_dir(),
+      ],
+      stdout=self.m.json.output(),
+    )

@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 """Recipe to measure developer build performance.
-   See also go/chrome-developer-build-metrics
+See also go/chrome-developer-build-metrics
 """
 
 from datetime import datetime, timedelta
@@ -10,7 +10,9 @@ from datetime import datetime, timedelta
 from recipe_engine.config_types import Path
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
-from PB.go.chromium.org.luci.buildbucket.proto import builds_service as builds_service_pb
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builds_service as builds_service_pb,
+)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -22,24 +24,24 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    chromium_build_perf,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
-    reclient,
-    siso,
+  builder_group,
+  chromium,
+  chromium_build_perf,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
+  reclient,
+  siso,
 )
 from RECIPE_MODULES.depot_tools import gclient, git
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    path,
-    platform,
-    raw_io,
-    step,
+  buildbucket,
+  context,
+  file,
+  path,
+  platform,
+  raw_io,
+  step,
 )
 
 
@@ -83,36 +85,40 @@ def _raise_raw_result_on_failure(api: DEPS, raw_result):
 
 
 def _incremental_build_with_one_day_changes(
-    api: DEPS,
-    source_dir: Path,
-    default_build_dir: Path,
-    target,
+  api: DEPS,
+  source_dir: Path,
+  default_build_dir: Path,
+  target,
 ):
   """Steps to run an incremental build with 1-day of changes
-     (a.k.a morning build).
+  (a.k.a morning build).
   """
   time_format = '%Y-%m-%d %H:%M:%S %z'
 
   with api.step.nest('Incremental build with 1-day of changes'):
     cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
     cur_rev_at = api.git(
-        'show',
-        '--quiet',
-        '--format=%ci',
-        cur_rev,
-        stdout=api.raw_io.output_text(),
-        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
-            '2023-05-02 11:28:30 +0000\n')).stdout.strip()
+      'show',
+      '--quiet',
+      '--format=%ci',
+      cur_rev,
+      stdout=api.raw_io.output_text(),
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+        '2023-05-02 11:28:30 +0000\n'
+      ),
+    ).stdout.strip()
     cur_rev_at = datetime.strptime(cur_rev_at, time_format)
 
     base_rev = api.git(
-        'log',
-        '--pretty=%H',
-        '--since="%s"' % (cur_rev_at - timedelta(days=1)).strftime(time_format),
-        '--reverse',
-        stdout=api.raw_io.output_text(),
-        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
-            'abcd\nefgh\n')).stdout.split()[0]
+      'log',
+      '--pretty=%H',
+      '--since="%s"' % (cur_rev_at - timedelta(days=1)).strftime(time_format),
+      '--reverse',
+      stdout=api.raw_io.output_text(),
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+        'abcd\nefgh\n'
+      ),
+    ).stdout.split()[0]
 
     # Run a warm up build for remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
@@ -134,17 +140,17 @@ def _incremental_build_with_one_day_changes(
     ## Siso build
     siso_build_dir = build_dir_parent / 'siso'
     api.chromium_build_perf.recreate_build_dir(
-        source_dir, siso_build_dir, phase='siso_native')
+      source_dir, siso_build_dir, phase='siso_native'
+    )
     suffix = ' with Siso in native mode at current revision (warmup)'
     raw_result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        siso_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=suffix)
+      source_dir,
+      siso_build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=suffix,
+    )
     _raise_raw_result_on_failure(api, raw_result)
-
-
 
     # Clean up deps cache and check out to the base revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
@@ -164,15 +170,16 @@ def _incremental_build_with_one_day_changes(
 
     ## Siso
     api.chromium_build_perf.recreate_build_dir(
-        source_dir, siso_build_dir, phase='siso_native', remove_deps_cache=True)
+      source_dir, siso_build_dir, phase='siso_native', remove_deps_cache=True
+    )
     raw_result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        siso_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=' with Siso in native mode at base revision (warmup)')
+      source_dir,
+      siso_build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=' with Siso in native mode at base revision (warmup)',
+    )
     _raise_raw_result_on_failure(api, raw_result)
-
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
@@ -185,20 +192,20 @@ def _incremental_build_with_one_day_changes(
 
     ## Siso
     raw_result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        siso_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=' with Siso in native mode')
+      source_dir,
+      siso_build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=' with Siso in native mode',
+    )
     _raise_raw_result_on_failure(api, raw_result)
 
 
-
 def _incremental_builds_with_patch(
-    api: DEPS,
-    source_dir: Path,
-    default_build_dir: Path,
-    target,
+  api: DEPS,
+  source_dir: Path,
+  default_build_dir: Path,
+  target,
 ):
   """Steps to run incremental builds with a patch, which represent builds with
      local modifications.
@@ -211,10 +218,12 @@ def _incremental_builds_with_patch(
     builds = None
     try:
       builds = api.buildbucket.search(
-          builds_service_pb.BuildPredicate(
-              builder=api.buildbucket.build.builder,
-              status=common_pb.Status.ENDED_MASK),
-          limit=1)
+        builds_service_pb.BuildPredicate(
+          builder=api.buildbucket.build.builder,
+          status=common_pb.Status.ENDED_MASK,
+        ),
+        limit=1,
+      )
     except api.step.InfraFailure:
       # Ignore search failure.
       pass
@@ -230,21 +239,25 @@ def _incremental_builds_with_patch(
       cur_rev = api.buildbucket.gitiles_commit.id or 'HEAD'
       gitlog_args += ['%s..%s' % (last_rev, cur_rev)]
     gitlog_result = api.git(
-        *gitlog_args,
-        stdout=api.raw_io.output_text(),
-        step_test_data=lambda: api.raw_io.test_api.stream_output_text(
-            'abcd foo@google.com\n'
-            'efgh bot@example.gserviceaccount.com\n'
-            'ijkl bar@chromium.org\n'))
+      *gitlog_args,
+      stdout=api.raw_io.output_text(),
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+        'abcd foo@google.com\n'
+        'efgh bot@example.gserviceaccount.com\n'
+        'ijkl bar@chromium.org\n'
+      ),
+    )
     commits = [
-        commit.strip("'") for commit in gitlog_result.stdout.strip().split('\n')
+      commit.strip("'") for commit in gitlog_result.stdout.strip().split('\n')
     ]
     gitlog_result.presentation.logs['commits'] = commits
 
     def gitiles_url(rev):
-      return 'https://%s/%s/+/%s' % (api.buildbucket.gitiles_commit.host,
-                                     api.buildbucket.gitiles_commit.project,
-                                     rev)
+      return 'https://%s/%s/+/%s' % (
+        api.buildbucket.gitiles_commit.host,
+        api.buildbucket.gitiles_commit.project,
+        rev,
+      )
 
     revs = []
     for commit in commits:
@@ -266,12 +279,14 @@ def _incremental_builds_with_patch(
 
     # Set up build dirs for Ninja/Siso builds.
     api.chromium_build_perf.recreate_build_dir(
-        source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
+      source_dir, default_build_dir, phase='ninja', remove_deps_cache=True
+    )
     api.chromium_build_perf.recreate_build_dir(
-        source_dir,
-        build_dir_parent / 'siso',
-        phase='siso_native',
-        remove_deps_cache=True)
+      source_dir,
+      build_dir_parent / 'siso',
+      phase='siso_native',
+      remove_deps_cache=True,
+    )
 
     # Run a build at each revision.
     for i, rev in enumerate(revs):
@@ -301,13 +316,13 @@ def _incremental_builds_with_patch(
       # Siso
       siso_build_dir = build_dir_parent / 'siso'
       raw_result = api.chromium_build_perf.build_with_siso(
-          source_dir,
-          siso_build_dir,
-          target,
-          with_remote_cache=with_remote_cache,
-          step_name_suffix=' with Siso in native mode' + step_name_suffix)
+        source_dir,
+        siso_build_dir,
+        target,
+        with_remote_cache=with_remote_cache,
+        step_name_suffix=' with Siso in native mode' + step_name_suffix,
+      )
       _raise_raw_result_on_failure(api, raw_result)
-
 
 
 def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
@@ -331,23 +346,27 @@ def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
     phase = 'siso_native'
     step_name_suffix = ' with Siso in native mode'
     api.chromium_build_perf.recreate_build_dir(
-        source_dir, build_dir, phase=phase, remove_deps_cache=True)
+      source_dir, build_dir, phase=phase, remove_deps_cache=True
+    )
     result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        build_dir,
-        target,
-        with_remote_cache=False,
-        step_name_suffix=step_name_suffix)
+      source_dir,
+      build_dir,
+      target,
+      with_remote_cache=False,
+      step_name_suffix=step_name_suffix,
+    )
     _raise_raw_result_on_failure(api, result)
 
     api.chromium_build_perf.recreate_build_dir(
-        source_dir, build_dir, phase=phase)
+      source_dir, build_dir, phase=phase
+    )
     result = api.chromium_build_perf.build_with_siso(
-        source_dir,
-        build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=step_name_suffix)
+      source_dir,
+      build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=step_name_suffix,
+    )
     _raise_raw_result_on_failure(api, result)
 
     # Enable fail-on-bad-deps as an additional step on Linux for continuous
@@ -356,15 +375,16 @@ def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
     # continuous performance metrics collection. See crbug.com/556013464.
     if api.platform.is_linux:
       api.chromium_build_perf.recreate_build_dir(
-          source_dir, build_dir, phase=phase)
+        source_dir, build_dir, phase=phase
+      )
       api.chromium_build_perf.build_with_siso(
-          source_dir,
-          build_dir,
-          target,
-          with_remote_cache=True,
-          step_name_suffix=step_name_suffix + ' with fail-on-bad-deps',
-          siso_experiments=['fail-on-bad-deps'])
-
+        source_dir,
+        build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=step_name_suffix + ' with fail-on-bad-deps',
+        siso_experiments=['fail-on-bad-deps'],
+      )
 
 
 def RunSteps(api: DEPS):
@@ -374,9 +394,11 @@ def RunSteps(api: DEPS):
 
   # Checkout and gclient hooks.
   builder_id = chromium_types.BuilderId.create_for_group(
-      api.builder_group.for_current, api.buildbucket.builder_name)
+    api.builder_group.for_current, api.buildbucket.builder_name
+  )
   _, builder_config = api.chromium_tests_builder_config.lookup_builder(
-      builder_id, use_try_db=False)
+    builder_id, use_try_db=False
+  )
   api.chromium_tests.configure_build(builder_config)
   api.reclient.download_reclient(api.gclient.c.solutions[0])
   update_result = api.chromium_checkout.ensure_checkout()
@@ -397,9 +419,9 @@ def RunSteps(api: DEPS):
   # The parameters should be same with the ones in reclent_helper.py.
   # https://crsrc.org/d/reclient_helper.py;l=220;drc=1077fbe08a1c03ef7f7fa8eb925edd18688357ae
   env = {
-      'RBE_exec_strategy': 'racing',
-      'RBE_local_resource_fraction': '0.2',
-      'RBE_racing_bias': '0.95',
+    'RBE_exec_strategy': 'racing',
+    'RBE_local_resource_fraction': '0.2',
+    'RBE_racing_bias': '0.95',
   }
   with api.context(env=env):
     # Clean builds.
@@ -419,124 +441,143 @@ def GenTests(api: TEST_DEPS):
 
   # Test data.
   builder = {
-      'builder_group': 'fake-group',
-      'builder': 'fake-builder',
+    'builder_group': 'fake-group',
+    'builder': 'fake-builder',
   }
 
   def _buildbucket_search_results():
     return api.buildbucket.simulated_search_results(
-        [
-            build_pb.Build(
-                input=build_pb.Build.Input(
-                    gitiles_commit=common_pb.GitilesCommit(
-                        host='chromium.googlesource.com',
-                        project='chromium/src',
-                        id='abcd',
-                        ref='refs/heads/main')))
-        ],
-        step_name='Incremental builds with patch.buildbucket.search')
+      [
+        build_pb.Build(
+          input=build_pb.Build.Input(
+            gitiles_commit=common_pb.GitilesCommit(
+              host='chromium.googlesource.com',
+              project='chromium/src',
+              id='abcd',
+              ref='refs/heads/main',
+            )
+          )
+        )
+      ],
+      step_name='Incremental builds with patch.buildbucket.search',
+    )
 
   yield api.test(
-      'full_linux',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      _buildbucket_search_results(),
-      api.post_process(post_process.DropExpectation),
+    'full_linux',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    _buildbucket_search_results(),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'buildbucket_search_error',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.buildbucket.simulated_batch_search_output(
-          builds_service_pb.BatchResponse(
-              responses=[dict(error=dict(code=5, message="error"))]),
-          step_name='Incremental builds with patch.buildbucket.search'),
-      api.post_process(post_process.DropExpectation),
+    'buildbucket_search_error',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.buildbucket.simulated_batch_search_output(
+      builds_service_pb.BatchResponse(
+        responses=[dict(error=dict(code=5, message="error"))]
+      ),
+      step_name='Incremental builds with patch.buildbucket.search',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no_gitiles',
-      api.chromium.generic_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.post_process(post_process.DropExpectation),
+    'no_gitiles',
+    api.chromium.generic_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'no_gitlogs_for_incremental_builds_with_patch',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.step_data('Incremental builds with patch.git log',
-                    api.raw_io.stream_output_text('')),
-      api.post_process(post_process.DropExpectation),
+    'no_gitlogs_for_incremental_builds_with_patch',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.step_data(
+      'Incremental builds with patch.git log', api.raw_io.stream_output_text('')
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'android',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  gclient_apply_config=['android'],
-                  chromium_config='android',
-                  android_config='base_config',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      _buildbucket_search_results(),
-      api.post_process(post_process.DropExpectation),
+    'android',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          gclient_apply_config=['android'],
+          chromium_config='android',
+          android_config='base_config',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    _buildbucket_search_results(),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'clean_build_failure',
-      api.chromium.ci_build(**builder),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_spec=ctbc.BuilderSpec.create(
-                  gclient_config='chromium',
-                  chromium_config='chromium',
-              ),
-              **builder).assemble()),
-      api.reclient.properties(),
-      api.siso.properties(),
-      api.step_data(
-          'Clean builds.Build chrome without remote cache with Siso in '
-          'native mode',
-          retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+    'clean_build_failure',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.reclient.properties(),
+    api.siso.properties(),
+    api.step_data(
+      'Clean builds.Build chrome without remote cache with Siso in native mode',
+      retcode=1,
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

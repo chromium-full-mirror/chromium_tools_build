@@ -27,27 +27,27 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    gclient,
-    git,
-    tryserver,
+  bot_update,
+  gclient,
+  git,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    context,
-    file,
-    futures,
-    json,
-    path,
-    platform,
-    properties,
-    step,
+  buildbucket,
+  context,
+  file,
+  futures,
+  json,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -88,24 +88,28 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
   tryserver: tryserver.TEST_API
 
+
 PROPERTIES = InputProperties
 
 RECIPES = [
-    'chromium/universal_test_runner', 'chromium/universal_test_runner_test'
+  'chromium/universal_test_runner',
+  'chromium/universal_test_runner_test',
 ]
 
 
 def RunSteps(api: RecipeApi, properties: InputProperties):
   recipe_dir, infra_dir = checkout(api)
   # If we're testing a recipe change, check to see if UTR recipe is affected
-  if (api.tryserver.gerrit_change and
-      api.tryserver.gerrit_change.project == 'chromium/tools/build'):
+  if (
+    api.tryserver.gerrit_change
+    and api.tryserver.gerrit_change.project == 'chromium/tools/build'
+  ):
     with api.context(cwd=recipe_dir):
       affected_files = api.tryserver.get_files_affected_by_patch(recipe_dir)
     is_affected = _is_affected(
-        api,
-        recipe_dir,
-        affected_files,
+      api,
+      recipe_dir,
+      affected_files,
     )
     if not is_affected:
       api.step.empty('UTR is unaffected by the change')
@@ -118,37 +122,41 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   # Opt-in to telemetry to verify it works
   api.step(
-      'opt-in telemetry',
-      cmd=[
-          'vpython3',
-          api.chromium_checkout.source_dir.joinpath('third_party',
-                                                    'depot_tools', 'infra_lib',
-                                                    'telemetry'),
-          '--bot-enable',
-      ])
+    'opt-in telemetry',
+    cmd=[
+      'vpython3',
+      api.chromium_checkout.source_dir.joinpath(
+        'third_party', 'depot_tools', 'infra_lib', 'telemetry'
+      ),
+      '--bot-enable',
+    ],
+  )
 
   failed_invocations = 0
   for builder_suites in properties.builder_suites:
     test_names = ', '.join(builder_suites.test_names)
     step_name = (
-        f'{builder_suites.bucket}:{builder_suites.builder_name} - {test_names}')
+      f'{builder_suites.bucket}:{builder_suites.builder_name} - {test_names}'
+    )
     cmd = [
-        'vpython3',
-        api.chromium_checkout.source_dir.joinpath('tools', 'utr', 'run.py'),
-        '--bucket',
-        builder_suites.bucket,
-        '--builder',
-        builder_suites.builder_name,
-        '--recipe-path',
-        bundle_dir,
-        '--force',
-        '-vv',
+      'vpython3',
+      api.chromium_checkout.source_dir.joinpath('tools', 'utr', 'run.py'),
+      '--bucket',
+      builder_suites.bucket,
+      '--builder',
+      builder_suites.builder_name,
+      '--recipe-path',
+      bundle_dir,
+      '--force',
+      '-vv',
     ]
     if builder_suites.build_dir:
-      cmd.extend([
+      cmd.extend(
+        [
           '--build-dir',
           api.chromium_checkout.source_dir / builder_suites.build_dir,
-      ])
+        ]
+      )
     for test_name in builder_suites.test_names:
       cmd.extend(['--test', test_name])
     cmd.append('compile-and-test')
@@ -157,8 +165,9 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
       failed_invocations += 1
   if failed_invocations:
     return RawResult(
-        status=common.FAILURE,
-        summary_markdown=f'{failed_invocations} total failed UTR runs')
+      status=common.FAILURE,
+      summary_markdown=f'{failed_invocations} total failed UTR runs',
+    )
 
 
 # The recipes are considered affected by any file in the directory of any recipe
@@ -168,31 +177,29 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 # affected file will be ignored if the path relative to the root of the repo
 # full matches against any of these regexes.
 _FILES_TO_IGNORE_REGEXES = [
-    re.compile(p) for p in (
-        # The universal test runner requires the configs to be src-side, so they
-        # won't be impacted by changes to recipe-side specs
-        r'recipes/recipe_modules/chromium_tests_builder_config/builders/.*\.py',
-        r'recipes/recipe_modules/chromium_tests_builder_config/trybots\.py',
-
-        # recipe_modules tests and examples are not part of the production code
-        r'recipe_modules/[^/]+/examples/.+',
-        r'recipe_modules/[^/]+/tests/.+',
-
-        # OWNERS files contain repository metadata and are not part of the
-        # recipes
-        r'(.+/)*[A-Z_]*OWNERS',
-
-        # PRESUBMIT.py scripts are executed by the presubmit builder, not
-        # consumed by chromium recipes
-        r'(.+/)*PRESUBMIT.py',
-    )
+  re.compile(p)
+  for p in (
+    # The universal test runner requires the configs to be src-side, so they
+    # won't be impacted by changes to recipe-side specs
+    r'recipes/recipe_modules/chromium_tests_builder_config/builders/.*\.py',
+    r'recipes/recipe_modules/chromium_tests_builder_config/trybots\.py',
+    # recipe_modules tests and examples are not part of the production code
+    r'recipe_modules/[^/]+/examples/.+',
+    r'recipe_modules/[^/]+/tests/.+',
+    # OWNERS files contain repository metadata and are not part of the
+    # recipes
+    r'(.+/)*[A-Z_]*OWNERS',
+    # PRESUBMIT.py scripts are executed by the presubmit builder, not
+    # consumed by chromium recipes
+    r'(.+/)*PRESUBMIT.py',
+  )
 ]
 
 
 def _is_affected(
-    api: DEPS,
-    recipe_dir: Path,
-    affected_files: list[str],
+  api: DEPS,
+  recipe_dir: Path,
+  affected_files: list[str],
 ):
   """Determine whether UTR or this recipe is affected by the recipe change.
 
@@ -218,32 +225,34 @@ def _is_affected(
     if not considered_affected_files:
       step_text = 'all affected files are ignored, skipping analyze'
     api.step.empty(
-        'ignored affected files',
-        step_text=step_text,
-        log_name='files',
-        log_text=ignored_affected_files,
+      'ignored affected files',
+      step_text=step_text,
+      log_name='files',
+      log_text=ignored_affected_files,
     )
     if not considered_affected_files:
       return False
 
   cmd = [
-      'vpython3',
-      recipe_dir / 'recipes/recipes.py',
-      '--package',
-      recipe_dir / 'infra/config/recipes.cfg',
-      'analyze',
-      api.json.input({
-          'files': sorted(considered_affected_files),
-          'recipes': sorted(RECIPES),
-      }),
-      api.json.output(),
+    'vpython3',
+    recipe_dir / 'recipes/recipes.py',
+    '--package',
+    recipe_dir / 'infra/config/recipes.cfg',
+    'analyze',
+    api.json.input(
+      {
+        'files': sorted(considered_affected_files),
+        'recipes': sorted(RECIPES),
+      }
+    ),
+    api.json.output(),
   ]
 
   step_name = 'determine affected recipes'
   result = api.step(
-      step_name,
-      cmd,
-      step_test_data=lambda: api.json.test_api.output({'recipes': []}),
+    step_name,
+    cmd,
+    step_test_data=lambda: api.json.test_api.output({'recipes': []}),
   )
 
   affected_recipes = result.json.output['recipes']
@@ -268,7 +277,8 @@ def checkout(api: DEPS):
   s.name = 'infra'
 
   api.chromium_tests.check_builder_cache(
-      api.chromium_checkout.default_checkout_dir)
+    api.chromium_checkout.default_checkout_dir
+  )
 
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
@@ -295,43 +305,54 @@ def replace_bootstrap_proto_link(api: DEPS, infra_dir: Path):
     yield
     return
 
-  bootstrap_proto_link = infra_dir.joinpath('recipes', 'recipe_proto', 'infra',
-                                            'chromium',
-                                            'chromium_bootstrap.proto')
-  bootstrap_proto_target = infra_dir.joinpath('go', 'src', 'infra', 'chromium',
-                                              'bootstrapper', 'bootstrap',
-                                              'chromium_bootstrap.proto')
+  bootstrap_proto_link = infra_dir.joinpath(
+    'recipes', 'recipe_proto', 'infra', 'chromium', 'chromium_bootstrap.proto'
+  )
+  bootstrap_proto_target = infra_dir.joinpath(
+    'go',
+    'src',
+    'infra',
+    'chromium',
+    'bootstrapper',
+    'bootstrap',
+    'chromium_bootstrap.proto',
+  )
   tmp_bootstrap_proto_link = api.path.mkdtemp().joinpath(
-      'chromium_bootstrap.proto')
+    'chromium_bootstrap.proto'
+  )
 
-  api.file.copy('store proto link', bootstrap_proto_link,
-                tmp_bootstrap_proto_link)
-  api.file.copy('replace proto link', bootstrap_proto_target,
-                bootstrap_proto_link)
+  api.file.copy(
+    'store proto link', bootstrap_proto_link, tmp_bootstrap_proto_link
+  )
+  api.file.copy(
+    'replace proto link', bootstrap_proto_target, bootstrap_proto_link
+  )
   yield
-  api.file.copy('restore proto link', tmp_bootstrap_proto_link,
-                bootstrap_proto_link)
+  api.file.copy(
+    'restore proto link', tmp_bootstrap_proto_link, bootstrap_proto_link
+  )
 
 
 def create_recipe_bundle(api: DEPS, recipe_dir: Path, infra_dir: Path):
   """Creates a hermetic recipe bundle via `recipes.py bundle`."""
   bundle_dir = api.path.mkdtemp('recipe_bundle')
   api.step(
-      'create bundle',
-      [
-          'vpython3',
-          recipe_dir / 'recipes' / 'recipes.py',
-          # Override the default infra checkout during bundling. By default it will
-          # fetch a duplicate copy from git. But we want to use our fixed-up
-          # version.
-          # TODO(crbug.com/346263533): Can remove this line once bundling works on
-          # windows.
-          '-O',
-          'infra=' + str(infra_dir),
-          'bundle',
-          '--destination',
-          bundle_dir,
-      ])
+    'create bundle',
+    [
+      'vpython3',
+      recipe_dir / 'recipes' / 'recipes.py',
+      # Override the default infra checkout during bundling. By default it will
+      # fetch a duplicate copy from git. But we want to use our fixed-up
+      # version.
+      # TODO(crbug.com/346263533): Can remove this line once bundling works on
+      # windows.
+      '-O',
+      'infra=' + str(infra_dir),
+      'bundle',
+      '--destination',
+      bundle_dir,
+    ],
+  )
   return bundle_dir
 
 
@@ -340,106 +361,121 @@ def GenTests(api: RecipeTestApi):
 
   def gen_test_props():
     t = api.chromium.ci_build(
-        builder_group='fake-group',
-        builder='fake-builder',
+      builder_group='fake-group',
+      builder='fake-builder',
     )
     return t + ctbc_api.properties(
-        ctbc_api.properties_assembler_for_ci_builder(
-            builder_group='fake-group',
-            builder='fake-builder',
-        ).assemble())
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      ).assemble()
+    )
 
   default_builder_suites = [
-      {
-          'bucket': 'fake-bucket',
-          'builder_name': 'fake-builder',
-          'test_names': ['testA', 'testB'],
-          'build_dir': 'fake/build',
-      },
-      {
-          'bucket': 'fake-bucket',
-          'builder_name': 'fake-builder2',
-          'test_names': ['testZ'],
-          'build_dir': 'fake/build',
-      },
+    {
+      'bucket': 'fake-bucket',
+      'builder_name': 'fake-builder',
+      'test_names': ['testA', 'testB'],
+      'build_dir': 'fake/build',
+    },
+    {
+      'bucket': 'fake-bucket',
+      'builder_name': 'fake-builder2',
+      'test_names': ['testZ'],
+      'build_dir': 'fake/build',
+    },
   ]
   yield api.test(
-      'basic',
-      gen_test_props(),
-      api.properties(builder_suites=default_builder_suites),
-      api.post_process(post_process.StepCommandContains,
-                       'fake-bucket:fake-builder - testA, testB', [
-                         '[CACHE]/builder/src/tools/utr/run.py', \
-                         '--bucket', 'fake-bucket',
-                         '--builder', 'fake-builder',
-                         '--recipe-path', '[CLEANUP]/recipe_bundle_tmp_1',
-                         '--force',
-                         '-vv',
-                         '--build-dir', '[CACHE]/builder/src/fake/build',
-                         '--test', 'testA',
-                         '--test', 'testB',
-                         'compile-and-test',
-                         ]),
-      api.post_process(post_process.DropExpectation),
+    'basic',
+    gen_test_props(),
+    api.properties(builder_suites=default_builder_suites),
+    api.post_process(
+      post_process.StepCommandContains,
+      'fake-bucket:fake-builder - testA, testB',
+      [
+        '[CACHE]/builder/src/tools/utr/run.py',
+        '--bucket',
+        'fake-bucket',
+        '--builder',
+        'fake-builder',
+        '--recipe-path',
+        '[CLEANUP]/recipe_bundle_tmp_1',
+        '--force',
+        '-vv',
+        '--build-dir',
+        '[CACHE]/builder/src/fake/build',
+        '--test',
+        'testA',
+        '--test',
+        'testB',
+        'compile-and-test',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'win',
-      gen_test_props(),
-      api.platform.name('win'),
-      api.properties(builder_suites=default_builder_suites),
-      api.post_process(post_process.MustRun, 'store proto link'),
-      api.post_process(post_process.MustRun, 'restore proto link'),
-      api.post_process(post_process.DropExpectation),
+    'win',
+    gen_test_props(),
+    api.platform.name('win'),
+    api.properties(builder_suites=default_builder_suites),
+    api.post_process(post_process.MustRun, 'store proto link'),
+    api.post_process(post_process.MustRun, 'restore proto link'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'build_repo_change',
-      gen_test_props(),
-      api.properties(builder_suites=default_builder_suites),
-      api.buildbucket.try_build(project='chromium/tools/build'),
-      api.step_data(
-          'determine affected recipes',
-          api.json.output({
-              'recipes': [],
-              'error': '',
-              'invalid_recipes': [],
-          }),
-          retcode=0),
-      api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-      'all-files-ignored',
-      gen_test_props(),
-      api.properties(builder_suites=default_builder_suites),
-      api.buildbucket.try_build(project='chromium/tools/build'),
-      api.tryserver.get_files_affected_by_patch([
-          'recipes/recipe_modules/chromium_tests_builder_config/builders/x.py',
-          'recipes/recipe_modules/chromium_tests_builder_config/trybots.py',
-          'recipe_modules/foo/examples/bar.py',
-          'recipe_modules/foo/tests/bar.py',
-          'OWNERS',
-          'foo/BAR_OWNERS',
-          'PRESUBMIT.py',
-          'foo/PRESUBMIT.py',
-      ]),
-      api.post_check(
-          post_process.StepTextEquals,
-          'ignored affected files',
-          'all affected files are ignored, skipping analyze',
+    'build_repo_change',
+    gen_test_props(),
+    api.properties(builder_suites=default_builder_suites),
+    api.buildbucket.try_build(project='chromium/tools/build'),
+    api.step_data(
+      'determine affected recipes',
+      api.json.output(
+        {
+          'recipes': [],
+          'error': '',
+          'invalid_recipes': [],
+        }
       ),
-      api.post_check(post_process.MustRun, 'UTR is unaffected by the change'),
-      api.post_process(post_process.DropExpectation),
+      retcode=0,
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'utr_fails',
-      gen_test_props(),
-      api.properties(builder_suites=default_builder_suites),
-      api.step_data('fake-bucket:fake-builder - testA, testB', retcode=1),
-      api.step_data('fake-bucket:fake-builder2 - testZ', retcode=1),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.SummaryMarkdown, '2 total failed UTR runs'),
-      api.post_process(post_process.DropExpectation),
+    'all-files-ignored',
+    gen_test_props(),
+    api.properties(builder_suites=default_builder_suites),
+    api.buildbucket.try_build(project='chromium/tools/build'),
+    api.tryserver.get_files_affected_by_patch(
+      [
+        'recipes/recipe_modules/chromium_tests_builder_config/builders/x.py',
+        'recipes/recipe_modules/chromium_tests_builder_config/trybots.py',
+        'recipe_modules/foo/examples/bar.py',
+        'recipe_modules/foo/tests/bar.py',
+        'OWNERS',
+        'foo/BAR_OWNERS',
+        'PRESUBMIT.py',
+        'foo/PRESUBMIT.py',
+      ]
+    ),
+    api.post_check(
+      post_process.StepTextEquals,
+      'ignored affected files',
+      'all affected files are ignored, skipping analyze',
+    ),
+    api.post_check(post_process.MustRun, 'UTR is unaffected by the change'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'utr_fails',
+    gen_test_props(),
+    api.properties(builder_suites=default_builder_suites),
+    api.step_data('fake-bucket:fake-builder - testA, testB', retcode=1),
+    api.step_data('fake-bucket:fake-builder2 - testZ', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.SummaryMarkdown, '2 total failed UTR runs'),
+    api.post_process(post_process.DropExpectation),
   )

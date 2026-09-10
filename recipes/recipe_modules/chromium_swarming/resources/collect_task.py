@@ -16,14 +16,16 @@ import time
 
 
 def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
-  """ Run command and stream its stdout/stderr to the console & |stdoutfile|.
-  """
+  """Run command and stream its stdout/stderr to the console & |stdoutfile|."""
   print('Running %r in %r (env: %r)' % (argv, cwd, env))
   assert stdoutfile
-  with io.open(stdoutfile, 'w') as writer, io.open(stdoutfile, 'r', 1) as \
-      reader:
-    process = subprocess.Popen(argv, env=env, cwd=cwd, stdout=writer,
-        stderr=subprocess.STDOUT)
+  with (
+    io.open(stdoutfile, 'w') as writer,
+    io.open(stdoutfile, 'r', 1) as reader,
+  ):
+    process = subprocess.Popen(
+      argv, env=env, cwd=cwd, stdout=writer, stderr=subprocess.STDOUT
+    )
     while process.poll() is None:
       sys.stdout.write(reader.read())
       time.sleep(0.1)
@@ -33,9 +35,16 @@ def run_command_with_output(argv, stdoutfile, env=None, cwd=None):
     return process.returncode
 
 
-def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
-                 build_properties, merge_arguments, task_output_dir,
-                 output_json, summary_json_file):
+def collect_task(
+  collect_cmd,
+  merge_script,
+  merge_script_stdout_file,
+  build_properties,
+  merge_arguments,
+  task_output_dir,
+  output_json,
+  summary_json_file,
+):
   """Collect and merge the results of a task.
 
   This is a relatively thin wrapper script around a `swarming.py collect`
@@ -90,10 +99,9 @@ def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
 
     logging.warning('task_output_dir existing content: %r', existing_contents)
 
-  collect_cmd.extend([
-    '-output-dir', task_output_dir,
-    '-task-summary-json', summary_json_file
-  ])
+  collect_cmd.extend(
+    ['-output-dir', task_output_dir, '-task-summary-json', summary_json_file]
+  )
 
   logging.info('collect_cmd: %s', ' '.join(collect_cmd))
   collect_result = subprocess.call(collect_cmd)
@@ -103,8 +111,8 @@ def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
   task_output_dir_contents = []
   try:
     task_output_dir_contents.extend(
-        os.path.join(task_output_dir, p)
-        for p in os.listdir(task_output_dir))
+      os.path.join(task_output_dir, p) for p in os.listdir(task_output_dir)
+    )
   except (OSError, IOError) as e:
     logging.error('Error while processing task_output_dir: %s', e)
 
@@ -113,35 +121,41 @@ def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
     logging.warning('No files found in task_output_dir: %r', task_output_dir)
 
   task_output_subdirs = (
-      p for p in task_output_dir_contents
-      if os.path.isdir(p))
+    p for p in task_output_dir_contents if os.path.isdir(p)
+  )
   shard_json_files = [
-      os.path.join(subdir, 'output.json')
-      for subdir in task_output_subdirs]
-  extant_shard_json_files = [
-      f for f in shard_json_files if os.path.exists(f)]
+    os.path.join(subdir, 'output.json') for subdir in task_output_subdirs
+  ]
+  extant_shard_json_files = [f for f in shard_json_files if os.path.exists(f)]
 
   logging.debug('Expecting shard_json_files: %r', shard_json_files)
 
   if shard_json_files != extant_shard_json_files:
     logging.warning(
-        'Expected output.json file missing: %r\nFound: %r\nExpected: %r\n',
-        set(shard_json_files) - set(extant_shard_json_files),
-        extant_shard_json_files, shard_json_files)
+      'Expected output.json file missing: %r\nFound: %r\nExpected: %r\n',
+      set(shard_json_files) - set(extant_shard_json_files),
+      extant_shard_json_files,
+      shard_json_files,
+    )
 
   empty_shard_json_files = set(
-      f for f in extant_shard_json_files if os.path.getsize(f) == 0)
+    f for f in extant_shard_json_files if os.path.getsize(f) == 0
+  )
 
   if empty_shard_json_files:
-    logging.warning('One or more empty output.json files exist: %r',
-                    empty_shard_json_files)
+    logging.warning(
+      'One or more empty output.json files exist: %r', empty_shard_json_files
+    )
     extant_shard_json_files = [
-        f for f in extant_shard_json_files if f not in empty_shard_json_files]
+      f for f in extant_shard_json_files if f not in empty_shard_json_files
+    ]
 
   if not extant_shard_json_files:
     logging.warning(
-        'No shard json files found in task_output_dir: %r\nFound %r',
-        task_output_dir, task_output_dir_contents)
+      'No shard json files found in task_output_dir: %r\nFound %r',
+      task_output_dir,
+      task_output_dir_contents,
+    )
 
   merge_result = 0
 
@@ -164,13 +178,15 @@ def collect_task(collect_cmd, merge_script, merge_script_stdout_file,
   logging.info('merge_cmd: %s', ' '.join(merge_cmd))
 
   merge_result = run_command_with_output(
-      argv=merge_cmd, stdoutfile=merge_script_stdout_file)
+    argv=merge_cmd, stdoutfile=merge_script_stdout_file
+  )
   if merge_result != 0:
     logging.warning('merge_cmd had non-zero return code: %s', merge_result)
 
   if not os.path.exists(output_json):
-    logging.warning('merge_cmd did not create output_json file: %r',
-                    output_json)
+    logging.warning(
+      'merge_cmd did not create output_json file: %r', output_json
+    )
 
   return collect_result or merge_result
 
@@ -193,10 +209,16 @@ def main():
   fmt = '%(asctime)s - %(name)s: [%(levelname)s] %(message)s'
   logging.basicConfig(stream=sys.stdout, level=log_level, format=fmt)
 
-  return collect_task(args.collect_cmd, args.merge_script,
-                      args.merge_script_stdout_file, args.build_properties,
-                      args.merge_additional_args, args.task_output_dir,
-                      args.output_json, args.summary_json_file)
+  return collect_task(
+    args.collect_cmd,
+    args.merge_script,
+    args.merge_script_stdout_file,
+    args.build_properties,
+    args.merge_additional_args,
+    args.task_output_dir,
+    args.output_json,
+    args.summary_json_file,
+  )
 
 
 if __name__ == '__main__':

@@ -32,9 +32,10 @@ def strip_command_wrappers(command, strip_wrappers):
       try:
         dash_index = cmd.index('--')
       except ValueError as e:
-        raise ValueError('Unsupported command wrapper: {0} in {1}'.format(
-            cmd_0, command)) from e
-      cmd = cmd[dash_index + 1:]
+        raise ValueError(
+          'Unsupported command wrapper: {0} in {1}'.format(cmd_0, command)
+        ) from e
+      cmd = cmd[dash_index + 1 :]
       stripped = True
   if not cmd:
     raise ValueError('Empty command after strip: {0}'.format(command))
@@ -84,7 +85,7 @@ def strip_env_vars(env_vars, strip_keys):
     A copy of env_vars without strip_keys.
   """
   return {
-      key: value for key, value in env_vars.items() if key not in strip_keys
+    key: value for key, value in env_vars.items() if key not in strip_keys
   }
 
 

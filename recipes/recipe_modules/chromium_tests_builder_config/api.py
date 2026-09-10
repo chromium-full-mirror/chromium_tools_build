@@ -6,11 +6,10 @@ from __future__ import annotations
 
 from recipe_engine import recipe_api
 
-from . import (builders, proto, trybots, BuilderConfig)
+from . import builders, proto, trybots, BuilderConfig
 
 
 class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
-
   def __init__(self, properties, **kwargs):
     super().__init__(**kwargs)
     self._properties = properties
@@ -29,36 +28,43 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
   def try_db(self):
     return self._try_db
 
-  def _get_builder_config_from_properties(self,
-                                          default_retry_failed_shards=True):
+  def _get_builder_config_from_properties(
+    self, default_retry_failed_shards=True
+  ):
     if not self._properties.HasField('builder_config'):
       return None
 
-    errors = proto.VALIDATORS.validate(self._properties,
-                                       '$build/chromium_tests_builder_config')
+    errors = proto.VALIDATORS.validate(
+      self._properties, '$build/chromium_tests_builder_config'
+    )
     if errors:
-      result = self.m.step('invalid chromium_tests_builder_config properties',
-                           [])
+      result = self.m.step(
+        'invalid chromium_tests_builder_config properties', []
+      )
       result.presentation.step_text = '\n'.join(
-          [''] + ['* {}'.format(e) for e in errors])
+        [''] + ['* {}'.format(e) for e in errors]
+      )
       # TODO(gbeaty) Should this be failure if the properties file is affected?
       result.presentation.status = self.m.step.EXCEPTION
       self.m.step.raise_on_failure(result)
 
-    return proto.convert_builder_config(self._properties.builder_config,
-                                        default_retry_failed_shards)
+    return proto.convert_builder_config(
+      self._properties.builder_config, default_retry_failed_shards
+    )
 
   # TODO(gbeaty) Remove the builder ID argument when it is possible. The builder
   # ID argument is only used for Findit and the compilator. Once those use cases
   # are switched to always use the module properties, the builder ID argument
   # will not be necessary. Until then, if the module properties are set, the
   # builder ID will be ignored.
-  def lookup_builder(self,
-                     builder_id=None,
-                     builder_db=None,
-                     try_db=None,
-                     use_try_db=None,
-                     builder_config_class=None):
+  def lookup_builder(
+    self,
+    builder_id=None,
+    builder_db=None,
+    try_db=None,
+    use_try_db=None,
+    builder_config_class=None,
+  ):
     """Lookup a builder, getting the matching bot config.
 
     Args:
@@ -95,7 +101,8 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
     # retry_failed_shards is default enabled on tryjobs and disabled on CI.
     default_retry_failed_shards = self.m.tryserver.is_tryserver
     builder_config = self._get_builder_config_from_properties(
-        default_retry_failed_shards)
+      default_retry_failed_shards
+    )
 
     if builder_config is not None:
       return builder_id, builder_config
@@ -110,10 +117,11 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
 
     builder_config_class = builder_config_class or BuilderConfig
     builder_config = builder_config_class.lookup(
-        builder_id,
-        builder_db,
-        try_db,
-        use_try_db=use_try_db,
-        step_api=self.m.step,
-        default_retry_failed_shards=default_retry_failed_shards)
+      builder_id,
+      builder_db,
+      try_db,
+      use_try_db=use_try_db,
+      step_api=self.m.step,
+      default_retry_failed_shards=default_retry_failed_shards,
+    )
     return builder_id, builder_config

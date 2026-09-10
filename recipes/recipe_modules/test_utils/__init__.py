@@ -14,28 +14,28 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_swarming,
-    flakiness,
-    presentation_utils,
-    repro_instructions,
+  chromium,
+  chromium_swarming,
+  flakiness,
+  presentation_utils,
+  repro_instructions,
 )
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    tryserver,
+  depot_tools,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    futures,
-    json,
-    legacy_annotation,
-    luci_analysis,
-    path,
-    properties,
-    raw_io,
-    resultdb,
-    step,
-    time,
+  buildbucket,
+  futures,
+  json,
+  legacy_annotation,
+  luci_analysis,
+  path,
+  properties,
+  raw_io,
+  resultdb,
+  step,
+  time,
 )
 
 
@@ -59,7 +59,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   time: time.API
   repro_instructions: repro_instructions.API
-
 
 
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).

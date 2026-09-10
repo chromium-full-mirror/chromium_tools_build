@@ -9,9 +9,9 @@ from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.recipe_engine import (
-    json,
-    path,
-    step,
+  json,
+  path,
+  step,
 )
 
 
@@ -20,6 +20,7 @@ class DEPS(RecipeScriptApi):
   json: json.API
   path: path.API
   step: step.API
+
 
 from .api import AdbApi as API
 from .test_api import AdbTestApi as TEST_API

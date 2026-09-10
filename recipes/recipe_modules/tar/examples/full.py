@@ -12,11 +12,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import tar
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    path,
-    platform,
-    step,
+  context,
+  file,
+  path,
+  platform,
+  step,
 )
 
 
@@ -58,10 +58,8 @@ def RunSteps(api: DEPS):
 
   # Untar the package.
   api.tar.untar(
-      'untaring',
-      temp.joinpath('output.tar'),
-      temp.joinpath('output'),
-      quiet=True)
+    'untaring', temp.joinpath('output.tar'), temp.joinpath('output'), quiet=True
+  )
   # List untarped content.
   with api.context(cwd=temp / 'output'):
     api.step('listing', ['find'])
@@ -72,6 +70,6 @@ def RunSteps(api: DEPS):
 def GenTests(api: TEST_DEPS):
   for platform in ('linux', 'win', 'mac'):
     yield api.test(
-        platform,
-        api.platform.name(platform),
+      platform,
+      api.platform.name(platform),
     )

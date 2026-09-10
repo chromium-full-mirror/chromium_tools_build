@@ -10,23 +10,23 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import v8
 from RECIPE_MODULES.depot_tools import (
-    depot_tools,
-    gclient,
-    gerrit,
-    git,
-    gitiles,
+  depot_tools,
+  gclient,
+  gerrit,
+  git,
+  gitiles,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    json,
-    path,
-    properties,
-    raw_io,
-    step,
-    url,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  json,
+  path,
+  properties,
+  raw_io,
+  step,
+  url,
 )
 from RECIPE_MODULES.infra import cloudkms
 
@@ -50,5 +50,6 @@ class DEPS(RecipeScriptApi):
   step: step.API
   url: url.API
   v8: v8.API
+
 
 from .api import V8AutoRoller as API

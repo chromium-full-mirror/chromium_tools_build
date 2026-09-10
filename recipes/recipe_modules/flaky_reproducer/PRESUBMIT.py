@@ -16,11 +16,12 @@ USE_PYTHON3 = True
 
 def CheckFlakyReproducerLibsUnittestsWork(input_api, output_api):
   return input_api.RunTests(
-      input_api.canned_checks.GetUnitTests(
-          input_api,
-          output_api,
-          ['resources/unittests/run.py'],
-          run_on_python2=False,
-          run_on_python3=True,
-      ),
-      parallel=True)
+    input_api.canned_checks.GetUnitTests(
+      input_api,
+      output_api,
+      ['resources/unittests/run.py'],
+      run_on_python2=False,
+      run_on_python3=True,
+    ),
+    parallel=True,
+  )

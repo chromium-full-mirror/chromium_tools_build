@@ -10,8 +10,11 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 from recipe_engine.recipe_api import Property
-from recipe_engine.post_process import (DropExpectation, StepFailure,
-                                        SummaryMarkdown)
+from recipe_engine.post_process import (
+  DropExpectation,
+  StepFailure,
+  SummaryMarkdown,
+)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
@@ -23,13 +26,13 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromiumdash, v8
 from RECIPE_MODULES.depot_tools import gclient, gitiles, gsutil
 from RECIPE_MODULES.recipe_engine import (
-    file,
-    json,
-    path,
-    raw_io,
-    step,
-    time,
-    url,
+  file,
+  json,
+  path,
+  raw_io,
+  step,
+  time,
+  url,
 )
 
 
@@ -62,18 +65,19 @@ class TEST_DEPS(RecipeTestApi):
   url: url.TEST_API
   v8: v8.TEST_API
 
+
 PROPERTIES = {
-    'max_gap_seconds':
-        Property(
-            help='Maximum allowed time difference between a revision landing'
-            ' in V8 and rolling it into Chromium.',
-            default=60 * 60 * 12,
-            kind=int),
-    'branch_cut_max_gap_seconds':
-        Property(
-            help='Overrides the max_gap_seconds on branch cut days.',
-            default=60 * 60 * 36,
-            kind=int)
+  'max_gap_seconds': Property(
+    help='Maximum allowed time difference between a revision landing'
+    ' in V8 and rolling it into Chromium.',
+    default=60 * 60 * 12,
+    kind=int,
+  ),
+  'branch_cut_max_gap_seconds': Property(
+    help='Overrides the max_gap_seconds on branch cut days.',
+    default=60 * 60 * 36,
+    kind=int,
+  ),
 }
 
 
@@ -87,7 +91,9 @@ class CommitTime:
     return f'{self.revision[:8]} {self.time_gap_hours}h'
 
   def overdue_message(self):
-    return f'Revision {self.revision} was not rolled for {self.formatted_time_gap}'
+    return (
+      f'Revision {self.revision} was not rolled for {self.formatted_time_gap}'
+    )
 
   def is_overdue(self, max_gap_seconds):
     return self.time_gap.total_seconds() > max_gap_seconds
@@ -131,7 +137,7 @@ def RunSteps(api: DEPS, max_gap_seconds, branch_cut_max_gap_seconds):
     raise api.step.StepFailure('No branches found')
 
   branch_results = [
-      check_branch(api, branch, max_gap_seconds, now) for branch in branches
+    check_branch(api, branch, max_gap_seconds, now) for branch in branches
   ]
 
   adjust_for_branch_cut_day(api, branch_results, branch_cut_max_gap_seconds)
@@ -140,9 +146,10 @@ def RunSteps(api: DEPS, max_gap_seconds, branch_cut_max_gap_seconds):
 
   status = common_pb.FAILURE if overdue_branches else common_pb.SUCCESS
   return RawResult(
-      status=status,
-      summary_markdown='; '.join(
-          b.summary() for b in branch_results if b.summary()),
+    status=status,
+    summary_markdown='; '.join(
+      b.summary() for b in branch_results if b.summary()
+    ),
   )
 
 
@@ -153,25 +160,28 @@ def check_branch(api: DEPS, branch, max_gap_seconds, now):
   with api.step.nest(f'branch {v8_branch} ({chromium_branch})') as step:
     deps_file = download_chromium_deps(api, chromium_branch)
     last_rolled_revision = read_last_rolled_revision(api, deps_file)
-    commits_not_rolled = get_commits_not_rolled(api, last_rolled_revision,
-                                                v8_branch)
+    commits_not_rolled = get_commits_not_rolled(
+      api, last_rolled_revision, v8_branch
+    )
     commit_times = [commit_time(commit, now) for commit in commits_not_rolled]
     step.step_text = '; '.join(str(c) for c in commit_times)
 
     overdue_commits = [
-        ct for ct in commit_times if ct.is_overdue(max_gap_seconds)
+      ct for ct in commit_times if ct.is_overdue(max_gap_seconds)
     ]
 
     for ct in overdue_commits:
       step_result = api.step(ct.overdue_message(), [])
       step_result.presentation.status = api.step.FAILURE
 
-    return BranchResult(chromium_branch, v8_branch, len(commits_not_rolled),
-                        overdue_commits)
+    return BranchResult(
+      chromium_branch, v8_branch, len(commits_not_rolled), overdue_commits
+    )
 
 
-def adjust_for_branch_cut_day(api: DEPS, branch_results,
-                              branch_cut_max_gap_seconds):
+def adjust_for_branch_cut_day(
+  api: DEPS, branch_results, branch_cut_max_gap_seconds
+):
   latest_branch = max(branch_results, key=lambda br: int(br.chromium_branch))
   if not latest_branch.overdue_commits:
     return
@@ -188,46 +198,48 @@ def adjust_for_branch_cut_day(api: DEPS, branch_results,
 
 def read_v8_version(api: DEPS, v8_revision):
   version_blob = api.gitiles.download_file(
-      'https://chromium.googlesource.com/v8/v8',
-      'include/v8-version.h',
-      branch=v8_revision,
+    'https://chromium.googlesource.com/v8/v8',
+    'include/v8-version.h',
+    branch=v8_revision,
   )
   return api.v8.version_from_file(version_blob)
 
 
 def download_chromium_deps(api: DEPS, chromium_branch):
   chromium_deps = api.gitiles.download_file(
-      'https://chromium.googlesource.com/chromium/src',
-      'DEPS',
-      branch='refs/branch-heads/%s' % chromium_branch,
+    'https://chromium.googlesource.com/chromium/src',
+    'DEPS',
+    branch='refs/branch-heads/%s' % chromium_branch,
   )
   deps_file = api.path.mkdtemp(f'chromium{chromium_branch}') / 'DEPS'
-  api.file.write_text(f'chromium/{chromium_branch} DEPS', deps_file,
-                      chromium_deps)
+  api.file.write_text(
+    f'chromium/{chromium_branch} DEPS', deps_file, chromium_deps
+  )
   return deps_file
 
 
 def read_last_rolled_revision(api: DEPS, deps_file):
   return api.gclient(
-      'get v8_revision',
-      ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
-      stdout=api.raw_io.output_text(add_output_log=True),
+    'get v8_revision',
+    ['getdep', '--var=v8_revision', f'--deps-file={deps_file}'],
+    stdout=api.raw_io.output_text(add_output_log=True),
   ).stdout.strip()
 
 
 def get_commits_not_rolled(api: DEPS, last_rolled_revision, v8_branch):
   commits, _ = api.gitiles.log(
-      url='https://chromium.googlesource.com/v8/v8',
-      ref=f'{last_rolled_revision}..refs/branch-heads/{v8_branch}',
-      limit=100,
-      step_name='Get roll gap',
+    url='https://chromium.googlesource.com/v8/v8',
+    ref=f'{last_rolled_revision}..refs/branch-heads/{v8_branch}',
+    limit=100,
+    step_name='Get roll gap',
   )
   return commits
 
 
 def commit_time(commit, now):
-  committer_time = datetime.strptime(commit['committer']['time'],
-                                  '%a %b %d %H:%M:%S %Y')
+  committer_time = datetime.strptime(
+    commit['committer']['time'], '%a %b %d %H:%M:%S %Y'
+  )
   time_gap = now - committer_time
   return CommitTime(commit['commit'], committer_time, time_gap)
 
@@ -236,148 +248,154 @@ def GenTests(api: TEST_DEPS):
 
   def fake_branches():
     return api.url.json(
-        'GET https://chromiumdash.appspot.com/fetch_milestones?'
-        'num=0&only_active=true', [{
-            'chromium_branch': '5555',
-            'v8_branch': '10.3'
-        }, {
-            'chromium_branch': '6666',
-            'v8_branch': '11.4'
-        }])
+      'GET https://chromiumdash.appspot.com/fetch_milestones?'
+      'num=0&only_active=true',
+      [
+        {'chromium_branch': '5555', 'v8_branch': '10.3'},
+        {'chromium_branch': '6666', 'v8_branch': '11.4'},
+      ],
+    )
 
   def fake_commit():
-    return api.json.output({
-        'log': [{
+    return api.json.output(
+      {
+        'log': [
+          {
             'commit': 'deadbeef',
-            'committer': {
-                'time': 'Tue Apr 10 00:00:00 2023'
-            },
-        },],
-    })
+            'committer': {'time': 'Tue Apr 10 00:00:00 2023'},
+          },
+        ],
+      }
+    )
 
   def fake_version_file(patch='1'):
     return api.step_data(
-        'branch cut day check.fetch deadbeef:include/v8-version.h',
-        api.gitiles.make_encoded_file('#define V8_MAJOR_VERSION 12\n'
-                                      '#define V8_MINOR_VERSION 4\n'
-                                      '#define V8_BUILD_NUMBER 254\n'
-                                      '#define V8_PATCH_LEVEL %s\n' % patch),
+      'branch cut day check.fetch deadbeef:include/v8-version.h',
+      api.gitiles.make_encoded_file(
+        '#define V8_MAJOR_VERSION 12\n'
+        '#define V8_MINOR_VERSION 4\n'
+        '#define V8_BUILD_NUMBER 254\n'
+        '#define V8_PATCH_LEVEL %s\n' % patch
+      ),
     )
 
   def no_commits():
-    return api.json.output({
+    return api.json.output(
+      {
         'log': [],
-    })
+      }
+    )
 
   apr_10_2023_09 = 1681110000
 
   yield api.test(
-      "no branches",
-      api.url.json(
-          'GET https://chromiumdash.appspot.com/fetch_milestones?'
-          'num=0&only_active=true', {}),
-      api.post_process(SummaryMarkdown, "No branches found"),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    "no branches",
+    api.url.json(
+      'GET https://chromiumdash.appspot.com/fetch_milestones?'
+      'num=0&only_active=true',
+      {},
+    ),
+    api.post_process(SummaryMarkdown, "No branches found"),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   yield api.test(
-      "branches in sync",
-      fake_branches(),
-      api.step_data(
-          'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data(
-          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
-      api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
-      api.time.seed(apr_10_2023_09),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    "branches in sync",
+    fake_branches(),
+    api.step_data(
+      'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data(
+      'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
+    api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
+    api.time.seed(apr_10_2023_09),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )
 
   yield api.test(
-      "branches in sync - no commits",
-      fake_branches(),
-      api.step_data(
-          'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data(
-          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data('branch 10.3 (5555).Get roll gap', no_commits()),
-      api.step_data('branch 11.4 (6666).Get roll gap', no_commits()),
-      api.time.seed(apr_10_2023_09),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    "branches in sync - no commits",
+    fake_branches(),
+    api.step_data(
+      'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data(
+      'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data('branch 10.3 (5555).Get roll gap', no_commits()),
+    api.step_data('branch 11.4 (6666).Get roll gap', no_commits()),
+    api.time.seed(apr_10_2023_09),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )
 
   yield api.test(
-      "branch cut day branches out of sync",
-      fake_branches(),
-      api.step_data(
-          'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data(
-          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
-      api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
-      api.time.seed(apr_10_2023_09 + 60 * 60 * 48),
-      fake_version_file(patch='1'),
-      api.post_process(
-          StepFailure,
-          "branch 11.4 (6666).Revision deadbeef was not rolled for 2 days, 7:00:01"
-      ),
-      api.post_process(SummaryMarkdown,
-                       '1 overdue revs in 10.3; 1 overdue revs in 11.4'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    "branch cut day branches out of sync",
+    fake_branches(),
+    api.step_data(
+      'branch 10.3 (5555).fetch refs/branch-heads/5555:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data(
+      'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data('branch 10.3 (5555).Get roll gap', fake_commit()),
+    api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
+    api.time.seed(apr_10_2023_09 + 60 * 60 * 48),
+    fake_version_file(patch='1'),
+    api.post_process(
+      StepFailure,
+      "branch 11.4 (6666).Revision deadbeef was not rolled for 2 days, 7:00:01",
+    ),
+    api.post_process(
+      SummaryMarkdown, '1 overdue revs in 10.3; 1 overdue revs in 11.4'
+    ),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )
 
   yield api.test(
-      "branch cut day success",
-      api.url.json(
-          'GET https://chromiumdash.appspot.com/fetch_milestones?'
-          'num=0&only_active=true', [{
-              'chromium_branch': '6666',
-              'v8_branch': '11.4'
-          }]),
-      api.step_data(
-          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
-      api.time.seed(apr_10_2023_09 + 60 * 60 * 20),
-      fake_version_file(patch='1'),
-      api.post_process(SummaryMarkdown, "1 revs not rolled in 11.4"),
-      api.post_process(DropExpectation),
-      status='SUCCESS',
+    "branch cut day success",
+    api.url.json(
+      'GET https://chromiumdash.appspot.com/fetch_milestones?'
+      'num=0&only_active=true',
+      [{'chromium_branch': '6666', 'v8_branch': '11.4'}],
+    ),
+    api.step_data(
+      'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
+    api.time.seed(apr_10_2023_09 + 60 * 60 * 20),
+    fake_version_file(patch='1'),
+    api.post_process(SummaryMarkdown, "1 revs not rolled in 11.4"),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'branch out of sync',
-      api.url.json(
-          'GET https://chromiumdash.appspot.com/fetch_milestones?'
-          'num=0&only_active=true', [{
-              'chromium_branch': '6666',
-              'v8_branch': '11.4'
-          }]),
-      api.step_data(
-          'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
-          api.gitiles.make_encoded_file('DEPS'),
-      ),
-      api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
-      api.time.seed(apr_10_2023_09 + 60 * 60 * 20),
-      fake_version_file(patch='2'),
-      api.post_process(SummaryMarkdown, '1 overdue revs in 11.4'),
-      api.post_process(DropExpectation),
-      status='FAILURE',
+    'branch out of sync',
+    api.url.json(
+      'GET https://chromiumdash.appspot.com/fetch_milestones?'
+      'num=0&only_active=true',
+      [{'chromium_branch': '6666', 'v8_branch': '11.4'}],
+    ),
+    api.step_data(
+      'branch 11.4 (6666).fetch refs/branch-heads/6666:DEPS',
+      api.gitiles.make_encoded_file('DEPS'),
+    ),
+    api.step_data('branch 11.4 (6666).Get roll gap', fake_commit()),
+    api.time.seed(apr_10_2023_09 + 60 * 60 * 20),
+    fake_version_file(patch='2'),
+    api.post_process(SummaryMarkdown, '1 overdue revs in 11.4'),
+    api.post_process(DropExpectation),
+    status='FAILURE',
   )

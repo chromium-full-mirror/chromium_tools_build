@@ -4,7 +4,12 @@
 
 from __future__ import annotations
 
-from .base_result_summary import BaseResultSummary, TestStatus, TestResult, UnexpectedTestResult
+from .base_result_summary import (
+  BaseResultSummary,
+  TestStatus,
+  TestResult,
+  UnexpectedTestResult,
+)
 from .blink_web_tests_result_summary import BlinkWebTestsResultSummary
 from .gtest_result_summary import GTestTestResultSummary
 

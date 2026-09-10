@@ -19,29 +19,24 @@ class DEPS(RecipeScriptApi):
 
 def RunSteps(api: DEPS):
   v8_rollers = [
-      roller('V8 DEPS Trusted', 'Update V8 DEPS (trusted)'),
-      roller('V8 DEPS Reviewed', 'Update V8 DEPS (reviewed)'),
-      roller('ICU Trusted', 'Update ICU (trusted)'),
-      roller('ICU Reviewed', 'Update ICU (reviewed)'),
-      roller('google_benchmark Trusted', 'Update google_benchmark (trusted)'),
-      roller('google_benchmark Reviewed', 'Update google_benchmark (reviewed)'),
+    roller('V8 DEPS Trusted', 'Update V8 DEPS (trusted)'),
+    roller('V8 DEPS Reviewed', 'Update V8 DEPS (reviewed)'),
+    roller('ICU Trusted', 'Update ICU (trusted)'),
+    roller('ICU Reviewed', 'Update ICU (reviewed)'),
+    roller('google_benchmark Trusted', 'Update google_benchmark (trusted)'),
+    roller('google_benchmark Reviewed', 'Update google_benchmark (reviewed)'),
   ]
   return api.v8_roll_watcher.process_rollers(v8_rollers)
 
 
 def roller(name, subject):
   return {
-      "name":
-          name,
-      "subject":
-          subject,
-      "account":
-          "v8-ci-autoroll-builder"
-          "@chops-service-accounts.iam.gserviceaccount.com",
-      "project":
-          "v8/v8",
-      "review-host":
-          "chromium-review.googlesource.com",
+    "name": name,
+    "subject": subject,
+    "account": "v8-ci-autoroll-builder"
+    "@chops-service-accounts.iam.gserviceaccount.com",
+    "project": "v8/v8",
+    "review-host": "chromium-review.googlesource.com",
   }
 
 

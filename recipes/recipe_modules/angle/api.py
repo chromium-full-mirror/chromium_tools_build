@@ -11,7 +11,6 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 
 class ANGLEApi(recipe_api.RecipeApi):
-
   def __init__(self, properties, **kwargs):
     super().__init__(**kwargs)
 
@@ -26,14 +25,17 @@ class ANGLEApi(recipe_api.RecipeApi):
         trybots = self._test_data['trybots']
 
     builder_id, builder_config = (
-        self.m.chromium_tests_builder_config.lookup_builder(
-            builder_db=builders, try_db=trybots))
+      self.m.chromium_tests_builder_config.lookup_builder(
+        builder_db=builders, try_db=trybots
+      )
+    )
     return builder_id, builder_config
 
   def ci_steps(self):
     builder_id, builder_config = self._get_builder_id_and_config()
     test_result, update_result = self.m.chromium_tests.main_waterfall_steps(
-        builder_id, builder_config)
+      builder_id, builder_config
+    )
 
     # Skip trace tests if the rest of the build already failed.
     if not _raw_result_was_successful(test_result):
@@ -61,7 +63,8 @@ class ANGLEApi(recipe_api.RecipeApi):
 
     try:
       chromium_results = self.m.chromium_tests.trybot_steps(
-          builder_id, builder_config, files_relative_to='angle/')
+        builder_id, builder_config, files_relative_to='angle/'
+      )
     finally:
       if self.m.properties.get('no_extra_traces'):
         self.m.chromium_tests.configure_build = orig_configure_build
@@ -87,10 +90,10 @@ class ANGLEApi(recipe_api.RecipeApi):
     if not self.m.platform.is_win:
       return
     self.m.step(
-        'Kill mspdbsrv.exe (if running)',
-        ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
-        raise_on_failure=False,
-        ok_ret='any',
+      'Kill mspdbsrv.exe (if running)',
+      ['taskkill.exe', '/f', '/t', '/im', 'mspdbsrv.exe'],
+      raise_on_failure=False,
+      ok_ret='any',
     )
 
   def _maybe_run_trace_tests(self):
@@ -106,10 +109,10 @@ class ANGLEApi(recipe_api.RecipeApi):
     source_dir = self.m.chromium_checkout.source_dir
     with self.m.context(cwd=source_dir):
       for gtest_filter, step_name in [
-          ('*/ES2_Vulkan_SwiftShader', 'GLES 2.0 trace tests'),
-          ('*/ES3_Vulkan_SwiftShader', 'GLES 3.0 trace tests'),
-          ('*/ES3_1_Vulkan_SwiftShader', 'GLES 3.1 trace tests'),
-          ('*/ES1_Vulkan_SwiftShader', 'GLES 1.0 trace tests'),
+        ('*/ES2_Vulkan_SwiftShader', 'GLES 2.0 trace tests'),
+        ('*/ES3_Vulkan_SwiftShader', 'GLES 3.0 trace tests'),
+        ('*/ES3_1_Vulkan_SwiftShader', 'GLES 3.1 trace tests'),
+        ('*/ES1_Vulkan_SwiftShader', 'GLES 1.0 trace tests'),
       ]:
         self._run_trace_tests_for(gtest_filter, step_name, source_dir)
 
@@ -124,9 +127,11 @@ class ANGLEApi(recipe_api.RecipeApi):
     # and use that as a proxy for tests being run or child build being
     # triggered.
     if self.m.step.active_result.name.startswith(
-        ('record test suite statuses', 'Test statistics', 'trigger')):
+      ('record test suite statuses', 'Test statistics', 'trigger')
+    ):
       raise self.m.step.StepFailure(
-          'Regular tests and trace tests are mutually exclusive.')
+        'Regular tests and trace tests are mutually exclusive.'
+      )
 
   def _run_trace_tests_for(self, gtest_filter, step_name, source_dir):
     """Runs ANGLE trace tests for a given filter.
@@ -137,14 +142,14 @@ class ANGLEApi(recipe_api.RecipeApi):
       source_dir: The path to the ANGLE source directory/root.
     """
     cmd = [
-        'vpython3',
-        'src/tests/capture_replay_tests.py',
-        '--log',
-        'debug',
-        '--gtest_filter=%s' % gtest_filter,
-        '--out-dir=%s' % source_dir.joinpath('out_CaptureReplayTest'),
-        '--use-remoteexec',
-        '--use-siso',
+      'vpython3',
+      'src/tests/capture_replay_tests.py',
+      '--log',
+      'debug',
+      '--gtest_filter=%s' % gtest_filter,
+      '--out-dir=%s' % source_dir.joinpath('out_CaptureReplayTest'),
+      '--use-remoteexec',
+      '--use-siso',
     ]
     if self.m.platform.is_linux:
       cmd.append('--xvfb')

@@ -13,11 +13,11 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_checkout
 from RECIPE_MODULES.depot_tools import bot_update, depot_tools
 from RECIPE_MODULES.recipe_engine import (
-    context,
-    file,
-    json,
-    platform,
-    step,
+  context,
+  file,
+  json,
+  platform,
+  step,
 )
 
 
@@ -42,51 +42,53 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   step: step.TEST_API
 
-BUILDERS = freeze({
+
+BUILDERS = freeze(
+  {
     'chromium.clang': {
-        'builders': {
-            'ToTMacCoverage':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='clang_tot_mac',
-                    chromium_apply_config=[],
-                    gclient_apply_config=['clang_tot'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'mac',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-            'ToTLinuxCoverage':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='clang_tot_linux',
-                    chromium_apply_config=[],
-                    gclient_apply_config=['clang_tot'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'linux',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-            'ToTWindowsCoverage':
-                chromium_types.BuilderSpec.create(
-                    chromium_config='chromium_win_clang_tot',
-                    chromium_apply_config=[],
-                    gclient_apply_config=['clang_tot'],
-                    chromium_config_kwargs={
-                        'BUILD_CONFIG': 'Release',
-                        'TARGET_PLATFORM': 'win',
-                        'TARGET_BITS': 64,
-                    },
-                ),
-        },
+      'builders': {
+        'ToTMacCoverage': chromium_types.BuilderSpec.create(
+          chromium_config='clang_tot_mac',
+          chromium_apply_config=[],
+          gclient_apply_config=['clang_tot'],
+          chromium_config_kwargs={
+            'BUILD_CONFIG': 'Release',
+            'TARGET_PLATFORM': 'mac',
+            'TARGET_BITS': 64,
+          },
+        ),
+        'ToTLinuxCoverage': chromium_types.BuilderSpec.create(
+          chromium_config='clang_tot_linux',
+          chromium_apply_config=[],
+          gclient_apply_config=['clang_tot'],
+          chromium_config_kwargs={
+            'BUILD_CONFIG': 'Release',
+            'TARGET_PLATFORM': 'linux',
+            'TARGET_BITS': 64,
+          },
+        ),
+        'ToTWindowsCoverage': chromium_types.BuilderSpec.create(
+          chromium_config='chromium_win_clang_tot',
+          chromium_apply_config=[],
+          gclient_apply_config=['clang_tot'],
+          chromium_config_kwargs={
+            'BUILD_CONFIG': 'Release',
+            'TARGET_PLATFORM': 'win',
+            'TARGET_BITS': 64,
+          },
+        ),
+      },
     },
-})
+  }
+)
 
 # Sample targets that are used to test the coverage script against clang tot
 # coverage tools.
 SAMPLE_TARGETS = [
-    'base_unittests', 'boringssl_crypto_tests', 'boringssl_ssl_tests',
-    'unit_tests'
+  'base_unittests',
+  'boringssl_crypto_tests',
+  'boringssl_ssl_tests',
+  'unit_tests',
 ]
 
 
@@ -105,18 +107,20 @@ def _RunStepsInBuilderCacheDir(api: DEPS, builder_id, bot_config):
   api.chromium.ensure_toolchains(checkout_dir)
 
   api.chromium.runhooks(source_dir, build_dir)
-  clang_revision_file = source_dir.joinpath('third_party', 'llvm-build',
-                                            'Release+Asserts',
-                                            'cr_build_revision')
+  clang_revision_file = source_dir.joinpath(
+    'third_party', 'llvm-build', 'Release+Asserts', 'cr_build_revision'
+  )
   revision = api.file.read_text(
-      'Read clang revision', clang_revision_file, test_data='332838-1')
+    'Read clang revision', clang_revision_file, test_data='332838-1'
+  )
   api.step.active_result.presentation.step_text = revision
 
   api.chromium.mb_gen(source_dir, build_dir, builder_id)
 
   coverage_script = 'coverage.py'
-  coverage_script_path = source_dir.joinpath('tools', 'code_coverage',
-                                             coverage_script)
+  coverage_script_path = source_dir.joinpath(
+    'tools', 'code_coverage', coverage_script
+  )
   output_dir_name = 'clang_tot_coverage_report'
   output_dir_path = source_dir.joinpath('out', output_dir_name)
 
@@ -131,8 +135,9 @@ def _RunStepsInBuilderCacheDir(api: DEPS, builder_id, bot_config):
   cmd.extend(['-b', build_dir])
   cmd.extend(['-o', output_dir_path])
 
-  coverage_tools_dir_path = source_dir.joinpath('third_party', 'llvm-build',
-                                                'Release+Asserts', 'bin')
+  coverage_tools_dir_path = source_dir.joinpath(
+    'third_party', 'llvm-build', 'Release+Asserts', 'bin'
+  )
   cmd.extend(['--coverage-tools-dir', coverage_tools_dir_path])
 
   cmd.extend(['-v'])
@@ -140,23 +145,27 @@ def _RunStepsInBuilderCacheDir(api: DEPS, builder_id, bot_config):
   cmd.extend(['--no-component-view'])
   with api.depot_tools.on_path():
     api.chromium.compile(
-        source_dir=source_dir, build_dir=build_dir, targets=SAMPLE_TARGETS)
+      source_dir=source_dir, build_dir=build_dir, targets=SAMPLE_TARGETS
+    )
     api.step('run coverage script', cmd)
 
   # Following steps are added for debugging purpose.
   for target in SAMPLE_TARGETS:
     log_file_name = '%s_output.log' % target
-    log_file_path = output_dir_path.joinpath(api.platform.name, 'logs',
-                                             log_file_name)
+    log_file_path = output_dir_path.joinpath(
+      api.platform.name, 'logs', log_file_name
+    )
 
     log_content = api.file.read_text(
-        'read log output of %s' % target, log_file_path, test_data='aaa\nbbb')
+      'read log output of %s' % target, log_file_path, test_data='aaa\nbbb'
+    )
     log_content_lines = log_content.splitlines()
     api.step.active_result.presentation.logs[log_file_name] = log_content_lines
 
   summary_file_name = 'summary.json'
-  summary_file_path = output_dir_path.joinpath(api.platform.name,
-                                               summary_file_name)
+  summary_file_path = output_dir_path.joinpath(
+    api.platform.name, summary_file_name
+  )
   api.file.read_json('read %s' % summary_file_name, summary_file_path)
 
 

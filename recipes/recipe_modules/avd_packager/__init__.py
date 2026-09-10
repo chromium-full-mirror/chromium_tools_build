@@ -14,12 +14,12 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium_checkout
 from RECIPE_MODULES.depot_tools import gclient
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    defer,
-    json,
-    step,
+  buildbucket,
+  cipd,
+  context,
+  defer,
+  json,
+  step,
 )
 
 

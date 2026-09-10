@@ -4,7 +4,10 @@
 
 from recipe_engine import post_process
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
-from RECIPE_MODULES.build.devtools.e2e_tests_runner import E2ETests, RepeatE2EShuffledTests
+from RECIPE_MODULES.build.devtools.e2e_tests_runner import (
+  E2ETests,
+  RepeatE2EShuffledTests,
+)
 
 from dataclasses import dataclass
 
@@ -14,14 +17,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import chromium, chromium_swarming, devtools
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    file,
-    path,
-    platform,
-    properties,
-    raw_io,
-    resultdb,
-    step,
+  buildbucket,
+  file,
+  path,
+  platform,
+  properties,
+  raw_io,
+  resultdb,
+  step,
 )
 
 
@@ -57,7 +60,8 @@ def RunSteps(api: DEPS):
   repeat_shuffled = api.properties.get('repeat_shuffled', False)
   if repeat_shuffled:
     runner = RepeatE2EShuffledTests(
-        api, trigger, builder_config, step_name='Repeat E2E Tests')
+      api, trigger, builder_config, step_name='Repeat E2E Tests'
+    )
   else:
     runner = E2ETests(api, trigger, builder_config, step_name='E2E Tests')
 
@@ -84,60 +88,59 @@ def GenTests(api: TEST_DEPS):
 
   def try_build(builder='linux'):
     return api.buildbucket.try_build(
-        project='devtools',
-        builder=builder,
-        git_repo=git_repo,
-        change_number=91827,
-        patch_set=1)
+      project='devtools',
+      builder=builder,
+      git_repo=git_repo,
+      change_number=91827,
+      patch_set=1,
+    )
 
   yield api.test('basic', try_build())
   yield api.test(
-      'repeat_shuffled',
-      try_build(),
-      api.properties(
-          repeat_shuffled=True,
-          test_names={
-              'shuffled_repeat_e2e_tests': ['test/e2e/foo.test.ts:test1']
-          }),
-      api.post_process(post_process.DropExpectation),
+    'repeat_shuffled',
+    try_build(),
+    api.properties(
+      repeat_shuffled=True,
+      test_names={'shuffled_repeat_e2e_tests': ['test/e2e/foo.test.ts:test1']},
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'skip_debug',
-      try_build(),
-      api.properties(builder_config='Debug'),
-      api.post_process(post_process.DoesNotRun, 'Trigger E2E Tests'),
-      api.post_process(post_process.DropExpectation),
+    'skip_debug',
+    try_build(),
+    api.properties(builder_config='Debug'),
+    api.post_process(post_process.DoesNotRun, 'Trigger E2E Tests'),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Exoneration
   yield api.test(
-      'exonerate',
-      try_build(),
-      api.properties(
-          test_names={'e2e_tests': ['test/e2e/foo.test.ts:my_test']}),
-      api.post_process(post_process.DropExpectation),
+    'exonerate',
+    try_build(),
+    api.properties(test_names={'e2e_tests': ['test/e2e/foo.test.ts:my_test']}),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Flake detection
   yield api.test(
-      'flake_detection',
-      try_build(),
-      api.properties(touched_tests=['test/e2e/foo.test.ts']),
-      api.post_process(post_process.DropExpectation),
+    'flake_detection',
+    try_build(),
+    api.properties(touched_tests=['test/e2e/foo.test.ts']),
+    api.post_process(post_process.DropExpectation),
   )
 
   # Collect with invalid shard (infra failure, test_runner_base.py line 59)
   yield api.test(
-      'shard_invalid',
-      try_build(),
-      api.override_step_data(
-          ('E2E Tests.E2E Tests shards results.'
-           'E2E Tests (Shard #0) on Ubuntu-22.04'),
-          api.chromium_swarming.summary(None,
-                                        {'shards': [{
-                                            'state': 'TIMED_OUT'
-                                        }]})),
-      api.post_process(post_process.DropExpectation),
-      status='INFRA_FAILURE',
+    'shard_invalid',
+    try_build(),
+    api.override_step_data(
+      (
+        'E2E Tests.E2E Tests shards results.'
+        'E2E Tests (Shard #0) on Ubuntu-22.04'
+      ),
+      api.chromium_swarming.summary(None, {'shards': [{'state': 'TIMED_OUT'}]}),
+    ),
+    api.post_process(post_process.DropExpectation),
+    status='INFRA_FAILURE',
   )

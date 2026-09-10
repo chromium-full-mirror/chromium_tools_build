@@ -15,8 +15,13 @@ import sys
 import tarfile
 
 
-def tar_with_subprocess(root, output: str, entries: Dict[str, str],
-                        compression: str, compression_level: Optional[int]):
+def tar_with_subprocess(
+  root,
+  output: str,
+  entries: Dict[str, str],
+  compression: str,
+  compression_level: Optional[int],
+):
   """tars set of files and directories using 'tar' utility.
 
   Works only on Linux and Mac, uses system 'tar' program.
@@ -43,14 +48,14 @@ def tar_with_subprocess(root, output: str, entries: Dict[str, str],
       # File must exist and be inside |root|.
       assert os.path.isfile(path), path
       assert path.startswith(root), path
-      items_to_tar.append(path[len(root):])
+      items_to_tar.append(path[len(root) :])
     elif entry['type'] == 'dir':
       # Append trailing '/'.
       path = path.rstrip(os.path.sep) + os.path.sep
       # Directory must exist and be inside |root| or be |root| itself.
       assert os.path.isdir(path), path
       assert path.startswith(root), path
-      items_to_tar.append(path[len(root):] or '.')
+      items_to_tar.append(path[len(root) :] or '.')
     else:
       raise AssertionError('Invalid entry type: %s' % (tp,))
 
@@ -74,9 +79,7 @@ def tar_with_subprocess(root, output: str, entries: Dict[str, str],
   args += [options + 'f', output]
   args += items_to_tar
   print(('Executing command: {}'.format(args)))
-  proc = subprocess.Popen(
-      args=args,
-      cwd=root)
+  proc = subprocess.Popen(args=args, cwd=root)
   proc.communicate()
   if proc.stderr:
     print(('Error: {}'.format(proc.stderr)))
@@ -101,13 +104,14 @@ def tar_with_python(root, output, entries, compression):
   if compression in ['gz', 'bz2']:
     mode += ':%s' % compression
   with tarfile.open(output, mode) as tf:
+
     def add(path, archive_name):
       assert path.startswith(root), path
       # Do not add itself to archive.
       if path == output:
         return
       if archive_name is None:
-        archive_name = path[len(root):]
+        archive_name = path[len(root) :]
       print('Adding %s' % archive_name)
       tf.add(path, archive_name)
 
@@ -160,8 +164,9 @@ def main():
       exit_code = tar_with_python(root, output, entries, compression)
     else:
       # On mac and linux 'tar' utility handles symlink and file modes.
-      exit_code = tar_with_subprocess(root, output, entries, compression,
-                                      compression_level)
+      exit_code = tar_with_subprocess(
+        root, output, entries, compression, compression_level
+      )
   finally:
     # On non-zero exit code or on unexpected exception, clean up.
     if exit_code:

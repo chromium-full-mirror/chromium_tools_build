@@ -29,7 +29,6 @@ GIT = 'git' if not IS_WIN else 'git.bat'
 
 
 class _VarImpl:
-
   def __init__(self, local_scope):
     self._local_scope = local_scope
 
@@ -40,7 +39,6 @@ class _VarImpl:
 
 
 class _Timer:
-
   def __init__(self):
     self._time = None
 
@@ -67,26 +65,26 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
     A path starts with '//' as the root, and ends with '/'.
   """
   local_scope = {
-      'vars': {},
-      'allowed_hosts': [],
-      'deps': {},
-      'deps_os': {},
-      'include_rules': [],
-      'skip_child_includes': [],
-      'hooks': [],
-      'Str': str,
+    'vars': {},
+    'allowed_hosts': [],
+    'deps': {},
+    'deps_os': {},
+    'include_rules': [],
+    'skip_child_includes': [],
+    'hooks': [],
+    'Str': str,
   }
   var = _VarImpl(local_scope)
   global_scope = {
-      'Var': var.Lookup,
-      'vars': {},
-      'allowed_hosts': [],
-      'deps': {},
-      'deps_os': {},
-      'include_rules': [],
-      'skip_child_includes': [],
-      'hooks': [],
-      'Str': str,
+    'Var': var.Lookup,
+    'vars': {},
+    'allowed_hosts': [],
+    'deps': {},
+    'deps_os': {},
+    'include_rules': [],
+    'skip_child_includes': [],
+    'hooks': [],
+    'Str': str,
   }
   exec(deps_content, global_scope, local_scope)
 
@@ -99,7 +97,7 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
   root_dir = 'src/'
   for path in checkout_dirs:
     if path.startswith(root_dir):
-      path = path[len(root_dir):]
+      path = path[len(root_dir) :]
     path = '//' + path
     if not path.endswith('/'):
       path += '/'
@@ -116,7 +114,8 @@ class GitLogEntry(NamedTuple):
 
 
 def _ParseGitLogStream(
-    git_log_output_stream: Iterable[str],) -> Iterator[GitLogEntry]:
+  git_log_output_stream: Iterable[str],
+) -> Iterator[GitLogEntry]:
   """Parses git log stream and yields GitLogEntry tuples.
 
   Expected input format:
@@ -182,8 +181,8 @@ class RevisionCache:
         reader = csv.reader(cache_path)
         for checkout_dir, path_in_checkout, revision, timestamp in reader:
           self._entries[checkout_dir, path_in_checkout] = (
-              revision,
-              int(timestamp),
+            revision,
+            int(timestamp),
           )
     except FileNotFoundError:
       logging.warning('Revision cache %s not found', self._path)
@@ -205,8 +204,9 @@ class RevisionCache:
       self.Clear()
 
   def Clear(self):
-    logging.warning('Deleting revision cache %s, which may be corrupt',
-                    self._path)
+    logging.warning(
+      'Deleting revision cache %s, which may be corrupt', self._path
+    )
     os.remove(self._path)
 
   def RetrieveRevision(self, args):
@@ -228,12 +228,13 @@ class RevisionCache:
     assert len(args) == 3, 'Got %d args, but expected 3' % (len(args))
     root_dir, checkout_dir, path = args
 
-    assert checkout_dir.startswith('//'), ('%s is expected to start with //' %
-                                           checkout_dir)
+    assert checkout_dir.startswith('//'), (
+      '%s is expected to start with //' % checkout_dir
+    )
     cwd = os.path.join(root_dir, checkout_dir[2:])
 
     assert path.startswith('//'), '%s is expected to start with //' % path
-    path_in_dep_repo = path[len(checkout_dir):]
+    path_in_dep_repo = path[len(checkout_dir) :]
 
     cache_key = (checkout_dir, path_in_dep_repo)
     if entry := self._entries.get(cache_key):
@@ -241,9 +242,9 @@ class RevisionCache:
 
     try:
       git_output = subprocess.check_output(
-          [GIT, 'log', '-n', '1', '--pretty=format:%H:%ct', path_in_dep_repo],
-          cwd=cwd,
-          text=True,
+        [GIT, 'log', '-n', '1', '--pretty=format:%H:%ct', path_in_dep_repo],
+        cwd=cwd,
+        text=True,
       )
 
       lines = git_output.splitlines()
@@ -268,24 +269,26 @@ class RevisionCache:
         checkout.
       paths_in_checkout (list): List of paths in checkout to resolve
     """
-    assert checkout_dir.startswith('//'), ('%s is expected to start with //' %
-                                           checkout_dir)
+    assert checkout_dir.startswith('//'), (
+      '%s is expected to start with //' % checkout_dir
+    )
     cwd = os.path.join(root_dir, checkout_dir[2:])
 
     paths_in_checkout_set = set(paths_in_checkout)
     resolved_paths = set()
 
     cmd = [
-        GIT,
-        'log',
-        '--name-only',
-        '--no-renames',
-        '--pretty=format:COMMIT %H %ct',
-        '--since=5 years ago',
+      GIT,
+      'log',
+      '--name-only',
+      '--no-renames',
+      '--pretty=format:COMMIT %H %ct',
+      '--since=5 years ago',
     ]
     try:
       process = subprocess.Popen(
-          cmd, cwd=cwd, stdout=subprocess.PIPE, text=True)
+        cmd, cwd=cwd, stdout=subprocess.PIPE, text=True
+      )
 
       for commit, timestamp, path in _ParseGitLogStream(process.stdout):
         if path in paths_in_checkout_set and path not in resolved_paths:
@@ -299,8 +302,9 @@ class RevisionCache:
 
       process.wait()
     except Exception as e:
-      logging.warning('Error during batched git log for %s: %s', checkout_dir,
-                      e)
+      logging.warning(
+        'Error during batched git log for %s: %s', checkout_dir, e
+      )
 
 
 def _GetCommitedFilesForEachCheckout(root_dir, checkouts):
@@ -320,9 +324,9 @@ def _GetCommitedFilesForEachCheckout(root_dir, checkouts):
     checkout_dir = os.path.join(root_dir, checkout[2:])
     if not os.path.isdir(checkout_dir):
       continue
-    git_output = subprocess.check_output([GIT, 'ls-files'],
-                                         cwd=checkout_dir,
-                                         text=True)
+    git_output = subprocess.check_output(
+      [GIT, 'ls-files'], cwd=checkout_dir, text=True
+    )
     for path in git_output.splitlines():
       all_files[checkout].add(os.path.join(checkout, path))
   return all_files
@@ -367,11 +371,12 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   timer.End('Grouping files by checkout')
 
   timer.Start()
-  root_revision = subprocess.check_output([GIT, 'rev-parse', 'HEAD'],
-                                          text=True,
-                                          cwd=root_dir).strip()
-  cache_path = os.path.join(tempfile.gettempdir(), '.cov-rev-cache',
-                            f'{root_revision}.csv')
+  root_revision = subprocess.check_output(
+    [GIT, 'rev-parse', 'HEAD'], text=True, cwd=root_dir
+  ).strip()
+  cache_path = os.path.join(
+    tempfile.gettempdir(), '.cov-rev-cache', f'{root_revision}.csv'
+  )
   cache = RevisionCache(cache_path)
   cache.TryLoad()
 
@@ -379,7 +384,7 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   for checkout, paths in files_by_checkout.items():
     uncached_paths = []
     for path in paths:
-      path_in_dep_repo = path[len(checkout):]
+      path_in_dep_repo = path[len(checkout) :]
       if (checkout, path_in_dep_repo) not in cache._entries:
         uncached_paths.append(path_in_dep_repo)
 
@@ -395,7 +400,7 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   unresolved_file_data = []
   for checkout, paths in files_by_checkout.items():
     for path in paths:
-      path_in_dep_repo = path[len(checkout):]
+      path_in_dep_repo = path[len(checkout) :]
       cache_key = (checkout, path_in_dep_repo)
       if entry := cache._entries.get(cache_key):
         revisions_by_path[path] = entry
@@ -427,8 +432,9 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   return revisions_by_path
 
 
-def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
-                                           deps_file_path):
+def AddGitRevisionsToCoverageFilesMetadata(
+  files_coverage_data, src_path, deps_file_path
+):
   """Add git revisions to a list File in coverage metadata format.
 
   Coverage metadata format:
@@ -449,17 +455,18 @@ def AddGitRevisionsToCoverageFilesMetadata(files_coverage_data, src_path,
   for file_record in files_coverage_data:
     git_metadata = file_git_metadata.get(file_record['path'])
     if not git_metadata:
-      logging.warning('Failed to retrieve git metadata for %s',
-                      file_record['path'])
+      logging.warning(
+        'Failed to retrieve git metadata for %s', file_record['path']
+      )
       continue
 
     file_record['revision'], file_record['timestamp'] = git_metadata
 
   minutes = (time.time() - start_time) / 60
   logging.info(
-      'Retrieving and filling in git metadata for %d files took %.0f minutes',
-      len(all_files),
-      minutes,
+    'Retrieving and filling in git metadata for %d files took %.0f minutes',
+    len(all_files),
+    minutes,
   )
 
 
@@ -480,8 +487,10 @@ def GetUnmodifiedLinesSinceCommit(src_path, file_path, reference_commit):
     show_cmd = [GIT, 'show', show_arg]
     show_output = subprocess.check_output(show_cmd, cwd=src_path, text=True)
   except subprocess.CalledProcessError:
-    logging.info('Unable to fetch file content at reference_commit.'
-                 '%s may have been added later or moved.' % file_path)
+    logging.info(
+      'Unable to fetch file content at reference_commit.'
+      '%s may have been added later or moved.' % file_path
+    )
     # Return empty because all lines at HEAD are new
     return []
   reference_commit_lines = show_output.splitlines()
@@ -504,6 +513,8 @@ def GetUnmodifiedLinesSinceCommit(src_path, file_path, reference_commit):
   local_lines = show_output.splitlines()
 
   unchanged_lines = list(
-      diff_util.generate_line_number_mapping(diff_lines, local_lines,
-                                             reference_commit_lines).keys())
+    diff_util.generate_line_number_mapping(
+      diff_lines, local_lines, reference_commit_lines
+    ).keys()
+  )
   return unchanged_lines

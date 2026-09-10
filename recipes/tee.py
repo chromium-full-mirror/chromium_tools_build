@@ -7,9 +7,11 @@ from __future__ import print_function
 import sys
 import subprocess
 
+
 def print_usage(err_msg):
   print(err_msg, file=sys.stderr)
   sys.exit('Usage: tee.py [file1 ...] -- command [arg1 ...]')
+
 
 def main():
   try:
@@ -17,7 +19,7 @@ def main():
   except ValueError:
     print_usage('Separator -- not found')
 
-  cmd = sys.argv[idx+1:]
+  cmd = sys.argv[idx + 1 :]
   files = sys.argv[1:idx]
   if not cmd:
     print_usage('Subcommand not specified')

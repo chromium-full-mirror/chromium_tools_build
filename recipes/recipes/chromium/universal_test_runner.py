@@ -19,19 +19,19 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
-    chromium_utr,
-    dawn,
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
+  chromium_utr,
+  dawn,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    path,
-    platform,
-    properties,
-    step,
+  buildbucket,
+  path,
+  platform,
+  properties,
+  step,
 )
 
 
@@ -58,6 +58,7 @@ class TEST_DEPS(RecipeTestApi):
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   properties: properties.TEST_API
 
+
 PROPERTIES = Request
 
 
@@ -67,27 +68,34 @@ def RunSteps(api: RecipeApi, properties: Request):
   api.chromium_checkout.set_paths(checkout_dir, source_dir)
   try:
     builder_id, builder_config = configure_build(
-        api, properties.run_type != Request.RunType.RUN_TYPE_RUN,
-        properties.rerun_options.skip_config_validation)
+      api,
+      properties.run_type != Request.RunType.RUN_TYPE_RUN,
+      properties.rerun_options.skip_config_validation,
+    )
   except BadConf as e:
     rerun_options = [
-        api.chromium_utr.create_prompt_option(
-            properties, 'yes', skip_config_validation=True),
-        api.chromium_utr.create_prompt_option(properties, 'no')
+      api.chromium_utr.create_prompt_option(
+        properties, 'yes', skip_config_validation=True
+      ),
+      api.chromium_utr.create_prompt_option(properties, 'no'),
     ]
-    err_msg = (f'Caution: the recipe config for this builder may be '
-               f'incompatible with the current machine: {e.args[0]}. Continue?')
+    err_msg = (
+      f'Caution: the recipe config for this builder may be '
+      f'incompatible with the current machine: {e.args[0]}. Continue?'
+    )
     return api.chromium_utr.create_rerun_result(
-        rerun_options, err_msg, properties.output_properties_file)
+      rerun_options, err_msg, properties.output_properties_file
+    )
 
-  return api.chromium_utr.run(properties, checkout_dir, source_dir, builder_id,
-                              builder_config)
+  return api.chromium_utr.run(
+    properties, checkout_dir, source_dir, builder_id, builder_config
+  )
 
 
 def configure_build(
-    api: DEPS,
-    build: bool,
-    skip_validation: bool,
+  api: DEPS,
+  build: bool,
+  skip_validation: bool,
 ) -> tuple[chromium_types.BuilderId, ctbc.BuilderConfig]:
   """Prepares the recipe to build with the provided checkout.
 
@@ -108,9 +116,11 @@ def configure_build(
   """
   builder = api.buildbucket.build.builder.builder
   builder_id = chromium_types.BuilderId.create_for_group(
-      api.properties['builder_group'], builder)
-  _, builder_config = (
-      api.chromium_tests_builder_config.lookup_builder(use_try_db=True))
+    api.properties['builder_group'], builder
+  )
+  _, builder_config = api.chromium_tests_builder_config.lookup_builder(
+    use_try_db=True
+  )
 
   api.chromium.verify_config = not skip_validation
   api.chromium_tests.configure_build(builder_config, test_only=not build)
@@ -119,9 +129,12 @@ def configure_build(
   # builder. This check is normally done in the config validation.
   if build and api.chromium.c.TEST_ONLY and not skip_validation:
     _, compiling_config = api.chromium_utr.get_compiling_builder_config(
-        builder_id, builder_config)
-    api.chromium.make_config(compiling_config.chromium_config,
-                             **compiling_config.chromium_config_kwargs)
+      builder_id, builder_config
+    )
+    api.chromium.make_config(
+      compiling_config.chromium_config,
+      **compiling_config.chromium_config_kwargs,
+    )
 
   return builder_id, builder_config
 
@@ -129,107 +142,115 @@ def configure_build(
 def GenTests(api: RecipeTestApi):
 
   yield api.test(
-      'basic',
-      api.properties(
-          checkout_path='[CACHE]/src',
-          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          rerun_options=Request.RerunOptions(bypass_gclient=True),
+    'basic',
+    api.properties(
+      checkout_path='[CACHE]/src',
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      rerun_options=Request.RerunOptions(bypass_gclient=True),
+    ),
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
       ),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'tester_builder_validate_parent_chromium_config',
-      api.properties(
-          checkout_path='[CACHE]/src',
-          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          rerun_options=Request.RerunOptions(bypass_gclient=True),
+    'tester_builder_validate_parent_chromium_config',
+    api.properties(
+      checkout_path='[CACHE]/src',
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      rerun_options=Request.RerunOptions(bypass_gclient=True),
+    ),
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+            'fake-tester': ctbc.BuilderSpec.create(
+              execution_mode=ctbc.TEST,
+              parent_buildername='fake-builder',
+              parent_builder_group='fake-group',
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
       ),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-                  'fake-tester':
-                      ctbc.BuilderSpec.create(
-                          execution_mode=ctbc.TEST,
-                          parent_buildername='fake-builder',
-                          parent_builder_group='fake-group',
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'checkout_to_anypath',
-      api.properties(
-          checkout_path='/not/known/to/recipe/engine/src',
-          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          rerun_options=Request.RerunOptions(bypass_gclient=True),
+    'checkout_to_anypath',
+    api.properties(
+      checkout_path='/not/known/to/recipe/engine/src',
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      rerun_options=Request.RerunOptions(bypass_gclient=True),
+    ),
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
       ),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                      ),
-              },
-          })),
-      api.post_process(post_process.DropExpectation),
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'bad_config',
-      api.properties(
-          checkout_path='[CACHE]/src',
-          run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
-          rerun_options=Request.RerunOptions(bypass_gclient=True),
-      ),
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='fake-group',
-          builder='fake-builder',
-          builder_db=ctbc.BuilderDatabase.create({
-              'fake-group': {
-                  'fake-builder':
-                      ctbc.BuilderSpec.create(
-                          chromium_config='chromium',
-                          gclient_config='chromium',
-                          chromium_config_kwargs={
-                              'TARGET_PLATFORM': 'ios',
-                          },
-                      ),
+    'bad_config',
+    api.properties(
+      checkout_path='[CACHE]/src',
+      run_type=Request.RunType.RUN_TYPE_COMPILE_AND_RUN,
+      rerun_options=Request.RerunOptions(bypass_gclient=True),
+    ),
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'fake-group': {
+            'fake-builder': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'ios',
               },
-          })),
-      api.post_process(
-          post_process.SummaryMarkdown,
-          'Caution: the recipe config for this builder may be incompatible '
-          'with the current machine: Unexpectedly attempting to compile ios '
-          'from linux. The chromium config HOST_PLATFORM was not set '
-          'explicitly. Continue?'),
-      api.expect_status('FAILURE'),
-      api.post_process(post_process.DropExpectation),
+            ),
+          },
+        }
+      ),
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'Caution: the recipe config for this builder may be incompatible '
+      'with the current machine: Unexpectedly attempting to compile ios '
+      'from linux. The chromium config HOST_PLATFORM was not set '
+      'explicitly. Continue?',
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
   )

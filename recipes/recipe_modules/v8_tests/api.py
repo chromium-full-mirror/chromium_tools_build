@@ -113,10 +113,13 @@ class V8TestsApi(recipe_api.RecipeApi):
       assert len(changes) <= 1
       if changes and changes[0].project:
         self.m.chromium_swarming.add_default_tag(
-            f'patch_project:{changes[0].project}')
+          f'patch_project:{changes[0].project}'
+        )
     else:
       if self.m.builder_group.for_current in [
-          'client.v8', 'client.v8.branches', 'client.v8.ports'
+        'client.v8',
+        'client.v8.branches',
+        'client.v8.ports',
       ]:
         self.m.chromium_swarming.default_priority = 25
       else:
@@ -181,7 +184,8 @@ class V8TestsApi(recipe_api.RecipeApi):
       result = self.m.step('Customized run with extra flags', cmd=None)
       result.presentation.step_text += ' '.join(self.extra_flags)
       assert all(re.match(r'[\w\-]*', x) for x in self.extra_flags), (
-          'no special characters allowed in extra flags')
+        'no special characters allowed in extra flags'
+      )
 
     start_time_sec = self.m.time.time()
 
@@ -195,7 +199,8 @@ class V8TestsApi(recipe_api.RecipeApi):
     assert not local_tests or not swarming_tests
 
     test_group = testing.TestGroup(
-        self.m, swarming_tests if swarming_tests else local_tests)
+      self.m, swarming_tests if swarming_tests else local_tests
+    )
 
     with self.maybe_nest(swarming_tests, 'trigger tests'):
       test_group.pre_run()
@@ -213,32 +218,34 @@ class V8TestsApi(recipe_api.RecipeApi):
 
   def update_slowest(self, output, presentation):
     presentation.logs['slowest tests'] = formatting.top_tests(
-        output['slowest_tests'],
-        formatting.duration,
-        'Duration',
-        'marked_slow',
+      output['slowest_tests'],
+      formatting.duration,
+      'Duration',
+      'marked_slow',
     )
 
   def update_max_rss(self, output, presentation):
-    if (not output.get('max_rss_tests') or
-        not output['max_rss_tests'][0].get('max_rss')):
+    if not output.get('max_rss_tests') or not output['max_rss_tests'][0].get(
+      'max_rss'
+    ):
       return
     presentation.logs['largest tests (rss)'] = formatting.top_tests(
-        output['max_rss_tests'],
-        formatting.rss,
-        'Maximum RSS',
-        'marked_heavy',
+      output['max_rss_tests'],
+      formatting.rss,
+      'Maximum RSS',
+      'marked_heavy',
     )
 
   def update_max_vms(self, output, presentation):
-    if (not output.get('max_vms_tests') or
-        not output['max_vms_tests'][0].get('max_vms')):
+    if not output.get('max_vms_tests') or not output['max_vms_tests'][0].get(
+      'max_vms'
+    ):
       return
     presentation.logs['largest tests (vms)'] = formatting.top_tests(
-        output['max_vms_tests'],
-        formatting.vms,
-        'Maximum VMS',
-        'marked_heavy',
+      output['max_vms_tests'],
+      formatting.vms,
+      'Maximum VMS',
+      'marked_heavy',
     )
 
   def ui_test_label(self, full_test_name):
@@ -246,7 +253,7 @@ class V8TestsApi(recipe_api.RecipeApi):
     label = full_test_name.split('/')[-1]
     # Truncate the label if it is still too long.
     if len(label) > MAX_LABEL_SIZE:
-      label = label[:MAX_LABEL_SIZE - 3] + '...'
+      label = label[: MAX_LABEL_SIZE - 3] + '...'
     return label
 
   def _get_failure_logs(self, output, failure_factory):
@@ -330,23 +337,28 @@ class V8TestsApi(recipe_api.RecipeApi):
 
   @property
   def test_filter(self):
-    return [f for f in self.m.properties.get('testfilter', [])
-            if f != 'defaulttests']
+    return [
+      f for f in self.m.properties.get('testfilter', []) if f != 'defaulttests'
+    ]
 
   def _applied_test_filter(self, test):
     """Returns: the list of test filters that match a test configuration."""
     # V8 test filters always include the full suite name, followed
     # by more specific paths and possibly ending with a glob, e.g.:
     # 'mjsunit/regression/prefix*'.
-    return [f for f in self.test_filter
-              for t in test.get('suite_mapping', test['tests'])
-              if f.startswith(t)]
+    return [
+      f
+      for f in self.test_filter
+      for t in test.get('suite_mapping', test['tests'])
+      if f.startswith(t)
+    ]
 
   def _setup_test_runner(self, test, applied_test_filter, test_step_config):
     env = {}
     full_args = [
       '--progress=verbose',
-      '--outdir', self.m.path.join('out', 'build'),
+      '--outdir',
+      self.m.path.join('out', 'build'),
     ]
 
     # Add optional non-standard root directory for test suites.
@@ -354,8 +366,9 @@ class V8TestsApi(recipe_api.RecipeApi):
       full_args += ['--test-root', test['test_root']]
 
     # On reruns, there's a fixed random seed set in the test configuration.
-    if ('--random-seed' not in test.get('test_args', []) and
-        test.get('use_random_seed', True)):
+    if '--random-seed' not in test.get('test_args', []) and test.get(
+      'use_random_seed', True
+    ):
       full_args.append(f'--random-seed={self.testing_random_seed()}')
 
     # Either run tests as specified by the filter (trybots only) or as
@@ -373,8 +386,8 @@ class V8TestsApi(recipe_api.RecipeApi):
 
     # Add builder-, test- and step-specific variants.
     full_args += testing.test_args_from_variants(
-        test.get('variants'),
-        test_step_config.variants,
+      test.get('variants'),
+      test_step_config.variants,
     )
 
     # Add step-specific test arguments.

@@ -14,18 +14,19 @@ COMPILATOR_WATCHER_GIT_REVISION = '27c191f304c8d7329a393d8a69020fc14032c3c3'
 
 BUILD_CANCELED_SUMMARY = 'Build was canceled.'
 BUILD_WRONGLY_CANCELED_SUMMARY = (
-    'Compilator was canceled before the parent orchestrator was canceled.')
+  'Compilator was canceled before the parent orchestrator was canceled.'
+)
+
 
 class V8OrchestratorApi(recipe_api.RecipeApi):
-
   INHERIT = object()
 
   def create_compilator_handler(self, step_suffix=None):
     return ProdCompilatorHandler(self.m, step_suffix=step_suffix)
 
-  def orchestrated_compilation(self,
-                               compilator_name,
-                               initialize_testing=lambda: None):
+  def orchestrated_compilation(
+    self, compilator_name, initialize_testing=lambda: None
+  ):
     """Orchestrate a compilation.
 
     Args:
@@ -55,8 +56,8 @@ class V8OrchestratorApi(recipe_api.RecipeApi):
 
       if 'compilator_properties' not in sub_build.output.properties:
         return None, result_pb2.RawResult(
-            status=sub_build.status,
-            summary_markdown=sub_build.summary_markdown)
+          status=sub_build.status, summary_markdown=sub_build.summary_markdown
+        )
 
       # Initialize the test specs the compilator retrieved from the checkout.
       comp_props = sub_build.output.properties['compilator_properties']
@@ -66,7 +67,9 @@ class V8OrchestratorApi(recipe_api.RecipeApi):
         # pylint: disable=lost-exception
         # Cancellation can cause all sorts of spurious exceptions.
         return None, result_pb2.RawResult(
-            status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY)
+          status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY
+        )
+
 
 class CompilatorHandler:
   def __init__(self, api, step_suffix=None):
@@ -80,15 +83,14 @@ class CompilatorHandler:
 
 
 class ProdCompilatorHandler(CompilatorHandler):
-
   def trigger_compilator(
-      self,
-      compilator_name,
-      revision=None,
-      project=None,
-      bucket=None,
-      gerrit_changes=V8OrchestratorApi.INHERIT,
-      gitiles_commit=V8OrchestratorApi.INHERIT,
+    self,
+    compilator_name,
+    revision=None,
+    project=None,
+    bucket=None,
+    gerrit_changes=V8OrchestratorApi.INHERIT,
+    gitiles_commit=V8OrchestratorApi.INHERIT,
   ):
     """Trigger a compilator build via buildbucket."""
     project = project or self.api.buildbucket.INHERIT
@@ -99,18 +101,19 @@ class ProdCompilatorHandler(CompilatorHandler):
       gitiles_commit = self.api.buildbucket.INHERIT
 
     request = self.api.buildbucket.schedule_request(
-        builder=compilator_name,
-        swarming_parent_run_id=self.api.swarming.task_id,
-        tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
-        properties=dict(revision=revision) if revision else {},
-        gitiles_commit=gitiles_commit,
-        gerrit_changes=gerrit_changes,
-        project=project,
-        bucket=bucket,
-        as_shadow_if_parent_is_led=True,
+      builder=compilator_name,
+      swarming_parent_run_id=self.api.swarming.task_id,
+      tags=self.api.buildbucket.tags(**{'hide-in-gerrit': 'pointless'}),
+      properties=dict(revision=revision) if revision else {},
+      gitiles_commit=gitiles_commit,
+      gerrit_changes=gerrit_changes,
+      project=project,
+      bucket=bucket,
+      as_shadow_if_parent_is_led=True,
     )
     return self.api.buildbucket.schedule(
-        [request], step_name=self._add_suffix('trigger compilator'))[0]
+      [request], step_name=self._add_suffix('trigger compilator')
+    )[0]
 
   def launch_compilator_watcher(self, build_handle):
     """Follow the ongoing compilator build and stream the steps into this
@@ -122,16 +125,17 @@ class ProdCompilatorHandler(CompilatorHandler):
     sub_build = build_pb2.Build()
     sub_build.CopyFrom(build_handle)
     cmd = [
-        compilator_watcher,
-        '--',
-        '-compilator-id',
-        build_handle.id,
+      compilator_watcher,
+      '--',
+      '-compilator-id',
+      build_handle.id,
     ]
     build_url = self.api.buildbucket.build_url(build_id=build_handle.id)
     build_link = f'compilator build: {build_handle.id}'
     try:
       ret = self.api.step.sub_build(
-          self._add_suffix('compilator steps'), cmd, sub_build)
+        self._add_suffix('compilator steps'), cmd, sub_build
+      )
       ret.presentation.links[build_link] = build_url
       return ret.step.sub_build
     except self.api.step.StepFailure as e:

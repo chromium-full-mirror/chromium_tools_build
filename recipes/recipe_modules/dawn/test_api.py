@@ -6,12 +6,13 @@ from __future__ import annotations
 
 from recipe_engine import recipe_test_api
 
-from RECIPE_MODULES.build.chromium_tests_builder_config import (builder_db,
-                                                                try_spec)
+from RECIPE_MODULES.build.chromium_tests_builder_config import (
+  builder_db,
+  try_spec,
+)
 
 
 class DawnTestsApi(recipe_test_api.RecipeTestApi):
-
   @recipe_test_api.mod_test_data
   def builders(self, builders):
     """Override test builders for a test.

@@ -22,7 +22,8 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 
 from PB.recipe_modules.build.chromium_tests_builder_config_migration import (
-    properties as properties_pb)
+  properties as properties_pb,
+)
 
 _VALIDATORS = proto_validation.Registry()
 
@@ -108,9 +109,9 @@ class _OutputArgumentsFactory(abc.ABC):
 
   @abc.abstractmethod
   def start_call_arg(
-      self,
-      name: str,
-      expression: str,
+    self,
+    name: str,
+    expression: str,
   ) -> 'contextlib.AbstractContextManager[_OutputArgumentsFactory]':
     """Set an argument to a function call.
 
@@ -133,8 +134,8 @@ class _OutputFactory(abc.ABC):
 
   @abc.abstractmethod
   def edit_builder(
-      self,
-      builder_id: chromium_types.BuilderId,
+    self,
+    builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     """Set arguments for a builder.
 
@@ -186,9 +187,9 @@ class _TextArgumentsFactory(_OutputArgumentsFactory):
 
   @contextlib.contextmanager
   def start_call_arg(
-      self,
-      name: str,
-      expression: str,
+    self,
+    name: str,
+    expression: str,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _TextArgumentsFactory(self._indent + self.INDENT)
     yield args_factory
@@ -230,8 +231,8 @@ class _TextFactory(_OutputFactory):
 
   @contextlib.contextmanager
   def edit_builder(
-      self,
-      builder_id: chromium_types.BuilderId,
+    self,
+    builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _TextArgumentsFactory(_TextArgumentsFactory.INDENT)
     yield args_factory
@@ -260,9 +261,9 @@ class _JsonArgumentsFactory(_OutputArgumentsFactory):
 
   @contextlib.contextmanager
   def start_call_arg(
-      self,
-      name: str,
-      expression: str,
+    self,
+    name: str,
+    expression: str,
   ) -> 'contextlib.AbstractContextManager[_OutputArgumentsFactory]':
     args_factory = _JsonArgumentsFactory()
     yield args_factory
@@ -293,9 +294,9 @@ class _JsonBuilderFactory(_OutputArgumentsFactory):
 
   @contextlib.contextmanager
   def start_call_arg(
-      self,
-      name: str,
-      expression: str,
+    self,
+    name: str,
+    expression: str,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     args_factory = _JsonArgumentsFactory()
     yield args_factory
@@ -337,24 +338,25 @@ class _JsonFactory(_OutputFactory):
 
   @contextlib.contextmanager
   def edit_builder(
-      self,
-      builder_id: chromium_types.BuilderId,
+    self,
+    builder_id: chromium_types.BuilderId,
   ) -> contextlib.AbstractContextManager[_OutputArgumentsFactory]:
     builder_factory = _JsonBuilderFactory()
     yield builder_factory
 
-    self._builders.append({
+    self._builders.append(
+      {
         "builder_group": builder_id.group,
         "builder": builder_id.builder,
         "edits": builder_factory._edits,
-    })
+      }
+    )
 
   def write_output(self, file_api, step_name: str, output_path: str) -> None:
     file_api.write_json(step_name, output_path, self._builders, indent=2)
 
 
 class _Grouping:
-
   def __init__(self):
     self.builder_ids = set()
     self.blockers = set()
@@ -366,66 +368,70 @@ class _Grouping:
 
 def _failure(summary):
   return result_pb.RawResult(
-      status=common_pb.INFRA_FAILURE, summary_markdown=summary)
+    status=common_pb.INFRA_FAILURE, summary_markdown=summary
+  )
 
 
 class BlockerCategory(abc.ABC):
-
   @abc.abstractmethod
   def get_blocker(
-      self,
-      builder_id: chromium_types.BuilderId,
-      builder_spec: ctbc.BuilderSpec,
+    self,
+    builder_id: chromium_types.BuilderId,
+    builder_spec: ctbc.BuilderSpec,
   ) -> str | None:
     raise NotImplementedError()  # pragma: no cover
 
 
 def _migrate_builder_spec(
-    builder_spec: ctbc.BuilderSpec,
-    builder_factory: _OutputArgumentsFactory,
+  builder_spec: ctbc.BuilderSpec,
+  builder_factory: _OutputArgumentsFactory,
 ) -> None:
   with builder_factory.start_call_arg(
-      'builder_spec',
-      'builder_config.builder_spec',
+    'builder_spec',
+    'builder_config.builder_spec',
   ) as spec_fact:
     if builder_spec.execution_mode == ctbc.TEST:
-      spec_fact.set_raw_arg('execution_mode',
-                            'builder_config.execution_mode.TEST')
+      spec_fact.set_raw_arg(
+        'execution_mode', 'builder_config.execution_mode.TEST'
+      )
 
     with spec_fact.start_call_arg(
-        'gclient_config',
-        'builder_config.gclient_config',
+      'gclient_config',
+      'builder_config.gclient_config',
     ) as gc_fact:
       gc_fact.set_string_arg('config', builder_spec.gclient_config)
       if configs := builder_spec.gclient_apply_config:
         gc_fact.set_string_list_arg('apply_configs', configs)
 
     with spec_fact.start_call_arg(
-        'chromium_config',
-        'builder_config.chromium_config',
+      'chromium_config',
+      'builder_config.chromium_config',
     ) as cc_fact:
       cc_fact.set_string_arg('config', builder_spec.chromium_config)
       if configs := builder_spec.chromium_apply_config:
         cc_fact.set_string_list_arg('apply_configs', configs)
       for k, v in builder_spec.chromium_config_kwargs.items():
         if k == 'BUILD_CONFIG':
-          cc_fact.set_raw_arg('build_config',
-                              f'builder_config.build_config.{v.upper()}')
+          cc_fact.set_raw_arg(
+            'build_config', f'builder_config.build_config.{v.upper()}'
+          )
         elif k == 'TARGET_ARCH':
-          cc_fact.set_raw_arg('target_arch',
-                              f'builder_config.target_arch.{v.upper()}')
+          cc_fact.set_raw_arg(
+            'target_arch', f'builder_config.target_arch.{v.upper()}'
+          )
         elif k == 'TARGET_BITS':
           cc_fact.set_raw_arg('target_bits', str(v))
         elif k == 'TARGET_PLATFORM':
-          cc_fact.set_raw_arg('target_platform',
-                              f'builder_config.target_platform.{v.upper()}')
+          cc_fact.set_raw_arg(
+            'target_platform', f'builder_config.target_platform.{v.upper()}'
+          )
         elif k in ('TARGET_CROS_BOARDS', 'CROS_BOARDS_WITH_QEMU_IMAGES'):
           cc_fact.set_string_list_arg(k.lower(), v.split(':'))
 
     if config := builder_spec.android_config:
       with spec_fact.start_call_arg(
-          'android_config',
-          'builder_config.android_config',
+        'android_config',
+        'builder_config.android_config',
       ) as ac_fact:
         ac_fact.set_string_arg('config', config)
         if configs := builder_spec.android_apply_config:
@@ -448,8 +454,8 @@ def _migrate_builder_spec(
 
     if skylab_gs_bucket := builder_spec.skylab_gs_bucket:
       with spec_fact.start_call_arg(
-          'skylab_upload_location',
-          'builder_config.skylab_upload_location',
+        'skylab_upload_location',
+        'builder_config.skylab_upload_location',
       ) as sul_fact:
         sul_fact.set_string_arg('gs_bucket', skylab_gs_bucket)
         if skylab_gs_extra := builder_spec.skylab_gs_extra:
@@ -457,31 +463,34 @@ def _migrate_builder_spec(
 
     if builder_spec.cf_archive_build:
       with spec_fact.start_call_arg(
-          'clusterfuzz_archive',
-          'builder_config.clusterfuzz_archive',
+        'clusterfuzz_archive',
+        'builder_config.clusterfuzz_archive',
       ) as ca_fact:
         ca_fact.set_string_arg('gs_bucket', builder_spec.cf_gs_bucket)
         if gs_acl := builder_spec.cf_gs_acl:
           ca_fact.set_string_arg('gs_acl', gs_acl)
-        ca_fact.set_string_arg('archive_name_prefix',
-                               builder_spec.cf_archive_name)
+        ca_fact.set_string_arg(
+          'archive_name_prefix', builder_spec.cf_archive_name
+        )
         if archive_subdir := builder_spec.cf_archive_subdir_suffix:
           ca_fact.set_string_arg('archive_subdir', archive_subdir)
 
 
 _DEFAULT_TRY_SPEC = ctbc.TrySpec.create_for_single_mirror(
-    'unused-group', 'unused-builder')
+  'unused-group', 'unused-builder'
+)
 _SETTINGS_ATTRS = tuple(
-    a.name
-    for a in attr.fields(ctbc.TrySpec)
-    # There is no default for mirrors, so we don't compare against that.
-    if a.name not in ('mirrors'))
+  a.name
+  for a in attr.fields(ctbc.TrySpec)
+  # There is no default for mirrors, so we don't compare against that.
+  if a.name not in ('mirrors')
+)
 
 
 def _migrate_try_spec(
-    builder_id: chromium_types.BuilderId,
-    try_spec: ctbc.TrySpec,
-    builder_factory: _OutputArgumentsFactory,
+  builder_id: chromium_types.BuilderId,
+  try_spec: ctbc.TrySpec,
+  builder_factory: _OutputArgumentsFactory,
 ) -> None:
   mirrors = []
   for m in try_spec.mirrors:
@@ -491,15 +500,17 @@ def _migrate_try_spec(
       mirrors.append(m.tester_id)
 
   if mirrors:
-    builder_factory.set_string_list_arg('mirrors',
-                                        (f'ci/{m.builder}' for m in mirrors))
+    builder_factory.set_string_list_arg(
+      'mirrors', (f'ci/{m.builder}' for m in mirrors)
+    )
 
   if any(
-      getattr(try_spec, a) != getattr(_DEFAULT_TRY_SPEC, a)
-      for a in _SETTINGS_ATTRS):
+    getattr(try_spec, a) != getattr(_DEFAULT_TRY_SPEC, a)
+    for a in _SETTINGS_ATTRS
+  ):
     with builder_factory.start_call_arg(
-        'try_settings',
-        'builder_config.try_settings',
+      'try_settings',
+      'builder_config.try_settings',
     ) as ts_fact:
       if try_spec.include_all_triggered_testers:
         ts_fact.set_raw_arg('include_all_triggered_testers', 'True')
@@ -518,37 +529,37 @@ def _migrate_try_spec(
 
       if (rts_condition := try_spec.regression_test_selection) != ctbc.NEVER:
         with ts_fact.start_call_arg(
-            'rts_config',
-            'builder_config.rts_config',
+          'rts_config',
+          'builder_config.rts_config',
         ) as rc_fact:
           rc_fact.set_raw_arg(
-              'condition',
-              f'builder_config.rts_condition.{rts_condition.upper()}')
+            'condition', f'builder_config.rts_condition.{rts_condition.upper()}'
+          )
 
 
 class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
-
   def __call__(
-      self,
-      properties: properties_pb.InputProperties,
-      builder_db: ctbc.BuilderDatabase,
-      try_db: ctbc.TryDatabase,
-      *,
-      additional_blocker_categories: Iterable[BlockerCategory] | None = None,
+    self,
+    properties: properties_pb.InputProperties,
+    builder_db: ctbc.BuilderDatabase,
+    try_db: ctbc.TryDatabase,
+    *,
+    additional_blocker_categories: Iterable[BlockerCategory] | None = None,
   ) -> result_pb.RawResult | None:
     errors = _VALIDATORS.validate(properties)
     if errors:
       summary = [
-          'The following errors were found with the input properties:',
-          '',
+        'The following errors were found with the input properties:',
+        '',
       ]
       summary.extend(errors)
       return result_pb.RawResult(
-          status=common_pb.INFRA_FAILURE, summary_markdown='\n'.join(summary))
+        status=common_pb.INFRA_FAILURE, summary_markdown='\n'.join(summary)
+      )
 
     handlers_by_operation = {
-        'groupings_operation': self._groupings_operation,
-        'migration_operation': self._migration_operation,
+      'groupings_operation': self._groupings_operation,
+      'migration_operation': self._migration_operation,
     }
     operation = properties.WhichOneof('operation')
     handler = handlers_by_operation[operation]
@@ -556,14 +567,15 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
     blocker_categories = additional_blocker_categories or []
 
     return handler(
-        getattr(properties, operation), builder_db, try_db, blocker_categories)
+      getattr(properties, operation), builder_db, try_db, blocker_categories
+    )
 
   def _groupings_operation(
-      self,
-      groupings_operation: properties_pb.GroupingsOperation,
-      builder_db: ctbc.BuilderDatabase,
-      try_db: ctbc.TryDatabase,
-      blocker_categories: Iterable[BlockerCategory],
+    self,
+    groupings_operation: properties_pb.GroupingsOperation,
+    builder_db: ctbc.BuilderDatabase,
+    try_db: ctbc.TryDatabase,
+    blocker_categories: Iterable[BlockerCategory],
   ) -> None:
     builder_group_filters = []
     for f in reversed(groupings_operation.builder_group_filters):
@@ -579,14 +591,15 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
       return False
 
     groupings_by_builder_id = self._compute_groupings(
-        builder_db, try_db, blocker_categories, builder_filter=builder_filter)
+      builder_db, try_db, blocker_categories, builder_filter=builder_filter
+    )
 
     output_path = self.m.path.abspath(groupings_operation.output_path)
 
     json = {}
     for b, grouping in groupings_by_builder_id.items():
       grouping_json = {
-          'builders': [str(b2) for b2 in sorted(grouping.builder_ids)],
+        'builders': [str(b2) for b2 in sorted(grouping.builder_ids)],
       }
       if grouping.blockers:
         grouping_json['blockers'] = sorted(grouping.blockers)
@@ -596,35 +609,41 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
     # Include log during the tests so that the expectation file is easier to
     # review
     self.m.file.write_text(
-        'groupings', output_path, output, include_log=self._test_data.enabled)
+      'groupings', output_path, output, include_log=self._test_data.enabled
+    )
 
   def _migration_operation(
-      self,
-      migration_operation: properties_pb.MigrationOperation,
-      builder_db: ctbc.BuilderDatabase,
-      try_db: ctbc.TryDatabase,
-      blocker_categories: Iterable[BlockerCategory],
+    self,
+    migration_operation: properties_pb.MigrationOperation,
+    builder_db: ctbc.BuilderDatabase,
+    try_db: ctbc.TryDatabase,
+    blocker_categories: Iterable[BlockerCategory],
   ) -> result_pb.RawResult | None:
-    groupings_by_builder_id = self._compute_groupings(builder_db, try_db,
-                                                      blocker_categories)
+    groupings_by_builder_id = self._compute_groupings(
+      builder_db, try_db, blocker_categories
+    )
 
     to_migrate = set()
     for b in migration_operation.builders_to_migrate:
       builder_id = chromium_types.BuilderId.create_for_group(
-          b.builder_group, b.builder)
+        b.builder_group, b.builder
+      )
       grouping = groupings_by_builder_id.get(builder_id)
       if grouping is None:
         return _failure("unknown builder '{}'".format(builder_id))
       if grouping.blockers:
         return _failure(
-            "The grouping for '{}'"
-            " cannot be migrated for the following reasons:{}".format(
-                builder_id,
-                "".join("\n  {}".format(b) for b in sorted(grouping.blockers))))
+          "The grouping for '{}'"
+          " cannot be migrated for the following reasons:{}".format(
+            builder_id,
+            "".join("\n  {}".format(b) for b in sorted(grouping.blockers)),
+          )
+        )
       to_migrate.update(grouping.builder_ids)
 
     output_factory = (
-        _JsonFactory() if migration_operation.json_output else _TextFactory())
+      _JsonFactory() if migration_operation.json_output else _TextFactory()
+    )
 
     for builder_id in sorted(to_migrate):
       with output_factory.edit_builder(builder_id) as builder_factory:
@@ -640,12 +659,12 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
     output_factory.write_output(self.m.file, 'src-side snippets', output_path)
 
   def _compute_groupings(
-      self,
-      builder_db: ctbc.BuilderDatabase,
-      try_db: ctbc.TryDatabase,
-      blocker_categories: Iterable[BlockerCategory],
-      *,
-      builder_filter: Callable[[chromium_types.BuilderId], bool] = None,
+    self,
+    builder_db: ctbc.BuilderDatabase,
+    try_db: ctbc.TryDatabase,
+    blocker_categories: Iterable[BlockerCategory],
+    *,
+    builder_filter: Callable[[chromium_types.BuilderId], bool] = None,
   ) -> Mapping[chromium_types.BuilderId, _Grouping]:
     builder_filter = builder_filter or (lambda _: True)
 
@@ -661,13 +680,14 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
         return next(iter(included))
 
       self.m.step.empty(
-          step_name,
-          status=self.m.step.INFRA_FAILURE,
-          log_name='mismatched_inclusion',
-          log_text=[
-              '{} ignored: {}'.format(builder_id, included)
-              for builder_id, included in included_by_builder_id.items()
-          ])
+        step_name,
+        status=self.m.step.INFRA_FAILURE,
+        log_name='mismatched_inclusion',
+        log_text=[
+          '{} ignored: {}'.format(builder_id, included)
+          for builder_id, included in included_by_builder_id.items()
+        ],
+      )
 
     def update_groupings(builder_id, related_ids, blockers=None):
       grouping = groupings_by_builder_id[builder_id]
@@ -682,8 +702,10 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
           groupings_by_builder_id[connected_id] = grouping
 
     for builder_id, child_ids in builder_db.builder_graph.items():
-      included = check_included([builder_id] + sorted(child_ids),
-                                'invalid children for {}'.format(builder_id))
+      included = check_included(
+        [builder_id] + sorted(child_ids),
+        'invalid children for {}'.format(builder_id),
+      )
       if included:
         builder_spec = builder_db[builder_id]
         blockers = []
@@ -699,8 +721,9 @@ class ChromiumTestsBuilderConfigMigrationApi(recipe_api.RecipeApi):
         if mirror.tester_id:
           mirrored_ids.append(mirror.tester_id)
       included = check_included(
-          [try_id] + mirrored_ids,
-          'invalid mirroring configuration for {}'.format(try_id))
+        [try_id] + mirrored_ids,
+        'invalid mirroring configuration for {}'.format(try_id),
+      )
       if included:
         update_groupings(try_id, mirrored_ids)
 

@@ -10,10 +10,11 @@ from PB.recipe_modules.build.pinlist import properties
 
 
 class PinlistTestApi(recipe_test_api.RecipeTestApi):
-
   def __call__(self, *, upload_pinlist=False):
     return self.m.properties(
-        **{
-            '$build/pinlist':
-                properties.InputProperties(upload_pinlist=upload_pinlist),
-        })
+      **{
+        '$build/pinlist': properties.InputProperties(
+          upload_pinlist=upload_pinlist
+        ),
+      }
+    )

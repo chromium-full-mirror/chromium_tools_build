@@ -14,30 +14,30 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    builder_group,
-    chromium,
-    devtools,
-    perf_dashboard,
+  builder_group,
+  chromium,
+  devtools,
+  perf_dashboard,
 )
 from RECIPE_MODULES.depot_tools import (
-    bot_update,
-    depot_tools,
-    gclient,
-    git,
-    gsutil,
-    tryserver,
+  bot_update,
+  depot_tools,
+  gclient,
+  git,
+  gsutil,
+  tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    cipd,
-    context,
-    file,
-    path,
-    platform,
-    properties,
-    raw_io,
-    step,
-    url,
+  buildbucket,
+  cipd,
+  context,
+  file,
+  path,
+  platform,
+  properties,
+  raw_io,
+  step,
+  url,
 )
 
 
@@ -81,13 +81,16 @@ class TEST_DEPS(RecipeTestApi):
   tryserver: tryserver.TEST_API
   url: url.TEST_API
 
+
 REPO_URL = 'https://chromium.googlesource.com/devtools/devtools-frontend.git'
 
 # Bucket belongs to v8-infra project owned by v8-infra@
 # webassembly-debugging-project-team@ group has read access to the bucket
 GS_BUCKET = 'devtools-internal-dwarf-extension'
-DWARF_BRANCH_PATTERN = re.compile(r'refs/heads/chrome-extensions/'
-                                  r'dwarf/releases/\d+\.\d+\.(\d+)')
+DWARF_BRANCH_PATTERN = re.compile(
+  r'refs/heads/chrome-extensions/'
+  r'dwarf/releases/\d+\.\d+\.(\d+)'
+)
 
 PROPERTIES = InputProperties
 
@@ -116,13 +119,13 @@ def RunSteps(api: DEPS, properties):
 
 def compile_n_test_e2e(api: DEPS, builder_config, upload_dwarf_binary):
   compile_command = [
-      "vpython3",
-      "-u",
-      _repo_path(api) / 'e2e' / 'runner.py',
-      'compile',
-      '-v',
-      '--build-root',
-      _repo_path(api) / 'build',
+    "vpython3",
+    "-u",
+    _repo_path(api) / 'e2e' / 'runner.py',
+    'compile',
+    '-v',
+    '--build-root',
+    _repo_path(api) / 'build',
   ]
   version, patch = None, None
   if builder_config == 'Release' and not api.tryserver.is_tryserver:
@@ -133,9 +136,12 @@ def compile_n_test_e2e(api: DEPS, builder_config, upload_dwarf_binary):
     compile_command.append(patch)
 
   api.step('Build', compile_command)
-  run_script(api, 'Run E2E Test Suite', 'e2e/runner.py',
-             ['run', '-v', '--build-root',
-              _repo_path(api) / 'build'])
+  run_script(
+    api,
+    'Run E2E Test Suite',
+    'e2e/runner.py',
+    ['run', '-v', '--build-root', _repo_path(api) / 'build'],
+  )
   if upload_dwarf_binary:
     assert version, 'Version number missing!'
     upload_build(api, version, patch)
@@ -167,25 +173,27 @@ def resolve_version_patch(api: DEPS):
 
 
 def upload_build(api: DEPS, version, patch):
-  extension_dir = _repo_path(api).joinpath('build',
-                                           'DevTools_CXX_Debugging.stage2')
+  extension_dir = _repo_path(api).joinpath(
+    'build', 'DevTools_CXX_Debugging.stage2'
+  )
   result = api.step(
-      "Find extension zip file",
-      [
-          "find",
-          extension_dir,
-          "-name",
-          # Stage 2 of the build generates a zip file of the form
-          # cxx_dwarf_extension-MAJOR.MINOR.PATCH.BUILD.zip. We control only the
-          # BUILD part of the name and the MAJOR.MINOR.PATCH can change in the
-          # project source files, so we wildcard it.
-          f"cxx_debugging_extension-*.{version}.{patch}.zip",
-          "-printf",
-          "%f",
-      ],
-      stdout=api.raw_io.output_text(),
-      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
-          "cxx_dwarf_extension-1.2.456.0.zip"),
+    "Find extension zip file",
+    [
+      "find",
+      extension_dir,
+      "-name",
+      # Stage 2 of the build generates a zip file of the form
+      # cxx_dwarf_extension-MAJOR.MINOR.PATCH.BUILD.zip. We control only the
+      # BUILD part of the name and the MAJOR.MINOR.PATCH can change in the
+      # project source files, so we wildcard it.
+      f"cxx_debugging_extension-*.{version}.{patch}.zip",
+      "-printf",
+      "%f",
+    ],
+    stdout=api.raw_io.output_text(),
+    step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+      "cxx_dwarf_extension-1.2.456.0.zip"
+    ),
   )
   file_name = result.stdout.strip()
   result.presentation.logs['file_name'] = file_name
@@ -196,23 +204,24 @@ def upload_build(api: DEPS, version, patch):
   name_prefix = '' if get_gitiles_ref(api) == 'refs/heads/main' else 'release_'
   upload_name = api.url.join("builds", name_prefix + file_name)
   api.gsutil.upload(
-      source=artifact_name,
-      bucket=GS_BUCKET,
-      dest=upload_name,
-      link_name=upload_name,
-      metadata={
-          'build_number': api.buildbucket.build.number,
-          'builder_name': api.buildbucket.builder_name,
-          'gitiles_commit': api.buildbucket.gitiles_commit.id,
-      },
-      name='upload dwarf binary',
+    source=artifact_name,
+    bucket=GS_BUCKET,
+    dest=upload_name,
+    link_name=upload_name,
+    metadata={
+      'build_number': api.buildbucket.build.number,
+      'builder_name': api.buildbucket.builder_name,
+      'gitiles_commit': api.buildbucket.gitiles_commit.id,
+    },
+    name='upload dwarf binary',
   )
 
 
 def _repo_path(api: DEPS):
   checkout_path = get_checkout_path(api, 'builder')
-  return checkout_path.joinpath('devtools-frontend', 'extensions',
-                                'cxx_debugging')
+  return checkout_path.joinpath(
+    'devtools-frontend', 'extensions', 'cxx_debugging'
+  )
 
 
 def _configure(api: DEPS):
@@ -257,10 +266,10 @@ def dwarf_ext_context(api: DEPS, target='head'):
   ext_path = dtf_path.joinpath('extensions', 'cxx_debugging')
   ext_thirdparty_path = ext_path / 'third_party'
   path_prefix = [
-      thirdparty_path.joinpath('cmake', 'bin'),
-      ext_thirdparty_path.joinpath('llvm-build', 'Release+Asserts', 'bin'),
-      thirdparty_path.joinpath('node', 'linux', 'node-linux-x64', 'bin'),
-      api.depot_tools.root,
+    thirdparty_path.joinpath('cmake', 'bin'),
+    ext_thirdparty_path.joinpath('llvm-build', 'Release+Asserts', 'bin'),
+    thirdparty_path.joinpath('node', 'linux', 'node-linux-x64', 'bin'),
+    api.depot_tools.root,
   ]
 
   with api.context(env_prefixes={'PATH': path_prefix}, cwd=ext_path):
@@ -271,19 +280,22 @@ def build_dwarf_extension(api: DEPS, target='head', extra_build_args=None):
   extra_build_args = extra_build_args or []
 
   dwarf_tools = api.path.join(
-      get_checkout_path(api, target), 'devtools-internal', 'dwarf_extension',
-      'tools')
+    get_checkout_path(api, target),
+    'devtools-internal',
+    'dwarf_extension',
+    'tools',
+  )
 
-  with api.step.nest('Build dwarf extension'), \
-      dwarf_ext_context(api, target):
+  with api.step.nest('Build dwarf extension'), dwarf_ext_context(api, target):
     exc = api.path.join(dwarf_tools, 'bootstrap.py')
     build_command = [
-        'vpython3',
-        '-u',
-        exc,
-        '-infra',
-        get_checkout_path(api, target).joinpath('devtools-internal', 'out',
-                                                'build'),
+      'vpython3',
+      '-u',
+      exc,
+      '-infra',
+      get_checkout_path(api, target).joinpath(
+        'devtools-internal', 'out', 'build'
+      ),
     ] + extra_build_args
     api.step('build', build_command)
 
@@ -294,90 +306,87 @@ def GenTests(api: TEST_DEPS):
 
   def scheduler_ref_propery(ref='refs/heads/main'):
     return api.properties(
-        **
-        {"$recipe_engine/scheduler": {
-            'triggers': [{
-                'gitiles': {
-                    'ref': ref
-                }
-            }]
-        }})
+      **{"$recipe_engine/scheduler": {'triggers': [{'gitiles': {'ref': ref}}]}}
+    )
 
   yield api.test(
-      'basic try',
-      api.builder_group.for_current('tryserver.devtools-internal'),
-      api.buildbucket.try_build(
-          'devtools',
-          'linux',
-          git_repo=REPO_URL,
-          change_number=91827,
-          patch_set=1),
-      api.properties(e2e_builder=True, clobber=True),
-      status='SUCCESS',
+    'basic try',
+    api.builder_group.for_current('tryserver.devtools-internal'),
+    api.buildbucket.try_build(
+      'devtools', 'linux', git_repo=REPO_URL, change_number=91827, patch_set=1
+    ),
+    api.properties(e2e_builder=True, clobber=True),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'basic ci',
-      api.buildbucket.ci_build(
-          'devtools',
-          'linux',
-          git_repo=REPO_URL,
-          revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
-      ),
-      api.properties(e2e_builder=False),
-      status='SUCCESS',
+    'basic ci',
+    api.buildbucket.ci_build(
+      'devtools',
+      'linux',
+      git_repo=REPO_URL,
+      revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
+    ),
+    api.properties(e2e_builder=False),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'release',
-      api.buildbucket.ci_build(
-          'devtools',
-          'linux',
-          git_repo=REPO_URL,
-          revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
-      ),
-      api.properties(builder_config='Release'),
-      status='SUCCESS',
+    'release',
+    api.buildbucket.ci_build(
+      'devtools',
+      'linux',
+      git_repo=REPO_URL,
+      revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
+    ),
+    api.properties(builder_config='Release'),
+    status='SUCCESS',
   )
 
   yield api.test(
-      'release e2e',
-      api.buildbucket.ci_build(
-          'devtools',
-          'linux',
-          git_repo=REPO_URL,
-          revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
-      ),
-      api.properties(e2e_builder=True, builder_config='Release'),
-      scheduler_ref_propery(),
-      status='SUCCESS',
+    'release e2e',
+    api.buildbucket.ci_build(
+      'devtools',
+      'linux',
+      git_repo=REPO_URL,
+      revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
+    ),
+    api.properties(e2e_builder=True, builder_config='Release'),
+    scheduler_ref_propery(),
+    status='SUCCESS',
   )
 
   def upload_dwarf_test(suffix, builder_config='Release'):
     return api.test(
-        f'upload dwarf - {suffix}',
-        api.buildbucket.ci_build(
-            'devtools',
-            'linux',
-            git_repo=REPO_URL,
-            revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
-        ),
-        api.properties(
-            e2e_builder=True,
-            builder_config=builder_config,
-            upload_dwarf_binary=True),
-        api.buildbucket.ci_build(
-            project='devtools',
-            bucket='ci',
-            builder='dwarf_builder',
-            build_number=456,
-            git_repo=REPO_URL,
-            revision="abcd"),
-        status='SUCCESS',
+      f'upload dwarf - {suffix}',
+      api.buildbucket.ci_build(
+        'devtools',
+        'linux',
+        git_repo=REPO_URL,
+        revision='8b3cd40a25a512033cc8c0797e41de9ecfc2432c',
+      ),
+      api.properties(
+        e2e_builder=True,
+        builder_config=builder_config,
+        upload_dwarf_binary=True,
+      ),
+      api.buildbucket.ci_build(
+        project='devtools',
+        bucket='ci',
+        builder='dwarf_builder',
+        build_number=456,
+        git_repo=REPO_URL,
+        revision="abcd",
+      ),
+      status='SUCCESS',
     )
 
   yield upload_dwarf_test('in main') + scheduler_ref_propery()
 
-  yield upload_dwarf_test('in release branch') + scheduler_ref_propery(
-      'refs/heads/chrome-extensions/dwarf/releases/0.1.2345') + api.step_data(
-          'git rev-list', api.raw_io.stream_output_text('9'))
+  yield (
+    upload_dwarf_test('in release branch')
+    + scheduler_ref_propery(
+      'refs/heads/chrome-extensions/dwarf/releases/0.1.2345'
+    )
+    + api.step_data('git rev-list', api.raw_io.stream_output_text('9'))
+  )

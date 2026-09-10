@@ -15,17 +15,17 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
-    chromium,
-    chromium_checkout,
-    chromium_tests,
-    chromium_tests_builder_config,
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
 )
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
-    buildbucket,
-    path,
-    platform,
-    properties,
+  buildbucket,
+  path,
+  platform,
+  properties,
 )
 
 
@@ -58,14 +58,17 @@ def RunSteps(api: DEPS):
     test_specs.append(steps.SwarmingGTestTestSpec.create('base_unittests'))
   if api.properties.get('local_isolated_script_test'):
     test_specs.append(
-        steps.LocalIsolatedScriptTestSpec.create('base_unittests'))
+      steps.LocalIsolatedScriptTestSpec.create('base_unittests')
+    )
   if api.properties.get('script_test'):
     test_specs.append(
-        steps.ScriptTestSpec.create(
-            'script_test',
-            script='script.py',
-            compile_targets=['compile_target'],
-            script_args=['some', 'args']))
+      steps.ScriptTestSpec.create(
+        'script_test',
+        script='script.py',
+        compile_targets=['compile_target'],
+        script_args=['some', 'args'],
+      )
+    )
   _, builder_config = api.chromium_tests_builder_config.lookup_builder()
   api.chromium_tests.configure_build(builder_config)
 
@@ -76,127 +79,148 @@ def RunSteps(api: DEPS):
 
   tests = [s.get_test(api.chromium_tests) for s in test_specs]
   with api.chromium_tests.wrap_chromium_tests(
-      checkout_dir, source_dir, build_dir, tests=tests):
+    checkout_dir, source_dir, build_dir, tests=tests
+  ):
     pass
 
 
 def GenTests(api: TEST_DEPS):
   ctbc_api = api.chromium_tests_builder_config
 
-  test_builders = ctbc.BuilderDatabase.create({
+  test_builders = ctbc.BuilderDatabase.create(
+    {
       'chromium.example': {
-          'android-basic':
-              ctbc.BuilderSpec.create(
-                  android_config='base_config',
-                  chromium_apply_config=[
-                      'mb',
-                  ],
-                  chromium_config='main_builder',
-                  chromium_config_kwargs={
-                      'BUILD_CONFIG': 'Release',
-                      'TARGET_ARCH': 'arm',
-                      'TARGET_BITS': 32,
-                      'TARGET_PLATFORM': 'android',
-                  },
-                  gclient_config='chromium',
-                  gclient_apply_config=['android'],
-                  simulation_platform='linux',
-              ),
+        'android-basic': ctbc.BuilderSpec.create(
+          android_config='base_config',
+          chromium_apply_config=[
+            'mb',
+          ],
+          chromium_config='main_builder',
+          chromium_config_kwargs={
+            'BUILD_CONFIG': 'Release',
+            'TARGET_ARCH': 'arm',
+            'TARGET_BITS': 32,
+            'TARGET_PLATFORM': 'android',
+          },
+          gclient_config='chromium',
+          gclient_apply_config=['android'],
+          simulation_platform='linux',
+        ),
       },
-  })
-
-  yield api.test(
-      'require_device_steps',
-      api.chromium_tests_builder_config.ci_build(
-          builder_group='chromium.example',
-          builder='android-basic',
-          builder_db=test_builders),
-      api.properties(local_gtest=True),
-      api.post_process(post_process.MustRun, 'device_recovery'),
-      api.post_process(post_process.MustRun, 'provision_devices'),
-      api.post_process(post_process.MustRun, 'device_status'),
-      api.post_process(post_process.DropExpectation),
+    }
   )
 
   yield api.test(
-      'use_clang_coverage',
-      api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.post_process(post_process.DropExpectation),
+    'require_device_steps',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.example',
+      builder='android-basic',
+      builder_db=test_builders,
+    ),
+    api.properties(local_gtest=True),
+    api.post_process(post_process.MustRun, 'device_recovery'),
+    api.post_process(post_process.MustRun, 'provision_devices'),
+    api.post_process(post_process.MustRun, 'device_status'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'win',
-      api.platform('win', 64),
-      api.chromium.try_build(
-          builder_group='fake-try-group',
-          builder='fake-try-builder',
-      ),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_try_builder().with_mirrored_builder(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.post_process(post_process.DropExpectation),
+    'use_clang_coverage',
+    api.chromium.ci_build(builder_group='fake-group', builder='fake-builder'),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      ).assemble()
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'isolated_targets',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(swarming_gtest=True),
-      api.post_process(post_process.DropExpectation),
+    'win',
+    api.platform('win', 64),
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'local_isolated_script_test',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(local_isolated_script_test=True,),
-      api.post_process(post_process.DropExpectation),
+    'isolated_targets',
+    api.platform('linux', 64),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+      parent_buildername='fake-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_tester(
+        builder_group='fake-group',
+        builder='fake-tester',
+      )
+      .with_parent(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.properties(swarming_gtest=True),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-      'script_test',
-      api.platform('linux', 64),
-      api.chromium.ci_build(
-          builder_group='fake-group',
-          builder='fake-tester',
-          parent_buildername='fake-builder'),
-      ctbc_api.properties(
-          ctbc_api.properties_assembler_for_ci_tester(
-              builder_group='fake-group',
-              builder='fake-tester',
-          ).with_parent(
-              builder_group='fake-group',
-              builder='fake-builder',
-          ).assemble()),
-      api.properties(script_test=True),
-      api.post_process(post_process.DropExpectation),
+    'local_isolated_script_test',
+    api.platform('linux', 64),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+      parent_buildername='fake-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_tester(
+        builder_group='fake-group',
+        builder='fake-tester',
+      )
+      .with_parent(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.properties(
+      local_isolated_script_test=True,
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'script_test',
+    api.platform('linux', 64),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='fake-tester',
+      parent_buildername='fake-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_tester(
+        builder_group='fake-group',
+        builder='fake-tester',
+      )
+      .with_parent(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.properties(script_test=True),
+    api.post_process(post_process.DropExpectation),
   )

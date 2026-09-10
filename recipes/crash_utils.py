@@ -14,7 +14,7 @@ def print_new_crash_files(new_crash_files):
   """Prints all the new crash files."""
   if new_crash_files:
     print(
-        '\nFound %d new crash file(s), dumping them:' % (len(new_crash_files))
+      '\nFound %d new crash file(s), dumping them:' % (len(new_crash_files))
     )
     for crash_file in new_crash_files:
       print('File: ' + crash_file)
@@ -40,6 +40,8 @@ def wait_for_crash_logs():
   from looking at data on the bots."""
   # TODO(lakshya): Optimize by polling every 10 seconds for a crash log to be
   # available instead of waiting for 90 seconds.
-  print ('\nNote: Test finished with non zero status, sleeping for 90s to '
-         'allow crash files to be written.')
+  print(
+    '\nNote: Test finished with non zero status, sleeping for 90s to '
+    'allow crash files to be written.'
+  )
   time.sleep(90)
