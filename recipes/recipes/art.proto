@@ -56,11 +56,12 @@ message InputProperties {
   message TestStep {
     string name = 1;
     repeated string cmd = 2;
+    map<string, string> env = 3;
   }
 
   // List of test steps to run.
   repeated TestStep test_steps = 16;
 
   // Environment variables to be used.
-  map<string, string> env = 17;
+  map<string, string> test_env = 17;
 }
