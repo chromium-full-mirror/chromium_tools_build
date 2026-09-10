@@ -1152,9 +1152,8 @@ def GenTests(api: TEST_DEPS):
       'clusterfuzz',
       clobber=True,
       clusterfuzz_archive={
-        'name': 'd8_bar',
         'bucket': 'v8_clusterfoo',
-        'bitness': 64,
+        'archive_path': 'linux64-release/d8_bar-linux64-release-v8-component',
       },
       default_targets=['v8_foobar'],
     )
@@ -1182,9 +1181,7 @@ def GenTests(api: TEST_DEPS):
       'clusterfuzz_archive_path',
       clobber=True,
       clusterfuzz_archive={
-        'name': 'd8_bar',
         'bucket': 'v8_clusterfoo',
-        'bitness': 64,
         'archive_path': 'linux64-release/d8_bar-linux64-release-v8-component',
       },
       default_targets=['v8_foobar'],
@@ -1213,10 +1210,8 @@ def GenTests(api: TEST_DEPS):
       'clusterfuzz_archive_path_failure',
       clobber=True,
       clusterfuzz_archive={
-        'name': 'd8_bar',
         'bucket': 'v8_clusterfoo',
-        'bitness': 64,
-        'archive_path': 'incorrect/archive/path',
+        'archive_path': '',
       },
       default_targets=['v8_foobar'],
     )
@@ -1231,7 +1226,6 @@ def GenTests(api: TEST_DEPS):
       'clusterfuzz_archive_path_no_bitness',
       clobber=True,
       clusterfuzz_archive={
-        'name': 'd8_bar',
         'bucket': 'v8_clusterfoo',
         'archive_path': 'linux-release/d8_bar-linux-release-v8-component',
       },
@@ -1261,9 +1255,8 @@ def GenTests(api: TEST_DEPS):
       'clusterfuzz_archive_path_no_bitness_failure',
       clobber=True,
       clusterfuzz_archive={
-        'name': 'd8_bar',
         'bucket': 'v8_clusterfoo',
-        'archive_path': 'incorrect/archive/path',
+        'archive_path': '',
       },
       default_targets=['v8_foobar'],
     )

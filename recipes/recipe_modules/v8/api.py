@@ -1059,22 +1059,16 @@ class V8Api(recipe_api.RecipeApi):
   ):
     clusterfuzz_archive = self.bot_config.get('clusterfuzz_archive')
     if clusterfuzz_archive:
-      kwargs = {}
-      if clusterfuzz_archive.get('bitness'):
-        kwargs['use_legacy'] = False
-        kwargs['bitness'] = clusterfuzz_archive['bitness']
       self.m.archive.clusterfuzz_archive(
-        revision_dir='v8',
-        build_config=self.get_build_type(build_dir),
         source_dir=source_dir,
         archive_root=build_dir,
         update_properties=update_result.properties,
         gs_bucket=clusterfuzz_archive.get('bucket'),
         gs_acl='public-read',
-        archive_prefix=clusterfuzz_archive.get('name'),
+        archive_prefix=None,
+        build_config=self.get_build_type(build_dir),
         archive_path=clusterfuzz_archive.get('archive_path'),
-        use_archive_path=clusterfuzz_archive.get('use_archive_path', False),
-        **kwargs,
+        use_archive_path=True,
       )
 
   def download_isolated_json(self, revision):
