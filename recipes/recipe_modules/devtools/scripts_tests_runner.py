@@ -36,4 +36,4 @@ class ScriptsTests(DevToolsTests):
       'gen/test/run.js',
       '--skip-ninja',
     ]
-    return [base_command + [suite] for suite in SUITES]
+    return [base_command + SUITES]
