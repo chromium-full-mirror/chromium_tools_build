@@ -509,7 +509,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-gtests.sh"
+      "art/tools/run-gtests.sh"
     ],
     "cwd": "[CACHE]/art",
     "env": {
@@ -2249,7 +2249,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libcore-tests.sh",
+      "art/tools/run-libcore-tests.sh",
       "--mode=device",
       "--variant=X64",
       "--debug"
@@ -2422,7 +2422,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
+      "art/tools/run-libjdwp-tests.sh",
       "--mode=device",
       "--variant=X64",
       "--debug"
@@ -2595,7 +2595,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
+      "art/tools/run-libjdwp-tests.sh",
       "--mode=device",
       "--variant=X64",
       "--debug",
@@ -2848,13 +2848,6 @@
       }
     },
     "name": "device post-run cleanup"
-  },
-  {
-    "cmd": [],
-    "name": "verify test_steps",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@Verified 13 test steps match props.test_steps@@@"
-    ]
   },
   {
     "name": "$result"

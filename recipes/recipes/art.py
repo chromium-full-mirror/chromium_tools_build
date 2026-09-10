@@ -79,13 +79,10 @@ def RunSteps(api: DEPS, props):
         device=props.device,
         bitness=props.bitness,
         product=props.product,
-        debug=props.debug,
         build_only=props.build_only,
         concurrent_collector=props.concurrent_collector,
         generational_cc=props.generational_cc,
         heap_poisoning=props.heap_poisoning,
-        gcstress=props.gcstress,
-        continuousgc=props.continuousgc,
         on_virtual_machine=props.on_virtual_machine,
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
@@ -95,14 +92,11 @@ def RunSteps(api: DEPS, props):
     with api.context(cwd=api.path.cache_dir / 'art'):
       setup_host_x86(
         api,
-        debug=props.debug,
         bitness=props.bitness,
         build_only=props.build_only,
         concurrent_collector=props.concurrent_collector,
         generational_cc=props.generational_cc,
         heap_poisoning=props.heap_poisoning,
-        gcstress=props.gcstress,
-        continuousgc=props.continuousgc,
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
         test_steps=props.test_steps,
@@ -216,64 +210,13 @@ def ensure_tool(api: DEPS, package, version, subdir=""):
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
 
-@contextmanager
-def verify_test_steps_context(api: DEPS, test_steps):
-  """Wraps api.defer.context() to verify test steps against props.test_steps."""
-  with api.defer.context() as defer:
-    if not test_steps:
-      yield defer
-      return
-
-    step_index = [0]
-    cwd_prefix = f"{api.context.cwd}/"
-
-    def verifying_defer(fn, *args, **kwargs):
-      if (
-        fn == api.step
-        and args
-        and args[0].startswith('test ')
-        and ': ' not in args[0]
-      ):
-        name = args[0]
-        cmd = args[1] if len(args) > 1 else []
-        assert step_index[0] < len(test_steps), (
-          f"Extra test step '{name}' not in props.test_steps"
-        )
-        expected = test_steps[step_index[0]]
-        step_index[0] += 1
-        assert name == expected.name, (
-          f"Step {step_index[0]} name mismatch: '{name}' != '{expected.name}'"
-        )
-        norm_cmd = [str(c).removeprefix(cwd_prefix) for c in cmd]
-        assert norm_cmd == list(expected.cmd), (
-          f"Step '{name}' cmd mismatch:\n"
-          f"Actual:   {norm_cmd}\n"
-          f"Expected: {list(expected.cmd)}"
-        )
-      defer(fn, *args, **kwargs)
-
-    yield verifying_defer
-
-    assert step_index[0] == len(test_steps), (
-      f"Missing test steps: expected {len(test_steps)}, "
-      f"but only {step_index[0]} deferred"
-    )
-    api.step.empty(
-      'verify test_steps',
-      step_text=f'Verified {step_index[0]} test steps match props.test_steps',
-    )
-
-
 def setup_host_x86(
   api: DEPS,
-  debug,
   bitness,
   build_only,
   concurrent_collector=True,
   generational_cc=True,
   heap_poisoning=False,
-  gcstress=False,
-  continuousgc=False,
   repo_root=None,
   manifest_branch="master-art",
   test_steps=None,
@@ -325,24 +268,6 @@ def setup_host_x86(
   else:
     env.update({'ART_HEAP_POISONING': 'false'})
 
-  # Common options passed to testrunner.py.
-  testrunner_cmd = [
-    './art/test/testrunner/testrunner.py',
-    '--verbose',
-    '--host',
-  ]
-
-  if debug:
-    testrunner_cmd += ['--debug']
-  else:
-    testrunner_cmd += ['--ndebug']
-
-  if gcstress:
-    testrunner_cmd += ['--gcstress']
-
-  if continuousgc:
-    testrunner_cmd += ['--continuous-gc']
-
   with api.context(env=env):
     api.step(
       'build', [art_tools / 'buildbot-build.sh', '--host', '--installclean']
@@ -351,74 +276,9 @@ def setup_host_x86(
     if build_only:
       return
 
-    with verify_test_steps_context(api, test_steps) as defer:
-      defer(
-        api.step,
-        'test gtest',
-        [
-          'build/soong/soong_ui.bash',
-          '--make-mode',
-          'test-art-host-gtest%d' % bitness,
-        ],
-      )
-
-      defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
-
-      defer(
-        api.step, 'test debuggable', testrunner_cmd + ['--jit', '--debuggable']
-      )
-
-      # Use a lower `-j` number for interpreter, some tests take a long time
-      # to run on it.
-      defer(
-        api.step,
-        'test interpreter',
-        testrunner_cmd
-        + ['-j%d' % (HOST_TEST_INTERPRETER_MAKE_JOBS), '--interpreter'],
-      )
-
-      defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
-
-      defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
-
-      defer(
-        api.step, 'test speed-profile', testrunner_cmd + ['--speed-profile']
-      )
-
-      libcore_command = [
-        art_tools.joinpath('run-libcore-tests.sh'),
-        '--mode=host',
-        '--variant=X%d' % bitness,
-      ]
-      if debug:
-        libcore_command.append('--debug')
-      if gcstress:
-        libcore_command += ['--gcstress']
-      if continuousgc:
-        libcore_command += ['--continuous-gc']
-
-      defer(api.step, 'test libcore', libcore_command)
-
-      libjdwp_run = art_tools.joinpath('run-libjdwp-tests.sh')
-      libjdwp_common_command = [
-        libjdwp_run,
-        '--mode=host',
-        '--variant=X%d' % bitness,
-      ]
-      if debug:
-        libjdwp_common_command.append('--debug')
-      if gcstress:
-        libjdwp_common_command += ['--vm-arg', '-Xgc:gcstress']
-
-      defer(api.step, 'test libjdwp jit', libjdwp_common_command)
-
-      # Disable interpreter jdwp runs with gcstress, they time out.
-      if not gcstress:
-        defer(
-          api.step,
-          'test libjdwp interpreter',
-          libjdwp_common_command + ['--no-jit'],
-        )
+    with api.defer.context() as defer:
+      for step in test_steps or []:
+        defer(api.step, step.name, list(step.cmd))
 
 
 def setup_target(
@@ -426,11 +286,8 @@ def setup_target(
   device,
   bitness,
   product,
-  debug,
   build_only=False,
   concurrent_collector=True,
-  gcstress=False,
-  continuousgc=False,
   generational_cc=True,
   heap_poisoning=False,
   on_virtual_machine=False,
@@ -598,7 +455,7 @@ def setup_target(
         [art_tools.joinpath('buildbot-vm.sh'), 'boot'],
       )
 
-  with verify_test_steps_context(api, test_steps) as defer:
+  with api.defer.context() as defer:
     with api.context(env=test_env):
       defer(
         api.step,
@@ -632,143 +489,12 @@ def setup_target(
         )
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
-    with api.context(env=gtest_env):
-      defer(api.step, 'test gtest', [art_tools.joinpath('run-gtests.sh')])
-    test_logging(api, 'test gtest')
-
-    # Common options passed to testrunner.py.
-    testrunner_cmd = [
-      './art/test/testrunner/testrunner.py',
-      '--target',
-      '--verbose',
-    ]
-
-    if debug:
-      testrunner_cmd += ['--debug']
-    else:
-      testrunner_cmd += ['--ndebug']
-
-    if gcstress:
-      testrunner_cmd += ['--gcstress']
-
-    if continuousgc:
-      testrunner_cmd += ['--continuous-gc']
-
-    with api.context(env=test_env):
-      defer(api.step, 'test optimizing', testrunner_cmd + ['--optimizing'])
-    test_logging(api, 'test optimizing')
-
-    if product == 'armv8':
-      with api.context(env=test_env):
-        defer(
-          # All current test devices support "crc" and none needs Cortex-A53
-          # workarounds. Pass `--instruction-set-variant=cortex-a35` to
-          # disable Cortex-A53 workarounds and enable only the "crc". Pass
-          # `--instruction-set-features=runtime` (processed by `dex2oat`
-          # after the variant), to detect other features on the device.
-          api.step,
-          'test optimizing all-isa-features',
-          testrunner_cmd
-          + [
-            '--optimizing',
-            '--run-test-option=--Xcompiler-option='
-            + '--instruction-set-variant=cortex-a35',
-            '--run-test-option=--Xcompiler-option='
-            + '--instruction-set-features=runtime',
-          ],
-        )
-      test_logging(api, 'test optimizing all-isa-features')
-
-    with api.context(env=test_env):
-      # We pass --optimizing for interpreter debuggable to run AOT checker tests
-      # compiled debuggable.
-      defer(
-        api.step,
-        'test debuggable',
-        testrunner_cmd + ['--optimizing', '--debuggable'],
-      )
-    test_logging(api, 'test debuggable')
-
-    with api.context(env=test_env):
-      defer(
-        api.step,
-        'test jit debuggable',
-        testrunner_cmd + ['--jit', '--debuggable'],
-      )
-    test_logging(api, 'test jit debuggable')
-
-    with api.context(env=test_env):
-      defer(api.step, 'test interpreter', testrunner_cmd + ['--interpreter'])
-    test_logging(api, 'test interpreter')
-
-    with api.context(env=test_env):
-      defer(api.step, 'test baseline', testrunner_cmd + ['--baseline'])
-    test_logging(api, 'test baseline')
-
-    with api.context(env=test_env):
-      defer(api.step, 'test jit', testrunner_cmd + ['--jit'])
-    test_logging(api, 'test jit')
-
-    if bitness == 64:
-      with api.context(env=test_env):
-        defer(
-          api.step,
-          'test jit-on-first-use',
-          testrunner_cmd + ['--jit-on-first-use'],
-        )
-      test_logging(api, 'test jit-on-first-use')
-
-    with api.context(env=test_env):
-      defer(
-        api.step, 'test speed-profile', testrunner_cmd + ['--speed-profile']
-      )
-    test_logging(api, 'test speed-profile')
-
-    libcore_command = [
-      art_tools.joinpath('run-libcore-tests.sh'),
-      '--mode=device',
-      '--variant=X%d' % bitness,
-    ]
-    if debug:
-      libcore_command.append('--debug')
-    if gcstress:
-      libcore_command += ['--gcstress']
-    if continuousgc:
-      libcore_command += ['--continuous-gc']
-    # Ignore failures from Libcore tests using the getrandom() syscall (present
-    # since Linux 3.17) on fugu devices, as they run a Linux 3.10 kernel.
-    if device == 'fugu':
-      libcore_command.append('--no-getrandom')
-
-    # Disable libcore runs with gcstress and debug, they time out.
-    if not (gcstress and debug) and not on_virtual_machine:
-      with api.context(env=test_env):
-        defer(api.step, 'test libcore', libcore_command)
-      test_logging(api, 'test libcore')
-
-    libjdwp_command = [
-      art_tools.joinpath('run-libjdwp-tests.sh'),
-      '--mode=device',
-      '--variant=X%d' % bitness,
-    ]
-    if debug:
-      libjdwp_command.append('--debug')
-    if gcstress:
-      libjdwp_command += ['--vm-arg', '-Xgc:gcstress']
-
-    # Disable jit libjdwp runs with gcstress and debug, they time out.
-    if not (gcstress and debug) and not on_virtual_machine:
-      with api.context(env=test_env):
-        defer(api.step, 'test libjdwp jit', libjdwp_command)
-      test_logging(api, 'test libjdwp jit')
-
-    # Disable interpreter libjdwp runs with gcstress, they time out.
-    if not gcstress and not on_virtual_machine:
-      with api.context(env=test_env):
-        defer(
-          api.step, 'test libjdwp interpreter', libjdwp_command + ['--no-jit']
-        )
-      test_logging(api, 'test libjdwp interpreter')
+    for step in test_steps or []:
+      with api.context(
+        env=gtest_env if step.name == 'test gtest' else test_env
+      ):
+        defer(api.step, step.name, list(step.cmd))
+      test_logging(api, step.name)
 
     with api.context(env=test_env):
       defer(
@@ -1105,6 +831,12 @@ def GenTests(api: TEST_DEPS):
       on_virtual_machine=True,
       bitness=32,
       product="silvermont",
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': ['art/tools/run-gtests.sh'],
+        },
+      ],
     ),
   )
 

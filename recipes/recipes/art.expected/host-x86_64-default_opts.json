@@ -409,7 +409,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libcore-tests.sh",
+      "art/tools/run-libcore-tests.sh",
       "--mode=host",
       "--variant=X32"
     ],
@@ -448,7 +448,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
+      "art/tools/run-libjdwp-tests.sh",
       "--mode=host",
       "--variant=X32"
     ],
@@ -487,7 +487,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/run-libjdwp-tests.sh",
+      "art/tools/run-libjdwp-tests.sh",
       "--mode=host",
       "--variant=X32",
       "--no-jit"
@@ -524,13 +524,6 @@
       }
     },
     "name": "test libjdwp interpreter"
-  },
-  {
-    "cmd": [],
-    "name": "verify test_steps",
-    "~followup_annotations": [
-      "@@@STEP_TEXT@Verified 10 test steps match props.test_steps@@@"
-    ]
   },
   {
     "name": "$result"
