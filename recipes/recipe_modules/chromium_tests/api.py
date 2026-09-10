@@ -947,11 +947,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         into.
 
     Returns:
-      SwarmingExecutionInfo describing how to execute the isolated tests.
+      * An instance of step_data.StepData from isolate_tests indicating the
+        isolation result, or None when there are no targets to isolate.
+      * SwarmingExecutionInfo describing how to execute the isolated tests.
     """
     if suffix is None:
       suffix = 'with patch' if self.m.tryserver.is_tryserver else ''
 
+    isolate_result = None
     execution_info = None
     if compile_output.isolated_tests:
       additional_isolate_targets = []
@@ -966,7 +969,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
         additional_isolate_targets.append(ALL_TEST_BINARIES_ISOLATE_NAME)
 
-      execution_info = self.isolate_tests(
+      isolate_result, execution_info = self.isolate_tests(
         source_dir,
         build_dir,
         builder_config,
@@ -1011,7 +1014,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         phase=suffix or 'with patch',
       )
 
-    return execution_info
+    return isolate_result, execution_info
 
   def find_swarming_command_lines(self, suffix, build_dir: Path):
 
@@ -1065,7 +1068,9 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         already included in 'tests'.
 
     Returns:
-      SwarmingExecutionInfo describing how to execute the isolate tests in the
+      * An instance of step_data.StepData indicating the isolation result,
+        or None when there are no targets to isolate.
+      * SwarmingExecutionInfo describing how to execute the isolate tests in the
         tests input.
     """
     if got_revision_cp:
@@ -1097,10 +1102,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self.m.chromium_rts.isolate_filter_files(build_dir, targets, tests=tests)
 
-    # This has the side effect of setting self.m.isolate.isolated_tests,
-    # which we use elsewhere. We should probably instead return that and pass it
-    # around.
-    self.m.isolate.isolate_tests(
+    isolate_result = self.m.isolate.isolate_tests(
       build_dir,
       targets,
       suffix=name_suffix,
@@ -1115,7 +1117,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       build_dir, command_lines, tests=tests
     )
 
-    return self.set_swarming_test_execution_info(
+    execution_info = self.set_swarming_test_execution_info(
       source_dir,
       build_dir,
       tests,
@@ -1125,6 +1127,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_config=builder_config,
       command_line_variants=command_line_variants,
     )
+
+    return isolate_result, execution_info
 
   def set_swarming_test_execution_info(
     self,
@@ -1783,9 +1787,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           return raw_result, None
 
       compile_output = CompileOutput(
-        isolated_tests=isolated_tests, skylab_isolate_tests=skylab_isolate_tests
+        isolated_tests=isolated_tests,
+        skylab_isolate_tests=skylab_isolate_tests,
       )
-      execution_info = self.isolate_test_targets(
+      _, execution_info = self.isolate_test_targets(
         source_dir,
         build_dir,
         builder_config,
@@ -2137,7 +2142,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     swarming_execution_info = None
     if compile_output:
-      swarming_execution_info = self.isolate_test_targets(
+      _, swarming_execution_info = self.isolate_test_targets(
         source_dir, build_dir, builder_config, update_result, compile_output
       )
 
@@ -3193,7 +3198,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       )
 
       if compile_output:
-        execution_info = self.isolate_test_targets(
+        _, execution_info = self.isolate_test_targets(
           source_dir,
           build_dir,
           builder_config,
