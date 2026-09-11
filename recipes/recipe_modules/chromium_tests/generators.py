@@ -202,6 +202,7 @@ class Generator:
         got_cr_revision
         got_revision
         got_src_revision
+        patch_host
         patch_issue
         patch_set
         use_permissive_angle_pixel_comparison
@@ -236,6 +237,12 @@ class Generator:
     # Perform substitution of known variables.
     build = self._chromium_tests_api.m.buildbucket.build
     cl = (build.input.gerrit_changes or [None])[0]
+    patch_host = None
+    if cl:
+      if 'chrome-internal' in cl.host:
+        patch_host = 'gerrit-internal'
+      elif 'chromium' in cl.host:
+        patch_host = 'gerrit'
     if self._precommit_details:
       footer_values = [
         val.lower()
@@ -270,6 +277,7 @@ class Generator:
       'got_src_revision': self._got_revisions.get('got_src_revision'),
       'patch_issue': cl.change if cl else None,
       'patch_set': cl.patchset if cl else None,
+      'patch_host': patch_host,
       'use_permissive_angle_pixel_comparison': '1'
       if use_permissive_angle_pixel_comparison
       else '0',

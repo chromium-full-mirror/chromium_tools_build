@@ -336,3 +336,54 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'patch_host public gerrit',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+      git_repo='https://chromium.googlesource.com/chromium/src',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${patch_host}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['gerrit'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'patch_host internal gerrit',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+      git_repo='https://chrome-internal.googlesource.com/chrome/src-internal',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${patch_host}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['gerrit-internal'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'patch_host other gerrit',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_buildername',
+      git_repo='https://other.googlesource.com/other/repo',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${patch_host}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['None'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
