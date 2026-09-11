@@ -2,118 +2,49 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine import post_process
+from __future__ import annotations
 
-from PB.recipes.build.chromium_toolchain.trusted_packaging import (
-  InputProperties,
-)
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-
+from collections.abc import Iterator
 from dataclasses import dataclass
 
+from PB.recipe_modules.build.chromium_toolchain import (
+  properties as properties_pb,
+)
+from recipe_engine import post_process
+from recipe_engine import recipe_test_api
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
-
+from RECIPE_MODULES.build import chromium_toolchain
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
-  cipd,
-  context,
-  json,
   platform,
   properties,
-  step,
 )
 
 
 @dataclass
 class DEPS(RecipeScriptApi):
-  buildbucket: buildbucket.API
-  cipd: cipd.API
-  context: context.API
-  json: json.API
-  platform: platform.API
-  properties: properties.API
-  step: step.API
+  chromium_toolchain: chromium_toolchain.API
 
 
 @dataclass
-class TEST_DEPS(RecipeTestApi):
+class TEST_DEPS(recipe_test_api.RecipeTestApi):
   buildbucket: buildbucket.TEST_API
+  chromium_toolchain: chromium_toolchain.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
 
 
-PROPERTIES = InputProperties
+PROPERTIES = properties_pb.InputProperties
 
 
-def RunSteps(api: DEPS, properties):
-  if properties.toolchain == InputProperties.UNKNOWN:
-    raise api.step.StepFailure(
-      "toolchain property must be set to CLANG or RUST"
-    )
-
-  if properties.toolchain == InputProperties.CLANG:
-    toolchain_name = 'clang'
-  else:
-    toolchain_name = 'rust'
-
-  # Run TBI packaging
-  with api.step.nest(f"package {toolchain_name}"):
-    tbi_client = api.cipd.ensure_tool(
-      "infra_internal/tools/security/lexan_tbi_client/${platform}", "latest"
-    )
-
-    args = [
-      tbi_client,
-      "--result_file",
-      api.json.output(name="summary"),
-    ]
-
-    if properties.toolchain == InputProperties.CLANG:
-      args.append("--clang")
-    if properties.config_path:
-      args.extend(["--config", properties.config_path])
-
-    if properties.trusted_build_instance:
-      args.extend(["--instance", properties.trusted_build_instance])
-    if properties.trusted_build_instance_pool:
-      args.extend(["--pool", properties.trusted_build_instance_pool])
-    if properties.trusted_build_instance_env:
-      args.extend(["--env", properties.trusted_build_instance_env])
-    if properties.trusted_build_instance_project:
-      args.extend(["--project", properties.trusted_build_instance_project])
-
-    if api.buildbucket.build.id:
-      args.extend(["--build_prefix", f"bb-{api.buildbucket.build.id}"])
-
-    # TODO(dlf): Support rust
-
-    # If we are in a CI build (not a try job), override the source commit.
-    # For try jobs, lexan_tbi_client automatically detects Gerrit env vars.
-    changes = api.buildbucket.build.input.gerrit_changes
-    if not changes:
-      gitiles_commit = api.buildbucket.gitiles_commit
-      if gitiles_commit and gitiles_commit.id:
-        args.extend(["-chromium_src_commit", gitiles_commit.id])
-
-    env = {}
-    if changes:
-      change = changes[0]
-      env = {
-        'GERRIT_HOST': str(change.host),
-        'GERRIT_PROJECT': str(change.project),
-        'GERRIT_CHANGE_ID': str(change.change),
-        'GERRIT_PATCHSET_ID': str(change.patchset),
-      }
-
-    # Run the TBI client.
-    with api.context(env=env):
-      res = api.step('request build', args)
-      if res.exc_result.retcode == 0:
-        res.presentation.step_text = 'TBI finished successfully'
+def RunSteps(
+  api: DEPS,
+  properties: properties_pb.InputProperties,
+) -> None:
+  api.chromium_toolchain.trusted_package(properties)
 
 
-def GenTests(api: TEST_DEPS):
+def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
 
   def gen_props(toolchain, **kwargs):
     return api.properties(toolchain=toolchain, **kwargs)
@@ -128,7 +59,7 @@ def GenTests(api: TEST_DEPS):
       git_ref='refs/heads/main',
       revision='a' * 40,
     ),
-    gen_props(InputProperties.CLANG),
+    gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package clang.request build'),
     api.post_process(
@@ -162,7 +93,7 @@ def GenTests(api: TEST_DEPS):
       git_ref='refs/branch-heads/5400',
       revision='b' * 40,
     ),
-    gen_props(InputProperties.RUST),
+    gen_props(properties_pb.InputProperties.RUST),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package rust.request build'),
     api.post_process(
@@ -201,7 +132,7 @@ def GenTests(api: TEST_DEPS):
       git_ref='',
       revision='',
     ),
-    gen_props(InputProperties.CLANG),
+    gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package clang.request build'),
     api.post_process(
@@ -226,7 +157,7 @@ def GenTests(api: TEST_DEPS):
       change_number=123456,
       patch_set=16,
     ),
-    gen_props(InputProperties.CLANG),
+    gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package clang.request build'),
     api.post_process(
@@ -253,7 +184,7 @@ def GenTests(api: TEST_DEPS):
       bucket='ci',
       builder='trusted-packaging-linux-clang',
     ),
-    gen_props(InputProperties.UNKNOWN),
+    gen_props(properties_pb.InputProperties.UNKNOWN),
     api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
@@ -269,7 +200,7 @@ def GenTests(api: TEST_DEPS):
       revision='a' * 40,
     ),
     gen_props(
-      InputProperties.CLANG,
+      properties_pb.InputProperties.CLANG,
       trusted_build_instance='fake-instance',
       trusted_build_instance_pool='fake-pool',
       trusted_build_instance_env='fake-env',
@@ -327,7 +258,7 @@ def GenTests(api: TEST_DEPS):
       revision='a' * 40,
       build_id=123456789,
     ),
-    gen_props(InputProperties.CLANG),
+    gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package clang.request build'),
     api.post_process(
