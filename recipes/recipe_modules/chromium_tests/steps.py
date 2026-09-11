@@ -36,6 +36,7 @@ from collections.abc import Iterable, Set
 import contextlib
 from enum import StrEnum
 import hashlib
+import html
 import itertools
 import inspect
 import re
@@ -1093,7 +1094,9 @@ class Test(AbstractTest):
       return
 
     _, failures_text = self.api.m.test_utils.limit_failures(
-      sorted([t.test_name for t in rdb_results.unexpected_failing_tests])
+      sorted(
+        [html.escape(t.test_name) for t in rdb_results.unexpected_failing_tests]
+      )
     )
     display_text = self.api.m.presentation_utils.format_step_text(
       [['deterministic failures [caused step to fail]:', failures_text]]

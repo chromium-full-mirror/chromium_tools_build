@@ -58,6 +58,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
   chromium_swarming: chromium_swarming.TEST_API
+  chromium_tests: chromium_tests.TEST_API
   pgo: pgo.TEST_API
   properties: properties.TEST_API
   swarming: swarming.TEST_API
@@ -270,6 +271,29 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'test_pre_run.[trigger] base_unittests',
       ['-server', 'other-swarming.appspot.com'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'rdb_results_html_escape',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
+      },
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'base_unittests', '', failures=['test 1 <img src=x onerror=alert(1)>']
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.StepTextContains,
+      'base_unittests',
+      ['[test 1 &lt;img src=x onerror=alert(1)&gt;]'],
     ),
     api.post_process(post_process.DropExpectation),
   )
