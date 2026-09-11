@@ -1273,7 +1273,6 @@ def GenTests(api: TEST_DEPS):
       clusterfuzz_archive={
         'bucket': 'v8_clusterfoo',
         'archive_path': 'linux64-release/d8_bar-linux64-release-v8-component',
-        'use_archive_path': True,
       },
       default_targets=['v8_foobar'],
     )

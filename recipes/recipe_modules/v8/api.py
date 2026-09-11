@@ -1065,10 +1065,7 @@ class V8Api(recipe_api.RecipeApi):
         update_properties=update_result.properties,
         gs_bucket=clusterfuzz_archive.get('bucket'),
         gs_acl='public-read',
-        archive_prefix=None,
-        build_config=self.get_build_type(build_dir),
         archive_path=clusterfuzz_archive.get('archive_path'),
-        use_archive_path=True,
       )
 
   def download_isolated_json(self, revision):

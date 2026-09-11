@@ -1279,11 +1279,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       'update_properties': update_result.properties,
       'gs_bucket': builder_spec.cf_gs_bucket,
       'gs_acl': builder_spec.cf_gs_acl,
-      'archive_prefix': builder_spec.cf_archive_name,
       'archive_path': builder_spec.cf_archive_path,
-      'use_archive_path': builder_spec.cf_use_archive_path,
-      'build_config': self.m.chromium.c.build_config_fs,
-      'archive_subdir_suffix': builder_spec.cf_archive_subdir_suffix,
     }
     if builder_spec.cf_archive_schema_version == 0:
       archive_root = build_dir

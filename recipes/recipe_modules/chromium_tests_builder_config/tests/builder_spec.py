@@ -86,16 +86,25 @@ def RunSteps(api: DEPS):
     cf_archive_build=True,
     cf_gs_bucket='bucket',
     cf_gs_acl='acl',
-    cf_archive_name='archive-name',
-    cf_archive_subdir_suffix='archive-subdir-suffix',
+    cf_archive_path='archive-path',
   )
 
   # Required field when cf_archive_build is True
   message = "'cf_gs_bucket' must be provided when 'cf_archive_build' is True"
   with api.assertions.assertRaises(AssertionError) as caught:
-    builder_spec.BuilderSpec.create(cf_archive_build=True)
+    builder_spec.BuilderSpec.create(
+      cf_archive_build=True, cf_archive_path='archive-path'
+    )
   api.assertions.assertEqual(str(caught.exception), message)
 
+  message = "'cf_archive_path' must be provided when 'cf_archive_build' is True"
+  with api.assertions.assertRaises(AssertionError) as caught:
+    builder_spec.BuilderSpec.create(
+      cf_archive_build=True, cf_gs_bucket='bucket'
+    )
+  api.assertions.assertEqual(str(caught.exception), message)
+
+  message = "'cf_gs_bucket' must be provided when 'cf_archive_build' is True"
   with api.assertions.assertRaises(AssertionError) as caught:
     cf_archive_build_spec.evolve(cf_gs_bucket=None)
   api.assertions.assertEqual(str(caught.exception), message)
@@ -106,9 +115,8 @@ def RunSteps(api: DEPS):
     "'cf_archive_build' is set to True: {}".format(
       [
         'cf_gs_bucket',
-        'cf_archive_name',
         'cf_gs_acl',
-        'cf_archive_subdir_suffix',
+        'cf_archive_path',
       ]
     )
   )
@@ -116,8 +124,7 @@ def RunSteps(api: DEPS):
     builder_spec.BuilderSpec.create(
       cf_gs_bucket='bucket',
       cf_gs_acl='acl',
-      cf_archive_name='archive-name',
-      cf_archive_subdir_suffix='archive-subdir-suffix',
+      cf_archive_path='archive-path',
     )
   api.assertions.assertEqual(str(caught.exception), message)
   # use_test_trigger_cas validations *********************************************

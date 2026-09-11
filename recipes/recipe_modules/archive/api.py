@@ -241,11 +241,10 @@ class ArchiveApi(recipe_api.RecipeApi):
     archive_root: Path,
     update_properties,
     gs_bucket,
-    archive_prefix,
-    build_config,
     compile_targets: list[str],
     build_dir: Path,
     *,
+    archive_path: str,
     archive_schema_version: int = 1,
     fuzz_targets: list[str] | None = None,
     **kwargs,
@@ -263,6 +262,7 @@ class ArchiveApi(recipe_api.RecipeApi):
         runtime dependencies, the respective `.runtime_deps` files, and nothing
         more.
       build_dir: The absolute path to the build output directory.
+      archive_path: Path prefix to use for the uploaded zip archive.
       archive_schema_version: Optional int to set metadata in
         `MANIFEST_FILENAME`. Default is 1.
       fuzz_targets: Optional list of fuzz target names within `build_dir`.
@@ -306,8 +306,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       archive_root=archive_root,
       update_properties=update_properties,
       gs_bucket=gs_bucket,
-      archive_prefix=archive_prefix,
-      build_config=build_config,
+      archive_path=archive_path,
       paths_to_archive=paths_to_archive,
       **kwargs,
     )
@@ -321,41 +320,29 @@ class ArchiveApi(recipe_api.RecipeApi):
     archive_root: Path,
     update_properties,
     gs_bucket,
-    archive_prefix,
-    build_config,
     *,
-    archive_path: str | None = None,
-    use_archive_path: bool = False,
+    archive_path: str,
     paths_to_archive: list[str] | None = None,
-    archive_subdir_suffix='',
     gs_acl=None,
-    revision_dir=None,
     primary_project=None,
-    bitness=None,
-    use_legacy=True,
     sortkey_datetime=None,
-    **kwargs,
   ) -> None:
-    # TODO(machenbach): Merge revision_dir and primary_project. The
-    # revision_dir is only used for building the archive name while the
-    # primary_project is authoritative for the commit position.
     """Archives and uploads a build to google storage.
 
     The build is filtered by a list of file exclusions and then zipped. It is
     uploaded to google storage with some metadata about the commit position
-    and revision attached. The zip file follows the naming pattern used by
-    clusterfuzz. The file pattern is:
-    <archive name>-<platform>-<target><optional component>-<sort-key>.zip
+    and revision attached.
 
-    If the build is experimental, -experimental is appended in the name.
+    The zip file is named:
+    `<archive_path>-<sort-key>[-experimental].zip`
+    Where:
+    - `<sort-key>` is either `sortkey_datetime` formatted as `YYYYMMDDHHMM`,
+      or the commit position (formatted as `<branch>-<commit-position-number>`
+      for non-main branches, or `<commit-position-number>` for main/master).
+    - `-experimental` is appended if running in experimental mode.
 
-    Example: cool-project-linux-release-refs_heads_b1-12345.zip
-    The archive name is "cool-project" and there's no component build. The
-    commit is on a branch called b1 at commit position number 12345.
-
-    Example: cool-project-mac-debug-x10-component-234.zip
-    The archive name is "cool-project" and the component's name is "x10". The
-    component is checked out in branch main with commit position number 234.
+    The archive is uploaded to `gs://<gs_bucket>/<subdir>/` where `<subdir>`
+    is the directory component of `archive_path` (or root of bucket if none).
 
     Args:
       source_dir: The path to the top-level repo.
@@ -365,47 +352,24 @@ class ArchiveApi(recipe_api.RecipeApi):
       update_properties: The properties from the bot_update step (containing
                          commit information)
       gs_bucket: Name of the google storage bucket to upload to
-      archive_prefix: Prefix of the archive zip file
-      archive_path: Path prefix to use verbatim for the uploaded zip archive.
-                    If `use_archive_path` is true, this path is used verbatim.
-                    Otherwise, the derived path is checked to match this path.
-      use_archive_path: If True, use `archive_path` verbatim, with a `-$REV`
-                        suffix (or `-$DATETIME` suffix, see `sortkey_datetime`,
-                        and an optional `-experimental` suffix). `archive_path`
-                        in this case can contain slashes and is treated as the
-                        relative path from the bucket to the archive. In this
-                        case, the following arguments are ignored:
-                        `archive_prefix`, `build_config`,
-                        `archive_subdir_suffix`, `revision_dir`, `bitness`,
-                        `use_legacy`.
-      build_config: Name of build config, e.g. release or debug. This is used
-                    to qualify archive file names.
+      archive_path: Path prefix within the bucket to use for the uploaded zip
+                    archive (e.g. 'linux-release/foo-linux-release').
+                    A `-<sort-key>` suffix (and optional `-experimental`
+                    suffix) will be appended to the basename of `archive_path`
+                    along with the `.zip` extension.
       paths_to_archive: Optional list of dependency paths to include in the
                         archive, relative to archive_root. If included, it
                         will skip discovering paths to zip and use the
                         provided list.
-      archive_subdir_suffix: Optional suffix to the google storage subdirectory
-                             name that contains the archive files
       gs_acl: ACL used for the file on google storage
-      revision_dir: Optional component name if the main revision for this
-                    archive is a component revision
       primary_project: Optional project name for specifying the revision of the
                        checkout
-      bitness: The bitness of the build (32 or 64) to distinguish archive
-               names.
-      use_legacy: Specify if legacy paths and archive names should be used. Set
-                  to false for new builders.
       sortkey_datetime: If set, the api will use this datetime as the sortable
                         key path in the archive name, instead of trying to infer
                         it from the commit information.  This will be formatted
                         as YYYYMMDDHHMM.
     """
 
-    # We should distinguish build archives also by bitness on new bots, so that
-    # 32 and 64 bit bots can coexist. We don't change old bots to not confuse
-    # clusterfuzz bisect jobs.
-    assert use_legacy or bitness, 'Must specify bitness for new builders.'
-    build_config = build_config.lower()
     gs_metadata = {}
     if sortkey_datetime is not None:
       sortkey_path = sortkey_datetime.strftime('%Y%m%d%H%M')
@@ -498,55 +462,13 @@ class ArchiveApi(recipe_api.RecipeApi):
         cmd,
         infra_step=True,
         step_test_data=lambda: self.m.json.test_api.output(['file1', 'file2']),
-        **kwargs,
       )
 
       zip_file_list = filter_result.json.output
 
-    if use_archive_path:
-      assert archive_path, (
-        'archive_path must be provided if use_archive_path is True'
-      )
-      zip_file_base_name = os.path.basename(archive_path)
-      subdir = os.path.dirname(archive_path)
-    else:
-      # Use the legacy platform name if specified as Clusterfuzz has some
-      # expectations on this (it only affects Windows, where it replace 'win'
-      # by 'win32').
-      if use_legacy:
-        platform_name = self.legacy_platform_name()
-        target_name = build_config
-      else:
-        platform_name = self.m.platform.name
-        # Always qualify platform with bitness on new bots. E.g. linux32 or win64.
-        platform_name += str(bitness)
-        # Split off redundant _x64 suffix on windows. The bitness is part of the
-        # platform.
-        target_name = build_config.split('_')[0]
-
-      pieces = [platform_name, target_name]
-      if archive_subdir_suffix:
-        pieces.append(archive_subdir_suffix)
-      subdir = '-'.join(pieces)
-
-      # Components like v8 get a <name>-v8-component-<revision> infix.
-      component = ''
-      if revision_dir:
-        component = '-%s-component' % revision_dir
-
-      zip_file_base_name = '%s-%s-%s%s' % (
-        archive_prefix,
-        platform_name,
-        target_name,
-        component,
-      )
-
-      if archive_path:
-        derived_path = f'{subdir}/{zip_file_base_name}'
-        assert derived_path == archive_path, (
-          f'Derived path \'{derived_path}\' does not match configured '
-          f'archive_path \'{archive_path}\''
-        )
+    assert archive_path, 'archive_path must be provided'
+    zip_file_base_name = os.path.basename(archive_path)
+    subdir = os.path.dirname(archive_path)
 
     # `zip_file_base_name` is the file name minus the `.zip` extension, as
     # expected by `zip_archive.py`.
@@ -569,7 +491,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     ]
     if len(lzma_sdk_args) > 0:
       cmd.extend(['--lzma-sdk-dir'] + lzma_sdk_args)
-    self.m.step('zipping', cmd, infra_step=True, **kwargs)
+    self.m.step('zipping', cmd, infra_step=True)
 
     zip_file_name = f'{zip_file_base_name}.zip'
     zip_file = staging_dir / zip_file_name

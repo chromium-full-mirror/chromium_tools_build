@@ -8,15 +8,18 @@ package recipes.build.chromium.fuzz;
 
 // Next ID: 11
 message InputProperties {
-  string archive_prefix = 1;
+  // Deprecated: archive_path is used instead.
+  // TODO(https://crbug.com/527836546): Remove this field once callers no
+  // longer set it.
+  string archive_prefix = 1 [deprecated = true];
 
   // Path prefix to use verbatim for the uploaded zip archive.
-  // If `use_archive_path` is true, this path is used verbatim.
-  // Otherwise, the derived path is checked to match this path.
   string archive_path = 9;
 
-  // If true, use `archive_path` verbatim and skip path derivation.
-  bool use_archive_path = 10;
+  // Deprecated: archive_path is always used now.
+  // TODO(https://crbug.com/527836546): Remove this field once callers no
+  // longer set it.
+  bool use_archive_path = 10 [deprecated = true];
 
   bool v8_targets_only = 2;
   bool ios_targets_only = 3;

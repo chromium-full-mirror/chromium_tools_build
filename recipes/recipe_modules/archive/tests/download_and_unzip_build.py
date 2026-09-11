@@ -12,7 +12,7 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import archive
-from RECIPE_MODULES.recipe_engine import path, properties
+from RECIPE_MODULES.recipe_engine import path, platform, properties
 
 
 @dataclass
@@ -24,6 +24,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
   properties: properties.TEST_API
 
 
@@ -73,6 +74,30 @@ def GenTests(api: TEST_DEPS):
       [
         '--build-archive-url',
         'https://example/url',
+      ],
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  # Tests legacy download URL construction on Windows, ensuring
+  # legacy_platform_name() resolves to 'win32'. (Previously covered as a side
+  # effect of Windows ClusterFuzz archiving tests).
+  yield api.test(
+    'win',
+    api.platform('win', 64),
+    api.properties(
+      parent_buildername='example_buildername',
+      parent_buildnumber=1.0,
+      buildnumber=123,
+    ),
+    api.post_process(
+      StepCommandContains,
+      'extract build',
+      [
+        '--build-url',
+        'gs://bucket_name/example_buildername/full-build-win32.zip',
+        '--build_revision',
+        'example_sha',
       ],
     ),
     api.post_process(DropExpectation),

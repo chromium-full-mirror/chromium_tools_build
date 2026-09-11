@@ -171,21 +171,20 @@ message BuilderSpec {
       string gs_bucket = 1;
       // A canned ACL to apply to the uploaded archive
       string gs_acl = 2;
-      // The prefix of the name of the archive to create.
-      //
-      // The name of the archive will begin with the prefix and include
-      // additional details such as platform and target, among others.
-      // Required if `use_archive_path` is false.
-      string archive_name_prefix = 3;
-      // Path prefix to use verbatim for the uploaded zip archive.
-      // If `use_archive_path` is true, this path is used verbatim and is required.
-      // Otherwise, the derived path is checked to match this path.
+      // Deprecated: archive_path is used instead.
+      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
+      // and builder configs no longer set it.
+      string archive_name_prefix = 3 [deprecated = true];
+      // Path prefix to use for the uploaded zip archive.
       string archive_path = 6;
-      // If true, use `archive_path` verbatim and skip path derivation.
-      bool use_archive_path = 7;
-      // An additional subdirectory within the target/platform directory for
-      // uploading the archive to
-      string archive_subdir = 4;
+      // Deprecated: archive_path is always used now.
+      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
+      // and builder configs no longer set it.
+      bool use_archive_path = 7 [deprecated = true];
+      // Deprecated: archive_path includes the full subdirectory structure.
+      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
+      // and builder configs no longer set it.
+      string archive_subdir = 4 [deprecated = true];
       // Optional, version number to control how libfuzzer archives are formatted.
       // 0 (Default): Legacy with src_root archiving where archive root is build dir
       // 1: New archive schema where archive root is source dir

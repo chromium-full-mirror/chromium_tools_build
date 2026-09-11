@@ -94,22 +94,12 @@ def RunSteps(api: DEPS):
   assert_invalid(
     BuilderSpec.ClusterfuzzArchive(),
     '$test.gs_bucket is not set',
-    '$test.archive_name_prefix is not set',
-  )
-  assert_invalid(
-    BuilderSpec.ClusterfuzzArchive(use_archive_path=True),
-    '$test.gs_bucket is not set',
     '$test.archive_path is not set',
   )
 
   assert_valid(
     BuilderSpec.ClusterfuzzArchive(
-      gs_bucket='gs_bucket', archive_name_prefix='archive_name_prefix'
-    )
-  )
-  assert_valid(
-    BuilderSpec.ClusterfuzzArchive(
-      gs_bucket='gs_bucket', archive_path='archive_path', use_archive_path=True
+      gs_bucket='gs_bucket', archive_path='archive_path'
     )
   )
 

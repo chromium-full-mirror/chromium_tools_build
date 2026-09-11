@@ -123,8 +123,7 @@ def GenTests(api: TEST_DEPS):
               clusterfuzz_archive = builder_config.clusterfuzz_archive(
                   gs_bucket = "clusterfuzz-gs-bucket",
                   gs_acl = "clusterfuzz-gs-acl",
-                  archive_name_prefix = "clusterfuzz-archive-name-prefix",
-                  archive_subdir = "clusterfuzz-archive-subdir",
+                  archive_path = "clusterfuzz-archive-path",
               ),
           ),
 
@@ -213,8 +212,7 @@ def GenTests(api: TEST_DEPS):
               cf_archive_build=True,
               cf_gs_bucket="clusterfuzz-gs-bucket",
               cf_gs_acl="clusterfuzz-gs-acl",
-              cf_archive_name="clusterfuzz-archive-name-prefix",
-              cf_archive_subdir_suffix="clusterfuzz-archive-subdir",
+              cf_archive_path="clusterfuzz-archive-path",
             ),
             'foo-tester': ctbc.BuilderSpec.create(
               execution_mode=ctbc.TEST,

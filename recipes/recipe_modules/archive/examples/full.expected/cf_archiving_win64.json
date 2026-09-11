@@ -41,7 +41,7 @@
       "--output-dir",
       "[CLEANUP]\\cs",
       "--archive-name",
-      "chrome-asan-win64-release-refs_heads_B1-123456",
+      "archive-refs_heads_B1-123456",
       "--json-file-list",
       "[\"chrome\"]",
       "--file-relative-dir",
@@ -66,14 +66,14 @@
       "-h",
       "x-goog-meta-Cr-Git-Commit:5e3250aadda2b170692f8e762d43b7e8deadbeef",
       "cp",
-      "[CLEANUP]\\cs\\chrome-asan-win64-release-refs_heads_B1-123456.zip",
-      "gs://chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456.zip"
+      "[CLEANUP]\\cs\\archive-refs_heads_B1-123456.zip",
+      "gs://chromium/path/to/archive-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
     "name": "gsutil upload",
     "~followup_annotations": [
-      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456.zip@@@",
-      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium/win64-release/chrome-asan-win64-release-refs_heads_B1-123456.zip\"}@@@"
+      "@@@STEP_LINK@gsutil.upload@https://storage.cloud.google.com/chromium/path/to/archive-refs_heads_B1-123456.zip@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"gsutil upload\": \"gs://chromium/path/to/archive-refs_heads_B1-123456.zip\"}@@@"
     ]
   },
   {
@@ -84,10 +84,10 @@
       "--json-output",
       "/path/to/tmp/json",
       "remove",
-      "[CLEANUP]\\cs\\chrome-asan-win64-release-refs_heads_B1-123456.zip"
+      "[CLEANUP]\\cs\\archive-refs_heads_B1-123456.zip"
     ],
     "infra_step": true,
-    "name": "chrome-asan-win64-release-refs_heads_B1-123456.zip"
+    "name": "archive-refs_heads_B1-123456.zip"
   },
   {
     "name": "$result"

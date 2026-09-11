@@ -60,7 +60,7 @@ def RunSteps(api: DEPS):
   }
 
   kwargs = {**api.properties.get('clusterfuzz_archive_kwargs', {})}
-  kwargs.setdefault('archive_prefix', 'chrome-asan')
+  kwargs.setdefault('archive_path', 'linux-release/chrome-asan-linux-release')
   kwargs.setdefault('gs_bucket', 'chromium')
   kwargs.setdefault('archive_schema_version', 1)
   kwargs.setdefault('compile_targets', ['target1'])
@@ -69,7 +69,6 @@ def RunSteps(api: DEPS):
     source_dir=source_dir,
     archive_root=archive_root,
     update_properties=update_properties,
-    build_config='Release',
     build_dir=build_dir,
     **kwargs,
   )
@@ -199,13 +198,11 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'verbatim',
-    # Tests handling of the `use_archive_path` argument.
     api.properties(
       clusterfuzz_archive_kwargs={
         'fuzz_targets': ['target1'],
         'gs_bucket': 'bleep-bloop',
         'archive_path': 'foo-x64/asan-bar',
-        'use_archive_path': True,
       },
     ),
     api.post_process(
@@ -229,15 +226,12 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'verbatim_sortkey_datetime',
-    # Tests handling of the `use_archive_path` argument combined
-    # with `sortkey_datetime`.
     api.properties(
       clusterfuzz_archive_kwargs={
         'fuzz_targets': ['target1'],
         'gs_bucket': 'bleep-bloop',
         'archive_path': 'foo-x64/asan-bar',
         'sortkey_datetime': datetime.datetime(2026, 6, 22, 15, 53),
-        'use_archive_path': True,
       },
     ),
     api.post_process(
@@ -261,14 +255,11 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'verbatim experimental',
-    # Tests handling of the `use_archive_path` argument combined
-    # with an experimental build.
     api.properties(
       clusterfuzz_archive_kwargs={
         'fuzz_targets': ['target1'],
         'gs_bucket': 'bleep-bloop',
         'archive_path': 'foo-x64/asan-bar',
-        'use_archive_path': True,
       },
     ),
     api.runtime(is_experimental=True),
@@ -293,12 +284,10 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'assert_success',
-    # Tests assertion success when archive_path matches derived path.
     api.properties(
       clusterfuzz_archive_kwargs={
         'fuzz_targets': ['target1'],
         'archive_path': 'linux-release/chrome-asan-linux-release',
-        'use_archive_path': False,
       },
     ),
     api.post_process(MustRun, 'gsutil upload'),
@@ -314,12 +303,10 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'assert_failure',
-    # Tests assertion failure when archive_path does not match derived path.
     api.properties(
       clusterfuzz_archive_kwargs={
         'fuzz_targets': ['target1'],
-        'archive_path': 'wrong-path',
-        'use_archive_path': False,
+        'archive_path': '',
       },
     ),
     api.expect_exception('AssertionError'),

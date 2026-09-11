@@ -469,11 +469,7 @@ def _migrate_builder_spec(
         ca_fact.set_string_arg('gs_bucket', builder_spec.cf_gs_bucket)
         if gs_acl := builder_spec.cf_gs_acl:
           ca_fact.set_string_arg('gs_acl', gs_acl)
-        ca_fact.set_string_arg(
-          'archive_name_prefix', builder_spec.cf_archive_name
-        )
-        if archive_subdir := builder_spec.cf_archive_subdir_suffix:
-          ca_fact.set_string_arg('archive_subdir', archive_subdir)
+        ca_fact.set_string_arg('archive_path', builder_spec.cf_archive_path)
 
 
 _DEFAULT_TRY_SPEC = ctbc.TrySpec.create_for_single_mirror(

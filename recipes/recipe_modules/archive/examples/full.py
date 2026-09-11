@@ -136,15 +136,8 @@ def RunSteps(api: DEPS):
     update_properties=api.properties.get('update_properties'),
     gs_bucket='chromium',
     gs_acl=api.properties.get('gs_acl', ''),
-    archive_prefix=api.properties.get('archive_prefix', 'chrome-asan'),
-    archive_path=api.properties.get('archive_path'),
-    use_archive_path=api.properties.get('use_archive_path', False),
-    build_config=api.properties.get('build_config', 'Release'),
-    archive_subdir_suffix=api.properties.get('archive_subdir_suffix', ''),
-    revision_dir=api.properties.get('revision_dir'),
+    archive_path=api.properties.get('archive_path', 'path/to/archive'),
     primary_project=api.properties.get('primary_project'),
-    bitness=api.properties.get('bitness'),
-    use_legacy=api.properties.get('use_legacy', True),
     sortkey_datetime=api.properties.get('sortkey_datetime', None),
   )
 
@@ -218,39 +211,18 @@ def GenTests(api: TEST_DEPS):
     api.properties(
       update_properties=update_properties,
       archive_path='bleep-bloop/foo-bar',
-      use_archive_path=True,
     ),
     api.post_process(post_process.DropExpectation),
   )
 
-  yield api.test(
-    'cf_archiving_assert_success',
-    api.platform('linux', 64),
-    api.properties(
-      update_properties=update_properties,
-      gs_acl='public-read',
-      archive_subdir_suffix='subdir',
-      archive_path='linux-release-subdir/chrome-asan-linux-release',
-      use_archive_path=False,
-    ),
-    api.override_step_data(
-      'filter archive_root', api.json.output(['chrome', 'icu.dat', 'lib.host'])
-    ),
-    api.post_process(post_process.DropExpectation),
-  )
-
+  # Verifies that clusterfuzz_archive fails with an AssertionError when
+  # archive_path is empty.
   yield api.test(
     'cf_archiving_assert_failure',
     api.platform('linux', 64),
     api.properties(
       update_properties=update_properties,
-      gs_acl='public-read',
-      archive_subdir_suffix='subdir',
-      archive_path='wrong-path',
-      use_archive_path=False,
-    ),
-    api.override_step_data(
-      'filter archive_root', api.json.output(['chrome', 'icu.dat', 'lib.host'])
+      archive_path='',
     ),
     api.expect_exception('AssertionError'),
     api.post_process(post_process.DropExpectation),
@@ -264,7 +236,10 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'custom_build_config',
     api.platform('linux', 64),
-    api.properties(build_config='debease', update_properties=update_properties),
+    api.properties(
+      archive_path='linux-debease/chrome-asan-linux-debease',
+      update_properties=update_properties,
+    ),
     api.post_process(
       check_gs_url_equals,
       'gs://chromium/linux-debease/'
@@ -283,7 +258,7 @@ def GenTests(api: TEST_DEPS):
     api.platform('linux', 64),
     api.properties(
       update_properties=update_properties,
-      revision_dir='x10',
+      archive_path='linux-release/chrome-asan-linux-release-x10-component',
       primary_project='x10',
     ),
     api.override_step_data(

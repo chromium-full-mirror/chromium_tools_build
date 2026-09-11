@@ -185,8 +185,7 @@ def GenTests(api: TEST_DEPS):
           cf_archive_build=True,
           cf_gs_bucket='cf-gs-bucket',
           cf_gs_acl='cf-gs-acl',
-          cf_archive_name='cf-archive-name',
-          cf_archive_subdir_suffix='cf-archive-subdir-suffix',
+          cf_archive_path='cf-archive-path',
         ),
       )
       .with_tester(
@@ -213,8 +212,7 @@ def GenTests(api: TEST_DEPS):
           cf_archive_build=True,
           cf_gs_bucket='cf-gs-bucket',
           cf_gs_acl='cf-gs-acl',
-          cf_archive_name='cf-archive-name',
-          cf_archive_subdir_suffix='cf-archive-subdir-suffix',
+          cf_archive_path='cf-archive-path',
         ),
         tester_id: ctbc.BuilderSpec.create(
           execution_mode=ctbc.TEST,
@@ -233,8 +231,7 @@ def GenTests(api: TEST_DEPS):
           cf_archive_build=True,
           cf_gs_bucket='cf-gs-bucket',
           cf_gs_acl='cf-gs-acl',
-          cf_archive_name='cf-archive-name',
-          cf_archive_subdir_suffix='cf-archive-subdir-suffix',
+          cf_archive_path='cf-archive-path',
         ),
       },
     ),

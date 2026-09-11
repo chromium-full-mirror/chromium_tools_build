@@ -370,12 +370,6 @@ def RunSteps(api: DEPS, properties):
     if not properties.collect_fuzz_coverage and not api.tryserver.is_tryserver:
       assert properties.upload_bucket, 'upload_bucket property is required'
 
-    # Make sure 32 bit archives are distinguished from 64 bit ones.
-    kwargs = {}
-    if api.chromium.c.TARGET_BITS == 32:
-      kwargs['use_legacy'] = False
-      kwargs['bitness'] = 32
-
     if properties.collect_fuzz_coverage:
       try:
         corpora_dir = 'current-corpora-from-clusterfuzz'
@@ -521,17 +515,12 @@ def RunSteps(api: DEPS, properties):
           archive_root=archive_root,
           update_properties=update_result.properties,
           gs_bucket=properties.upload_bucket,
-          archive_prefix=properties.archive_prefix or 'libfuzzer',
           archive_path=properties.archive_path,
-          use_archive_path=properties.use_archive_path,
-          build_config=api.chromium.c.build_config_fs,
           compile_targets=targets,
           build_dir=build_dir,
           archive_schema_version=archive_schema_version,
           fuzz_targets=targets,
-          archive_subdir_suffix=properties.upload_directory,
           gs_acl='public-read',
-          **kwargs,
         )
         return
 
@@ -579,13 +568,8 @@ def RunSteps(api: DEPS, properties):
         archive_root=archive_root,
         update_properties=update_result.properties,
         gs_bucket=properties.upload_bucket,
-        archive_prefix=properties.archive_prefix or 'libfuzzer',
         archive_path=properties.archive_path,
-        use_archive_path=properties.use_archive_path,
-        build_config=api.chromium.c.build_config_fs,
-        archive_subdir_suffix=properties.upload_directory,
         gs_acl='public-read',
-        **kwargs,
       )
 
 
@@ -599,6 +583,7 @@ def GenTests(api: TEST_DEPS):
     coverage_metadata_failure=False,
     engine='libfuzzer',
     archive_schema_version=None,
+    archive_path='linux-release/libfuzzer-linux-release',
     drop_expectation=True,
   ):
     test = api.properties(
@@ -608,6 +593,7 @@ def GenTests(api: TEST_DEPS):
       ios_targets_only=is_ios,
       collect_fuzz_coverage=is_coverage,
       fuzz_engine=engine,
+      archive_path=archive_path,
     )
     if archive_schema_version is not None:
       test += api.properties(archive_schema_version=archive_schema_version)
@@ -949,7 +935,10 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.platform.name('linux'),
-    generate_test(drop_expectation=False),
+    generate_test(
+      archive_path='linux-release-fuzz/libfuzzer-linux-release',
+      drop_expectation=False,
+    ),
     api.step_data(
       'calculate all_fuzzers',
       stdout=api.raw_io.output_text(
@@ -1312,6 +1301,7 @@ def GenTests(api: TEST_DEPS):
     api.properties(
       upload_bucket='chromium-browser-libfuzzer',
       upload_directory='fuzz',
+      archive_path='linux-release/libfuzzer-linux-release',
     ),
     api.step_data(
       'calculate all_fuzzers',
@@ -1351,6 +1341,7 @@ def GenTests(api: TEST_DEPS):
     api.properties(
       upload_bucket='chromium-browser-libfuzzer',
       upload_directory='fuzz',
+      archive_path='linux-release/libfuzzer-linux-release',
     ),
     api.step_data(
       'calculate all_fuzzers',
@@ -1411,59 +1402,7 @@ def GenTests(api: TEST_DEPS):
     return api.test(f'upload path {name}', *test_args)
 
   yield upload_test(
-    'default',
-    api.platform.name('linux'),
-    api.properties(upload_bucket='bucket'),
-    upload_path='gs://bucket/linux-release/libfuzzer-linux-release',
-  )
-
-  yield upload_test(
-    'prefix',
-    api.platform.name('linux'),
-    api.properties(
-      upload_bucket='bucket',
-      archive_prefix='prefix',
-    ),
-    upload_path='gs://bucket/linux-release/prefix-linux-release',
-  )
-
-  yield upload_test(
-    'subdir',
-    api.platform.name('linux'),
-    api.properties(
-      upload_bucket='bucket',
-      upload_directory='subdir',
-    ),
-    upload_path='gs://bucket/linux-release-subdir/libfuzzer-linux-release',
-  )
-
-  yield upload_test(
-    'mac',
-    api.platform.name('mac'),
-    api.properties(upload_bucket='bucket'),
-    upload_path='gs://bucket/mac-release/libfuzzer-mac-release',
-  )
-
-  yield upload_test(
-    'windows',
-    api.platform.name('win'),
-    api.properties(upload_bucket='bucket'),
-    upload_path='gs://bucket/win32-release/libfuzzer-win32-release',
-  )
-
-  yield upload_test(
-    'verbatim',
-    api.platform.name('linux'),
-    api.properties(
-      upload_bucket='bucket',
-      archive_path='bleep-bloop/foo-bar',
-      use_archive_path=True,
-    ),
-    upload_path='gs://bucket/bleep-bloop/foo-bar',
-  )
-
-  yield upload_test(
-    'assert success',
+    'basic',
     api.platform.name('linux'),
     api.properties(
       upload_bucket='bucket',
@@ -1473,11 +1412,20 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield upload_test(
-    'assert failure',
+    'custom path',
     api.platform.name('linux'),
     api.properties(
       upload_bucket='bucket',
-      archive_path='wrong-path',
+      archive_path='bleep-bloop/foo-bar',
+    ),
+    upload_path='gs://bucket/bleep-bloop/foo-bar',
+  )
+
+  yield upload_test(
+    'missing archive_path',
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
     ),
     api.expect_exception('AssertionError'),
   )
