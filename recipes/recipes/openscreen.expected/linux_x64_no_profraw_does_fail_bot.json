@@ -388,7 +388,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_asan=true use_coverage=true"
+      "--args=is_asan=true use_clang_coverage=true coverage_instrumentation_input_file=\"//.code-coverage/files_to_instrument.txt\""
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
@@ -526,7 +526,7 @@
     "cwd": "[START_DIR]/openscreen",
     "env": {
       "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
-      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/default.profraw"
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/unit_tests.profraw"
     },
     "luci_context": {
       "realm": {
@@ -546,101 +546,43 @@
     ]
   },
   {
+    "cmd": [
+      "[START_DIR]/openscreen/out/Default/e2e_tests"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/e2e_tests.profraw"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.run e2e tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
     "cmd": [],
-    "name": "run tests.calculate code coverage",
+    "name": "run tests.skip coverage calculations because no data was generated",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_FAILURE@@@"
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CLEANUP]/tmp_tmp_1/profdata"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run tests.calculate code coverage.ensure profile dir for profdata",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/openscreen/build/code_coverage/merge_results.py",
-      "--output-json",
-      "/path/to/tmp/json",
-      "--task-output-dir",
-      "[START_DIR]/openscreen",
-      "--profdata-dir",
-      "[CLEANUP]/tmp_tmp_1/profdata",
-      "--llvm-profdata",
-      "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-profdata",
-      "--build-dir",
-      "[START_DIR]/openscreen/out/Default",
-      "--chromium-src-dir",
-      "[START_DIR]/openscreen",
-      "--per-cl-coverage"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run tests.calculate code coverage.process raw coverage data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_END@json.output (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output (exception)@Expecting value: line 1 column 1 (char 0)@@@",
-      "@@@STEP_LOG_END@json.output (exception)@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "run tests.calculate code coverage.failed to process coverage data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_FAILURE@@@"
-    ]
-  },
-  {
     "failure": {
       "failure": {},
-      "humanReason": "Step('run tests.calculate code coverage.failed to process coverage data') (retcode: 0)"
+      "humanReason": "Step('run tests.skip coverage calculations because no data was generated') (retcode: 0)"
     },
     "name": "$result"
   }

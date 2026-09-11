@@ -269,13 +269,126 @@
     ]
   },
   {
+    "cmd": [],
+    "name": "initialize code coverage"
+  },
+  {
+    "cmd": [
+      "git",
+      "-c",
+      "core.quotePath=false",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.git diff to analyze patch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@files@openscreen/foo.cc@@@",
+      "@@@STEP_LOG_END@files@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/openscreen/.code-coverage"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.create .code-coverage",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_MODULE[build::code_coverage]/resources/write_paths_to_instrument.py",
+      "--write-to",
+      "[START_DIR]/openscreen/.code-coverage/files_to_instrument.txt",
+      "--src-path",
+      "[START_DIR]/openscreen",
+      "--build-path",
+      "[START_DIR]/openscreen/out/Default",
+      "../../openscreen/foo.cc"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.save paths of affected files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "initialize code coverage.coverage calculations for 1 files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@../../openscreen/foo.cc@@@"
+    ]
+  },
+  {
     "cmd": [
       "python3",
       "RECIPE_REPO[depot_tools]/gn.py",
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_asan=true"
+      "--args=is_asan=true use_clang_coverage=true coverage_instrumentation_input_file=\"//.code-coverage/files_to_instrument.txt\""
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
@@ -326,12 +439,91 @@
     "name": "compile with ninja"
   },
   {
+    "cmd": [],
+    "name": "run tests"
+  },
+  {
+    "cmd": [],
+    "name": "run tests.perform pre-test cleanup",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "glob",
+      "[START_DIR]/openscreen",
+      "**/*.profraw"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.perform pre-test cleanup.get files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_LINE@glob@[START_DIR]/openscreen/[START_DIR]/openscreen/out/Default/default.profraw@@@",
+      "@@@STEP_LOG_END@glob@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "remove",
+      "[START_DIR]/openscreen/[START_DIR]/openscreen/out/Default/default.profraw"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.perform pre-test cleanup.remove [START_DIR]/openscreen/[START_DIR]/openscreen/out/Default/default.profraw",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
     "cmd": [
       "[START_DIR]/openscreen/out/Default/openscreen_unittests"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/unit_tests.profraw"
     },
     "luci_context": {
       "realm": {
@@ -345,7 +537,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run unit tests"
+    "name": "run tests.run unit tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -353,6 +548,87 @@
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/e2e_tests.profraw"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.run e2e tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "run tests.calculate code coverage",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/tmp_tmp_1/profdata"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.calculate code coverage.ensure profile dir for profdata",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/build/code_coverage/merge_results.py",
+      "--output-json",
+      "/path/to/tmp/json",
+      "--task-output-dir",
+      "[START_DIR]/openscreen",
+      "--profdata-dir",
+      "[CLEANUP]/tmp_tmp_1/profdata",
+      "--llvm-profdata",
+      "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-profdata",
+      "--build-dir",
+      "[START_DIR]/openscreen/out/Default",
+      "--chromium-src-dir",
+      "[START_DIR]/openscreen",
+      "--per-cl-coverage"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
       "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
     },
     "luci_context": {
@@ -367,7 +643,112 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "run e2e tests"
+    "name": "run tests.calculate code coverage.process raw coverage data",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_LOG_END@json.output (invalid)@@@",
+      "@@@STEP_LOG_LINE@json.output (exception)@Expecting value: line 1 column 1 (char 0)@@@",
+      "@@@STEP_LOG_END@json.output (exception)@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[START_DIR]/openscreen/out/Default/default.profdata",
+      "[CLEANUP]/tmp_tmp_1/profdata/default.profdata"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.calculate code coverage.copy processed coverage data",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "run tests.calculate code coverage.coverage data successfully processed",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "[START_DIR]/openscreen/build/code_coverage/merge_steps.py",
+      "--input-dir",
+      "[CLEANUP]/tmp_tmp_1",
+      "--output-file",
+      "[CLEANUP]/tmp_tmp_1/overall-merged.profdata",
+      "--llvm-profdata",
+      "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-profdata",
+      "--profdata-filename-pattern",
+      ".+\\.profdata",
+      "--sparse"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage.merge all profile files into a single .profdata",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage.skip processing because no profdata was generated",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@3@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Set builder output properties",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@coverage_gs_bucket@\"code-coverage-data\"@@@",
+      "@@@SET_BUILD_PROPERTY@coverage_metadata_gs_paths@[]@@@",
+      "@@@SET_BUILD_PROPERTY@merged_profdata_gs_paths@[]@@@",
+      "@@@SET_BUILD_PROPERTY@mimic_builder_names@[]@@@"
+    ]
   },
   {
     "name": "$result"

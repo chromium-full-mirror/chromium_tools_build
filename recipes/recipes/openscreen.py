@@ -109,8 +109,8 @@ GN_PROPERTIES = [
   'is_tsan',
   'sysroot',
   'target_cpu',
+  'use_clang_coverage',
   'use_custom_libcxx',
-  'use_coverage',
 ]
 
 # List of dimensions used for starting swarming on ARM64.
@@ -176,7 +176,8 @@ def GenerateCoverageTestConstants(api: DEPS, paths: RepositoryPaths):
     api.path.mock_add_paths(paths.output_path / 'default.profraw')
 
   if api.properties.get('generate_test_profraw', False):
-    api.path.mock_add_paths(paths.checkout_path / 'default.profraw')
+    api.path.mock_add_paths(paths.checkout_path / 'unit_tests.profraw')
+    api.path.mock_add_paths(paths.checkout_path / 'e2e_tests.profraw')
 
   if api.properties.get('generate_test_profdata', False):
     api.path.mock_add_paths(paths.output_path / 'default.profdata')
@@ -342,6 +343,48 @@ def SetCodeCoverageConstants(
     )
 
 
+def GenerateAndUploadFullCoverageHtmlReport(
+  api: DEPS,
+  paths: RepositoryPaths,
+  profdata_path: Path,
+) -> None:
+  """Generates and uploads an HTML coverage report for the full repository."""
+  report_dir = api.code_coverage.report_dir
+  cmd = [
+    'python3',
+    api.code_coverage.resource('make_report.py'),
+    '--report-directory',
+    report_dir,
+    '--profdata-path',
+    profdata_path,
+    '--llvm-cov',
+    api.code_coverage.cov_executable,
+    '--compilation-directory',
+    paths.output_path,
+    '--binaries',
+    paths.unit_test_binary_path,
+    paths.e2e_test_binary_path,
+  ]
+  api.step('generate html report for full repo coverage', cmd)
+
+  mimic_builder_name = api.code_coverage._compose_mimic_builder_name('overall')
+  html_report_gs_path = api.code_coverage._compose_gs_path_for_coverage_data(
+    data_type='html_report', mimic_builder_name=mimic_builder_name
+  )
+  upload_step = api.gsutil.upload(
+    report_dir,
+    api.code_coverage._gs_bucket,
+    html_report_gs_path,
+    link_name='html report',
+    args=['-r'],
+    multithreaded=True,
+    name='upload html report',
+  )
+  upload_step.presentation.links['html report'] = (
+    f'https://storage.cloud.google.com/{api.code_coverage._gs_bucket}/{html_report_gs_path}/index.html'
+  )
+
+
 def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
   """Calculates code coverage from raw coverage data."""
   temp_dir = api.profiles.profile_dir('profdata')
@@ -381,8 +424,18 @@ def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
     api.step.empty('failed to process coverage data', status=api.step.FAILURE)
 
   api.code_coverage.process_clang_coverage_data(
-    binaries={paths.unit_test_binary_path}, upload_metadata=True
+    binaries=[paths.unit_test_binary_path, paths.e2e_test_binary_path],
+    upload_metadata=True,
   )
+
+  if api.properties.get('is_ci', False) and api.path.exists(dest):
+    overall_profdata = api.profiles.profile_dir().joinpath(
+      'overall-merged.profdata'
+    )
+    profdata_path = (
+      overall_profdata if api.path.exists(overall_profdata) else dest
+    )
+    GenerateAndUploadFullCoverageHtmlReport(api, paths, profdata_path)
 
 
 def RunTestsLocally(api: DEPS, paths: RepositoryPaths):
@@ -404,13 +457,19 @@ def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
       for path in files:
         api.file.remove(f'remove {path}', path)
 
-    # Run the Unit Tests.
+    # Run the Unit and E2E Tests.
     # We set LLVM_PROFILE_FILE to ensure we know exactly where the data goes.
-    profraw_path = paths.checkout_path / 'default.profraw'
-    with api.context(env={'LLVM_PROFILE_FILE': str(profraw_path)}):
+    unit_test_profraw = paths.checkout_path / 'unit_tests.profraw'
+    with api.context(env={'LLVM_PROFILE_FILE': str(unit_test_profraw)}):
       api.step('run unit tests', [paths.unit_test_binary_path])
 
-    if not api.path.exists(profraw_path):
+    e2e_test_profraw = paths.checkout_path / 'e2e_tests.profraw'
+    with api.context(env={'LLVM_PROFILE_FILE': str(e2e_test_profraw)}):
+      api.step('run e2e tests', [paths.e2e_test_binary_path])
+
+    if not api.path.exists(unit_test_profraw) and not api.path.exists(
+      e2e_test_profraw
+    ):
       api.step.empty(
         'skip coverage calculations because no data was generated',
         status=api.step.FAILURE,
@@ -418,8 +477,6 @@ def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
     else:
       with api.step.nest('calculate code coverage'):
         CalculateCodeCoverage(api, paths)
-
-    api.step('run e2e tests', [paths.e2e_test_binary_path])
 
   api.code_coverage._set_builder_output_properties_for_uploads()
 
@@ -483,10 +540,10 @@ def RunSteps(api: recipe_api.RecipeApi):
     )
 
   is_ci = api.properties.get('is_ci', False)
-  use_coverage = api.properties.get('use_coverage', False)
+  use_clang_coverage = api.properties.get('use_clang_coverage', False)
 
   with api.context(cwd=paths.checkout_path, env=env):
-    if use_coverage:
+    if use_clang_coverage:
       with api.step.nest('initialize code coverage') as coverage_step:
         try:
           host_tool_label = GetHostToolLabel(api.platform)
@@ -508,7 +565,7 @@ def RunSteps(api: recipe_api.RecipeApi):
             )
         except Exception:  # pylint: disable=broad-except
           coverage_step.status = api.step.FAILURE
-          use_coverage = False
+          use_clang_coverage = False
 
     # api.osx_sdk is a no-op on non-macOS platforms.
     with api.osx_sdk('mac'):
@@ -530,9 +587,11 @@ def RunSteps(api: recipe_api.RecipeApi):
 
     # ARM64 tests are cross-compiled and run on swarming.
     if api.properties.get('target_cpu') == 'arm64' and not api.platform.is_mac:
-      assert not use_coverage, 'coverage is not supported on ARM64 builds.'
+      assert not use_clang_coverage, (
+        'coverage is not supported on ARM64 builds.'
+      )
       SwarmTests(api, paths, GetSwarmingDimensions(is_ci))
-    elif use_coverage:
+    elif use_clang_coverage:
       RunTestsAndCoverageLocally(api, paths)
     else:
       RunTestsLocally(api, paths)
@@ -540,82 +599,86 @@ def RunSteps(api: recipe_api.RecipeApi):
 
 def GenTests(api: recipe_api.RecipeTestApi):
   """Generates tests used to verify there are no python usage errors."""
-  yield api.test(
-    'linux_x64_coverage',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(
-      gn_args=['is_asan=true', 'use_coverage=true'],
-      is_asan=True,
-      use_coverage=True,
-      is_valid_coverage_test=True,
-      generate_test_profraw=True,
-      generate_test_profdata=True,
+  coverage_try_gn_args = [
+    (
+      'coverage_instrumentation_input_file='
+      '"//.code-coverage/files_to_instrument.txt"'
     ),
-    api.step_data(
-      'run tests.calculate code coverage.process raw coverage data', retcode=0
-    ),
-  )
-  yield api.test(
-    'linux_x64_coverage_no_profdata_does_fail_bot',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(
-      gn_args=['is_asan=true', 'use_coverage=true'],
-      is_asan=True,
-      use_coverage=True,
-      is_valid_coverage_test=True,
-      generate_test_profraw=True,
-    ),
-    api.step_data(
-      'run tests.calculate code coverage.process raw coverage data', retcode=0
-    ),
-    api.expect_status('FAILURE'),
-  )
-  yield api.test(
-    'linux_x64_coverage_no_profraw_does_fail_bot',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(
-      gn_args=['is_asan=true', 'use_coverage=true'],
-      is_asan=True,
-      use_coverage=True,
-      is_valid_coverage_test=True,
-    ),
-    api.expect_status('FAILURE'),
-  )
-  yield api.test(
-    'linux_x64_coverage_failed_coverage_init',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(
-      gn_args=['is_asan=true', 'use_coverage=true'],
-      is_asan=True,
-      use_coverage=True,
-    ),
-  )
-  yield api.test(
-    'linux_x64_coverage_full_repo_coverage',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'ci'),
-    api.properties(
-      gn_args=['is_asan=true', 'use_coverage=true'],
-      is_asan=True,
-      is_ci=True,
-      use_coverage=True,
-      is_valid_coverage_test=True,
-      generate_test_profraw=True,
-      generate_test_profdata=True,
-    ),
-    api.step_data(
-      'run tests.calculate code coverage.process raw coverage data', retcode=0
-    ),
-  )
+    'is_asan=true',
+    'use_clang_coverage=true',
+  ]
+
   yield api.test(
     'linux_x64',
     api.platform('linux', 64),
     api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(gn_args=['is_asan=true'], is_asan=True),
+    api.properties(
+      gn_args=coverage_try_gn_args,
+      is_asan=True,
+      use_clang_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+      generate_test_profdata=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data',
+      retcode=0,
+    ),
+  )
+  yield api.test(
+    'linux_x64_no_profdata_does_fail_bot',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=coverage_try_gn_args,
+      is_asan=True,
+      use_clang_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data',
+      retcode=0,
+    ),
+    api.expect_status('FAILURE'),
+  )
+  yield api.test(
+    'linux_x64_no_profraw_does_fail_bot',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=coverage_try_gn_args,
+      is_asan=True,
+      use_clang_coverage=True,
+      is_valid_coverage_test=True,
+    ),
+    api.expect_status('FAILURE'),
+  )
+  yield api.test(
+    'linux_x64_failed_coverage_init',
+    api.platform('linux', 64),
+    api.buildbucket.try_build('openscreen', 'try'),
+    api.properties(
+      gn_args=coverage_try_gn_args, is_asan=True, use_clang_coverage=True
+    ),
+  )
+  yield api.test(
+    'linux_x64_ci',
+    api.platform('linux', 64),
+    api.buildbucket.ci_build('openscreen', 'ci'),
+    api.properties(
+      gn_args=['is_asan=true', 'use_clang_coverage=true'],
+      is_asan=True,
+      is_ci=True,
+      use_clang_coverage=True,
+      is_valid_coverage_test=True,
+      generate_test_profraw=True,
+      generate_test_profdata=True,
+    ),
+    api.step_data(
+      'run tests.calculate code coverage.process raw coverage data',
+      retcode=0,
+    ),
   )
   yield api.test(
     'linux_x64_tsan_rel',

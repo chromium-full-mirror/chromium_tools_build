@@ -24,7 +24,7 @@
     "infra_step": true,
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -80,7 +80,7 @@
     ],
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "openscreen/ci/builder/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "openscreen/try/builder/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -102,7 +102,7 @@
     "infra_step": true,
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -159,7 +159,7 @@
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "openscreen/ci/builder/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "openscreen/try/builder/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -168,7 +168,7 @@
     },
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -197,7 +197,7 @@
     ],
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -225,7 +225,7 @@
     ],
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -253,7 +253,7 @@
     ],
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -274,12 +274,82 @@
   },
   {
     "cmd": [
+      "git",
+      "-c",
+      "core.quotePath=false",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.git diff to analyze patch",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@files@openscreen/foo.cc@@@",
+      "@@@STEP_LOG_END@files@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[START_DIR]/openscreen/.code-coverage"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.create .code-coverage",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
-      "RECIPE_REPO[depot_tools]/gn.py",
-      "gen",
+      "RECIPE_MODULE[build::code_coverage]/resources/write_paths_to_instrument.py",
+      "--write-to",
+      "[START_DIR]/openscreen/.code-coverage/files_to_instrument.txt",
+      "--src-path",
+      "[START_DIR]/openscreen",
+      "--build-path",
       "[START_DIR]/openscreen/out/Default",
-      "--check",
-      "--args=is_asan=true use_coverage=true"
+      "../../openscreen/foo.cc"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {
@@ -287,7 +357,46 @@
     },
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "initialize code coverage.save paths of affected files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_END@raw_io.output_text@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "initialize code coverage.coverage calculations for 1 files",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@../../openscreen/foo.cc@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "gen",
+      "[START_DIR]/openscreen/out/Default",
+      "--check",
+      "--args=is_asan=true use_clang_coverage=true coverage_instrumentation_input_file=\"//.code-coverage/files_to_instrument.txt\""
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -317,7 +426,7 @@
     },
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -331,7 +440,10 @@
   },
   {
     "cmd": [],
-    "name": "run tests"
+    "name": "run tests",
+    "~followup_annotations": [
+      "@@@STEP_FAILURE@@@"
+    ]
   },
   {
     "cmd": [],
@@ -358,7 +470,7 @@
     "infra_step": true,
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -392,7 +504,7 @@
     "infra_step": true,
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -414,11 +526,11 @@
     "cwd": "[START_DIR]/openscreen",
     "env": {
       "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
-      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/default.profraw"
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/unit_tests.profraw"
     },
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -434,10 +546,37 @@
     ]
   },
   {
+    "cmd": [
+      "[START_DIR]/openscreen/out/Default/e2e_tests"
+    ],
+    "cwd": "[START_DIR]/openscreen",
+    "env": {
+      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer",
+      "LLVM_PROFILE_FILE": "[START_DIR]/openscreen/e2e_tests.profraw"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "openscreen:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "run tests.run e2e tests",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "run tests.calculate code coverage",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
@@ -459,7 +598,7 @@
     "infra_step": true,
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -498,7 +637,7 @@
     },
     "luci_context": {
       "realm": {
-        "name": "openscreen:ci"
+        "name": "openscreen:try"
       },
       "resultdb": {
         "current_invocation": {
@@ -517,130 +656,18 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[START_DIR]/openscreen/out/Default/default.profdata",
-      "[CLEANUP]/tmp_tmp_1/profdata/default.profdata"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run tests.calculate code coverage.copy processed coverage data",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
     "cmd": [],
-    "name": "run tests.calculate code coverage.coverage data successfully processed",
+    "name": "run tests.calculate code coverage.failed to process coverage data",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
+      "@@@STEP_NEST_LEVEL@2@@@",
+      "@@@STEP_FAILURE@@@"
     ]
   },
   {
-    "cmd": [],
-    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "python3",
-      "[START_DIR]/openscreen/build/code_coverage/merge_steps.py",
-      "--input-dir",
-      "[CLEANUP]/tmp_tmp_1",
-      "--output-file",
-      "[CLEANUP]/tmp_tmp_1/overall-merged.profdata",
-      "--llvm-profdata",
-      "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-profdata",
-      "--profdata-filename-pattern",
-      ".+\\.profdata",
-      "--sparse"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    "failure": {
+      "failure": {},
+      "humanReason": "Step('run tests.calculate code coverage.failed to process coverage data') (retcode: 0)"
     },
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage.merge all profile files into a single .profdata",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "run tests.calculate code coverage.process clang code coverage data for overall test coverage.skip processing because no profdata was generated",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@3@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "[START_DIR]/openscreen/out/Default/e2e_tests"
-    ],
-    "cwd": "[START_DIR]/openscreen",
-    "env": {
-      "ASAN_SYMBOLIZER_PATH": "[START_DIR]/openscreen/third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run tests.run e2e tests",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "Set builder output properties",
-    "~followup_annotations": [
-      "@@@SET_BUILD_PROPERTY@coverage_gs_bucket@\"code-coverage-data\"@@@",
-      "@@@SET_BUILD_PROPERTY@coverage_metadata_gs_paths@[]@@@",
-      "@@@SET_BUILD_PROPERTY@merged_profdata_gs_paths@[]@@@",
-      "@@@SET_BUILD_PROPERTY@mimic_builder_names@[]@@@"
-    ]
-  },
-  {
     "name": "$result"
   }
 ]

@@ -1219,12 +1219,19 @@ class CodeCoverageApi(recipe_api.RecipeApi):
 
   def _get_arch_flag(self):
     """Returns architecture flag for coverage based on builder config."""
+    if self.m.chromium.c:
+      target_arch = self.m.chromium.c.TARGET_ARCH
+      target_bits = self.m.chromium.c.TARGET_BITS
+    else:
+      target_arch = self.m.platform.arch
+      target_bits = self.m.platform.bits
+
     arch = {
       ('arm', 64): 'arm64',
       ('intel', 64): 'x86_64',
       ('arm', 32): 'armv7',
       ('intel', 32): 'i386',
-    }.get((self.m.chromium.c.TARGET_ARCH, self.m.chromium.c.TARGET_BITS))
+    }.get((target_arch, target_bits))
     return ['--arch', arch] if arch else []
 
   # TODO(crbug.com/929769): Remove this method when the fix is landed upstream.
