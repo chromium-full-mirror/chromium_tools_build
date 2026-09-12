@@ -41,10 +41,8 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
-  buildbucket: buildbucket.TEST_API
   chromium: chromium.TEST_API
   chromium_tests: chromium_tests.TEST_API
-  properties: properties.TEST_API
 
 
 # Name of pinpoint try builder -> (perf builder group, perf builder name)
@@ -100,25 +98,6 @@ _PINPOINT_MAPPING = {
 }
 
 
-def _is_googler_authorized(api: DEPS) -> bool:
-  """Returns True if the build was triggered or requested by a Googler."""
-  created_by = api.buildbucket.build.created_by
-  if created_by.startswith('user:') and created_by.endswith('@google.com'):
-    return True
-
-  user = api.properties.get('pinpoint_user') or api.properties.get('user')
-  if user and user.endswith('@google.com'):
-    return True
-
-  for tag in api.buildbucket.build.tags:
-    if tag.key in ('user_email', 'pinpoint_user') and tag.value.endswith(
-      '@google.com'
-    ):
-      return True
-
-  return False
-
-
 def RunSteps(api: DEPS):
   # In Perf on CQ, if CQ triggers Pinpoint, the builds triggered by those
   # Pinpoint jobs will show up in Gerrit. We should not show them because
@@ -145,51 +124,6 @@ def RunSteps(api: DEPS):
     )
 
     api.chromium_tests.configure_build(builder_config)
-
-    # Prevent untrusted external patches from checking out internal repositories
-    # or running hooks with access to internal proprietary source code.
-    gerrit_changes = api.buildbucket.build.input.gerrit_changes
-    if gerrit_changes:
-      has_public_patch = any(
-        c.host != 'chrome-internal-review.googlesource.com'
-        for c in gerrit_changes
-      )
-      is_googler = _is_googler_authorized(api)
-
-      if has_public_patch:
-        # Check if the builder requires internal mobile repositories (Clank).
-        requires_clank = api.chromium.c.TARGET_PLATFORM == 'android'
-        if requires_clank and not is_googler:
-          api.step.empty(
-            'untrusted patch for internal target',
-            status=api.step.INFRA_FAILURE,
-            step_text=(
-              'Untrusted external patches cannot trigger builds requiring '
-              'internal repositories (Clank). Please request a Googler to '
-              'sponsor or review your patch.'
-            ),
-          )
-
-        # For public patches, always strip checkout_src_internal and
-        # checkout_pgo_profiles so that unreviewed code cannot access internal
-        # repositories during gclient runhooks.
-        for solution in api.gclient.c.solutions:
-          if 'checkout_src_internal' in solution.custom_vars:
-            solution.custom_vars['checkout_src_internal'] = 'False'
-          if 'checkout_pgo_profiles' in solution.custom_vars:
-            solution.custom_vars['checkout_pgo_profiles'] = 'False'
-          if not is_googler or not requires_clank:
-            if 'checkout_mobile_internal' in solution.custom_vars:
-              solution.custom_vars['checkout_mobile_internal'] = 'False'
-
-        api.step.empty(
-          'sanitize public patch checkout',
-          step_text=(
-            'Public patch detected: stripped internal checkout custom vars '
-            '(checkout_src_internal, checkout_pgo_profiles) for security.'
-          ),
-        )
-
     for key, value in api.gclient.c.repo_path_map.items():
       if value[1] == 'HEAD':
         # Pinpoint should use the exact revision given in DEPS, instead of HEAD.
@@ -265,113 +199,10 @@ def GenTests(api: TEST_DEPS):
       ],
       **builder,
     ),
-    api.properties(pinpoint_user='developer@google.com'),
     api.chromium_tests.read_targets_spec(*targets_spec),
     api.post_process(
       post_process.Filter('bot_update', 'pinpoint isolate upload')
     ),
-  )
-
-  # Untrusted external patch targeting an internal builder (Clank)
-  # must fail fast before checkout.
-  yield api.test(
-    'untrusted_patch_internal_target',
-    api.chromium.try_build(
-      revision='0cd310e5609606ca9c8531313142a1a9f16ae860',
-      gerrit_changes=[
-        common_pb2.GerritChange(
-          host='chromium-review.googlesource.com',
-          project='chromium/src',
-          change=9999999,
-          patchset=1,
-        )
-      ],
-      created_by='user:attacker@example.com',
-      **builder,
-    ),
-    api.post_check(post_process.MustRun, 'untrusted patch for internal target'),
-    api.expect_status('INFRA_FAILURE'),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  # Untrusted external patch targeting a public builder
-  # must sanitize internal checkouts (checkout_src_internal = False).
-  linux_builder = {
-    'builder_group': 'tryserver.chromium.perf',
-    'builder': 'Linux Builder Perf',
-  }
-  linux_targets_spec = (
-    'chromium.perf.pinpoint',
-    {
-      'linux-perf': {
-        'isolated_scripts': [
-          {
-            'test': 'performance_test_suite',
-            'name': 'performance_test_suite',
-          },
-        ],
-      },
-    },
-  )
-  yield api.test(
-    'untrusted_patch_public_target',
-    api.chromium.try_build(
-      revision='0cd310e5609606ca9c8531313142a1a9f16ae860',
-      gerrit_changes=[
-        common_pb2.GerritChange(
-          host='chromium-review.googlesource.com',
-          project='chromium/src',
-          change=9999999,
-          patchset=1,
-        )
-      ],
-      created_by='user:attacker@example.com',
-      **linux_builder,
-    ),
-    api.chromium_tests.read_targets_spec(*linux_targets_spec),
-    api.post_check(post_process.MustRun, 'sanitize public patch checkout'),
-    api.post_check(
-      lambda check, steps: check(
-        'bot_update disables checkout_src_internal',
-        any(
-          "'checkout_src_internal': 'False'" in a
-          for a in steps['bot_update'].cmd
-        ),
-      )
-    ),
-    api.post_check(
-      lambda check, steps: check(
-        'bot_update disables checkout_pgo_profiles',
-        any(
-          "'checkout_pgo_profiles': 'False'" in a
-          for a in steps['bot_update'].cmd
-        ),
-      )
-    ),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  # Internal Gerrit patch preserves internal checkouts.
-  yield api.test(
-    'internal_gerrit_patch',
-    api.chromium.try_build(
-      revision='0cd310e5609606ca9c8531313142a1a9f16ae860',
-      gerrit_changes=[
-        common_pb2.GerritChange(
-          host='chrome-internal-review.googlesource.com',
-          project='chrome/src-internal',
-          change=123456,
-          patchset=1,
-        )
-      ],
-      **builder,
-    ),
-    api.chromium_tests.read_targets_spec(*targets_spec),
-    api.post_check(
-      post_process.DoesNotRun, 'untrusted patch for internal target'
-    ),
-    api.post_check(post_process.DoesNotRun, 'sanitize public patch checkout'),
-    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -379,33 +210,10 @@ def GenTests(api: TEST_DEPS):
     api.chromium.try_build(
       revision='1cd310e5609606ca9c8531313142a1a9f16ae860',
       git_repo='https://chromium.googlesource.com/v8/v8',
-      created_by='user:developer@google.com',
       **builder,
     ),
     api.chromium_tests.read_targets_spec(*targets_spec),
     api.post_process(post_process.Filter('pinpoint isolate upload')),
-  )
-
-  # Googler authorization via buildbucket tags.
-  yield api.test(
-    'googler_tag_patch',
-    api.chromium.try_build(
-      revision='0cd310e5609606ca9c8531313142a1a9f16ae860',
-      gerrit_changes=[
-        common_pb2.GerritChange(
-          host='chromium-review.googlesource.com',
-          project='v8/v8',
-          change=3592345,
-          patchset=1,
-        )
-      ],
-      tags=api.buildbucket.tags(user_email='developer@google.com'),
-      **builder,
-    ),
-    api.chromium_tests.read_targets_spec(*targets_spec),
-    api.post_process(
-      post_process.Filter('bot_update', 'pinpoint isolate upload')
-    ),
   )
 
   yield api.test(
