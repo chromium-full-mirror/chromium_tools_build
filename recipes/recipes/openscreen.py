@@ -84,7 +84,7 @@ E2E_TEST_BINARY_NAME = 'e2e_tests'
 CAST_E2E_TEST_SCRIPT_NAME = 'standalone_e2e.py'
 CAST_SENDER_BINARY_NAME = 'cast_sender'
 CAST_RECEIVER_BINARY_NAME = 'cast_receiver'
-BUILD_TARGETS = [
+DEFAULT_BUILD_TARGETS = [
   'gn_all',
   UNIT_TEST_BINARY_NAME,
   E2E_TEST_BINARY_NAME,
@@ -92,6 +92,7 @@ BUILD_TARGETS = [
   CAST_SENDER_BINARY_NAME,
   CAST_RECEIVER_BINARY_NAME,
 ]
+BUILD_TARGETS = DEFAULT_BUILD_TARGETS
 OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
 GN_PROPERTIES = [
@@ -129,17 +130,29 @@ class RepositoryPaths:
     self.api = api
     self.checkout_path = source_dir
     self.output_path = self.checkout_path / 'out' / BUILD_CONFIG
-    self.unit_test_binary_path = self.output_path / UNIT_TEST_BINARY_NAME
-    self.e2e_test_binary_path = self.output_path / E2E_TEST_BINARY_NAME
+    self.unit_test_binary_path = self._generate_binary_path(
+      UNIT_TEST_BINARY_NAME
+    )
+    self.e2e_test_binary_path = self._generate_binary_path(E2E_TEST_BINARY_NAME)
     self.cast_e2e_test_script_path = (
       self.checkout_path / 'cast' / CAST_E2E_TEST_SCRIPT_NAME
     )
-    self.cast_sender_binary_path = self.output_path / CAST_SENDER_BINARY_NAME
-    self.cast_receiver_binary_path = (
-      self.output_path / CAST_RECEIVER_BINARY_NAME
+    self.cast_sender_binary_path = self._generate_binary_path(
+      CAST_SENDER_BINARY_NAME
+    )
+    self.cast_receiver_binary_path = self._generate_binary_path(
+      CAST_RECEIVER_BINARY_NAME
     )
     self.test_data_path = self.checkout_path / 'test' / 'data'
-    self.ninja_path = self.checkout_path / 'third_party' / 'ninja' / 'ninja'
+    exe_suffix = '.exe' if api.platform.is_win else ''
+    self.ninja_path = (
+      self.checkout_path / 'third_party' / 'ninja' / f'ninja{exe_suffix}'
+    )
+
+  def _generate_binary_path(self, binary_name: str) -> Path:
+    """Returns the full output path for a binary, appending .exe on Windows."""
+    exe_suffix = '.exe' if self.api.platform.is_win else ''
+    return self.output_path / f'{binary_name}{exe_suffix}'
 
   def swarming_binary_path(self, binary_name: str) -> str:
     """Returns a relative path in the CAS archive to binary_name."""
@@ -438,10 +451,14 @@ def CalculateCodeCoverage(api: DEPS, paths: RepositoryPaths):
     GenerateAndUploadFullCoverageHtmlReport(api, paths, profdata_path)
 
 
-def RunTestsLocally(api: DEPS, paths: RepositoryPaths):
+def RunTestsLocally(
+  api: DEPS, paths: RepositoryPaths, build_targets: list[str]
+):
   """Runs unit tests and e2e tests locally."""
-  api.step('run unit tests', [paths.unit_test_binary_path])
-  api.step('run e2e tests', [paths.e2e_test_binary_path])
+  if UNIT_TEST_BINARY_NAME in build_targets:
+    api.step('run unit tests', [paths.unit_test_binary_path])
+  if E2E_TEST_BINARY_NAME in build_targets:
+    api.step('run e2e tests', [paths.e2e_test_binary_path])
 
 
 def RunTestsAndCoverageLocally(api: DEPS, paths: RepositoryPaths):
@@ -498,6 +515,7 @@ def RunSteps(api: recipe_api.RecipeApi):
   solution.custom_vars['build_with_chromium'] = False
 
   update_result = api.bot_update.ensure_checkout()
+  paths = RepositoryPaths(api, update_result.source_root.path)
   api.gclient.runhooks()
 
   # Download coverage merge scripts from Chromium if they are missing.
@@ -526,7 +544,6 @@ def RunSteps(api: recipe_api.RecipeApi):
         ],
       )
 
-  paths = RepositoryPaths(api, update_result.source_root.path)
   GenerateCoverageTestConstants(api, paths)
 
   # Initialize source directories for coverage and profiles modules early.
@@ -541,6 +558,9 @@ def RunSteps(api: recipe_api.RecipeApi):
 
   is_ci = api.properties.get('is_ci', False)
   use_clang_coverage = api.properties.get('use_clang_coverage', False)
+  build_targets = list(
+    api.properties.get('build_targets', DEFAULT_BUILD_TARGETS)
+  )
 
   with api.context(cwd=paths.checkout_path, env=env):
     if use_clang_coverage:
@@ -568,7 +588,7 @@ def RunSteps(api: recipe_api.RecipeApi):
           use_clang_coverage = False
 
     # api.osx_sdk is a no-op on non-macOS platforms.
-    with api.osx_sdk('mac'):
+    with api.osx_sdk('mac'), api.depot_tools.on_path():
       gn_args = [
         'python3',
         api.depot_tools.gn_py_path,
@@ -582,7 +602,7 @@ def RunSteps(api: recipe_api.RecipeApi):
       api.step('gn gen', gn_args)
 
       ninja_cmd = [paths.ninja_path, '-C', paths.output_path]
-      ninja_cmd.extend(BUILD_TARGETS)
+      ninja_cmd.extend(build_targets)
       api.step('compile with ninja', ninja_cmd)
 
     # ARM64 tests are cross-compiled and run on swarming.
@@ -594,7 +614,7 @@ def RunSteps(api: recipe_api.RecipeApi):
     elif use_clang_coverage:
       RunTestsAndCoverageLocally(api, paths)
     else:
-      RunTestsLocally(api, paths)
+      RunTestsLocally(api, paths, build_targets)
 
 
 def GenTests(api: recipe_api.RecipeTestApi):
@@ -799,5 +819,11 @@ def GenTests(api: recipe_api.RecipeTestApi):
     'win_x64',
     api.platform('win', 64),
     api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(),
+    api.properties(build_targets=['gn_all']),
+  )
+  yield api.test(
+    'win_x64_ci',
+    api.platform('win', 64),
+    api.buildbucket.ci_build('openscreen', 'ci'),
+    api.properties(build_targets=['gn_all']),
   )

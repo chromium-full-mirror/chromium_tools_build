@@ -278,6 +278,14 @@
       "--args=cast_allow_developer_certificate=true target_cpu=\"arm64\" have_ffmpeg=true have_libopus=true have_libsdl2=true have_libvpx=true is_component_build=false"
     ],
     "cwd": "[START_DIR]/openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:try"
@@ -305,6 +313,14 @@
       "cast_receiver"
     ],
     "cwd": "[START_DIR]/openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:try"

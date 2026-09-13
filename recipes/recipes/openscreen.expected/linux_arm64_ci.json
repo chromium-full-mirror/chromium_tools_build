@@ -278,6 +278,14 @@
       "--args=target_cpu=\"arm64\" is_component_build=false"
     ],
     "cwd": "[START_DIR]/openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:ci"
@@ -305,6 +313,14 @@
       "cast_receiver"
     ],
     "cwd": "[START_DIR]/openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:ci"

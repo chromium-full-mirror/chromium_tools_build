@@ -277,6 +277,14 @@
       "--check"
     ],
     "cwd": "[START_DIR]\\openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:try"
@@ -293,17 +301,20 @@
   },
   {
     "cmd": [
-      "[START_DIR]\\openscreen\\third_party\\ninja\\ninja",
+      "[START_DIR]\\openscreen\\third_party\\ninja\\ninja.exe",
       "-C",
       "[START_DIR]\\openscreen\\out\\Default",
-      "gn_all",
-      "openscreen_unittests",
-      "e2e_tests",
-      "fuzzer_tests_all",
-      "cast_sender",
-      "cast_receiver"
+      "gn_all"
     ],
     "cwd": "[START_DIR]\\openscreen",
+    "env_suffixes": {
+      "DEPOT_TOOLS_UPDATE": [
+        "0"
+      ],
+      "PATH": [
+        "RECIPE_REPO[depot_tools]"
+      ]
+    },
     "luci_context": {
       "realm": {
         "name": "openscreen:try"
@@ -317,44 +328,6 @@
       }
     },
     "name": "compile with ninja"
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\openscreen\\out\\Default\\openscreen_unittests"
-    ],
-    "cwd": "[START_DIR]\\openscreen",
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run unit tests"
-  },
-  {
-    "cmd": [
-      "[START_DIR]\\openscreen\\out\\Default\\e2e_tests"
-    ],
-    "cwd": "[START_DIR]\\openscreen",
-    "luci_context": {
-      "realm": {
-        "name": "openscreen:try"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "run e2e tests"
   },
   {
     "name": "$result"
