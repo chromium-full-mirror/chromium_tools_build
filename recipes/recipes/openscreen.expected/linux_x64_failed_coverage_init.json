@@ -291,7 +291,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=is_asan=true use_clang_coverage=true coverage_instrumentation_input_file=\"//.code-coverage/files_to_instrument.txt\""
+      "--args=coverage_instrumentation_input_file=\"//.code-coverage/files_to_instrument.txt\" is_asan=true use_clang_coverage=true"
     ],
     "cwd": "[START_DIR]/openscreen",
     "env": {

@@ -95,25 +95,6 @@ DEFAULT_BUILD_TARGETS = [
 BUILD_TARGETS = DEFAULT_BUILD_TARGETS
 OPENSCREEN_REPO = 'https://chromium.googlesource.com/openscreen'
 
-GN_PROPERTIES = [
-  'cast_allow_developer_certificate',
-  'enable_rust',
-  'have_ffmpeg',
-  'have_libopus',
-  'have_libsdl2',
-  'have_libvpx',
-  'is_asan',
-  'is_clang',
-  'is_component_build',
-  'is_debug',
-  'is_msan',
-  'is_tsan',
-  'sysroot',
-  'target_cpu',
-  'use_clang_coverage',
-  'use_custom_libcxx',
-]
-
 # List of dimensions used for starting swarming on ARM64.
 SWARMING_DIMENSIONS = {'cpu': 'arm64', 'os': 'Ubuntu-24'}
 
@@ -212,14 +193,9 @@ def GetChangedFiles(api: DEPS, checkout_path: Path) -> list[str]:
 
 def FormatGnArgs(properties: recipe_api.Properties) -> str:
   """Takes a list of properties and maps them to string gn arguments."""
-
-  # Legacy fallback for builders that have not yet been updated.
-  gn_args = {p: properties[p] for p in GN_PROPERTIES if p in properties}
-
   # Pass GN args as a list of strings.
   # Format: ["arg1=value1", "arg2=value2"]
-  if 'gn_args' in properties:
-    gn_args.update(dict(arg.split('=', 1) for arg in properties['gn_args']))
+  gn_args = dict(arg.split('=', 1) for arg in properties.get('gn_args', []))
 
   def format_arg(arg, value):
     if isinstance(value, str) and value.lower() not in ('true', 'false'):

@@ -275,7 +275,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=target_cpu=\"arm64\" is_component_build=false"
+      "--args=is_component_build=false target_cpu=\"arm64\""
     ],
     "cwd": "[START_DIR]/openscreen",
     "env_suffixes": {

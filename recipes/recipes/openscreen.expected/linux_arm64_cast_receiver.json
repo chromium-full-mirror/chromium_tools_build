@@ -275,7 +275,7 @@
       "gen",
       "[START_DIR]/openscreen/out/Default",
       "--check",
-      "--args=cast_allow_developer_certificate=true target_cpu=\"arm64\" have_ffmpeg=true have_libopus=true have_libsdl2=true have_libvpx=true is_component_build=false"
+      "--args=cast_allow_developer_certificate=true have_ffmpeg=true have_libopus=true have_libsdl2=true have_libvpx=true is_component_build=false target_cpu=\"arm64\""
     ],
     "cwd": "[START_DIR]/openscreen",
     "env_suffixes": {
