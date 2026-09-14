@@ -612,7 +612,7 @@ def publish_tarball(api: DEPS):
   solution = api.gclient.c.solutions[0]
   solution.revision = 'refs/tags/%s' % version
   update_result = api.bot_update.ensure_checkout(
-    with_branch_heads=True, with_tags=True, suffix=version
+    with_branch_heads=True, with_tags=True, suffix=version, patch=False
   )
   source_dir = update_result.source_root.path
 

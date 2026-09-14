@@ -84,7 +84,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bot_update - 121.0.6110.0",
+    "name": "bot_update (without patch) - 121.0.6110.0",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",

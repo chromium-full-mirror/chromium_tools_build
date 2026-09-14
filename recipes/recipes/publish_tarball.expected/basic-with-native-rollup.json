@@ -84,7 +84,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "bot_update - 145.0.7632.38",
+    "name": "bot_update (without patch) - 145.0.7632.38",
     "~followup_annotations": [
       "@@@STEP_TEXT@Some step text@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
