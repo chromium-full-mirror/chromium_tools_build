@@ -131,6 +131,7 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
       builder='trusted-packaging-linux-clang',
       git_ref='',
       revision='',
+      execution_timeout=21600,
     ),
     gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),

@@ -65,6 +65,10 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
       if self.m.buildbucket.build.id:
         args.extend(['--build_prefix', f'bb-{self.m.buildbucket.build.id}'])
 
+      build_timeout = self.m.buildbucket.build.execution_timeout.seconds
+      if build_timeout > 0:
+        args.extend(['--build_timeout', f'{build_timeout}s'])
+
       # TODO(dlf): Support rust
 
       # If we are in a CI build (not a try job), override the source commit.
