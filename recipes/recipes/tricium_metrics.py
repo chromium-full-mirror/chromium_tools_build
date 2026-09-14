@@ -148,7 +148,6 @@ def RunSteps(api: DEPS):
       metrics_filenames = {
         'histograms.xml',
         'fieldtrial_testing_config.json',
-        'histogram_suffixes_list.xml',
       }
       metrics_paths = [
         path
