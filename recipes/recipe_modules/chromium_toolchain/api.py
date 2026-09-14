@@ -23,6 +23,7 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
   def trusted_package(
     self,
     properties: properties_pb.InputProperties | None = None,
+    step_name: str | None = None,
   ) -> None:
     properties = properties or self._properties
     if properties.toolchain == properties_pb.InputProperties.UNKNOWN:
@@ -36,7 +37,7 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
       toolchain_name = 'rust'
 
     # Run TBI packaging
-    with self.m.step.nest(f'package {toolchain_name}'):
+    with self.m.step.nest(step_name or f'package {toolchain_name}'):
       tbi_client = self.m.cipd.ensure_tool(
         'infra_internal/tools/security/lexan_tbi_client/${platform}',
         'latest',

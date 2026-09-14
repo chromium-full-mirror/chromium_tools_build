@@ -14,12 +14,10 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.build import chromium, chromium_checkout, chromium_toolchain
 from RECIPE_MODULES.depot_tools import depot_tools, gsutil, osx_sdk
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
-  cipd,
-  context,
   futures,
   json,
   path,
@@ -36,12 +34,10 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   chromium: chromium.API
   chromium_checkout: chromium_checkout.API
-  cipd: cipd.API
-  context: context.API
+  chromium_toolchain: chromium_toolchain.API
   depot_tools: depot_tools.API
   futures: futures.API
   gsutil: gsutil.API
-  json: json.API
   osx_sdk: osx_sdk.API
   path: path.API
   platform: platform.API
@@ -54,8 +50,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
-  cipd: cipd.TEST_API
-  context: context.TEST_API
+  chromium_toolchain: chromium_toolchain.TEST_API
   json: json.TEST_API
   path: path.TEST_API
   platform: platform.TEST_API
@@ -139,38 +134,15 @@ BUILDERS = freeze(BUILDERS)
 GCS_BUCKET_PROD = 'chromium-browser-toolchain-prod'
 
 
-def _trigger_tbi(api: DEPS, change=None):
-  with api.step.nest("package clang using TBI"):
-    try:
-      tbi_client = api.cipd.ensure_tool(
-        "infra_internal/tools/security/lexan_tbi_client/${platform}", "latest"
-      )
-      env = {}
-      if change:
-        env = {
-          'GERRIT_HOST': str(change.host),
-          'GERRIT_PROJECT': str(change.project),
-          'GERRIT_CHANGE_ID': str(change.change),
-          'GERRIT_PATCHSET_ID': str(change.patchset),
-        }
-      with api.context(env=env):
-        res = api.step(
-          'request build',
-          [
-            tbi_client,
-            '--pool',
-            'high-cpu',
-            "--result_file",
-            api.json.output(name="summary"),
-            "--clang",
-          ],
-        )
-      if res.exc_result.retcode == 0:
-        res.presentation.step_text = 'TBI finished successfully'
-    except (api.step.StepFailure, api.step.InfraFailure) as e:
-      api.step.active_result.presentation.step_text = (
-        "TBI failed or infra issue: %s" % e
-      )
+def _trigger_tbi(api: DEPS):
+  try:
+    api.chromium_toolchain.trusted_package(
+      step_name='package clang using TBI',
+    )
+  except (api.step.StepFailure, api.step.InfraFailure) as e:
+    api.step.active_result.presentation.step_text = (
+      "TBI failed or infra issue: %s" % e
+    )
 
 
 def RunSteps(api: DEPS, properties):
@@ -202,11 +174,7 @@ def RunSteps(api: DEPS, properties):
         not properties.disable_tbi
         and 'linux_upload_clang' in api.buildbucket.builder_name
       ):
-        changes = api.buildbucket.build.input.gerrit_changes
-        change = None
-        if changes:
-          change = changes[0]
-        tbi_background = api.futures.spawn_immediate(_trigger_tbi, api, change)
+        tbi_background = api.futures.spawn_immediate(_trigger_tbi, api)
       try:
         api.step(
           'package clang',
@@ -275,6 +243,10 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'linux-tbi-success',
     api.properties(disable_tbi=False),
+    api.chromium_toolchain.properties(
+      toolchain=api.chromium_toolchain.ToolchainType.CLANG,
+      trusted_build_instance_pool='high-cpu',
+    ),
     api.platform.name('linux'),
     api.chromium.try_build(
       builder_group='tryserver.chromium.linux',
@@ -309,6 +281,10 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'linux-tbi-failure',
     api.properties(disable_tbi=False),
+    api.chromium_toolchain.properties(
+      toolchain=api.chromium_toolchain.ToolchainType.CLANG,
+      trusted_build_instance_pool='high-cpu',
+    ),
     api.platform.name('linux'),
     api.chromium.try_build(
       builder_group='tryserver.chromium.linux', builder='linux_upload_clang'
