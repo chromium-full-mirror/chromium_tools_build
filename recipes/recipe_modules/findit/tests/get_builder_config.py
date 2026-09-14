@@ -34,8 +34,22 @@ class TEST_DEPS(RecipeTestApi):
 
 def RunSteps(api: DEPS):
   target_builder_id = api.properties['target_builder_id']
+  builder_db = None
+  if 'use_custom_builder_db' in api.properties:
+    builder_db = ctbc.BuilderDatabase.create(
+      {
+        target_builder_id.group: {
+          target_builder_id.builder: ctbc.BuilderSpec.create(
+            gclient_config='chromium',
+            chromium_config='chromium',
+          ),
+        },
+      }
+    )
 
-  builder_config = api.findit.get_builder_config(target_builder_id)
+  builder_config = api.findit.get_builder_config(
+    target_builder_id, builder_db=builder_db
+  )
 
   api.assertions.assertCountEqual(
     builder_config.builder_ids, api.properties['builder_ids']
@@ -170,6 +184,17 @@ def GenTests(api: TEST_DEPS):
           },
         }
       )
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'custom-builder-db',
+    api.properties(
+      target_builder_id=builder_id,
+      builder_ids=[builder_id],
+      builder_ids_in_scope_for_testing=[builder_id],
+      use_custom_builder_db=True,
     ),
     api.post_process(post_process.DropExpectation),
   )

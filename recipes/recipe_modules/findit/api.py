@@ -12,16 +12,30 @@ from RECIPE_MODULES.build import chromium_types
 
 
 class FinditApi(recipe_api.RecipeApi):
-  def get_builder_config(self, target_builder_id):
+  def get_builder_config(
+    self,
+    target_builder_id,
+    builder_db=None,
+    try_db=None,
+  ):
     """Returns the builder config for a target builder.
 
     If the target builder is not a tester, return its own builder config.
     If the target builder is a tester, return the config for its parent builder,
     with the target builder being set as the only builder in scope for
     testing.
+
+    Args:
+      target_builder_id: BuilderId of the target builder.
+      builder_db: Optional BuilderDatabase to look up the builder config in.
+        Defaults to the public chromium builders database.
+      try_db: Optional TryDatabase to look up the trybot config in. Defaults to
+        the public chromium trybots database.
     """
     _, builder_config = self.m.chromium_tests_builder_config.lookup_builder(
-      target_builder_id
+      builder_id=target_builder_id,
+      builder_db=builder_db,
+      try_db=try_db,
     )
     # The builder config doesn't match the target builder. This shouldn't
     # happen. If this does occur, it indicates there's a problem with the
