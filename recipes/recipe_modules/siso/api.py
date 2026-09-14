@@ -23,7 +23,7 @@ _TIME_CMD = '/usr/bin/time'
 
 # Name of git footer for setting value of -k
 _MAX_COMPILE_FAILURES = 'Max-Compile-Failures'
-_CHECK_DEPS = 'Check-Deps'
+_MISSING_DEPS = 'Missing-Deps'
 
 # Resource usage format for time command.
 # See also the documents of time and getrusage:
@@ -215,8 +215,17 @@ class SisoApi(recipe_api.RecipeApi):
           raise self.m.step.StepFailure(
             f"Invalid {_MAX_COMPILE_FAILURES} footer", res
           )
-      if footers.get(_CHECK_DEPS):
-        experiments.append('check-deps')
+      if footers.get(_MISSING_DEPS):
+        mode = footers[_MISSING_DEPS][0].strip().lower()
+        if mode not in ('ignore', 'warn', 'error', 'fatal'):
+          res = self.m.step.empty(f'Invalid {_MISSING_DEPS} footer')
+          res.presentation.status = self.m.step.FAILURE
+          res.presentation.step_text = (
+            f'Invalid value: {footers[_MISSING_DEPS]}\n'
+            'Expected one of: ignore, warn, error, fatal'
+          )
+          raise self.m.step.StepFailure(f'Invalid {_MISSING_DEPS} footer', res)
+        cmd.append(f'-missing_deps={mode}')
     if max_compile_failures is not None:
       cmd.extend(['-k', max_compile_failures])
 

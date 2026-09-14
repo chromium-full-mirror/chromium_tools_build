@@ -364,20 +364,53 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'check_deps_git_footer',
+    'missing_deps_git_footer',
     api.buildbucket.try_build(project='chromium'),
     api.properties(build_command=['ninja', '-C', 'out/Release']),
     api.siso.properties(),
     api.tryserver.get_footers(
       {
-        'Check-Deps': ['true'],
+        'Missing-Deps': ['error'],
       }
     ),
     api.post_process(
-      post_process.StepEnvContains,
+      post_process.StepCommandContains,
       'compile',
-      {'SISO_EXPERIMENTS': 'check-deps'},
+      ['-missing_deps=error'],
     ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'missing_deps_git_footer_warn',
+    api.buildbucket.try_build(project='chromium'),
+    api.properties(build_command=['ninja', '-C', 'out/Release']),
+    api.siso.properties(),
+    api.tryserver.get_footers(
+      {
+        'Missing-Deps': ['warn'],
+      }
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile',
+      ['-missing_deps=warn'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'invalid_missing_deps_git_footer',
+    api.buildbucket.try_build(project='chromium'),
+    api.properties(build_command=['ninja', '-C', 'out/Release']),
+    api.siso.properties(),
+    api.tryserver.get_footers(
+      {
+        'Missing-Deps': ['invalid'],
+      }
+    ),
+    api.post_process(post_process.StepFailure, 'Invalid Missing-Deps footer'),
+    api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 
