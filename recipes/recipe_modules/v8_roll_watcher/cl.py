@@ -8,8 +8,6 @@ from .build import BBBuild
 
 from functools import cached_property
 
-from PB.go.chromium.org.luci.buildbucket.proto.common import GerritChange
-
 from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
   BuildPredicate,
 )
@@ -19,7 +17,7 @@ class GerritCL:
   def __init__(self, cl_dict, host, api):
     self.host = host
     self.api = api
-    self.project = self.revisions = self.hashtags = self.subject = None
+    self.project = self.revisions = self.subject = None
 
     # Ger rid of ugly key name
     self.number = cl_dict.pop('_number')
@@ -52,29 +50,6 @@ class GerritCL:
   def has_blocking_failures(self):
     return any(build.has_failed() for build in self.cq_blocking_builds())
 
-  def has_mixed_failures(self, allowed_failure_steps):
-    return any(
-      b.has_mixed_failures(allowed_failure_steps)
-      for b in self.cq_blocking_builds()
-    )
-
-  def gs_location(self, builder):
-    gs_path = [
-      'screenshots',
-      builder,
-      str(self.number),
-      str(self.last_patch_number),
-      'screenshot.patch',
-    ]
-    return '/'.join(gs_path)
-
-  def is_cq_in_progress(self):
-    return any(build.is_in_progress() for build in self.builds)
-
-  @property
-  def as_gerrit_obj(self):
-    return GerritChange(**self.as_query_dict)
-
   @property
   def as_query_dict(self):
     return dict(
@@ -92,12 +67,6 @@ class GerritCL:
   def short_path(self):
     return f'{self.project}/+/{self.number}'
 
-  def has_tag(self, tag_name):
-    return tag_name in self.hashtags
-
-  def contains_builds_from(self, builders):
-    return [build for build in self.builds if build.builder.builder in builders]
-
   @property
   def presentation_links(self):
     return {self.short_path: self.full_path}
@@ -110,7 +79,7 @@ class GerritCL:
         include_experimental=True,
       ),
       limit=100,
-      fields=['tags,status,steps'],
+      fields=['tags,status'],
       report_build=False,
     )
     return [BBBuild(b) for b in bb_builds]

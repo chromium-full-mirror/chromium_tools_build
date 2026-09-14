@@ -9,11 +9,9 @@ from PB.go.chromium.org.luci.buildbucket.proto.build import Build
 from PB.go.chromium.org.luci.buildbucket.proto.builder_common import BuilderID
 from PB.go.chromium.org.luci.buildbucket.proto.common import (
   FAILURE,
-  STARTED,
   SUCCESS,
   StringPair,
 )
-from PB.go.chromium.org.luci.buildbucket.proto.step import Step
 from PB.go.chromium.org.luci.cv.api.v0 import run as run_pb
 from PB.go.chromium.org.luci.cv.api.v0 import service_runs as service_runs_pb
 from PB.go.chromium.org.luci.cv.api.v0 import tryjob as tryjob_pb
@@ -31,7 +29,6 @@ from RECIPE_MODULES.depot_tools import (
   depot_tools,
   gerrit,
   git,
-  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
@@ -57,7 +54,6 @@ class DEPS(RecipeScriptApi):
   file: file.API
   gerrit: gerrit.API
   git: git.API
-  gsutil: gsutil.API
   json: json.API
   path: path.API
   properties: properties.API
@@ -97,20 +93,6 @@ def GenTests(api: TEST_DEPS):
     'review-host': 'review.googlesource.com',
     'project': 'v8/v8',
     'account': 'autoroll@service-accounts.com',
-  }
-  screenshot_roller = {
-    'name': 'experiment',
-    'subject': 'Break something',
-    'review-host': 'chrome-internal-review.googlesource.com',
-    'project': 'devtools/devtools-internal',
-    'account': 'liviurau@google.com',
-    'criteria': ['-hashtag:screenshots_applied'],
-    'failure_recovery': ['try_update_screenshots'],
-    'screenshot_builders': ['devtools_screenshot_linux_rel'],
-    'screenshot_builders_triggered_tag': 'screenshot_builders_triggered',
-    'screenshots_applied_tag': 'screenshots_applied',
-    'screenshots_unavailable_tag': 'screenshots_unavailable',
-    'allowed_failure_steps': 'Interactions',
   }
 
   test262_importer = {
@@ -160,9 +142,7 @@ def GenTests(api: TEST_DEPS):
       ),
     )
 
-  def build(
-    build_id, status, builder_name=None, experimental=False, steps=None
-  ):
+  def build(build_id, status, builder_name=None, experimental=False):
     exp_tag = StringPair(
       key='cq_experimental', value='true' if experimental else 'false'
     )
@@ -171,7 +151,6 @@ def GenTests(api: TEST_DEPS):
       status=status,
       builder=BuilderID(builder=builder_name),
       tags=[exp_tag],
-      steps=steps,
     )
 
   def find_fake_cv(roller, runs=None):
@@ -264,169 +243,6 @@ def GenTests(api: TEST_DEPS):
       build(1, SUCCESS),
       build(2, FAILURE),
     ),
-  )
-
-  yield api.test(
-    'sc-trigger-builders',
-    roller(screenshot_roller),
-    find_fake_cls(screenshot_roller),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, SUCCESS),
-      build(2, FAILURE),
-    ),
-    status='SUCCESS',
-  )
-
-  yield api.test(
-    'sc-no-trigger-builders-in-progress',
-    roller(screenshot_roller),
-    find_fake_cls(screenshot_roller),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, STARTED, experimental=True),
-      build(2, FAILURE),
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123.Builders still in progress...",
-    ),
-    api.post_process(DropExpectation),
-    status='SUCCESS',
-  )
-
-  yield api.test(
-    'sc-no-trigger-wrong-step',
-    roller(screenshot_roller),
-    find_fake_cls(screenshot_roller),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE, steps=[Step(name='Interactions', status=FAILURE)]),
-      build(2, FAILURE, steps=[Step(name='Test', status=FAILURE)]),
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123."
-      'Some failures do not refer to screenshots...',
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123."
-      'gerrit Tag CL for no screenshots patch available',
-    ),
-    api.post_process(DropExpectation),
-    status='FAILURE',
-  )
-
-  yield api.test(
-    'sc-update-screenshots',
-    roller(screenshot_roller),
-    find_fake_cls(
-      screenshot_roller, hashtags=['screenshot_builders_triggered']
-    ),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE),
-      build(2, SUCCESS, builder_name='devtools_screenshot_linux_rel'),
-    ),
-    api.override_step_data(
-      "Roller: 'experiment'.Checking CL 123.Apply screenshot patches."
-      'Apply screenshot patch from devtools_screenshot_linux_rel.'
-      'read patch for linux',
-      api.file.read_text('patch contents'),
-    ),
-    status='FAILURE',
-  )
-
-  yield api.test(
-    'sc-no-screenshot-builders',
-    roller(screenshot_roller),
-    find_fake_cls(
-      screenshot_roller, hashtags=['screenshot_builders_triggered']
-    ),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE),
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123."
-      'Apply screenshot patches.No screenshot builds found',
-    ),
-    api.post_process(DropExpectation),
-    status='SUCCESS',
-  )
-
-  yield api.test(
-    'sc-no-screenshot-patches',
-    roller(screenshot_roller),
-    find_fake_cls(
-      screenshot_roller, hashtags=['screenshot_builders_triggered']
-    ),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE),
-      build(2, SUCCESS, builder_name='devtools_screenshot_linux_rel'),
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123."
-      'Apply screenshot patches.Apply screenshot patch from '
-      'devtools_screenshot_linux_rel.Empty patch',
-    ),
-    api.post_process(
-      StepFailure,
-      "Roller: 'experiment'.Checking CL 123."
-      "Apply screenshot patches.Roller 'experiment' failed",
-    ),
-    api.post_process(DropExpectation),
-    status='FAILURE',
-  )
-
-  yield api.test(
-    'sc-no-update-builders-in-progress',
-    roller(screenshot_roller),
-    find_fake_cls(
-      screenshot_roller, hashtags=['screenshot_builders_triggered']
-    ),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE),
-      build(
-        2,
-        STARTED,
-        experimental=True,
-        builder_name='devtools_screenshot_linux_rel',
-      ),
-    ),
-    api.post_process(
-      StepSuccess,
-      "Roller: 'experiment'.Checking CL 123."
-      'Apply screenshot patches.Builders still in progress...',
-    ),
-    api.post_process(DropExpectation),
-    status='SUCCESS',
-  )
-
-  yield api.test(
-    'sc-no-update-builders-failed',
-    roller(screenshot_roller),
-    find_fake_cls(
-      screenshot_roller, hashtags=['screenshot_builders_triggered']
-    ),
-    find_fake_builds(
-      screenshot_roller,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='devtools_screenshot_linux_rel'),
-    ),
-    api.post_process(
-      StepFailure,
-      "Roller: 'experiment'.Checking CL 123."
-      'Apply screenshot patches.'
-      "Roller 'experiment' failed",
-    ),
-    api.post_process(DropExpectation),
-    status='FAILURE',
   )
 
   yield api.test(

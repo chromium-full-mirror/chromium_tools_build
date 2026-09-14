@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from . import commons
-from . import devtools_recovery
 from . import test262_recovery
 
 from recipe_engine import recipe_api
@@ -50,7 +49,5 @@ def find_recovery_fn(name):
     'just_fail': commons.just_fail,
     'just_pass': commons.just_pass,
     'mark_as_reported': commons.mark_as_reported,
-    'try_update_screenshots': devtools_recovery.try_update_screenshots,
-    'apply_screenshot_patches': devtools_recovery.apply_screenshot_patches,
     'test262_update_status_file': test262_recovery.test262_update_status_file,
   }[name]

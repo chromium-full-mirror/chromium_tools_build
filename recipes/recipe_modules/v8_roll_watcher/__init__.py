@@ -13,7 +13,6 @@ from RECIPE_MODULES.depot_tools import (
   depot_tools,
   gerrit,
   git,
-  gsutil,
 )
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
@@ -35,7 +34,6 @@ class DEPS(RecipeScriptApi):
   depot_tools: depot_tools.API
   gerrit: gerrit.API
   git: git.API
-  gsutil: gsutil.API
   buildbucket: buildbucket.API
   change_verifier: change_verifier.API
   context: context.API

@@ -34,7 +34,6 @@ class Roller:
     self.has_failure = False
     self.criteria = []
     self.failure_recovery = ['mark_as_reported', 'just_fail']
-    self.gs_bucket = 'devtools-internal-screenshots'
     self.subject = self.project = self.account = None
 
     # Overwrite defaults with values from the config

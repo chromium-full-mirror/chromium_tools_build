@@ -96,7 +96,7 @@
     },
     "infra_step": true,
     "name": "Roller: 'roller'.Checking CL 123.buildbucket.search",
-    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,tags,status,steps\"}, \"pageSize\": 100, \"predicate\": {\"gerritChanges\": [{\"change\": \"123\", \"host\": \"review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}}}]}",
+    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,tags,status\"}, \"pageSize\": 100, \"predicate\": {\"gerritChanges\": [{\"change\": \"123\", \"host\": \"review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -137,7 +137,7 @@
       "@@@STEP_LOG_LINE@request@    {@@@",
       "@@@STEP_LOG_LINE@request@      \"searchBuilds\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"mask\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,tags,status,steps\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,tags,status\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"pageSize\": 100,@@@",
       "@@@STEP_LOG_LINE@request@        \"predicate\": {@@@",
@@ -156,7 +156,7 @@
       "@@@STEP_LOG_LINE@request@  ]@@@",
       "@@@STEP_LOG_LINE@request@}@@@",
       "@@@STEP_LOG_END@request@@@",
-      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22gerritChanges%22%3A+%5B%7B%22host%22%3A+%22review.googlesource.com%22%2C+%22project%22%3A+%22v8%2Fv8%22%2C+%22change%22%3A+%22123%22%2C+%22patchset%22%3A+%221%22%7D%5D%2C+%22includeExperimental%22%3A+true%7D%2C+%22pageSize%22%3A+100%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Ctags%2Cstatus%2Csteps%22%7D%7D@@@"
+      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22gerritChanges%22%3A+%5B%7B%22host%22%3A+%22review.googlesource.com%22%2C+%22project%22%3A+%22v8%2Fv8%22%2C+%22change%22%3A+%22123%22%2C+%22patchset%22%3A+%221%22%7D%5D%2C+%22includeExperimental%22%3A+true%7D%2C+%22pageSize%22%3A+100%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Ctags%2Cstatus%22%7D%7D@@@"
     ]
   },
   {

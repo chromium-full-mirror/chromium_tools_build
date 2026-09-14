@@ -7,8 +7,6 @@ from __future__ import annotations
 from PB.go.chromium.org.luci.buildbucket.proto.common import (
   FAILURE,
   INFRA_FAILURE,
-  SCHEDULED,
-  STARTED,
 )
 
 
@@ -26,13 +24,3 @@ class BBBuild:
 
   def has_failed(self):
     return self.status in [FAILURE, INFRA_FAILURE]
-
-  def has_mixed_failures(self, allowed_failure_steps):
-    return any(
-      step.name not in allowed_failure_steps
-      for step in self.steps
-      if step.status == FAILURE
-    )
-
-  def is_in_progress(self):
-    return self.status in [STARTED, SCHEDULED]
