@@ -317,6 +317,30 @@ class GnApi(recipe_api.RecipeApi):
     with self.m.context(cwd=build_dir):
       self._gn_cmd(step_name, ['clean', build_dir])
 
+  def check(
+    self,
+    build_dir,
+    check_generated=False,
+    step_name='gn check',
+    **kwargs,
+  ):
+    """Runs gn check to verify header dependencies.
+
+    See https://gn.googlesource.com/gn/+/main/docs/reference.md#cmd_check for
+    more documentation of the command.
+
+    Args:
+      build_dir: Path to build output directory.
+      check_generated: Boolean indicating whether to check generated headers.
+      step_name: Optional recipe step name to give to the "gn check" command.
+      kwargs: Other arguments passed to the underlying python step.
+    """
+    with self.m.context(cwd=build_dir):
+      cmd = ['check', build_dir]
+      if check_generated:
+        cmd.append('--check-generated')
+      self._gn_cmd(step_name, cmd, **kwargs)
+
   def parse_gn_args(self, content):
     """Parses string content from arg.gn to a dictionary.
 

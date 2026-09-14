@@ -25,6 +25,7 @@ from RECIPE_MODULES.build import (
   chromium_tests,
   chromium_tests_builder_config,
   code_coverage,
+  gn,
   profiles,
   reclient,
   siso,
@@ -56,6 +57,7 @@ class DEPS(RecipeScriptApi):
   file: file.API
   gclient: gclient.API
   git: git.API
+  gn: gn.API
   path: path.API
   platform: platform.API
   profiles: profiles.API
@@ -212,6 +214,18 @@ def _run_clean_builds(
     step_name_suffix=step_name_suffix,
   )
   _raise_raw_result_on_failure(api, raw_result)
+
+  # Enable gn check --check-generated as an additional non-fatal step on
+  # Linux target builds before enabling by default. See crbug.com/557053937.
+  # raise_on_failure=False keeps the step marked as a failure without failing
+  # the overall build.
+  if api.chromium.c.TARGET_PLATFORM == 'linux':
+    api.gn.check(
+      build_dir,
+      check_generated=True,
+      step_name='gn check --check-generated',
+      raise_on_failure=False,
+    )
 
   # Enable fail-on-bad-deps as an additional step on Linux for continuous
   # benchmarking before enabling by default. See crbug.com/547682173.
