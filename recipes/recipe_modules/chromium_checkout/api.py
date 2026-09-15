@@ -157,7 +157,11 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     return self.format_affected_file_paths(files, relative_to=relative_to)
 
   def get_files_affected_by_patch_with_submodules(
-    self, relative_to=None, cwd=None, report_via_property=False
+    self,
+    relative_to=None,
+    cwd=None,
+    report_via_property=False,
+    step_name_prefix='',
   ):
     """Returns SubmodulePathsResult containing POSIX paths of affected files and submodule metadata."""
     if not self.m.tryserver.gerrit_change:
@@ -176,6 +180,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
           report_files_via_property=(
             'affected_files' if report_via_property else None
           ),
+          step_name_prefix=step_name_prefix,
         )
       )
     formatted_files = self.format_affected_file_paths(
@@ -189,6 +194,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       deleted_submodules=submodule_paths_result.deleted_submodules,
       new_submodules=submodule_paths_result.new_submodules,
       nested_submodules=submodule_paths_result.nested_submodules,
+      unresolvable_submodules=(submodule_paths_result.unresolvable_submodules),
     )
 
   def format_affected_file_paths(self, files, relative_to=None):

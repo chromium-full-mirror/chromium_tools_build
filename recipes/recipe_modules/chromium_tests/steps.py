@@ -97,6 +97,7 @@ ALLOWED_RESULT_HANDLER_NAMES = ('default', 'layout tests', 'fake')
 RDB_INVOCATION_NAME_RE = re.compile(r'rdb-stream: included "(\S+)" in "\S+"')
 
 INCLUDE_CI_FOOTER = 'Include-Ci-Only-Tests'
+SUBMODULE_ANALYZE_FOOTER = 'Submodule-Gn-Analyze'
 
 INVALID_SUITE_STATUS = 'Invalid'
 INCOMPLETE_SUITE_STATUS = 'Incomplete'

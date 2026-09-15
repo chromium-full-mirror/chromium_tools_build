@@ -130,6 +130,7 @@ class TEST_DEPS(RecipeTestApi):
   resultdb: resultdb.TEST_API
   swarming: swarming.TEST_API
   test_utils: test_utils.TEST_API
+  tryserver: tryserver_module.TEST_API
 
 
 _TEST_BUILDERS = ctbc.BuilderDatabase.create(
@@ -2400,6 +2401,323 @@ def GenTests(api: RecipeTestApi):
       post_process.StepTextEquals,
       '[Experimental] analyze submodules',
       'skipping analyze:<br/>* submodule DEPS modified: sub/DEPS',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'expand_submodules_skip_unresolvable',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+      experiments=['chromium_checkout.expand_submodules'],
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      '[Experimental] git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data('[Experimental] git diff submodules.sub', retcode=1),
+    api.post_process(
+      post_process.StepTextEquals,
+      '[Experimental] analyze submodules',
+      'skipping analyze:<br/>* unresolvable submodules detected: sub',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_active',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data(
+      'git diff submodules.sub',
+      api.raw_io.stream_output(
+        ':100644 100644 1234567 89abcdef M\tsub_foo.cc\n'
+      ),
+    ),
+    api.post_process(post_process.StepSuccess, 'analyze'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'analyze',
+      [
+        '{"additional_compile_targets": [], '
+        '"files": ["sub", "sub/sub_foo.cc"], '
+        '"test_targets": []}',
+      ],
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'submodule_analyze',
+      {
+        'test_targets_removed': [],
+        'compile_targets_removed': [],
+      },
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_prunes_targets',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-builder': {
+          'gtest_tests': [
+            {
+              'test': 'retained_test',
+            },
+            {
+              'test': 'removed_test',
+            },
+          ]
+        },
+      },
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data(
+      'git diff submodules.sub',
+      api.raw_io.stream_output(
+        ':100644 100644 1234567 89abcdef M\tsub_foo.cc\n'
+      ),
+    ),
+    api.filter.analyze_output(
+      status='Found dependency',
+      test_targets=['retained_test'],
+      compile_targets=['retained_test'],
+    ),
+    api.post_process(post_process.StepSuccess, 'analyze'),
+    api.post_process(
+      post_process.LogContains,
+      'analyze',
+      'test_targets_removed',
+      ['removed_test'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'analyze',
+      'compile_targets_removed',
+      ['removed_test'],
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'submodule_analyze',
+      {
+        'test_targets_removed': ['removed_test'],
+        'compile_targets_removed': ['removed_test'],
+      },
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_skip_deleted',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':160000 160000 1234567 0000000 D\tsub\n'),
+    ),
+    api.post_process(
+      post_process.StepTextEquals,
+      'analyze',
+      'skipping analyze<br/>* deleted submodules detected: sub',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_skip_nested',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data(
+      'git diff submodules.sub',
+      api.raw_io.stream_output(
+        ':160000 160000 1234567 89abcdef M\tnested_sub\n'
+      ),
+    ),
+    api.post_process(
+      post_process.StepTextEquals,
+      'analyze',
+      'skipping analyze<br/>* nested submodules detected: sub/nested_sub',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_skip_submodule_deps',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data(
+      'git diff submodules.sub',
+      api.raw_io.stream_output(':100644 100644 1234567 89abcdef M\tDEPS\n'),
+    ),
+    api.post_process(
+      post_process.StepTextEquals,
+      'analyze',
+      'skipping analyze<br/>* submodule DEPS modified: sub/DEPS',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_skip_unresolvable',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data('git diff submodules.sub', retcode=1),
+    api.post_process(
+      post_process.StepTextEquals,
+      'analyze',
+      'skipping analyze<br/>* unresolvable submodules detected: sub',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'submodule_analyze_footer_skips_code_coverage',
+    api.platform('linux', 64),
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.tryserver.get_footers({'Submodule-Gn-Analyze': ['true']}),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.code_coverage(use_clang_coverage=True),
+    api.path.files_exist(
+      api.path.cache_dir / 'builder' / 'src' / 'sub' / '.git'
+    ),
+    api.step_data(
+      'git diff --raw to analyze patch',
+      api.raw_io.stream_output(':100644 160000 1234567 89abcdef M\tsub\n'),
+    ),
+    api.step_data(
+      'git diff submodules.sub',
+      api.raw_io.stream_output(
+        ':100644 100644 1234567 89abcdef M\tsub_foo.cc\n'
+      ),
+    ),
+    api.post_process(
+      post_process.StepSuccess,
+      'Skip instrumentating code coverage because DEPS only change',
     ),
     api.post_process(post_process.DropExpectation),
   )

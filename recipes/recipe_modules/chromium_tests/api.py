@@ -3010,6 +3010,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       )
       return test_targets, compile_targets
 
+    submodule_analyze = self.m.tryserver.is_tryserver and any(
+      f.lower() == 'true'
+      for f in self.m.tryserver.get_footer(steps.SUBMODULE_ANALYZE_FOOTER)
+    )
+
+    initial_test_targets = test_targets
+    initial_compile_targets = compile_targets
+
     test_targets, compile_targets = self.m.filter.analyze(
       source_dir,
       build_dir,
@@ -3019,8 +3027,32 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       builder_id=builder_id,
       additional_names=analyze_names,
       additional_exclusions=additional_exclusions,
+      ignored_exclusion_patterns=['DEPS'] if submodule_analyze else None,
       results_callback=results_callback,
     )
+
+    if submodule_analyze:
+      step_result = self.m.step.active_result
+      test_targets_removed = sorted(
+        set(initial_test_targets) - set(test_targets)
+      )
+      compile_targets_removed = sorted(
+        set(initial_compile_targets) - set(compile_targets)
+      )
+
+      if test_targets_removed:
+        step_result.presentation.logs['test_targets_removed'] = (
+          test_targets_removed
+        )
+      if compile_targets_removed:
+        step_result.presentation.logs['compile_targets_removed'] = (
+          compile_targets_removed
+        )
+
+      step_result.presentation.properties['submodule_analyze'] = {
+        'test_targets_removed': test_targets_removed,
+        'compile_targets_removed': compile_targets_removed,
+      }
 
     return test_targets, compile_targets
 
@@ -3095,10 +3127,26 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Configuration of the build/test.
     """
 
-    affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
-      report_via_property=True, relative_to=files_relative_to
+    skip_analysis_reasons = list(skip_analysis_reasons or [])
+
+    submodule_analyze = self.m.tryserver.is_tryserver and any(
+      f.lower() == 'true'
+      for f in self.m.tryserver.get_footer(steps.SUBMODULE_ANALYZE_FOOTER)
     )
-    is_deps_only_change = affected_files == ["DEPS"]
+
+    if submodule_analyze:
+      affected_files, skip_reasons = (
+        self._get_submodule_affected_files_and_skip_reasons(
+          files_relative_to=files_relative_to
+        )
+      )
+      skip_analysis_reasons.extend(skip_reasons)
+    else:
+      affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
+        report_via_property=True, relative_to=files_relative_to
+      )
+
+    is_deps_only_change = affected_files == ["DEPS"] or submodule_analyze
 
     # Must happen before without patch steps.
     if self.m.code_coverage.using_coverage:
@@ -3138,7 +3186,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       'chromium_checkout.expand_submodules'
       in self.m.buildbucket.build.input.experiments
     )
-    if expand_submodules:
+    if expand_submodules and not submodule_analyze:
       self._experimental_submodule_analyze(
         builder_id,
         builder_config,
@@ -3238,6 +3286,51 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     )
     return raw_result, task
 
+  def _get_submodule_affected_files_and_skip_reasons(
+    self,
+    files_relative_to: str | Path | None = None,
+    step_name_prefix: str = '',
+  ) -> tuple[list[str], list[str]]:
+    """Gets affected files with submodule expansion and checks for skip reasons."""
+    submodule_paths_result = (
+      self.m.chromium_checkout.get_files_affected_by_patch_with_submodules(
+        report_via_property=True,
+        relative_to=files_relative_to,
+        step_name_prefix=step_name_prefix,
+      )
+    )
+
+    # Similar to nested submodules, sub-repo DEPS changes represent transitive
+    # rolls (e.g. CIPD packages or dependencies not yet migrated to submodules)
+    # that GN analyze cannot inspect. Skip analyze to safely run all tests.
+    submodule_deps = [
+      f
+      for f in submodule_paths_result.affected_files
+      if f != 'DEPS' and f.endswith('/DEPS')
+    ]
+    skip_reasons = []
+    if submodule_paths_result.nested_submodules:
+      skip_reasons.append(
+        'nested submodules detected: '
+        + ', '.join(submodule_paths_result.nested_submodules)
+      )
+    if submodule_paths_result.deleted_submodules:
+      skip_reasons.append(
+        'deleted submodules detected: '
+        + ', '.join(submodule_paths_result.deleted_submodules)
+      )
+    if submodule_paths_result.unresolvable_submodules:
+      skip_reasons.append(
+        'unresolvable submodules detected: '
+        + ', '.join(submodule_paths_result.unresolvable_submodules)
+      )
+    if submodule_deps:
+      skip_reasons.append(
+        'submodule DEPS modified: ' + ', '.join(submodule_deps)
+      )
+
+    return submodule_paths_result.affected_files, skip_reasons
+
   def _experimental_submodule_analyze(
     self,
     builder_id: chromium_types.BuilderId,
@@ -3250,61 +3343,30 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     compile_targets: Collection[str],
   ):
     """Orchestrates the experimental submodule analyze step."""
-    submodule_paths_result = (
-      self.m.chromium_checkout.get_files_affected_by_patch_with_submodules(
-        report_via_property=True, relative_to=files_relative_to
+    affected_files, skip_reasons = (
+      self._get_submodule_affected_files_and_skip_reasons(
+        files_relative_to=files_relative_to,
+        step_name_prefix='[Experimental] ',
       )
     )
 
     with self.m.step.nest('[Experimental] analyze submodules') as presentation:
-      # Similar to nested submodules, sub-repo DEPS changes represent transitive
-      # rolls (e.g. CIPD packages or dependencies not yet migrated to submodules)
-      # that GN analyze cannot inspect. Skip analyze to safely run all tests.
-      submodule_deps = [
-        f
-        for f in submodule_paths_result.affected_files
-        if f != 'DEPS' and f.endswith('/DEPS')
-      ]
-      if (
-        submodule_paths_result.nested_submodules
-        or submodule_paths_result.deleted_submodules
-        or submodule_deps
-      ):
-        reasons = []
-        if submodule_paths_result.nested_submodules:
-          reasons.append(
-            'nested submodules detected: '
-            + ', '.join(submodule_paths_result.nested_submodules)
-          )
-        if submodule_paths_result.deleted_submodules:
-          reasons.append(
-            'deleted submodules detected: '
-            + ', '.join(submodule_paths_result.deleted_submodules)
-          )
-        if submodule_deps:
-          reasons.append(
-            'submodule DEPS modified: ' + ', '.join(submodule_deps)
-          )
+      if skip_reasons:
         presentation.step_text = 'skipping analyze:<br/>* ' + '<br/>* '.join(
-          reasons
+          skip_reasons
         )
         return
 
-      try:
-        exp_test_targets, exp_compile_targets = (
-          self._run_experimental_submodule_analyze(
-            builder_id,
-            builder_config,
-            source_dir,
-            build_dir,
-            submodule_paths_result.affected_files,
-            targets_config,
-          )
+      exp_test_targets, exp_compile_targets = (
+        self._run_experimental_submodule_analyze(
+          builder_id,
+          builder_config,
+          source_dir,
+          build_dir,
+          affected_files,
+          targets_config,
         )
-      except self.m.step.StepFailure as e:  # pragma: no cover
-        presentation.step_text = f'experimental analyze failed: {e}'
-        presentation.status = self.m.step.EXCEPTION
-        return
+      )
 
       exp_test_targets_sorted = sorted(exp_test_targets)
       exp_compile_targets_sorted = sorted(exp_compile_targets)

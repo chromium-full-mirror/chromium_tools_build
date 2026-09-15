@@ -317,15 +317,11 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'expand_submodules',
-    api.buildbucket.try_build(
-      experiments=['chromium_checkout.expand_submodules'],
-    ),
+    'submodules',
+    api.buildbucket.try_build(),
     api.platform('linux', 64),
     api.properties(report_via_property=True, test_with_submodules=True),
-    api.post_process(
-      StepSuccess, '[Experimental] git diff --raw to analyze patch'
-    ),
+    api.post_process(StepSuccess, 'git diff --raw to analyze patch'),
     api.post_process(DropExpectation),
   )
 
