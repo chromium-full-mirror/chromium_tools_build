@@ -171,7 +171,7 @@ def GenTests(api: TEST_DEPS):
       'android-go-wembley-perf': {
         'isolated_scripts': [
           {
-            'test': 'performance_test_suite_android_clank_trichrome_bundle',
+            'test': 'performance_test_suite_android_chrome_google_bundle',
             'name': 'performance_test_suite',
           },
         ],

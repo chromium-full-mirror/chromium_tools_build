@@ -665,7 +665,7 @@
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@    \"isolated_scripts\": [@@@",
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@      {@@@",
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@        \"name\": \"performance_test_suite\",@@@",
-      "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@        \"test\": \"performance_test_suite_android_clank_trichrome_bundle\"@@@",
+      "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@        \"test\": \"performance_test_suite_android_chrome_google_bundle\"@@@",
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@      }@@@",
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@    ]@@@",
       "@@@STEP_LOG_LINE@chromium.perf.pinpoint.json@  }@@@",
@@ -880,7 +880,7 @@
       "--isolate-map-file",
       "[CACHE]/builder/src/clank/build/bot/gn_isolate_map.pyl",
       "--swarming-targets-file",
-      "performance_test_suite_android_clank_trichrome_bundle\n",
+      "performance_test_suite_android_chrome_google_bundle\n",
       "[CACHE]/builder/src/out/4501-Android_Compile"
     ],
     "cwd": "[CACHE]/builder/src",
@@ -908,7 +908,7 @@
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output[failure_summary]@{}@@@",
       "@@@STEP_LOG_END@json.output[failure_summary]@@@",
-      "@@@STEP_LOG_LINE@swarming-targets-file.txt@performance_test_suite_android_clank_trichrome_bundle@@@",
+      "@@@STEP_LOG_LINE@swarming-targets-file.txt@performance_test_suite_android_chrome_google_bundle@@@",
       "@@@STEP_LOG_END@swarming-targets-file.txt@@@"
     ]
   },
@@ -1030,7 +1030,7 @@
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/4501-Android_Compile",
-      "performance_test_suite_android_clank_trichrome_bundle"
+      "performance_test_suite_android_chrome_google_bundle"
     ],
     "cwd": "[CACHE]/builder/src",
     "env": {
@@ -1158,7 +1158,7 @@
       "[CACHE]/builder/src/third_party/ninja/ninja",
       "-C",
       "[CACHE]/builder/src/out/4501-Android_Compile",
-      "performance_test_suite_android_clank_trichrome_bundle",
+      "performance_test_suite_android_chrome_google_bundle",
       "-d",
       "explain",
       "-n"
@@ -1305,7 +1305,7 @@
       "projects/example-cas-server/instances/default_instance",
       "-log-level",
       "debug",
-      "[CACHE]/builder/src/out/4501-Android_Compile/performance_test_suite_android_clank_trichrome_bundle.isolated.gen.json"
+      "[CACHE]/builder/src/out/4501-Android_Compile/performance_test_suite_android_chrome_google_bundle.isolated.gen.json"
     ],
     "env": {
       "CHROME_HEADLESS": "1"
@@ -1325,10 +1325,10 @@
     "name": "isolate tests",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"performance_test_suite_android_clank_trichrome_bundle\": \"[dummy hash for performance_test_suite_android_clank_trichrome_bundle/dummy size]\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"performance_test_suite_android_chrome_google_bundle\": \"[dummy hash for performance_test_suite_android_chrome_google_bundle/dummy size]\"@@@",
       "@@@STEP_LOG_LINE@json.output@}@@@",
       "@@@STEP_LOG_END@json.output@@@",
-      "@@@SET_BUILD_PROPERTY@swarm_hashes_refs/heads/main(at){#170242}_without_patch@{\"performance_test_suite_android_clank_trichrome_bundle\": \"[dummy hash for performance_test_suite_android_clank_trichrome_bundle/dummy size]\"}@@@"
+      "@@@SET_BUILD_PROPERTY@swarm_hashes_refs/heads/main(at){#170242}_without_patch@{\"performance_test_suite_android_chrome_google_bundle\": \"[dummy hash for performance_test_suite_android_chrome_google_bundle/dummy size]\"}@@@"
     ]
   },
   {
@@ -1393,7 +1393,7 @@
       "RECIPE_MODULE[build::perf_dashboard]/resources/post_json.py",
       "https://pinpoint-dot-chromeperf.appspot.com/api/isolate",
       "-i",
-      "{\"builder_name\": \"Android Compile Perf\", \"change\": \"{\\\"commits\\\": [{\\\"git_hash\\\": \\\"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\\\", \\\"repository\\\": \\\"chromium\\\"}]}\", \"isolate_map\": \"{\\\"performance_test_suite_android_clank_trichrome_bundle\\\": \\\"[dummy hash for performance_test_suite_android_clank_trichrome_bundle/dummy size]\\\"}\", \"isolate_server\": \"projects/example-cas-server/instances/default_instance\"}",
+      "{\"builder_name\": \"Android Compile Perf\", \"change\": \"{\\\"commits\\\": [{\\\"git_hash\\\": \\\"f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9\\\", \\\"repository\\\": \\\"chromium\\\"}]}\", \"isolate_map\": \"{\\\"performance_test_suite_android_chrome_google_bundle\\\": \\\"[dummy hash for performance_test_suite_android_chrome_google_bundle/dummy size]\\\"}\", \"isolate_server\": \"projects/example-cas-server/instances/default_instance\"}",
       "-o",
       "/path/to/tmp/json",
       "-t",
