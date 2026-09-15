@@ -33,6 +33,8 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  file: file.TEST_API
+  path: path.TEST_API
   properties: properties.TEST_API
 
 
@@ -54,5 +56,29 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'testing xcode version when file does not exist',
     api.properties(**{'$build/xcode': xcode_input_properties}),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'testing xcode version with invalid version string',
+    api.path.exists(api.path.cache_dir.joinpath('builder', config_path)),
+    api.properties(**{'$build/xcode': xcode_input_properties}),
+    api.step_data(
+      'Read xcode_configs from repo',
+      api.file.read_json({'xcode_build_version': 'bad version!$'}),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'testing xcode version with missing version attribute',
+    api.path.exists(api.path.cache_dir.joinpath('builder', config_path)),
+    api.properties(**{'$build/xcode': xcode_input_properties}),
+    api.step_data(
+      'Read xcode_configs from repo',
+      api.file.read_json({}),
+    ),
+    api.expect_status('FAILURE'),
     api.post_process(DropExpectation),
   )

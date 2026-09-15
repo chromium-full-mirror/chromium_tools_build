@@ -40,7 +40,7 @@ from recipe_engine import post_process
 
 def RunSteps(api: DEPS):
   actual_version = api.xcode.get_xcode_version(api.path.cache_dir / 'builder')
-  api.assertions.assertEqual('0.0', actual_version)
+  api.assertions.assertEqual('123ABC', actual_version)
 
 
 def GenTests(api: TEST_DEPS):
