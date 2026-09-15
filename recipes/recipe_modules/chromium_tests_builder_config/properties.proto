@@ -166,25 +166,16 @@ message BuilderSpec {
   //
   // Next ID: 8
   message ClusterfuzzArchive {
+      reserved 3, 4, 7;
+      reserved "archive_name_prefix", "archive_subdir", "use_archive_path";
+
       // Required, the Google Storage bucket to upload the archive containing
       // artifacts for clusterfuzz
       string gs_bucket = 1;
       // A canned ACL to apply to the uploaded archive
       string gs_acl = 2;
-      // Deprecated: archive_path is used instead.
-      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
-      // and builder configs no longer set it.
-      string archive_name_prefix = 3 [deprecated = true];
       // Path prefix to use for the uploaded zip archive.
       string archive_path = 6;
-      // Deprecated: archive_path is always used now.
-      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
-      // and builder configs no longer set it.
-      bool use_archive_path = 7 [deprecated = true];
-      // Deprecated: archive_path includes the full subdirectory structure.
-      // TODO(https://crbug.com/527836546): Remove this field once starlark-libs
-      // and builder configs no longer set it.
-      string archive_subdir = 4 [deprecated = true];
       // Optional, version number to control how libfuzzer archives are formatted.
       // 0 (Default): Legacy with src_root archiving where archive root is build dir
       // 1: New archive schema where archive root is source dir
