@@ -1100,7 +1100,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     # needs to use `siso isolate` command.
     use_siso_isolate = self.m.siso.enabled and self.m.siso.without_bytes
 
-    self.m.chromium_rts.isolate_filter_files(build_dir, targets, tests=tests)
+    self.m.chromium_rts.isolate_filter_files(build_dir, tests)
 
     isolate_result = self.m.isolate.isolate_tests(
       build_dir,
@@ -1114,7 +1114,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     command_lines = self.find_swarming_command_lines(name_suffix, build_dir)
     command_line_variants = self.m.chromium_rts.get_command_line_variants(
-      build_dir, command_lines, tests=tests
+      build_dir, command_lines, tests
     )
 
     execution_info = self.set_swarming_test_execution_info(

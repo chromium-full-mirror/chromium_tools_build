@@ -99,8 +99,22 @@ def RunSteps(api: DEPS):
   assert api.chromium_rts.get_filter_file_path(
     api.path.cleanup_dir, parent_test
   ) == (api.path.cleanup_dir / 'gen' / 'rts' / 'interactive_ui_tests.filter')
+  assert api.chromium_rts.get_filter_file_path(
+    api.path.cleanup_dir, parent_test, inverted=True
+  ) == (
+    api.path.cleanup_dir
+    / 'gen'
+    / 'rts'
+    / 'interactive_ui_tests_inverted.filter'
+  )
   assert (
     api.chromium_rts.get_filter_file_path(api.path.cleanup_dir, derivative_test)
+    is None
+  )
+  assert (
+    api.chromium_rts.get_filter_file_path(
+      api.path.cleanup_dir, derivative_test, inverted=True
+    )
     is None
   )
 
@@ -114,6 +128,49 @@ def RunSteps(api: DEPS):
     api.path.cleanup_dir, derivative_with_rts
   ) == (
     api.path.cleanup_dir / 'gen' / 'rts' / 'pixel_interactive_ui_tests.filter'
+  )
+  assert api.chromium_rts.get_filter_file_path(
+    api.path.cleanup_dir, derivative_with_rts, inverted=True
+  ) == (
+    api.path.cleanup_dir
+    / 'gen'
+    / 'rts'
+    / 'pixel_interactive_ui_tests_inverted.filter'
+  )
+
+  # Verify get_command_line_variants when target is not in command_lines
+  test_missing_cmd = MockTestSpec.create(
+    name='missing_cmd_tests',
+    runs_on_swarming=True,
+    enable_rts_filtering=True,
+  ).get_test(api.chromium_tests)
+  assert (
+    api.chromium_rts.get_command_line_variants(
+      api.path.cleanup_dir, {}, [test_missing_cmd]
+    )
+    == {}
+  )
+
+  # Verify _get_isolate_target fallback logic
+  assert (
+    api.chromium_rts._get_isolate_target(parent_test) == 'interactive_ui_tests'
+  )
+  assert (
+    api.chromium_rts._get_isolate_target(derivative_test)
+    == 'interactive_ui_tests'
+  )
+
+  class ExplicitIsolateTest(parent_test.__class__):
+    @property
+    def isolate_target(self):
+      return 'explicit_isolate'
+
+  test_with_explicit_isolate = ExplicitIsolateTest(
+    parent_spec, api.chromium_tests
+  )
+  assert (
+    api.chromium_rts._get_isolate_target(test_with_explicit_isolate)
+    == 'explicit_isolate'
   )
 
 

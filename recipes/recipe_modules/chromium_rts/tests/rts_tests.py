@@ -54,13 +54,18 @@ def RunSteps(api: DEPS):
     api.path.cleanup_dir,
     affected_files=api.properties.get('affected_files', []),
   )
-  api.chromium_rts.isolate_filter_files(
-    api.path.cleanup_dir,
-    ['blink_python_tests', 'blink_web_tests'],
-  )
   mock_test = MockTestSpec.create(
     name='blink_web_tests', runs_on_swarming=True
   ).get_test(api.chromium_tests)
+  banned_test = MockTestSpec.create(
+    name='blink_python_tests', runs_on_swarming=True
+  ).get_test(api.chromium_tests)
+  tests = [banned_test, mock_test]
+
+  api.chromium_rts.isolate_filter_files(
+    api.path.cleanup_dir,
+    tests,
+  )
   api.chromium_rts.start_evaluation(api.path.cleanup_dir, [mock_test])
   api.chromium_rts.wait_for_evaluation()
 
@@ -70,6 +75,7 @@ def RunSteps(api: DEPS):
       'blink_web_tests': ['/bin/run_tests', '--some-arg'],
       'blink_python_tests': ['/bin/run_python_tests'],
     },
+    tests,
   )
   if api.chromium_rts._should_generate_filters():
     expected_variants = {}

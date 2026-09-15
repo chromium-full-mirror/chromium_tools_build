@@ -40,18 +40,26 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Returns the path to the directory containing the RTS filter files."""
     return build_dir / 'gen' / 'rts'
 
+  def _get_isolate_target(self, test: Test) -> str:
+    """Returns the isolate target name for a test, falling back to target_name."""
+    return test.isolate_target or test.target_name
+
   def get_filter_file_path(
     self,
     build_dir: Path,
     test: Test,
+    inverted: bool = False,
   ) -> Path | None:
-    """Returns the path to the RTS filter file for a test, if applicable."""
-    target_name = test.isolate_target or test.target_name
+    """Returns the path to the RTS filter file for a test."""
+    target_name = self._get_isolate_target(test)
     # Derivative suites sharing a target/isolate with a parent suite should not
     # look for or associate filter files unless RTS filtering is enabled.
     if test.canonical_name != target_name and not test.enable_rts_filtering:
       return None
-    return self.filter_file_dir(build_dir) / f'{test.canonical_name}.filter'
+    suffix = '_inverted' if inverted else ''
+    return (
+      self.filter_file_dir(build_dir) / f'{test.canonical_name}{suffix}.filter'
+    )
 
   def generate_filter_files(
     self,
@@ -166,40 +174,42 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       self.m.futures.wait([self._evaluation_future])
       self._evaluation_future = None
 
-  def isolate_filter_files(
-    self, build_dir: Path, targets: list[str], tests: list[Test] | None = None
-  ) -> None:
+  def isolate_filter_files(self, build_dir: Path, tests: list[Test]) -> None:
     """Adds generated RTS filter files to the corresponding isolate files."""
     if not self._should_generate_filters(tests):
       return
 
     with self.m.step.nest('add RTS filter files to isolates'):
-      missing_isolates = []
-      for target in targets:
-        if target in self._get_banned_suites():
+      filter_files_by_target = {}
+      for test in tests:
+        target = self._get_isolate_target(test)
+        if (
+          target in self._get_banned_suites()
+          or test.canonical_name in self._get_banned_suites()
+        ):
           continue
-        filter_files_to_add = []
-        filter_file = self.filter_file_dir(build_dir) / f'{target}.filter'
-        if self.m.path.exists(filter_file):
-          filter_files_to_add.append(
+        filter_file = self.get_filter_file_path(build_dir, test)
+        if filter_file and self.m.path.exists(filter_file):
+          filter_files_by_target.setdefault(target, set()).add(
             self.m.path.relpath(filter_file, build_dir)
           )
-        comp_filter_file = (
-          self.filter_file_dir(build_dir) / f'{target}_inverted.filter'
+        inverted_filter_file = self.get_filter_file_path(
+          build_dir, test, inverted=True
         )
-        if self.m.path.exists(comp_filter_file):
-          filter_files_to_add.append(
-            self.m.path.relpath(comp_filter_file, build_dir)
+        if inverted_filter_file and self.m.path.exists(inverted_filter_file):
+          filter_files_by_target.setdefault(target, set()).add(
+            self.m.path.relpath(inverted_filter_file, build_dir)
           )
 
-        if filter_files_to_add:
-          isolate_file = build_dir / f'{target}.isolate'
-          if self.m.path.exists(isolate_file):
-            self.m.isolate.add_files_to_isolate_file(
-              isolate_file, filter_files_to_add
-            )
-          else:
-            missing_isolates.append(target)
+      missing_isolates = []
+      for target, filter_files in sorted(filter_files_by_target.items()):
+        isolate_file = build_dir / f'{target}.isolate'
+        if self.m.path.exists(isolate_file):
+          self.m.isolate.add_files_to_isolate_file(
+            isolate_file, sorted(filter_files)
+          )
+        else:
+          missing_isolates.append(target)
 
       if missing_isolates:
         step_result = self.m.step.empty('missing isolate files')
@@ -212,7 +222,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     self,
     build_dir: Path,
     command_lines: dict[str, list[str]],
-    tests: list[Test] | None = None,
+    tests: list[Test],
   ) -> dict[str, dict[str, list[str]]]:
     """Constructs command line variants for the given targets."""
     variants = {}
@@ -222,8 +232,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if rts_command_lines:
       variants['rts'] = rts_command_lines
 
-    rts_complement_command_lines = self._get_rts_complement_command_lines(
-      build_dir, command_lines, tests
+    rts_complement_command_lines = self._get_rts_command_lines(
+      build_dir, command_lines, tests, inverted=True
     )
     if rts_complement_command_lines:
       variants['rts_complement'] = rts_complement_command_lines
@@ -234,48 +244,34 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     self,
     build_dir: Path,
     command_lines: dict[str, list[str]],
-    tests: list[Test] | None = None,
+    tests: list[Test],
+    inverted: bool = False,
   ) -> dict[str, list[str]]:
     """Constructs RTS-modified command lines for the given targets."""
     rts_command_lines = {}
     if not self._should_generate_filters(tests):
       return rts_command_lines
 
-    for target, cmd in command_lines.items():
-      if target in self._get_banned_suites():
+    for test in tests:
+      target = self._get_isolate_target(test)
+      if (
+        target in self._get_banned_suites()
+        or test.canonical_name in self._get_banned_suites()
+      ):
         continue
-      filter_file = self.filter_file_dir(build_dir) / f'{target}.filter'
-      if self.m.path.exists(filter_file):
-        rts_cmd = list(cmd)
-        rts_cmd.append(f'--test-launcher-filter-file=gen/rts/{target}.filter')
-        rts_command_lines[target] = rts_cmd
-
-    return rts_command_lines
-
-  def _get_rts_complement_command_lines(
-    self,
-    build_dir: Path,
-    command_lines: dict[str, list[str]],
-    tests: list[Test] | None = None,
-  ) -> dict[str, list[str]]:
-    """Constructs RTS complement command lines for the given targets."""
-    rts_complement_command_lines = {}
-    if not self._should_generate_filters(tests):
-      return rts_complement_command_lines
-
-    for target, cmd in command_lines.items():
-      if target in self._get_banned_suites():
+      cmd = command_lines.get(target)
+      if not cmd:
         continue
-      filter_file = (
-        self.filter_file_dir(build_dir) / f'{target}_inverted.filter'
+      filter_file = self.get_filter_file_path(
+        build_dir, test, inverted=inverted
       )
-      if self.m.path.exists(filter_file):
+      if filter_file and self.m.path.exists(filter_file):
         rts_cmd = list(cmd)
         rel_path = self.m.path.relpath(filter_file, build_dir)
         rts_cmd.append(f'--test-launcher-filter-file={rel_path}')
-        rts_complement_command_lines[target] = rts_cmd
+        rts_command_lines[target] = rts_cmd
 
-    return rts_complement_command_lines
+    return rts_command_lines
 
   def set_swarming_test_execution_info(
     self,
@@ -289,7 +285,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     if not test.enable_rts_filtering:
       return
 
-    rts_command_line = command_line_variants['rts'].get(test.target_name, [])
+    target = self._get_isolate_target(test)
+    rts_command_line = command_line_variants['rts'].get(target, [])
     if rts_command_line:
       test.raw_cmd = rts_command_line
       self._overwritten_tests.add(test.name)
