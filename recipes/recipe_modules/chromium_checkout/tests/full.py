@@ -10,7 +10,9 @@ from recipe_engine.post_process import (
   MustRun,
   PropertyEquals,
   StepCommandContains,
+  StepCommandDoesNotContain,
   StepSuccess,
+  SummaryMarkdownRE,
 )
 from recipe_engine.recipe_api import Property
 
@@ -25,10 +27,14 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_checkout, siso
-from RECIPE_MODULES.depot_tools import gclient as gclient_module
+from RECIPE_MODULES.depot_tools import (
+  gclient as gclient_module,
+  tryserver as tryserver_module,
+)
 from RECIPE_MODULES.recipe_engine import (
   assertions,
   buildbucket,
+  cv,
   json,
   path,
   platform,
@@ -42,6 +48,7 @@ class DEPS(RecipeScriptApi):
   assertions: assertions.API
   buildbucket: buildbucket.API
   chromium_checkout: chromium_checkout.API
+  cv: cv.API
   gclient: gclient_module.API
   json: json.API
   path: path.API
@@ -49,16 +56,19 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   siso: siso.API
   step: step.API
+  tryserver: tryserver_module.API
 
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   chromium_checkout: chromium_checkout.TEST_API
+  cv: cv.TEST_API
   json: json.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
   siso: siso.TEST_API
+  tryserver: tryserver_module.TEST_API
 
 
 PROPERTIES = {
@@ -315,6 +325,64 @@ def GenTests(api: TEST_DEPS):
     api.properties(report_via_property=True, test_with_submodules=True),
     api.post_process(
       StepSuccess, '[Experimental] git diff --raw to analyze patch'
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'no_rebase_footer',
+    api.platform('linux', 64),
+    api.buildbucket.try_build(),
+    api.cv(run_mode=api.cv.DRY_RUN),
+    api.tryserver.get_footers({'Cq-No-Rebase': ['true']}),
+    api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+    api.post_process(
+      StepCommandContains,
+      'bot_update (without patch) - foo',
+      ['--gerrit_no_rebase_patch_ref'],
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'no_rebase_footer_full_run',
+    api.platform('linux', 64),
+    api.buildbucket.try_build(),
+    api.cv(run_mode=api.cv.FULL_RUN),
+    api.tryserver.get_footers({'Cq-No-Rebase': ['true']}),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      SummaryMarkdownRE,
+      'The Cq-No-Rebase footer is only supported for CQ dry runs',
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'no_rebase_footer_false',
+    api.platform('linux', 64),
+    api.buildbucket.try_build(),
+    api.cv(run_mode=api.cv.DRY_RUN),
+    api.tryserver.get_footers({'Cq-No-Rebase': ['false']}),
+    api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+    api.post_process(
+      StepCommandDoesNotContain,
+      'bot_update (without patch) - foo',
+      ['--gerrit_no_rebase_patch_ref'],
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'no_rebase_footer_manual_tryjob',
+    api.platform('linux', 64),
+    api.buildbucket.try_build(),
+    api.tryserver.get_footers({'Cq-No-Rebase': ['true']}),
+    api.post_process(StepSuccess, 'bot_update (without patch) - foo'),
+    api.post_process(
+      StepCommandContains,
+      'bot_update (without patch) - foo',
+      ['--gerrit_no_rebase_patch_ref'],
     ),
     api.post_process(DropExpectation),
   )

@@ -227,6 +227,19 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     set_output_commit = kwargs.get('set_output_commit', False)
     kwargs['set_output_commit'] = False
 
+    if self.m.tryserver.is_tryserver and self.m.tryserver.gerrit_change:
+      footers = self.m.tryserver.get_footers() or {}
+      cq_no_rebase = footers.get('Cq-No-Rebase', [])
+      if any(v.strip().lower() == 'true' for v in cq_no_rebase):
+        if self.m.cv.active and self.m.cv.run_mode != self.m.cv.DRY_RUN:
+          raise self.m.step.StepFailure(
+            'The Cq-No-Rebase footer is only supported for CQ dry runs, but '
+            f'this build is part of a {self.m.cv.run_mode} run.'
+          )
+        if self.m.cv.active:
+          self.m.cv.allow_reuse_for(self.m.cv.DRY_RUN)
+        kwargs.setdefault('gerrit_no_rebase_patch_ref', True)
+
     timeout = int(self.timeout) if self.timeout else timeout
 
     if self.m.siso.enabled:

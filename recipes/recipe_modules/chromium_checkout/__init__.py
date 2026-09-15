@@ -25,6 +25,7 @@ from RECIPE_MODULES.depot_tools import (
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   context,
+  cv,
   file,
   json,
   path,
@@ -45,6 +46,7 @@ class DEPS(RecipeScriptApi):
   tryserver: tryserver.API
   buildbucket: buildbucket.API
   context: context.API
+  cv: cv.API
   file: file.API
   json: json.API
   path: path.API
