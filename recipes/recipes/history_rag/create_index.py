@@ -138,7 +138,7 @@ def checkout_source_code(api: DEPS):
   with api.step.nest('Checkout Chrome Source Code'):
     _, builder_config = api.chromium_tests_builder_config.lookup_builder()
     api.chromium_tests.configure_build(builder_config)
-    update_result = api.chromium_checkout.ensure_checkout()
+    update_result = api.chromium_checkout.ensure_checkout(patch=False)
     checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
     build_dir = api.chromium.default_build_dir(source_dir)
