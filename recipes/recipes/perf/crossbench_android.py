@@ -68,6 +68,7 @@ PROPERTIES = InputProperties
 _AVD_CIPD_VERSION = 'latest'
 # A list of available AVDs: docs/android_emulator.md
 _AVD_CONFIG_VERSION = 'android_%s_google_apis_x64%s.textpb'
+_AVD_CONFIG_VERSION_PS16K = 'android_%s_google_apis_ps16k_x64%s.textpb'
 # The prefix is used in the tests to identify whether they are running in CQ.
 _CAS_DIR_PREFIX = 'cq_archive_'
 # By default, the test runner executes all tests without sharding.
@@ -103,7 +104,12 @@ class AndroidEmulator:
     self.avd_root = self.api.path.cache_dir / 'avd'
     avd_path = self.avd_root / 'src/tools/android/avd'
     self.avd_script = avd_path / 'avd.py'
-    self.avd_config_version = _AVD_CONFIG_VERSION % (
+    config_version = (
+      _AVD_CONFIG_VERSION_PS16K
+      if self.android_sdk == 37
+      else _AVD_CONFIG_VERSION
+    )
+    self.avd_config_version = config_version % (
       self.android_sdk,
       self.avd_suffix,
     )
@@ -272,7 +278,7 @@ def RunSteps(api: DEPS, properties):
 
 def GenTests(api: TEST_DEPS):
 
-  _INSTALL_STEP = 'Install android_37_google_apis_x64.textpb'
+  _INSTALL_STEP = 'Install android_37_google_apis_ps16k_x64.textpb'
   run_config = TestRunConfig(sdk_version=37, avd_suffix='')
 
   def gen_test_data_retry_start(max_attempts=2):
