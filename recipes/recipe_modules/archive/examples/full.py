@@ -1509,7 +1509,6 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Generic Archiving Steps.snoop: report_sbom',
       [
-        "[START_DIR]/reporter/snoopy_broker",
         "-report-gcs",
         "-digest",
         "spdxbeef",
@@ -1634,7 +1633,6 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Generic Archiving Steps.snoop: report_sbom',
       [
-        "[START_DIR]/reporter/snoopy_broker",
         "-report-gcs",
         "-digest",
         "spdxbeef",
@@ -1676,7 +1674,6 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Generic Archiving Steps.snoop: report_sbom (2)',
       [
-        "[START_DIR]/reporter/snoopy_broker",
         "-report-gcs",
         "-digest",
         "spdxbeef",
@@ -1801,7 +1798,6 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Generic Archiving Steps.snoop: report_sbom',
       [
-        "[START_DIR]/reporter/snoopy_broker",
         "-report-gcs",
         "-digest",
         "spdxbeef",
@@ -1843,7 +1839,6 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Generic Archiving Steps.snoop: report_sbom (2)',
       [
-        "[START_DIR]/reporter/snoopy_broker",
         "-report-gcs",
         "-digest",
         "spdxbeef",
