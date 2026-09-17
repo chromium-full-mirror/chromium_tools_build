@@ -87,7 +87,6 @@ def RunSteps(api: DEPS):
         'vpython3',
         '-Xutf8',
         'crossbench/tests/end2end/runner.py',
-        f'--test-gsutil-path={api.gsutil.gsutil_py_path}',
         f'--test-browser-path={chrome_app_path}',
         f'--test-driver-path={chrome_driver_path}',
         f'--cas-archive={cas_archive}',

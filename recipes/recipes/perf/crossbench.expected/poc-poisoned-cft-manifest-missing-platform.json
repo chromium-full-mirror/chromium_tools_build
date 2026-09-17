@@ -151,7 +151,7 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 69, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 341, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 340, in download_chrome",
       "    raise ValueError(",
       "ValueError: No CFT download URL found for platform 'linux64'"
     ]

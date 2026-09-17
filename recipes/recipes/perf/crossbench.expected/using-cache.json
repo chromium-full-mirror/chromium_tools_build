@@ -134,7 +134,6 @@
       "vpython3",
       "-Xutf8",
       "crossbench/tests/end2end/runner.py",
-      "--test-gsutil-path=RECIPE_REPO[depot_tools]/gsutil.py",
       "--test-browser-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chrome/chrome-linux64/chrome",
       "--test-driver-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver/chromedriver-linux64/chromedriver",
       "--cas-archive=[CLEANUP]/cq_archive__tmp_1",

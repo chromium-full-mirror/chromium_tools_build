@@ -151,9 +151,9 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 69, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 345, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 344, in download_chrome",
       "    _validate_cft_url(url, version, cft_platform, 'chrome')",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 282, in _validate_cft_url",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 281, in _validate_cft_url",
       "    raise ValueError(",
       "ValueError: Untrusted CFT URL path '/attacker-controlled-public-bucket/131.0.6778.204/linux64/chrome-linux64.zip' in 'https://storage.googleapis.com/attacker-controlled-public-bucket/131.0.6778.204/linux64/chrome-linux64.zip': expected '/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip'"
     ]
