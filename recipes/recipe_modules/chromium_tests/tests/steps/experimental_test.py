@@ -242,3 +242,40 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'experiment_key_on_triggered_tester',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_tester',
+      parent_buildername='test_parent',
+    ),
+    api.properties(experiment_percentage=10),
+    api.post_process(
+      post_process.StepTextContains,
+      'inner_test (experimental)',
+      ['This is an experimental test that was selected for this build'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'experiment_key_on_compilator',
+    api.chromium.try_build(
+      builder_group='test_group',
+      builder='test_compilator',
+    ),
+    api.properties(
+      experiment_percentage=50,
+      orchestrator={
+        'builder_name': 'test_orchestrator',
+        'builder_group': 'test_group',
+      },
+    ),
+    api.post_process(
+      post_process.StepTextContains,
+      'inner_test (experimental)',
+      ['This is an experimental test that was selected for this build'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )

@@ -1565,8 +1565,10 @@ class ExperimentalTest(TestWrapper):
     # return True or False, but not both.
     #
     # The experiment key is either:
-    #   - builder name + patchset + name of the test, for trybots
-    #   - builder name + build number + name of the test, for CI bots
+    #   - builder name + patchset + test name, for normal trybots
+    #   - orch name + patchset + test name, for orch-compilator trybots
+    #   - builder name + build id + test name, for normal CI bots
+    #   - parent builder name + build id + test name, for parent-child CI bots
     #
     # These keys:
     #   - ensure that the same experiment configuration is always used for
@@ -1575,16 +1577,31 @@ class ExperimentalTest(TestWrapper):
     #     across different builders
     #   - allow independent variation of experiments on different tests
     #     across a single build
+    #   - ensure a parent and child build pair always agree on if the test is
+    #     in the experiment
     #
     # The overall algorithm is copied from the CQ's implementation of
     # experimental builders, albeit with different experiment keys.
+    orchestrator = self.api.m.properties.get('orchestrator') or {}
+    parent_buildername = self.api.m.properties.get('parent_buildername')
+    parent_build_id = self.api.m.properties.get('parent_build_id')
+    if orchestrator.get('builder_name'):
+      builder_name = orchestrator['builder_name']
+      build_id = self.api.m.buildbucket.build.id
+    elif parent_buildername and parent_build_id:
+      builder_name = parent_buildername
+      build_id = parent_build_id
+    else:
+      builder_name = self.api.m.buildbucket.builder_name
+      build_id = self.api.m.buildbucket.build.id
+
     criteria = [
-      self.api.m.buildbucket.builder_name,
+      builder_name,
       (
         self.api.m.tryserver.gerrit_change
         and self.api.m.tryserver.gerrit_change.change
       )
-      or self.api.m.buildbucket.build.number
+      or build_id
       or '0',
       self.name,
     ]
