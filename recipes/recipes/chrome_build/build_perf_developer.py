@@ -383,8 +383,8 @@ def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
         raise_on_failure=False,
       )
 
-    # Enable fail-on-bad-deps as an additional step on Linux for continuous
-    # benchmarking before enabling by default. See crbug.com/547682173.
+    # Enable missing-deps check as an additional step on Linux for continuous
+    # benchmarking before enabling by default. See crbug.com/346429448.
     # Note: Do not fail the build if this step fails to avoid interrupting
     # continuous performance metrics collection. See crbug.com/556013464.
     if api.platform.is_linux:
@@ -396,8 +396,8 @@ def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target):
         build_dir,
         target,
         with_remote_cache=True,
-        step_name_suffix=step_name_suffix + ' with fail-on-bad-deps',
-        siso_experiments=['fail-on-bad-deps'],
+        step_name_suffix=step_name_suffix + ' with missing-deps check',
+        siso_args=['-missing_deps=error'],
       )
 
 

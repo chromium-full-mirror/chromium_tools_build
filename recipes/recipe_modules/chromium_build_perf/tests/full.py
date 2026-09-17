@@ -85,7 +85,14 @@ def RunSteps(api: DEPS):
     build_dir,
     'all',
     with_remote_cache=True,
-    siso_experiments=['fail-on-bad-deps'],
+    siso_experiments=['no-file-access-trace'],
+  )
+  api.chromium_build_perf.build_with_siso(
+    source_dir,
+    build_dir,
+    'all',
+    with_remote_cache=True,
+    siso_args=['-missing_deps=error'],
   )
   api.chromium_build_perf.build_with_ninja(
     source_dir,

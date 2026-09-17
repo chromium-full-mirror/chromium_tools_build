@@ -37,6 +37,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     step_name_suffix=None,
     use_rbe=True,
     siso_experiments=None,
+    siso_args=None,
     # TODO: Remove this flag.
     resource_usage_output_file=None,
   ):
@@ -50,6 +51,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
       build_dir: Path to the built output directory.
       use_rbe: Whether to use remote build execution or not
       siso_experiments: Siso experiments list to enable.
+      siso_args: Additional arguments to pass to Siso.
       resource_usage_output_file: File which if provided will record the
                                   resource usage stats related to build
                                   step.
@@ -62,7 +64,7 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     """
     step_name = 'Build ' + target
     env = {}
-    siso_args = []
+    siso_args = list(siso_args or [])
     extra_ninja_args = []
     if siso_experiments:
       env['SISO_EXPERIMENTS'] = ','.join(siso_experiments)
