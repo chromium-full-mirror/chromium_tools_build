@@ -15,6 +15,7 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_modules.infra.crowbar import crowbar as crowbar_pb
 
 from dataclasses import dataclass
 
@@ -34,16 +35,17 @@ class DEPS(RecipeScriptApi):
   crowbar: crowbar.API
   gclient: gclient.API
   properties: properties.API
-  raw_io: raw_io.API
-  step: step.API
 
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
+  properties: properties.TEST_API
   raw_io: raw_io.TEST_API
   step: step.TEST_API
 
+
+PROPERTIES = crowbar_pb.CrowbarOptions
 
 # Path to git repos (including submodules) to find Crowbar packages.
 _REPO_PATHS = [
@@ -51,14 +53,13 @@ _REPO_PATHS = [
 ]
 
 
-def RunSteps(api: DEPS):
+def RunSteps(api: DEPS, properties):
   api.gclient.set_config('chromium')
 
   c = api.chromium_checkout.ensure_checkout()
   for p in _REPO_PATHS:
     repo_dir = c.checkout_dir / p
-    pkgs = api.crowbar.list_packages(repo_dir)
-    api.crowbar.build(repo_dir, packages=pkgs)
+    api.crowbar.run_in_repo(p, repo_dir, properties.crowbar_role)
 
 
 def GenTests(api: TEST_DEPS):
@@ -68,6 +69,7 @@ def GenTests(api: TEST_DEPS):
       builder_group='chromium.linux',
       builder='Linux Builder',
     ),
+    api.properties(crowbar_role=crowbar_pb.Role.ROLE_CI_BUILDER),
     api.step_data(
       'Find Crowbar Packages',
       api.raw_io.stream_output_text('foo/crowbar.txtpb\n', stream='stdout'),
