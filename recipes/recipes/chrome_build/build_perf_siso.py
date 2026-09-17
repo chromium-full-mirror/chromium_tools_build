@@ -227,9 +227,10 @@ def _run_clean_builds(
       raise_on_failure=False,
     )
 
-  # Enable missing-deps check as an additional step on Linux for continuous
-  # benchmarking before enabling by default. See crbug.com/346429448.
-  if api.platform.is_linux:
+  # Enable missing-deps check as an additional step on Linux and Mac hosts for
+  # continuous benchmarking before enabling by default.
+  # See crbug.com/346429448.
+  if api.platform.is_linux or api.platform.is_mac:
     api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, phase=phase
     )
