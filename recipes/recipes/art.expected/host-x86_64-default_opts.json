@@ -82,6 +82,13 @@
     "name": "repo manifest"
   },
   {
+    "cmd": [],
+    "name": "verify test_env",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@Verified 14 env vars match props.test_env@@@"
+    ]
+  },
+  {
     "cmd": [
       "[CACHE]/art/art/tools/buildbot-build.sh",
       "--host",

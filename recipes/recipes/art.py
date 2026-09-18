@@ -87,6 +87,7 @@ def RunSteps(api: DEPS, props):
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
         test_steps=props.test_steps,
+        test_env=props.test_env,
       )
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
@@ -100,6 +101,7 @@ def RunSteps(api: DEPS, props):
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
         test_steps=props.test_steps,
+        test_env=props.test_env,
       )
 
 
@@ -220,6 +222,7 @@ def setup_host_x86(
   repo_root=None,
   manifest_branch="master-art",
   test_steps=None,
+  test_env=None,
 ):
   checkout(api, manifest_branch, repo_root)
   clobber(api)
@@ -268,6 +271,22 @@ def setup_host_x86(
   else:
     env.update({'ART_HEAP_POISONING': 'false'})
 
+  if test_env:
+    actual_static = {
+      k: v for k, v in env.items() if k not in ('ANDROID_BUILD_TOP', 'PATH')
+    }
+    expected = dict(test_env)
+    assert actual_static == expected, (
+      f"Host test_env mismatch:\n"
+      f"Actual:   {actual_static}\n"
+      f"Expected: {expected}\n"
+      f"Diff:     {set(actual_static.items()) ^ set(expected.items())}"
+    )
+    api.step.empty(
+      'verify test_env',
+      step_text=f"Verified {len(test_env)} env vars match props.test_env",
+    )
+
   with api.context(env=env):
     api.step(
       'build', [art_tools / 'buildbot-build.sh', '--host', '--installclean']
@@ -278,6 +297,11 @@ def setup_host_x86(
 
     with api.defer.context() as defer:
       for step in test_steps or []:
+        if test_env:
+          expected_step_env = dict(step.env) if step.env else {}
+          assert not expected_step_env, (
+            f"Host step '{step.name}' has unexpected step.env: {expected_step_env}"
+          )
         defer(api.step, step.name, list(step.cmd))
 
 
@@ -294,6 +318,7 @@ def setup_target(
   repo_root=None,
   manifest_branch="master-art",
   test_steps=None,
+  test_env=None,
 ):
 
   build_top_dir = api.context.cwd
@@ -407,14 +432,32 @@ def setup_target(
 
   env.update({'ART_TEST_CHROOT': chroot_dir})
 
+  if test_env:
+    actual_static = {
+      k: v
+      for k, v in env.items()
+      if k not in ('ANDROID_BUILD_TOP', 'ANDROID_PRODUCT_OUT', 'ADB', 'PATH')
+    }
+    expected = dict(test_env)
+    assert actual_static == expected, (
+      f"Target test_env mismatch:\n"
+      f"Actual:   {actual_static}\n"
+      f"Expected: {expected}\n"
+      f"Diff:     {set(actual_static.items()) ^ set(expected.items())}"
+    )
+    api.step.empty(
+      'verify test_env',
+      step_text=f"Verified {len(test_env)} env vars match props.test_env",
+    )
+
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
   gtest_env = env.copy()
   gtest_env.update({'ART_TEST_NO_SYNC': 'true'})
 
-  test_env = gtest_env.copy()
-  test_env.update(
+  device_test_env = gtest_env.copy()
+  device_test_env.update(
     {
       'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
       + api.path.pathsep
@@ -456,7 +499,7 @@ def setup_target(
       )
 
   with api.defer.context() as defer:
-    with api.context(env=test_env):
+    with api.context(env=device_test_env):
       defer(
         api.step,
         'device pre-run cleanup',
@@ -476,7 +519,7 @@ def setup_target(
       # adb doesn't know about the VM and will hang.
       if on_virtual_machine:
         return
-      with api.context(env=test_env):
+      with api.context(env=device_test_env):
         defer(
           api.step,
           test_name + ': adb logcat',
@@ -490,13 +533,21 @@ def setup_target(
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
     for step in test_steps or []:
+      if test_env:
+        expected_step_env = dict(step.env) if step.env else {}
+        actual_step_env = (
+          {'ART_TEST_NO_SYNC': 'true'} if step.name == 'test gtest' else {}
+        )
+        assert actual_step_env == expected_step_env, (
+          f"Step '{step.name}' env mismatch: actual {actual_step_env} != expected {expected_step_env}"
+        )
       with api.context(
-        env=gtest_env if step.name == 'test gtest' else test_env
+        env=gtest_env if step.name == 'test gtest' else device_test_env
       ):
         defer(api.step, step.name, list(step.cmd))
       test_logging(api, step.name)
 
-    with api.context(env=test_env):
+    with api.context(env=device_test_env):
       defer(
         api.step,
         'tear down device',
@@ -529,6 +580,22 @@ def GenTests(api: TEST_DEPS):
       debug=False,
       concurrent_collector=True,
       generational_cc=True,
+      test_env={
+        'ART_HEAP_POISONING': 'false',
+        'ART_TEST_KEEP_GOING': 'true',
+        'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
+        'ART_USE_GENERATIONAL_CC': 'true',
+        'ART_USE_READ_BARRIER': 'true',
+        'BUILD_BROKEN_DISABLE_BAZEL': 'true',
+        'HOST_PREFER_32_BIT': 'true',
+        'LANG': 'en_US.UTF-8',
+        'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
+        'TARGET_BUILD_TYPE': 'release',
+        'TARGET_BUILD_UNBUNDLED': 'true',
+        'TARGET_BUILD_VARIANT': 'eng',
+        'TARGET_PRODUCT': 'armv8',
+        'TARGET_RELEASE': 'trunk_staging',
+      },
       test_steps=[
         {
           'name': 'test gtest',
@@ -685,8 +752,29 @@ def GenTests(api: TEST_DEPS):
       device="target.arm.64",
       generational_cc=True,
       product="armv8",
+      test_env={
+        'ART_BUILD_HOST_DEBUG': 'false',
+        'ART_HEAP_POISONING': 'false',
+        'ART_TEST_CHROOT': '/data/local/art-test-chroot',
+        'ART_TEST_KEEP_GOING': 'true',
+        'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
+        'ART_USE_GENERATIONAL_CC': 'true',
+        'ART_USE_READ_BARRIER': 'true',
+        'LANG': 'en_US.UTF-8',
+        'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
+        'TARGET_BUILD_TYPE': 'release',
+        'TARGET_BUILD_UNBUNDLED': 'true',
+        'TARGET_BUILD_VARIANT': 'eng',
+        'TARGET_PRODUCT': 'armv8',
+        'TARGET_RELEASE': 'trunk_staging',
+        'USE_DEX2OAT_DEBUG': 'false',
+      },
       test_steps=[
-        {'name': 'test gtest', 'cmd': ['art/tools/run-gtests.sh']},
+        {
+          'name': 'test gtest',
+          'cmd': ['art/tools/run-gtests.sh'],
+          'env': {'ART_TEST_NO_SYNC': 'true'},
+        },
         {
           'name': 'test optimizing',
           'cmd': [
