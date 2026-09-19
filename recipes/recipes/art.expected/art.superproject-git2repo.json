@@ -116,20 +116,7 @@
     "cwd": "[CACHE]/art",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ART_HEAP_POISONING": "false",
-      "ART_TEST_KEEP_GOING": "true",
-      "ART_TEST_RUN_TEST_2ND_ARCH": "false",
-      "ART_USE_GENERATIONAL_CC": "false",
-      "ART_USE_READ_BARRIER": "false",
-      "BUILD_BROKEN_DISABLE_BAZEL": "true",
-      "LANG": "en_US.UTF-8",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>",
-      "SOONG_ALLOW_MISSING_DEPENDENCIES": "true",
-      "TARGET_BUILD_TYPE": "release",
-      "TARGET_BUILD_UNBUNDLED": "true",
-      "TARGET_BUILD_VARIANT": "eng",
-      "TARGET_PRODUCT": "armv8",
-      "TARGET_RELEASE": "trunk_staging"
+      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
     },
     "luci_context": {
       "realm": {

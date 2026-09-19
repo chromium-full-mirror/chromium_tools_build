@@ -77,12 +77,8 @@ def RunSteps(api: DEPS, props):
       setup_target(
         api,
         device=props.device,
-        bitness=props.bitness,
         product=props.product,
         build_only=props.build_only,
-        concurrent_collector=props.concurrent_collector,
-        generational_cc=props.generational_cc,
-        heap_poisoning=props.heap_poisoning,
         on_virtual_machine=props.on_virtual_machine,
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
@@ -93,11 +89,7 @@ def RunSteps(api: DEPS, props):
     with api.context(cwd=api.path.cache_dir / 'art'):
       setup_host_x86(
         api,
-        bitness=props.bitness,
         build_only=props.build_only,
-        concurrent_collector=props.concurrent_collector,
-        generational_cc=props.generational_cc,
-        heap_poisoning=props.heap_poisoning,
         repo_root=props.repo_root,
         manifest_branch=manifest_branch or 'master-art',
         test_steps=props.test_steps,
@@ -214,11 +206,7 @@ def ensure_tool(api: DEPS, package, version, subdir=""):
 
 def setup_host_x86(
   api: DEPS,
-  bitness,
-  build_only,
-  concurrent_collector=True,
-  generational_cc=True,
-  heap_poisoning=False,
+  build_only=False,
   repo_root=None,
   manifest_branch="master-art",
   test_steps=None,
@@ -229,63 +217,20 @@ def setup_host_x86(
 
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
-  # For host, the TARGET_PRODUCT isn't relevant.
-  env = {
-    'TARGET_PRODUCT': 'armv8',
-    'TARGET_BUILD_VARIANT': 'eng',
-    'TARGET_BUILD_TYPE': 'release',
-    'TARGET_RELEASE': 'trunk_staging',
-    'LANG': 'en_US.UTF-8',
-    'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
-    'BUILD_BROKEN_DISABLE_BAZEL': 'true',
-    'TARGET_BUILD_UNBUNDLED': 'true',
-    'ANDROID_BUILD_TOP': build_top_dir,
-    'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
-    + api.path.pathsep
-    + str(
-      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
-    )
-    + api.path.pathsep
-    + '%(PATH)s',
-    'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
-    'ART_TEST_KEEP_GOING': 'true',
-  }
 
-  if bitness == 32:
-    env.update({'HOST_PREFER_32_BIT': 'true'})
-
-  if concurrent_collector:
-    env.update({'ART_USE_READ_BARRIER': 'true'})
-  else:
-    env.update({'ART_USE_READ_BARRIER': 'false'})
-
-  # Note: Generational CC only makes sense when read barriers are used
-  # (i.e. when the Concurrent Copying collector is used).
-  if generational_cc:
-    env.update({'ART_USE_GENERATIONAL_CC': 'true'})
-  else:
-    env.update({'ART_USE_GENERATIONAL_CC': 'false'})
-
-  if heap_poisoning:
-    env.update({'ART_HEAP_POISONING': 'true'})
-  else:
-    env.update({'ART_HEAP_POISONING': 'false'})
-
-  if test_env:
-    actual_static = {
-      k: v for k, v in env.items() if k not in ('ANDROID_BUILD_TOP', 'PATH')
+  env = dict(test_env) if test_env else {}
+  env.update(
+    {
+      'ANDROID_BUILD_TOP': build_top_dir,
+      'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
+      + api.path.pathsep
+      + str(
+        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
+      )
+      + api.path.pathsep
+      + '%(PATH)s',
     }
-    expected = dict(test_env)
-    assert actual_static == expected, (
-      f"Host test_env mismatch:\n"
-      f"Actual:   {actual_static}\n"
-      f"Expected: {expected}\n"
-      f"Diff:     {set(actual_static.items()) ^ set(expected.items())}"
-    )
-    api.step.empty(
-      'verify test_env',
-      step_text=f"Verified {len(test_env)} env vars match props.test_env",
-    )
+  )
 
   with api.context(env=env):
     api.step(
@@ -297,23 +242,15 @@ def setup_host_x86(
 
     with api.defer.context() as defer:
       for step in test_steps or []:
-        if test_env:
-          expected_step_env = dict(step.env) if step.env else {}
-          assert not expected_step_env, (
-            f"Host step '{step.name}' has unexpected step.env: {expected_step_env}"
-          )
-        defer(api.step, step.name, list(step.cmd))
+        with api.context(env=env | dict(step.env)):
+          defer(api.step, step.name, list(step.cmd))
 
 
 def setup_target(
   api: DEPS,
-  device,
-  bitness,
-  product,
+  device=None,
+  product=None,
   build_only=False,
-  concurrent_collector=True,
-  generational_cc=True,
-  heap_poisoning=False,
   on_virtual_machine=False,
   repo_root=None,
   manifest_branch="master-art",
@@ -323,12 +260,6 @@ def setup_target(
 
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
-  # The path to the chroot directory on the device where ART and its
-  # dependencies are installed, in case of chroot-based testing.
-  if on_virtual_machine:
-    chroot_dir = '/home/ubuntu/art-test-chroot'
-  else:
-    chroot_dir = '/data/local/art-test-chroot'
 
   qemu_path = ensure_tool(
     api=api,
@@ -358,105 +289,43 @@ def setup_target(
     api.path.join(sevenz_path, '7z'),
   )
 
-  env = {
-    'TARGET_BUILD_VARIANT': 'eng',
-    'TARGET_BUILD_TYPE': 'release',
-    'TARGET_RELEASE': 'trunk_staging',
-    'LANG': 'en_US.UTF-8',
-    'SOONG_ALLOW_MISSING_DEPENDENCIES': 'true',
-    'TARGET_BUILD_UNBUNDLED': 'true',
-    'ANDROID_BUILD_TOP': build_top_dir,
-    'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
-    'PATH': str(
-      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
-    )
-    + api.path.pathsep
-    +
-    # Add adb to the path.
-    str(build_top_dir.joinpath('prebuilts', 'runtime'))
-    + api.path.pathsep
-    +
-    # Add 7z to the path.
-    str(sevenz_path)
-    + api.path.pathsep
-    +
-    # Add openssh-portable to the path.
-    str(openssh_path)
-    + api.path.pathsep
-    +
-    # Add qemu to the path.
-    str(qemu_path)
-    + api.path.pathsep
-    + '%(PATH)s',
-    'ART_TEST_RUN_TEST_2ND_ARCH': 'false',
-    'USE_DEX2OAT_DEBUG': 'false',
-    'ART_BUILD_HOST_DEBUG': 'false',
-    'ART_TEST_KEEP_GOING': 'true',
-  }
-
-  if concurrent_collector:
-    env.update({'ART_USE_READ_BARRIER': 'true'})
-  else:
-    env.update({'ART_USE_READ_BARRIER': 'false'})  # pragma: no cover
-
-  # Note: Generational CC only makes sense when read barriers are used
-  # (i.e. when the Concurrent Copying collector is used).
-  if generational_cc:
-    env.update({'ART_USE_GENERATIONAL_CC': 'true'})
-  else:
-    env.update({'ART_USE_GENERATIONAL_CC': 'false'})
-
-  if heap_poisoning:
-    env.update({'ART_HEAP_POISONING': 'true'})
-  else:
-    env.update({'ART_HEAP_POISONING': 'false'})
-
-  if on_virtual_machine:
-    env.update(
-      {
-        'ART_TEST_SSH_USER': 'ubuntu',
-        'ART_TEST_SSH_HOST': 'localhost',
-        'ART_TEST_SSH_PORT': '10001',
-        'ART_TEST_ON_VM': 'true',
-      }
-    )
-
+  env = dict(test_env) if test_env else {}
   env.update(
     {
-      'TARGET_PRODUCT': product,
-      'ANDROID_PRODUCT_OUT': build_top_dir.joinpath(
-        'out', 'target', 'product', product
-      ),
+      'ANDROID_BUILD_TOP': build_top_dir,
+      'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
+      'PATH': str(
+        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
+      )
+      + api.path.pathsep
+      +
+      # Add adb to the path.
+      str(build_top_dir.joinpath('prebuilts', 'runtime'))
+      + api.path.pathsep
+      +
+      # Add 7z to the path.
+      str(sevenz_path)
+      + api.path.pathsep
+      +
+      # Add openssh-portable to the path.
+      str(openssh_path)
+      + api.path.pathsep
+      +
+      # Add qemu to the path.
+      str(qemu_path)
+      + api.path.pathsep
+      + '%(PATH)s',
     }
   )
-
-  env.update({'ART_TEST_CHROOT': chroot_dir})
-
-  if test_env:
-    actual_static = {
-      k: v
-      for k, v in env.items()
-      if k not in ('ANDROID_BUILD_TOP', 'ANDROID_PRODUCT_OUT', 'ADB', 'PATH')
-    }
-    expected = dict(test_env)
-    assert actual_static == expected, (
-      f"Target test_env mismatch:\n"
-      f"Actual:   {actual_static}\n"
-      f"Expected: {expected}\n"
-      f"Diff:     {set(actual_static.items()) ^ set(expected.items())}"
-    )
-    api.step.empty(
-      'verify test_env',
-      step_text=f"Verified {len(test_env)} env vars match props.test_env",
+  if product:
+    env['ANDROID_PRODUCT_OUT'] = build_top_dir.joinpath(
+      'out', 'target', 'product', product
     )
 
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
-  gtest_env = env.copy()
-  gtest_env.update({'ART_TEST_NO_SYNC': 'true'})
-
-  device_test_env = gtest_env.copy()
+  device_test_env = env.copy()
   device_test_env.update(
     {
       'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
@@ -533,17 +402,7 @@ def setup_target(
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
     for step in test_steps or []:
-      if test_env:
-        expected_step_env = dict(step.env) if step.env else {}
-        actual_step_env = (
-          {'ART_TEST_NO_SYNC': 'true'} if step.name == 'test gtest' else {}
-        )
-        assert actual_step_env == expected_step_env, (
-          f"Step '{step.name}' env mismatch: actual {actual_step_env} != expected {expected_step_env}"
-        )
-      with api.context(
-        env=gtest_env if step.name == 'test gtest' else device_test_env
-      ):
+      with api.context(env=device_test_env | dict(step.env)):
         defer(api.step, step.name, list(step.cmd))
       test_logging(api, step.name)
 
