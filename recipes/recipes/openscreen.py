@@ -689,12 +689,6 @@ def GenTests(api: recipe_api.RecipeTestApi):
     api.properties(gn_args=['is_debug=false', 'is_msan=true']),
   )
   yield api.test(
-    'linux_x64_gcc',
-    api.platform('linux', 64),
-    api.buildbucket.try_build('openscreen', 'try'),
-    api.properties(gn_args=['is_clang=false', 'use_custom_libcxx=false']),
-  )
-  yield api.test(
     'linux_arm64',
     api.platform('linux', 64),
     api.buildbucket.try_build('openscreen', 'try'),
