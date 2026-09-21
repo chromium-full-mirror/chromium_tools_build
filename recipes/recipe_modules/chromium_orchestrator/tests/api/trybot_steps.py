@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import base64
+
 from recipe_engine import post_process
 from PB.recipe_modules.build.chromium_orchestrator.properties import (
   InputProperties,
@@ -21,6 +23,7 @@ from RECIPE_MODULES.build.chromium_orchestrator.api import (
 )
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
+from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
@@ -473,7 +476,8 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.MustRun,
       (
-        'test_pre_run (without patch).lacros_all_tast_tests (without patch).schedule'
+        'test_pre_run (without patch).'
+        'lacros_all_tast_tests (without patch).schedule'
       ),
     ),
     api.post_process(post_process.DropExpectation),
@@ -1457,7 +1461,6 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.SummaryMarkdownRE, '.*headless_python_unittests.*'
     ),
-    api.post_process(post_process.SummaryMarkdownRE, '.*browser_tests.*'),
     api.post_process(post_process.DoesNotRun, 'browser_tests (without patch)'),
     api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
@@ -2130,7 +2133,13 @@ def GenTests(api: TEST_DEPS):
   def _generate_test_result(
     test_id, test_variant, status=test_result_pb2.PASS, tags=None
   ):
-    vh = 'variant_hash'
+
+    vd = getattr(test_variant, 'def')
+    vh = base64.b64encode(
+      ('\n'.join('{}:{}'.format(k, v) for k, v in sorted(vd.items()))).encode(
+        'utf-8'
+      )
+    ).decode('utf-8')
     tr = test_result_pb2.TestResult(
       test_id=test_id,
       variant=test_variant,
@@ -2157,20 +2166,6 @@ def GenTests(api: TEST_DEPS):
       test_results=[_generate_test_result(test_id, correct_variant, tags=tags)]
     )
   }
-  recent_run = test_history.QueryTestHistoryResponse(
-    verdicts=[], next_page_token='dummy_token'
-  )
-
-  def check_duplicate_instruction_ids(check, steps, update_step_name):
-    check(update_step_name in steps)
-    update_invocation_step = steps[update_step_name]
-    check('json.input' in update_invocation_step.logs)
-    ids = set()
-    for instruction in api.json.loads(
-      update_invocation_step.logs['json.input']
-    )['invocation']['instructions']['instructions']:
-      check(instruction['id'] not in ids)
-      ids.add(instruction['id'])
 
   yield api.test(
     'new_flaky_test',
@@ -2200,32 +2195,39 @@ def GenTests(api: TEST_DEPS):
       ('collect tasks (with patch).browser_tests results'),
     ),
     api.flakiness(check_for_flakiness=True),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://browser_tests/Test:Test1',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://browser_tests/Test:Test1',
+            variant_hash='b3M6VWJ1bnR1LTE4CnRlc3Rfc3VpdGU6YnJvd3Nlcl90ZXN0cw==',
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
-    api.override_step_data(
+    api.resultdb.query(
+      {
+        'invocations/build:8945511751514863184': api.resultdb.Invocation(
+          test_results=[
+            _generate_test_result(
+              'ninja://browser_tests/Test:Test1',
+              correct_variant,
+              status=test_result_pb2.FAIL,
+              tags=tags,
+            )
+          ]
+        )
+      },
       (
         'test new tests for flakiness.'
         'collect tasks (check flakiness shard #0).'
         'browser_tests results'
       ),
-      stdout=api.json.invalid(
-        api.test_utils.rdb_results(
-          'browser_tests',
-          flaky_failing_tests=['Test.One'],
-        )
-      ),
     ),
-    api.post_process(post_process.MustRun, 'calculate flake rates'),
-    api.post_process(post_process.SummaryMarkdownRE, '.*browser_tests.*'),
     api.post_process(
       post_process.MustRun,
-      'test new tests for flakiness.update invocation instructions',
-    ),
-    api.post_process(
-      check_duplicate_instruction_ids,
       'test new tests for flakiness.update invocation instructions',
     ),
     api.expect_status('FAILURE'),
@@ -2270,26 +2272,37 @@ def GenTests(api: TEST_DEPS):
       ('collect tasks (with patch).browser_tests results'),
     ),
     api.flakiness(check_for_flakiness=True),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://browser_tests/Test:Test1',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://browser_tests/Test:Test1',
+            variant_hash='b3M6VWJ1bnR1LTE4CnRlc3Rfc3VpdGU6YnJvd3Nlcl90ZXN0cw==',
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
-    api.override_step_data(
+    api.resultdb.query(
+      {
+        'invocations/build:8945511751514863184': api.resultdb.Invocation(
+          test_results=[
+            _generate_test_result(
+              'ninja://browser_tests/Test:Test1',
+              correct_variant,
+              status=test_result_pb2.FAIL,
+              tags=tags,
+            )
+          ]
+        )
+      },
       (
         'test new tests for flakiness.'
         'collect tasks (check flakiness shard #0).'
         'browser_tests results'
       ),
-      stdout=api.json.invalid(
-        api.test_utils.rdb_results(
-          'browser_tests',
-          flaky_failing_tests=['Test.One'],
-        )
-      ),
     ),
-    api.post_process(post_process.MustRun, 'calculate flake rates'),
-    api.post_process(post_process.SummaryMarkdownRE, '.*browser_tests.*'),
     api.post_process(
       post_process.SummaryMarkdownRE, '.*headless_python_unittests.*'
     ),
@@ -2328,10 +2341,17 @@ def GenTests(api: TEST_DEPS):
       ('collect tasks (with patch).browser_tests results'),
     ),
     api.flakiness(check_for_flakiness=True),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://browser_tests/Test:Test1',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://browser_tests/Test:Test1',
+            variant_hash='b3M6VWJ1bnR1LTE4CnRlc3Rfc3VpdGU6YnJvd3Nlcl90ZXN0cw==',
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.resultdb.query(
       current_patchset_invocations,
@@ -2470,7 +2490,10 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(
       post_process.MustRun,
-      'relocate downloaded CAS test binaries.unexpected conflicting binaries browser_tests from compilator',
+      (
+        'relocate downloaded CAS test binaries.'
+        'unexpected conflicting binaries browser_tests from compilator'
+      ),
     ),
     api.post_process(post_process.DropExpectation),
   )

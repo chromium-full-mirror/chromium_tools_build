@@ -9,6 +9,7 @@ from recipe_engine import post_process
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
+from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
@@ -460,10 +461,6 @@ def GenTests(api: TEST_DEPS):
     )
   }
 
-  recent_run = test_history.QueryTestHistoryResponse(
-    verdicts=[], next_page_token='dummy_token'
-  )
-
   yield api.test(
     'blink_web_tests_with_new_tests',
     try_build(
@@ -492,10 +489,16 @@ def GenTests(api: TEST_DEPS):
       inv_bundle=current_patchset_invocations,
       step_name=('collect tasks (with patch).blink_web_tests results'),
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://:blink_web_tests/fast/test.html',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://:blink_web_tests/fast/test.html', variant_hash=''
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.override_step_data(
       (
@@ -514,11 +517,6 @@ def GenTests(api: TEST_DEPS):
         'collect tasks (check flakiness shard #0).'
         'blink_web_tests results'
       ),
-    ),
-    api.post_process(
-      post_process.StepSuccess,
-      'test new tests for flakiness.'
-      'archive results for blink_web_tests (check flakiness shard #0)',
     ),
     api.post_process(post_process.DropExpectation),
   )

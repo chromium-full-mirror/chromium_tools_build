@@ -37,10 +37,7 @@ message InputProperties {
   /// Defaults to 20.
   int32 repeat_count = 6;
 
-  // Flag to determine whether to check tests for flakiness. This needs to be
-  // set to True in order for overall coordination to execute, identifying tests
-  // with ResultDB.
-  // TODO (crbug/1456545) - Once we migrate fully to ResultDB, this property
-  // will be deprecated in favor for the default check_for_flakiness property.
+  // DEPRECATED
+  // This is currently being removed from Starlark configurations.
   bool check_for_flakiness_with_resultdb = 7;
 }

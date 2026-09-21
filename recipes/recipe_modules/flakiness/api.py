@@ -34,9 +34,6 @@ class FlakinessApi(recipe_api.RecipeApi):
   def __init__(self, properties, *args, **kwargs):
     super().__init__(*args, **kwargs)
     self._check_for_flakiness = properties.check_for_flakiness
-    self._check_for_flakiness_with_resultdb = (
-      properties.check_for_flakiness_with_resultdb
-    )
     # Input to cross reference step in "verify_new_tests" might be too large
     # and cause step failure, when there are too many new tests to verify
     # (caused by stale history JSON file, or a config roll adding new test
@@ -80,53 +77,7 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
         A boolean of whether the build is identifying new tests.
     """
-    return self._check_for_flakiness or self._check_for_flakiness_with_resultdb
-
-  @property
-  def gs_bucket(self):
-    return 'flake_endorser'
-
-  def gs_source_template(self, experimental=False):
-    """Provides template for generator recipe
-
-    Project, bucket and builder information are queried for in Buildbucket,
-    and this provides the template used.
-
-    Expected gs_source format:
-    * {project}/{bucket}/{builder}/{build_number}
-
-    Args:
-      * experimental: (bool) flag for experimental runs, appends experimental
-        to the path.
-
-    Return:
-      * (str) template
-    """
-    base = '{}/{}/{}/{}/'
-    if experimental:
-      base = 'experimental/' + base
-    return base
-
-  def builder_gs_path(self, builder, build_number=None, experimental=False):
-    """Generates the GS source
-
-    Args:
-      * builder: Buildbucket's BuilderID.
-      * builder_name: (str) optional arg for setting builder_name. this defaults
-        to 'builder' from builder_id.
-      * build_number: (int) build number to append to gs_path. defaults to
-        'latest' if not set.
-      * experimental: (bool) will append prefix path 'experimental/' if True.
-    """
-    # a list of builder names are queried for by the pre-computing builder, and
-    # requires a mechanism to set this value for the correct upload path.
-    bucket = self.m.led.shadowed_bucket or builder.bucket
-    return self.gs_source_template(experimental=experimental).format(
-      builder.project,
-      bucket,
-      builder.builder,
-      str(build_number) if build_number else 'latest',
-    ) + '{}.json.tar.gz'.format(builder.builder)
+    return self._check_for_flakiness
 
   def is_test_file_present(self, affected_files):
     """Checks the list of affected files and ensures there's a test file.
@@ -142,353 +93,6 @@ class FlakinessApi(recipe_api.RecipeApi):
     """
     pattern = re.compile(_FILE_PATH_ADDING_TESTS_PATTERN)
     return any(pattern.match(file_path) for file_path in affected_files)
-
-  def fetch_precomputed_test_data(self):
-    """Fetch the precomputed JSON file from GS
-
-    Returns:
-      dict JSON file of precomputed data
-    """
-    builder = self.m.buildbucket.build.builder
-    source = self.builder_gs_path(
-      builder, experimental=self.m.runtime.is_experimental
-    )
-    local_dest = self.m.path.mkstemp()
-    try:
-      self.m.gsutil.download(self.gs_bucket, source, local_dest)
-    except recipe_api.StepFailure:
-      # File may not exist, in which the data has not been precomputed.
-      return self.m.json.loads('{}')
-
-    # The output dir must not exist for untar.
-    output_dir = self.m.path.cleanup_dir / 'flake_endorser'
-    self.m.tar.untar('unpack {}'.format(source), local_dest, output_dir)
-
-    bucket = self.m.led.shadowed_bucket or builder.bucket
-    return self.m.file.read_json(
-      'process precomputed test history',
-      output_dir.joinpath(
-        builder.project, bucket, '{}.json'.format(builder.builder)
-      ),
-      test_data=[
-        {
-          'test_id': (
-            'ninja://ios/chrome/test/earl_grey2:ios_chrome_bookmarks_'
-            'eg2tests_module/TestSuite.test_a'
-          ),
-          'variant_hash': 'some_hash',
-        }
-      ],
-      # We turn off logging for the JSON as some of the files are pretty
-      # large, and logging significantly affects the runtime in these cases.
-      include_log=False,
-    )
-
-  def process_precomputed_test_data(self, test_data):
-    """Process the precomputed test data into TestDefinition objects.
-
-    Args:
-      * test_data: (dict) JSON of the test data. Supported keys in the test
-        data JSON include:
-        - test_id: (str, required) ResultDB's test_id.
-        - variant_hash: (str) ResultDB's variant_hash, a hash of the variants.
-
-    Returns:
-      set of TestDefinition objects
-    """
-    tests = set()
-    for test_entry in test_data:
-      tests.add(
-        utils.TestDefinition(
-          test_entry['test_id'],
-          variant_hash=test_entry.get('variant_hash', None),
-        )
-      )
-    return tests
-
-  def verify_new_tests(
-    self,
-    prelim_tests: set[utils.TestDefinition],
-    builder: str,
-  ) -> set[utils.TestDefinition]:
-    """Verify the newly identified tests are new by cross-checking ResultDB.
-
-    Queries ResultDB for the instances of the given test_ids on the builder for
-    the past hours and iterates through response to eliminate any false
-    positives from the preliminary new test list.
-
-    Args:
-      prelim_tests: The set of TestDefinition objects identified as potential
-        new tests to be cross-referenced with ResultDB. This set will be
-        modified by this method to contain only tests not found in ResultDB
-        existing tests.
-      builder: The name of the builder to query test results for.
-
-    Returns:
-      The set of TestDefinition objects for the tests that are actually new.
-    """
-
-    def _ensure_new(test_id):
-      now = int(self.m.time.time())
-      # The searched time is the start time of presubmit CV run or try build
-      # including the test. The earliest searched time is 28 hours
-      # because data shows 99.9% builds in CV are created within
-      # 25 hours before CV end time, plus a 3 hour history JSON generation
-      # frequency.
-      earliest = now - 3600 * 28
-      search_range = common_weetbix_pb2.TimeRange(
-        earliest=timestamp_pb2.Timestamp(seconds=earliest),
-        latest=timestamp_pb2.Timestamp(seconds=now),
-      )
-      # TODO(crbug.com/1366463): Add default test data to make creating
-      # integration tests easier.
-      # The default query size is 1000. This is sufficient for the query so
-      # page token is not used.
-      verdicts, _ = self.m.luci_analysis.query_test_history(
-        test_id,
-        sub_realm='try',
-        variant_predicate=predicate_pb2.VariantPredicate(
-          contains={
-            'def': {
-              'builder': builder,
-            }
-          }
-        ),
-        submitted_filter=common_weetbix_pb2.ONLY_SUBMITTED,
-        partition_time_range=search_range,
-      )
-
-      for test_verdict in verdicts:
-        test = utils.TestDefinition(
-          test_id=test_verdict.test_id,
-          variant_hash=test_verdict.variant_hash,
-        )
-        # If a test has already been run, ie/ through chained CLs, the
-        # test history RPC call should return it as part of the verdict
-        # and will be removed from the set of preliminary tests.
-        if test in prelim_tests:
-          prelim_tests.remove(test)
-
-    futures = []
-    for test_id in list(set(t.test_id for t in prelim_tests)):
-      futures.append(self.m.futures.spawn(_ensure_new, test_id))
-
-    for f in futures:
-      f.result()
-
-    return prelim_tests
-
-  def trim_new_tests(
-    self,
-    new_tests: collections.abc.Sequence[utils.TestDefinition],
-    limit: int,
-    step_name: str | None = None,
-  ) -> collections.abc.Collection[utils.TestDefinition]:
-    """trim_new_tests will return a subset of new_tests according to the limit
-
-    Our infrastructure won't allow us to test for flakiness for every single
-    new test detected. To prevent us from overloading the infrastructure, this
-    method will take a random subset according to the size limit provided.
-    A step is generated to make note of the random subset taken alongside logs
-    to indicate what the new test looks like.
-    """
-    if not new_tests or len(new_tests) <= limit:
-      return new_tests
-
-    # There are more new tests detected than what we're permitting, so we're
-    # taking a random subset for the specific step.
-    res = random.sample(new_tests, limit)
-    step_name = step_name or 'randomly sampling {} tests '.format(limit)
-
-    log_text = [
-      (
-        'The system only permits a total of {} new tests to prevent overloading '
-        'CQ.'.format(limit)
-      ),
-      'The following are the randomly selected subset that will be tested:\n',
-    ]
-
-    log_text += '\n'.join(
-      [
-        'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-          t.test_id, t.variant_hash, t.duration_milliseconds
-        )
-        for t in res
-      ]
-    )
-
-    self.m.step.empty(
-      step_name,
-      step_text='too many new tests detected.',
-      log_text=log_text,
-      log_name='new_tests',
-    )
-
-    return res
-
-  def identify_new_tests(
-    self,
-    test_objects: collections.abc.Iterable[steps.Test],
-  ) -> set[utils.TestDefinition]:
-    """Coordinating method for identifying new tests on the current build.
-
-    This method queries ResultDB for the historical tests run on the specified
-    most recent builds on the current builder. This test list is compared with
-    the tests running on the current build to identify and return new tests
-    from the current CL.
-
-    Args:
-      test_objects: The step.Test objects with RDB results for current build.
-
-    Returns:
-        A set of TestDefinition objects for newly-added tests.
-    """
-    with self.m.step.nest(self.IDENTIFY_STEP_NAME) as p:
-      builder_name = self.m.buildbucket.builder_name
-
-      try:
-        precomputed_json = self.fetch_precomputed_test_data()
-      # We return an empty set for errors where we don't want to fail the build
-      # while aborting the current workflow.
-      # Note: InfraFailure is a subclass of StepFailure
-      except recipe_api.InfraFailure:
-        p.status = self.m.step.INFRA_FAILURE
-        p.step_text = (
-          'Failed to parse the precomputed test history. '
-          'Aborting the flakiness check.'
-        )
-        return set()
-
-      if not precomputed_json:
-        p.status = self.m.step.EXCEPTION
-        p.step_text = (
-          'The current try builder may not have test data precomputed.'
-        )
-        return set()
-
-      # Historical tests are a set of TestDefinition objects with just
-      # test_id and variant_hash from the precomputed JSON files.
-      historical_tests = self.process_precomputed_test_data(precomputed_json)
-      p.logs['historical_tests'] = utils.set_to_string(historical_tests)
-
-      # For logging purpose only.
-      skipped_test_suites = set([])
-
-      preliminary_new_tests = set([])
-      # Stores stats of new tests. This is for early failing if any new test
-      # is aready flaky before we trigger new test reruns.
-      non_experimental_new_test_stats = {}
-      experimental_new_test_stats = {}
-
-      # For logging purpose only.
-      current_tests_log = []
-      for test_object in test_objects:
-        if not test_object.check_flakiness_for_new_tests:
-          skipped_test_suites.add(test_object.canonical_name)
-          continue
-        for suffix in ['with patch', 'retry shards with patch']:
-          rdb_suite_result = test_object.get_rdb_results(suffix)
-          if not rdb_suite_result:
-            continue
-          variant_hash = rdb_suite_result.variant_hash
-          step_name = '%s (%s)' % (test_object.name, suffix)
-          for individual_test in rdb_suite_result.all_tests:
-            # Use 0 as duration if the info doesn't exist.
-            duration_milliseconds = individual_test.duration_milliseconds or 0
-
-            test_id = individual_test.test_id
-            test_definition = utils.TestDefinition(
-              test_id,
-              test_name=individual_test.test_name,
-              duration_milliseconds=duration_milliseconds,
-              test_object=test_object,
-              variant_hash=variant_hash,
-              file_path=individual_test.test_metadata_file_name,
-            )
-            current_tests_log.append('%s_%s' % (test_id, variant_hash))
-
-            if not test_definition in historical_tests:
-              preliminary_new_tests.add(test_definition)
-              test_stats = (
-                experimental_new_test_stats
-                if test_object.is_experimental
-                else non_experimental_new_test_stats
-              )
-              self._add_test_to_stats(
-                individual_test, step_name, variant_hash, test_stats
-              )
-
-      p.logs['current_build_tests'] = current_tests_log
-      if skipped_test_suites:
-        p.logs['skipped_test_suites'] = '\n'.join(sorted(skipped_test_suites))
-
-      p.logs['preliminary_tests'] = utils.set_to_string(preliminary_new_tests)
-
-      if not preliminary_new_tests:
-        return set()
-
-      # Trim once before verify_new_tests to avoid input too large for RDB RPC.
-      preliminary_new_tests = set(
-        self.trim_new_tests(
-          list(preliminary_new_tests),
-          self._max_test_variants_to_cross_reference,
-        )
-      )
-
-      # Cross-referencing the potential new tests with ResultDB to ensure they
-      # are not present in existing builds.
-      try:
-        new_tests = self.verify_new_tests(
-          prelim_tests=preliminary_new_tests, builder=builder_name
-        )
-      except recipe_api.StepFailure:
-        p.status = self.m.step.INFRA_FAILURE
-        p.step_text = (
-          'Failed to verify if new tests exist. Aborting flakiness check.'
-        )
-        return set()
-
-      p.logs['new_tests'] = 'new tests: \n\n{}'.format(
-        '\n'.join(
-          [
-            'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-              t.test_id, t.variant_hash, t.duration_milliseconds
-            )
-            for t in new_tests
-          ]
-        )
-      )
-
-    # At this time, test stats contains info in the initial
-    # |preliminary_new_tests|. Filter to keep only new tests after trimming and
-    # verification.
-    new_test_filter = lambda item: item[0] in new_tests
-    non_experimental_new_test_stats = dict(
-      filter(new_test_filter, non_experimental_new_test_stats.items())
-    )
-    experimental_new_test_stats = dict(
-      filter(new_test_filter, experimental_new_test_stats.items())
-    )
-
-    if self._calculate_flakiness_and_summary(
-      non_experimental_new_test_stats,
-      experimental_new_test_stats,
-      present_summary_in_step=True,
-    ):
-      # Fail the build if there are already flaky new tests in "with patch" or
-      # "retry shards with patch" steps, so we don't need to trigger new "check
-      # flakiness" steps.
-      self.m.step.empty(
-        'New tests are found flaky in with patch test runs.',
-        status=self.m.step.FAILURE,
-        step_text=(
-          'New test are flaky in "with patch" or'
-          '"retry shards with patch" test steps.'
-          'See %s step for details.' % self.CALCULATE_FLAKE_RATE_STEP_NAME
-        ),
-      )
-
-    return new_tests
 
   def identify_new_test_variants(self) -> set[tuple[str, str]]:
     """Utilize ResultDB to determine if tests are new
@@ -590,12 +194,14 @@ class FlakinessApi(recipe_api.RecipeApi):
     case = case.replace('\\:', ':').replace('\\\\', '\\')
 
     if scheme == 'pyunit':
-      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
-      # Expected filter: __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
+      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted  # pylint: disable=line-too-long
+      # Expected filter:
+      # __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
       return f"{coarse}.{fine}.{case}"
     if scheme == 'gtest':
-      # Example: ://chrome/test:sync_integration_tests!gtest::WebAppIntegration#WAI_InstallOmniboxIconStandalone/kSyncTheFeature
-      # Expected filter: WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature
+      # Example: ://chrome/test:sync_integration_tests!gtest::WebAppIntegration#WAI_InstallOmniboxIconStandalone/kSyncTheFeature  # pylint: disable=line-too-long
+      # Expected filter:
+      # WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature
       return f"{fine}.{case}"
     # TODO(crbug.com/456432041): Find out if there are other schemes where
     # test_name == test_id.
@@ -665,7 +271,8 @@ class FlakinessApi(recipe_api.RecipeApi):
               if t not in test_filter:
                 test_filter.append(t)
 
-            # duration_milliseconds can default to 0 for our calculations because
+            # duration_milliseconds can default to 0 for our calculations
+            # because
             # it's only calculated if duration values are reported to ResultDB.
             test_duration_ms = test.duration_milliseconds or 0
             duration_milliseconds += test_duration_ms
@@ -676,84 +283,6 @@ class FlakinessApi(recipe_api.RecipeApi):
         p.logs['not_found'] = '\n'.join(map(join_tuple, not_found))
 
     return new_tests
-
-  def check_test_files(
-    self,
-    new_tests: collections.abc.Iterable[utils.TestDefinition],
-    affected_files: list[str],
-  ) -> list[utils.TestDefinition]:
-    """Determines whether the correct test files are being modified by the patch
-
-    This is used to determine whether the flakiness workflow should run.
-    TestResults from ResultDB can specify a file_path (or a path to its
-    associated test file), relative to the project (chromium/src). This check
-    ensures that new tests that define a file path have that file being
-    modified as part of this change.
-
-    If a test does not define a path, it will by default be added to the list.
-
-    Args:
-      new_tests: Test objects that are deemed new, meaning that they have not
-        been run in the past.
-      affected_files: The files affected by the change under test. see
-        self.m.chromium_checkout.get_files_affected_by_patch.
-
-    Returns:
-      (list) list of new tests that have a file being modified from the patchset
-      or don't have a file_path defined.
-    """
-    excluded_tests = []
-    filtered_tests = []
-    for t in new_tests:
-      # all file paths defined through ResultDB's TestMetadata are relative,
-      # meaning they start with //.
-      # `git diff to analyze patch`
-      # or chromium_checkout.get_files_affected_by_patch() doesn't, so
-      # it needs to be removed.
-      if not t.file_path:
-        # add to list of tests to test for by default. The next RPC call should
-        # re-verify that this is indeed new.
-        filtered_tests.append(t)
-        continue
-
-      fmt_path = t.file_path.strip('/')
-      if fmt_path in affected_files:
-        filtered_tests.append(t)
-      else:
-        excluded_tests.append(t)
-
-    if excluded_tests:
-      # logging purposes
-      with self.m.step.nest('Skipped tests') as s:
-        logs = [
-          (
-            'some tests have been skipped because the file path defined for the '
-            'test is not being modified in this patchset.'
-          ),
-          'files affected by this patchset',
-        ]
-        logs += affected_files
-        logs.append('excluded tests:')
-        for et in excluded_tests:
-          logs.append(
-            (
-              'test id %s variant_hash %s and path %s'
-              % (et.test_id, et.variant_hash, et.file_path)
-            )
-          )
-        s.logs['skipped tests'] = logs
-
-        new_test_logs = []
-        for nt in filtered_tests:
-          new_test_logs.append(
-            (
-              'test id %s variant_hash %s and path %s'
-              % (nt.test_id, nt.variant_hash, nt.file_path)
-            )
-          )
-        s.logs['new tests'] = new_test_logs
-
-    return filtered_tests
 
   def _shard_runs(self, total_duration_milliseconds):
     """Calculates and shards endorser test runs considering test duration.
@@ -813,10 +342,8 @@ class FlakinessApi(recipe_api.RecipeApi):
     Returns:
       A mapping from test suffixes to lists of steps.Test objects.
     """
-    # Do not run anything if both properties are not set.
-    if not (
-      self.check_for_flakiness or self._check_for_flakiness_with_resultdb
-    ):
+    # Do not run anything if properties are not set.
+    if not self.check_for_flakiness:
       return {}
 
     # Check if there are endorser footers to parse
@@ -864,108 +391,39 @@ class FlakinessApi(recipe_api.RecipeApi):
     test_objects_by_suffix = collections.defaultdict(list)
 
     ### ResultDB-Based Identification ###
-    if self._check_for_flakiness_with_resultdb:
-      # new tests tuples, in format (test_id, variant_hash)
-      # terminate early if there's nothing
-      new_test_tuples = self.identify_new_test_variants()
-      if not new_test_tuples:
-        return test_objects_by_suffix
+    # new tests tuples, in format (test_id, variant_hash)
+    # terminate early if there's nothing
+    new_test_tuples = self.identify_new_test_variants()
+    if not new_test_tuples:
+      return test_objects_by_suffix
 
-      # TODO (crbug/1456545) - remove this comment when
-      # "check_flakiness_for_new_tests" on test objects has been deprecated.
-      # It was used previously to skip large test suites, but this limitation
-      # is resolved with ResultDB, so this workflow disregards that check.
+    # TODO (crbug/1456545) - remove this comment when
+    # "check_flakiness_for_new_tests" on test objects has been deprecated.
+    # It was used previously to skip large test suites, but this limitation
+    # is resolved with ResultDB, so this workflow disregards that check.
 
-      # This is effectively trim_new_tests() minus the logging specific to
-      # using TestDefinition object.
-      if len(new_test_tuples) > self._max_test_targets:
-        # random.sample can only be used correctly with Sequence types - set is
-        # not a Sequence.
-        if isinstance(new_test_tuples, set):
-          new_test_tuples = sorted(new_test_tuples)
-        new_test_tuples = random.sample(new_test_tuples, self._max_test_targets)
-        self.m.step.empty(
-          'randomly sampling {} tests'.format(self._max_test_targets),
-          step_text='too many new tests detected',
-          log_text=[
-            'test_id: {} variant_hash: {}'.format(t[0], t[1])
-            for t in new_test_tuples
-          ],
-          log_name='new_tests',
-        )
-
-      # test object to list of test names
-      filter_and_time_by_test_object = self._map_test_object(
-        test_objects, new_test_tuples
+    # This is effectively trim_new_tests() minus the logging specific to
+    # using TestDefinition object.
+    if len(new_test_tuples) > self._max_test_targets:
+      # random.sample can only be used correctly with Sequence types - set is
+      # not a Sequence.
+      if isinstance(new_test_tuples, set):
+        new_test_tuples = sorted(new_test_tuples)
+      new_test_tuples = random.sample(new_test_tuples, self._max_test_targets)
+      self.m.step.empty(
+        'randomly sampling {} tests'.format(self._max_test_targets),
+        step_text='too many new tests detected',
+        log_text=[
+          'test_id: {} variant_hash: {}'.format(t[0], t[1])
+          for t in new_test_tuples
+        ],
+        log_name='new_tests',
       )
-    ### Original Cron-History-Based Workflow ###
-    # TODO (crbug/1456545) - this workflow and methods specific to this workflow
-    # should deprecate once all CQ builders migrate to the workflow above.
-    else:
-      new_tests = self.identify_new_tests(test_objects)
-      new_tests = self.trim_new_tests(list(new_tests), self._max_test_targets)
-      new_tests = self.check_test_files(new_tests, affected_files)
 
-      s = self.m.step('match single new tests with test suites', cmd=None)
-
-      # This operation is O(len(test_obj) * len(new_tests)) because parsing
-      # test_id is only intended for LUCI UI grouping, see
-      # http://shortn/_StMScXolrz. max_test_targets will also bind the number of
-      # iterations here.
-      #
-      # We loop the test objects and check all new tests to see if the test_id
-      # start similarly.
-      for test in test_objects:
-        total_duration_ms = 0
-        test_filter = []
-        for new_test in new_tests:
-          if new_test.test_object == test:
-            test_filter.append(new_test)
-            total_duration_ms += new_test.duration_milliseconds or 0
-
-        if test_filter:
-          log_lines = [
-            'test_id: {}, variant_hash: {}, duration_milliseconds: {}'.format(
-              t.test_id, t.variant_hash, t.duration_milliseconds
-            )
-            for t in test_filter
-          ]
-          log_lines.append(
-            'total_duration_milliseconds: %d' % total_duration_ms
-          )
-          s.presentation.logs[
-            'new tests to run in %s' % test.canonical_name
-          ] = '\n'.join(log_lines)
-
-          # Rework test filter into the required format
-
-          all_test_names = []
-          rdb_suite_result = test.get_rdb_results('with patch')
-          if rdb_suite_result:
-            for t in rdb_suite_result.all_tests:
-              legacy_filter = self._get_legacy_filter_from_test(t)
-              all_test_names.append(
-                legacy_filter if legacy_filter else t.test_name
-              )
-
-          expanded_filter = []
-          for new_test in test_filter:
-            legacy_filter = self._get_legacy_filter_from_test(new_test)
-            test_name_for_filter = (
-              legacy_filter if legacy_filter else new_test.test_name
-            )
-            actual_group = utils.get_actual_test_group(
-              test_name_for_filter, all_test_names
-            )
-            for t in actual_group:
-              if t not in expanded_filter:
-                expanded_filter.append(t)
-
-          filter_and_time_by_test_object[test] = (
-            expanded_filter,
-            total_duration_ms,
-          )
-
+    # test object to list of test names
+    filter_and_time_by_test_object = self._map_test_object(
+      test_objects, new_test_tuples
+    )
     # For each new test update all test filters to repeat and rerun 20 times.
     for test, metadata in filter_and_time_by_test_object.items():
       test_filter = metadata[0]
@@ -1073,7 +531,6 @@ class FlakinessApi(recipe_api.RecipeApi):
     self,
     flaky_non_experimental_test_stats,
     flaky_experimental_test_stats,
-    present_summary_in_step=False,
   ):
     """Calculates and returns summary if non experimental tests have flakiness.
 
@@ -1144,8 +601,6 @@ class FlakinessApi(recipe_api.RecipeApi):
             % self.CALCULATE_FLAKE_RATE_STEP_NAME
           )
 
-          if present_summary_in_step:
-            p.step_text += summary_markdown
           return summary_markdown
         # When there is non fatal flakiness, let users know why the build
         # doesn't fail.

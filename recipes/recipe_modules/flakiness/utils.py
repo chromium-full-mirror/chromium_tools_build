@@ -11,78 +11,7 @@ import re
 from RECIPE_MODULES.build.chromium_tests import steps
 
 
-# TODO (crbug/1456545) - delete this class once it's not in use.
-class TestDefinition:
-  """A class to contain ResultDB TestReuslt Proto information.
-
-  Test ID, variant hash (see go/resultdb-concepts) and whether the test comes
-  from an experimental suite distinguish a |TestDefinition|. This is achieved by
-  overriding __eq__ and __hash__ methods.
-
-  Attributes:
-    * duration_milliseconds: (int) Test duration in milliseconds.
-    * test_id: (str) ResultDB's test_id (go/resultdb-concepts)
-    * test_object: (steps.AbstractTest) The test object where this test
-      comes from.
-    * variant_hash: (str) ResultDB's variant_hash (go/resultdb-concepts)
-    * file_path: (str) path to the test, defined through ResultDB's
-                 test_metadata.location.file_loc. See proto at
-                 https://source.chromium.org/chromium/infra/infra/+/main:
-                 go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
-  """
-
-  def __init__(
-    self,
-    test_id,
-    test_name=None,
-    duration_milliseconds=None,
-    test_object=None,
-    variant_hash=None,
-    file_path=None,
-  ):
-    """
-    Args:
-      * test_id: (str) ResultDB test id
-      * test_name: (str) Test name to input to test suites.
-      * duration_milliseconds: (int) Test duration in milliseconds.
-      * test_object: (steps.AbstractTest) The test object where this
-        test comes from.
-      * variant_hash: (str) ResultDB's variant hash
-      * file_path: (str) path to the test, defined through ResultDB's
-        test_metadata.location.file_loc. See proto at
-        https://source.chromium.org/chromium/infra/infra/+/main:
-        go/src/go.chromium.org/luci/resultdb/proto/v1/test_result.proto
-    """
-    self.test_id = test_id
-    self.test_name = test_name
-    self.duration_milliseconds = duration_milliseconds
-    self.variant_hash = variant_hash
-    self.test_object = test_object
-    self.file_path = file_path
-
-  def __eq__(self, t2):
-    return (self.test_id, self.variant_hash) == t2
-
-  def __hash__(self):
-    return hash((self.test_id, self.variant_hash))
-
-
 ############################### HELPER FUNCTIONS ###############################
-
-
-def set_to_string(test_set):
-  """Joins set of test_id, variant hash tuples into strings.
-
-  For step presentations, test tuple sets cannot be logged so it is
-  necessary and preferred to convert to lists of sorted concatenated
-  strings.
-  """
-  return sorted(
-    [
-      '_'.join([test_result.test_id, test_result.variant_hash])
-      for test_result in test_set
-    ]
-  )
 
 
 def get_base_test_name(test_name):

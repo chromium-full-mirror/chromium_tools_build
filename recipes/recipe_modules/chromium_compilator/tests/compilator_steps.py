@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import base64
+
 from recipe_engine import post_process
 from recipe_engine import turboci
 
@@ -12,6 +14,7 @@ from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
+from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
@@ -688,7 +691,10 @@ def GenTests(api: TEST_DEPS):
         '[CACHE]/builder/src/testing/merge_scripts/standard_gtest_merge.py',
         '[CACHE]/builder/src/foo.cc',
         'testing/buildbot/chromium.linux.json',
-        '[CACHE]/builder/src/out/666d-fake-compilator/gen/rts/browser_tests.filter',
+        (
+          '[CACHE]/builder/src/out/666d-fake-compilator/'
+          'gen/rts/browser_tests.filter'
+        ),
       ],
     ),
     api.post_process(
@@ -946,7 +952,10 @@ def GenTests(api: TEST_DEPS):
       'archive src-side dep paths',
       'dep paths',
       [
-        '[CACHE]/builder/src/out/666d-fake-compilator/gen/rts/browser_tests.filter',
+        (
+          '[CACHE]/builder/src/out/666d-fake-compilator/'
+          'gen/rts/browser_tests.filter'
+        ),
       ],
     ),
     api.post_process(post_process.DropExpectation),
@@ -1370,7 +1379,13 @@ def GenTests(api: TEST_DEPS):
   def _generate_test_result(
     test_id, test_variant, status=test_result_pb2.PASS, tags=None
   ):
-    vh = 'variant_hash'
+
+    vd = getattr(test_variant, 'def')
+    vh = base64.b64encode(
+      ('\n'.join('{}:{}'.format(k, v) for k, v in sorted(vd.items()))).encode(
+        'utf-8'
+      )
+    ).decode('utf-8')
     tr = test_result_pb2.TestResult(
       test_id=test_id,
       variant=test_variant,
@@ -1397,10 +1412,6 @@ def GenTests(api: TEST_DEPS):
       test_results=[_generate_test_result(test_id, correct_variant, tags=tags)]
     )
   }
-
-  recent_run = test_history.QueryTestHistoryResponse(
-    verdicts=[], next_page_token='dummy_token'
-  )
 
   yield api.test(
     'basic_flakiness',
@@ -1437,10 +1448,20 @@ def GenTests(api: TEST_DEPS):
     api.flakiness(
       check_for_flakiness=True,
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://check_static_initializers/Test:Test1',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://check_static_initializers/Test:Test1',
+            variant_hash=(
+              'b3M6VWJ1bnR1LTE4CnRlc3Rfc3VpdGU6Y2hlY2tfc3RhdGljX'
+              '2luaXRpYWxpemVycw=='
+            ),
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.resultdb.query(
       inv_bundle=current_patchset_invocations,
@@ -1448,9 +1469,10 @@ def GenTests(api: TEST_DEPS):
         'test new tests for flakiness.check_static_initializers results'
       ),
     ),
-    api.post_process(post_process.MustRun, 'searching_for_new_tests'),
+    api.post_process(
+      post_process.MustRun, 'searching_for_new_tests with ResultDB'
+    ),
     api.post_process(post_process.MustRun, 'test new tests for flakiness'),
-    api.post_process(post_process.MustRun, 'calculate flake rates'),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -1489,10 +1511,20 @@ def GenTests(api: TEST_DEPS):
     api.flakiness(
       check_for_flakiness=True,
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      'ninja://check_static_initializers/Test:Test1',
-      parent_step_name='searching_for_new_tests',
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id='ninja://check_static_initializers/Test:Test1',
+            variant_hash=(
+              'b3M6VWJ1bnR1LTE4CnRlc3Rfc3VpdGU6Y2hlY2tfc3RhdGljX'
+              '2luaXRpYWxpemVycw=='
+            ),
+          )
+        ],
+      ),
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.override_step_data(
       'test new tests for flakiness.check_static_initializers results',
@@ -1506,7 +1538,6 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.SummaryMarkdownRE, '.*check_static_initializers.*'
     ),
-    api.post_process(post_process.MustRun, 'calculate flake rates'),
     api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )

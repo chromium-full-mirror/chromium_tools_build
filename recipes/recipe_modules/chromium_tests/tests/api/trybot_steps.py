@@ -18,6 +18,7 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
+from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
@@ -1038,15 +1039,24 @@ def GenTests(api: RecipeTestApi):
     ),
     api.post_process(
       post_process.MustRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch)'
+      ),
     ),
     api.post_process(
       post_process.MustRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (2)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch) (2)'
+      ),
     ),
     api.post_process(
       post_process.DoesNotRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (3)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch) (3)'
+      ),
     ),
     api.post_process(post_process.DoesNotRun, 'base_unittests (without patch)'),
     api.post_process(post_process.DropExpectation),
@@ -1094,15 +1104,24 @@ def GenTests(api: RecipeTestApi):
     ),
     api.post_process(
       post_process.MustRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch)'
+      ),
     ),
     api.post_process(
       post_process.MustRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (2)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch) (2)'
+      ),
     ),
     api.post_process(
       post_process.DoesNotRun,
-      'test_pre_run (retry shards with patch).[trigger] base_unittests (retry shards with patch) (3)',
+      (
+        'test_pre_run (retry shards with patch).'
+        '[trigger] base_unittests (retry shards with patch) (3)'
+      ),
     ),
     api.post_process(post_process.DoesNotRun, 'base_unittests (without patch)'),
     api.post_process(post_process.DropExpectation),
@@ -1885,10 +1904,6 @@ def GenTests(api: RecipeTestApi):
     )
   }
 
-  recent_run = test_history.QueryTestHistoryResponse(
-    verdicts=[], next_page_token='dummy_token'
-  )
-
   yield api.test(
     'basic_flakiness',
     api.chromium_tests_builder_config.try_build(
@@ -1947,13 +1962,24 @@ def GenTests(api: RecipeTestApi):
         'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results'
       ),
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      (
-        'ninja://ios/chrome/test/earl_grey2:'
-        'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+    api.flakiness(check_for_flakiness=True),
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id=(
+              'ninja://ios/chrome/test/earl_grey2:'
+              'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+            ),
+            variant_hash=(
+              'b3M6TWFjLTExCnRlc3Rfc3VpdGU6aW9zX2Nocm9tZV9ib29r'
+              'bWFya3NfZWcydGVzdHNfbW9kdWxlX2lQYWQgQWlyIDIgMTQuNA=='
+            ),
+          )
+        ],
       ),
-      parent_step_name='searching_for_new_tests',
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.resultdb.query(
       inv_bundle=current_patchset_invocations,
@@ -2030,13 +2056,24 @@ def GenTests(api: RecipeTestApi):
         'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results'
       ),
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      (
-        'ninja://ios/chrome/test/earl_grey2:'
-        'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+    api.flakiness(check_for_flakiness=True),
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id=(
+              'ninja://ios/chrome/test/earl_grey2:'
+              'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+            ),
+            variant_hash=(
+              'b3M6TWFjLTExCnRlc3Rfc3VpdGU6aW9zX2Nocm9tZV9ib29r'
+              'bWFya3NfZWcydGVzdHNfbW9kdWxlX2lQYWQgQWlyIDIgMTQuNA=='
+            ),
+          )
+        ],
       ),
-      parent_step_name='searching_for_new_tests',
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.override_step_data(
       (
@@ -2114,13 +2151,24 @@ def GenTests(api: RecipeTestApi):
         'ios_chrome_bookmarks_eg2tests_module_iPad Air 2 14.4 results'
       ),
     ),
-    api.luci_analysis.query_test_history(
-      recent_run,
-      (
-        'ninja://ios/chrome/test/earl_grey2:'
-        'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+    api.flakiness(check_for_flakiness=True),
+    api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id=(
+              'ninja://ios/chrome/test/earl_grey2:'
+              'ios_chrome_bookmarks_eg2tests_module/TestSuite.test_a'
+            ),
+            variant_hash=(
+              'b3M6TWFjLTExCnRlc3Rfc3VpdGU6aW9zX2Nocm9tZV9ib29r'
+              'bWFya3NfZWcydGVzdHNfbW9kdWxlX2lQYWQgQWlyIDIgMTQuNA=='
+            ),
+          )
+        ],
       ),
-      parent_step_name='searching_for_new_tests',
+      step_name='searching_for_new_tests with ResultDB.query_new_test_variants',
     ),
     api.override_step_data(
       (
