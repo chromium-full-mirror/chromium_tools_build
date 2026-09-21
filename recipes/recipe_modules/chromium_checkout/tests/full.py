@@ -127,6 +127,15 @@ def RunSteps(
     'affected_files: %r' % (files,),
   ]
 
+  # Exiting a step.nest block pops the parent step and leaves the recipe
+  # engine's active_step as None. Since tryserver.get_footers() is already
+  # cached from the first ensure_checkout() call above and won't run a step,
+  # this reproduces the chromium_tests.prepare_checkout() flow (where
+  # check_builder_cache() runs in a nested step right before ensure_checkout())
+  # and verifies that cv.allow_reuse_for() is called after a step is active.
+  with api.step.nest('nested step before second checkout'):
+    api.step.empty('inner')
+
   # Checking out again is fine if the checkout_dir and source_dir are the same
   api.chromium_checkout.ensure_checkout()
 

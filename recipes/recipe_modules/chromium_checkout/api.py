@@ -233,6 +233,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     set_output_commit = kwargs.get('set_output_commit', False)
     kwargs['set_output_commit'] = False
 
+    allow_dry_run_reuse_only = False
     if self.m.tryserver.is_tryserver and self.m.tryserver.gerrit_change:
       footers = self.m.tryserver.get_footers() or {}
       cq_no_rebase = footers.get('Cq-No-Rebase', [])
@@ -242,8 +243,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
             'The Cq-No-Rebase footer is only supported for CQ dry runs, but '
             f'this build is part of a {self.m.cv.run_mode} run.'
           )
-        if self.m.cv.active:
-          self.m.cv.allow_reuse_for(self.m.cv.DRY_RUN)
+        allow_dry_run_reuse_only = self.m.cv.active
         kwargs.setdefault('gerrit_no_rebase_patch_ref', True)
 
     timeout = int(self.timeout) if self.timeout else timeout
@@ -256,6 +256,8 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
       gclient_config
     ) as callback:
       self._report_gclient_config(gclient_config)
+      if allow_dry_run_reuse_only:
+        self.m.cv.allow_reuse_for(self.m.cv.DRY_RUN)
 
       with self.m.context(cwd=self.m.context.cwd or self.default_checkout_dir):
         # The step_name could be duplicated in a build. This is very unlikely
