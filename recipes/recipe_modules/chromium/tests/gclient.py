@@ -169,11 +169,6 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-    'fuchsia_netstack2_x64',
-    api.properties(apply_gclient_config='fuchsia_netstack2_x64'),
-    api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
     'fuchsia_no_hooks',
     api.properties(apply_gclient_config='fuchsia_no_hooks'),
     api.post_process(post_process.DropExpectation),

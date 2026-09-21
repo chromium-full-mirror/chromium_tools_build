@@ -164,16 +164,6 @@ def fuchsia_x64(c):
 
 
 @CONFIG_CTX(includes=['fuchsia'])
-def fuchsia_netstack2_x64(c):
-  """Downloads terminal with Netstack2 boot images for running x64 binaries on
-  QEMU."""
-
-  c.solutions[0].custom_vars['checkout_fuchsia_boot_images'] = (
-    'terminal_with_netstack2.x64'
-  )
-
-
-@CONFIG_CTX(includes=['fuchsia'])
 def fuchsia_no_hooks(c):
   """Downloads Fuchsia SDK without running hooks."""
 
