@@ -2,6 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builder_common as builder_common_pb2,
+  builds_service as builds_service_pb2,
+  common as common_pb2,
+)
 from PB.recipes.build.art import InputProperties
 
 from contextlib import contextmanager
@@ -14,6 +19,7 @@ from RECIPE_MODULES.build import repo
 from RECIPE_MODULES.depot_tools import git
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
+  cas,
   cipd,
   context,
   defer,
@@ -31,6 +37,7 @@ from RECIPE_MODULES.recipe_engine import (
 @dataclass
 class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
+  cas: cas.API
   cipd: cipd.API
   context: context.API
   defer: defer.API
@@ -84,6 +91,7 @@ def RunSteps(api: DEPS, props):
         manifest_branch=manifest_branch or 'master-art',
         test_steps=props.test_steps,
         test_env=props.test_env,
+        gce_subbuilder=props.gce_subbuilder,
       )
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
@@ -246,6 +254,93 @@ def setup_host_x86(
           defer(api.step, step.name, list(step.cmd))
 
 
+def _archive_target_build(
+  api: DEPS,
+  build_top_dir,
+  target_product,
+):
+  tar_path = build_top_dir.joinpath('out', 'target_build.tar')
+  api.step(
+    'pack target build',
+    [
+      'tar',
+      '-C',
+      build_top_dir,
+      '-cf',
+      tar_path,
+      f'out/target/product/{target_product}/system',
+      f'out/target/product/{target_product}/data',
+      f'out/target/product/{target_product}/linkerconfig',
+      f'out/target/product/{target_product}/symbols',
+      'out/target/common/obj/JAVA_LIBRARIES',
+      'out/host/linux-x86/bin',
+      'out/host/linux-x86/lib64',
+      'out/host/linux-x86/framework',
+      'out/host/linux-x86/etc',
+    ],
+  )
+  digest = api.cas.archive(
+    'archive target build to CAS',
+    build_top_dir,
+    tar_path,
+  )
+  export_step = api.step.empty('export cas_digest')
+  export_step.presentation.properties['cas_digest'] = digest
+
+
+def _get_gce_subbuild(api: DEPS, gce_subbuilder):
+  commit = api.buildbucket.build.input.gitiles_commit
+  tags = [
+    common_pb2.StringPair(
+      key='buildset',
+      value=f'patch/gerrit/{c.host}/{c.change}/{c.patchset}',
+    )
+    for c in api.buildbucket.build.input.gerrit_changes
+  ] + (
+    [
+      common_pb2.StringPair(
+        key='buildset',
+        value=f'commit/gitiles/{commit.host}/{commit.project}/+/{commit.id}',
+      )
+    ]
+    if (commit.host and commit.project and commit.id)
+    else []
+  )
+  existing = [
+    b
+    for b in api.buildbucket.search(
+      builds_service_pb2.BuildPredicate(
+        builder=builder_common_pb2.BuilderID(
+          project=api.buildbucket.build.builder.project or 'art',
+          bucket=api.buildbucket.build.builder.bucket or 'ci',
+          builder=gce_subbuilder,
+        ),
+        tags=tags,
+        include_experimental=api.buildbucket.build.input.experimental,
+      ),
+      limit=5,
+      fields=['id', 'status', 'output.properties'],
+      step_name='search existing GCE target build',
+    )
+    if b.status
+    in (common_pb2.SUCCESS, common_pb2.SCHEDULED, common_pb2.STARTED)
+  ]
+  return (
+    existing[0].id
+    if existing
+    else api.buildbucket.schedule(
+      [
+        api.buildbucket.schedule_request(
+          builder=gce_subbuilder,
+          as_shadow_if_parent_is_led=True,
+          led_inherit_parent=True,
+        )
+      ],
+      step_name='schedule GCE target subbuild',
+    )[0].id
+  )
+
+
 def setup_target(
   api: DEPS,
   device=None,
@@ -256,6 +351,7 @@ def setup_target(
   manifest_branch="master-art",
   test_steps=None,
   test_env=None,
+  gce_subbuilder=None,
 ):
 
   build_top_dir = api.context.cwd
@@ -322,6 +418,12 @@ def setup_target(
       'out', 'target', 'product', product
     )
 
+  gce_build_id = (
+    _get_gce_subbuild(api, gce_subbuilder)
+    if (gce_subbuilder and not build_only)
+    else None
+  )
+
   checkout(api, manifest_branch, repo_root)
   clobber(api)
 
@@ -341,11 +443,43 @@ def setup_target(
       + '%(PATH)s'
     }
   )
-  with api.context(env=env):
-    api.step(
-      'build target',
-      [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'],
+  if gce_build_id:
+    gce_build = api.buildbucket.collect_build(
+      gce_build_id,
+      step_name='wait for GCE target build',
+      fields=['id', 'status', 'output.properties'],
+      raise_if_unsuccessful=True,
+      timeout=7200,
     )
+    api.file.rmtree('clean out', build_top_dir.joinpath('out'))
+    api.cas.download(
+      'download target build from CAS',
+      gce_build.output.properties['cas_digest'],
+      build_top_dir,
+    )
+    api.step(
+      'extract target build',
+      [
+        'tar',
+        '-C',
+        build_top_dir,
+        '-xf',
+        build_top_dir.joinpath('out', 'target_build.tar'),
+      ],
+    )
+  else:
+    with api.context(env=env):
+      api.step(
+        'build target',
+        [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'],
+      )
+
+    if build_only:
+      _archive_target_build(
+        api,
+        build_top_dir,
+        product or 'armv8',
+      )
 
   if build_only:
     return
@@ -907,4 +1041,38 @@ def GenTests(api: TEST_DEPS):
       stdout=api.raw_io.output_text("42424242"),
     ),
     api.properties(build_only=True),
+  )
+
+  completed_gce_build = api.buildbucket.ci_build_message(
+    build_id=8922054662172514000,
+    status='SUCCESS',
+  )
+  completed_gce_build.output.properties['cas_digest'] = (
+    'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0'
+  )
+
+  yield api.test(
+    'target-docker-parent-gce-subbuild',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo='https://googleplex-android.googlesource.com/platform/art',
+      revision='2d2b87e5f9c872902d8508f6377470a4a6fa87e1',
+    ),
+    api.properties(
+      device='target.arm.64',
+      bitness=64,
+      product='armv8',
+      gce_subbuilder='target.arm.build_only.64',
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': ['art/tools/run-gtests.sh'],
+          'env': {'ART_TEST_NO_SYNC': 'true'},
+        },
+      ],
+    ),
+    api.buildbucket.simulated_collect_output(
+      [completed_gce_build],
+      step_name='wait for GCE target build',
+    ),
   )

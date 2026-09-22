@@ -64,4 +64,7 @@ message InputProperties {
 
   // Environment variables to be used.
   map<string, string> test_env = 17;
+
+  // Optional GCE build_only subbuilder name (e.g. "target.arm.build_only.64").
+  string gce_subbuilder = 18;
 }
