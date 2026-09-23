@@ -81,7 +81,6 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
 
   use_lacros = api.properties.get('use_lacros', False)
-  use_mac_arm = api.properties.get('use_mac_arm', False)
   if use_lacros:
     builders = builder_db.BuilderDatabase.create(
       {
@@ -99,29 +98,6 @@ def RunSteps(api: DEPS):
       }
     )
     builder_id = BuilderId.create_for_group('chrome.pgo', 'lacros-eve-pgo')
-    builder_config = builder_config_module.BuilderConfig.create(
-      builders,
-      builder_ids=[
-        builder_id,
-      ],
-    )
-    api.path.mock_add_paths('/b/some/random/path/llvm-profdata')
-  elif use_mac_arm:
-    builders = builder_db.BuilderDatabase.create(
-      {
-        'chrome.pgo': {
-          'mac-arm-pgo': builder_spec.BuilderSpec.create(
-            gclient_config="chromium",
-            gclient_apply_config=["chromeos"],
-            chromium_config="chromium",
-            chromium_config_kwargs={
-              'TARGET_PLATFORM': 'mac',
-            },
-          )
-        },
-      }
-    )
-    builder_id = BuilderId.create_for_group('chrome.pgo', 'mac-arm-pgo')
     builder_config = builder_config_module.BuilderConfig.create(
       builders,
       builder_ids=[
@@ -630,33 +606,4 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   ) + api.post_process(
     post_process.DoesNotRunRE, '.*gsutil upload artifact to GS.*'
-  )
-
-  yield api.test(
-    'weights',
-    api.chromium.ci_build(builder_group='chrome.pgo', builder='mac-arm-pgo'),
-    api.pgo(use_pgo=True),
-    api.platform('mac', 64, arch='arm'),
-    api.properties(mock_merged_profdata=True, use_mac_arm=True),
-    api.override_step_data(
-      'validate benchmark results and profile data.searching for '
-      'profdata files',
-      api.file.listdir(
-        [
-          'performance_test_suite/performance_test_suite.profdata',
-          'different_test_suite/different_test_suite.profdata',
-        ]
-      ),
-    ),
-    api.post_process(
-      post_process.StepCommandContains,
-      'Processing PGO .profraw data.gsutil upload artifact to GS',
-      [
-        'gs://chromium-optimization-profiles/pgo_profiles/'
-        'chrome-mac-arm-main-1587876258-'
-        'ade24b3118b1feaa04cb4406253403f3f72a7f0e-'
-        'abcdeabcdeabcdeabcdeabcdeabcdeabcdeabcde.profdata'
-      ],
-    ),
-    api.post_process(post_process.DropExpectation),
   )

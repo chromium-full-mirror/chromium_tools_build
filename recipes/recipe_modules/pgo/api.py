@@ -307,20 +307,13 @@ class PgoApi(recipe_api.RecipeApi):
     self.ensure_profdata_files(tests)
 
     with self.m.step.nest('Processing PGO .profraw data'):
-      # weights maps from benchmark name to weight (matching is done on the
-      # full path using endswith).
-      weights = {}
-      # TODO(b/363195532): generalize this. For now, it's hardcoded for
-      # mac-arm-pgo.
-      if self.m.buildbucket.builder_name == 'mac-arm-pgo':
-        weights['speedometer3_benchmark/performance_test_suite.profdata'] = 5
       # Invoke the merge script
       profdata_artifact = self.m.profiles.profile_dir().joinpath(
         self.TEMP_PROFDATA_FILENAME
       )
       # We want to run llvm-profdata without the --sparse argument.
       # https://llvm.org/docs/CommandGuide/llvm-profdata.html#profdata-merge
-      self.m.profiles.merge_profdata(profdata_artifact, weights=weights)
+      self.m.profiles.merge_profdata(profdata_artifact)
 
       if not self.m.path.exists(profdata_artifact):
         self.m.step.empty(

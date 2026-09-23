@@ -20,7 +20,7 @@ in the `recipes` and `recipe_modules` subdirectories.
     that the recipe would have run, given that simulation's inputs, will be
     recorded as a JSON file in the recipe's `<recipe.expected>` folder.
     <recipe-name> is of the form <dir>:file.test (for example,
-    pgo:full.weights identifies the 'weights' test in the file
+    pgo:full.basic_mac_arm identifies the 'basic_mac_arm' test in the file
     'recipe_modules/pgo/tests/full.py', notice the 'tests' directory is not
     included).
  1. Upload the recipe changes as well as the new expectation files.

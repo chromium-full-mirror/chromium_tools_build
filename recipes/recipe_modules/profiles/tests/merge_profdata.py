@@ -31,10 +31,7 @@ def RunSteps(api: DEPS):
   new_path = '/some/other/path/llvm-profdata'
   api.profiles.llvm_profdata_exec = new_path
   assert api.profiles.llvm_profdata_exec == new_path
-  weights = {'weight': 2}
-  api.profiles.merge_profdata(
-    'some_artifact', '.*', sparse=True, weights=weights
-  )
+  api.profiles.merge_profdata('some_artifact', '.*', sparse=True)
 
 
 def GenTests(api: RecipeTestApi):
