@@ -529,7 +529,7 @@
       }
     },
     "name": "wait for GCE target build.wait",
-    "timeout": 7200,
+    "timeout": 18000,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

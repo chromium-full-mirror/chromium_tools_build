@@ -449,7 +449,7 @@ def setup_target(
       step_name='wait for GCE target build',
       fields=['id', 'status', 'output.properties'],
       raise_if_unsuccessful=True,
-      timeout=7200,
+      timeout=18000,  # 5 hours.
     )
     api.file.rmtree('clean out', build_top_dir.joinpath('out'))
     api.cas.download(
