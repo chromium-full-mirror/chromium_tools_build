@@ -78,7 +78,7 @@ def GenTests(api: TEST_DEPS):
       'ensure_installed',
       [
         'infra/tools/mac_toolchain/${platform} '
-        'git_revision:07e67ff89ff11ed0e3071867ed6bb49319a91b05'
+        'git_revision:ed58ac9443fe1754e84d596bdaf9961cbaa6e85b'
       ],
     ),
     api.post_process(
