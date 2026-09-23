@@ -67,4 +67,7 @@ message InputProperties {
 
   // Optional GCE build_only subbuilder name (e.g. "target.arm.build_only.64").
   string gce_subbuilder = 18;
+
+  // Directories in out/ to archive for target builds.
+  repeated string output_directories = 19;
 }

@@ -92,6 +92,7 @@ def RunSteps(api: DEPS, props):
         test_steps=props.test_steps,
         test_env=props.test_env,
         gce_subbuilder=props.gce_subbuilder,
+        output_directories=props.output_directories,
       )
   else:
     with api.context(cwd=api.path.cache_dir / 'art'):
@@ -258,6 +259,7 @@ def _archive_target_build(
   api: DEPS,
   build_top_dir,
   target_product,
+  output_directories=None,
 ):
   tar_path = build_top_dir.joinpath('out', 'target_build.tar')
   api.step(
@@ -268,16 +270,22 @@ def _archive_target_build(
       build_top_dir,
       '-cf',
       tar_path,
-      f'out/target/product/{target_product}/system',
-      f'out/target/product/{target_product}/data',
-      f'out/target/product/{target_product}/linkerconfig',
-      f'out/target/product/{target_product}/symbols',
-      'out/target/common/obj/JAVA_LIBRARIES',
-      'out/host/linux-x86/bin',
-      'out/host/linux-x86/lib64',
-      'out/host/linux-x86/framework',
-      'out/host/linux-x86/etc',
-    ],
+    ]
+    + (
+      list(output_directories)
+      if output_directories
+      else [
+        f'out/target/product/{target_product}/system',
+        f'out/target/product/{target_product}/data',
+        f'out/target/product/{target_product}/linkerconfig',
+        f'out/target/product/{target_product}/symbols',
+        'out/target/common/obj/JAVA_LIBRARIES',
+        'out/host/linux-x86/bin',
+        'out/host/linux-x86/lib64',
+        'out/host/linux-x86/framework',
+        'out/host/linux-x86/etc',
+      ]
+    ),
   )
   digest = api.cas.archive(
     'archive target build to CAS',
@@ -352,6 +360,7 @@ def setup_target(
   test_steps=None,
   test_env=None,
   gce_subbuilder=None,
+  output_directories=None,
 ):
 
   build_top_dir = api.context.cwd
@@ -479,6 +488,7 @@ def setup_target(
         api,
         build_top_dir,
         product or 'armv8',
+        output_directories=output_directories,
       )
 
   if build_only:
@@ -931,6 +941,17 @@ def GenTests(api: TEST_DEPS):
       build_only=True,
       bitness=32,
       product="arm_krait",
+      output_directories=[
+        'out/target/product/arm_krait/system',
+        'out/target/product/arm_krait/data',
+        'out/target/product/arm_krait/linkerconfig',
+        'out/target/product/arm_krait/symbols',
+        'out/target/common/obj/JAVA_LIBRARIES',
+        'out/host/linux-x86/bin',
+        'out/host/linux-x86/lib64',
+        'out/host/linux-x86/framework',
+        'out/host/linux-x86/etc',
+      ],
     ),
   )
 
