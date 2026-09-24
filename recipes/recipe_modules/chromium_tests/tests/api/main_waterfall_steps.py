@@ -761,6 +761,56 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'archive_builder_branch_number_chrome_version',
+    api.platform('linux', 64),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      revision='refs/tags/1.2.3.4',
+      git_ref='refs/tags/1.2.3.4',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      ).assemble()
+    ),
+    api.properties(
+      chrome_version='8064', **{'$build/archive': input_properties}
+    ),
+    api.post_process(
+      check_gs_url_equals,
+      'x86/8064/chrome',
+      'gs://any-bucket/x86/8064/chrome',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'archive_builder_invalid_chrome_version',
+    api.platform('linux', 64),
+    api.chromium.ci_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+      revision='refs/tags/1.2.3.4',
+      git_ref='refs/tags/1.2.3.4',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      ).assemble()
+    ),
+    api.properties(
+      chrome_version='not-a-version',
+      **{'$build/archive': input_properties},
+    ),
+    api.post_process(post_process.MustRun, 'Invalid chrome_version'),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
     'code_coverage_ci_bots',
     api.chromium.generic_build(
       builder_group='fake-group', builder='fake-builder'

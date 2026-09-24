@@ -10,6 +10,7 @@ from collections.abc import Callable, Collection, Iterable, Mapping
 import contextlib
 from functools import reduce
 import itertools
+import re
 import time
 import traceback
 
@@ -62,6 +63,13 @@ WITHOUT_PATCH_SOURCE_CHECK_ID = 'checkout (without patch)'
 
 BUILD_CHECK_ID = 'compile'
 WITHOUT_PATCH_BUILD_CHECK_ID = 'compile (without patch)'
+
+# The `chrome_version` input property is substituted into GCS object paths,
+# CIPD tag values and file move destinations, so it must not be able to carry
+# path separators or traversal segments. Builders supply it either as a full
+# four-part version ("156.0.8064.0") or, on the android-*-tests builders, as a
+# bare build number ("8064"). See b/548331728.
+CHROME_VERSION_RE = re.compile(r'^\d+(\.\d+){0,3}$')
 
 
 @attrs()
@@ -1310,6 +1318,15 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       ref = self.m.buildbucket.gitiles_commit.ref
       if ref.startswith('refs/tags/'):
         chrome_version = str(ref[len('refs/tags/') :])
+    if chrome_version and not CHROME_VERSION_RE.match(chrome_version):
+      self.m.step.empty(
+        'Invalid chrome_version',
+        status=self.m.step.FAILURE,
+        step_text=(
+          'chrome_version must be 1-4 dot-separated decimals, e.g. "8064" or '
+          '"156.0.8064.0", got: %r' % chrome_version
+        ),
+      )
     return chrome_version
 
   def _get_affected_spec_files(
