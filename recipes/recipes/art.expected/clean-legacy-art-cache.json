@@ -7,23 +7,10 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmcontents",
-      "[CACHE]/src"
+      "[CACHE]/art"
     ],
-    "cwd": "[CACHE]/src",
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "clean"
+    "name": "clean legacy art cache"
   },
   {
     "cmd": [
@@ -39,18 +26,6 @@
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
     "name": "repo init"
   },
   {
@@ -66,18 +41,6 @@
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
     "name": "repo sync"
   },
   {
@@ -93,18 +56,6 @@
       "DEPOT_TOOLS_UPDATE": "0"
     },
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
     "name": "repo manifest"
   },
   {
@@ -121,18 +72,6 @@
     ],
     "cwd": "[CACHE]/src",
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
     "name": "ensure out dir"
   },
   {
@@ -148,18 +87,6 @@
     ],
     "cwd": "[CACHE]/src",
     "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
     "name": "symlink out dir"
   },
   {
@@ -172,18 +99,6 @@
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/src",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
-    },
-    "luci_context": {
-      "realm": {
-        "name": "project:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
     },
     "name": "build"
   },

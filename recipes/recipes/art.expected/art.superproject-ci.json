@@ -10,7 +10,7 @@
       "https://android.googlesource.com/platform/superproject/master",
       "."
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -37,7 +37,7 @@
       "-S2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "origin/master-art"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -63,7 +63,7 @@
       "--force",
       "42424242"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -92,7 +92,7 @@
       "-e",
       "vm"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -116,7 +116,7 @@
       "git",
       "show"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -142,7 +142,7 @@
       "/submodule/ s:/:-:g",
       ".gitmodules"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "luci_context": {
       "realm": {
         "name": "project:ci"
@@ -173,7 +173,7 @@
       "32",
       "--checkout"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -198,7 +198,7 @@
       "status",
       "--ignore-submodules=none"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -219,14 +219,69 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure out dir"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "symlink",
+      "[CACHE]/out",
+      "[CACHE]/src/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "symlink out dir"
+  },
+  {
+    "cmd": [
+      "[CACHE]/src/art/tools/buildbot-build.sh",
       "--host",
       "--installclean"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
+      "ANDROID_BUILD_TOP": "[CACHE]/src",
+      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
     },
     "luci_context": {
       "realm": {

@@ -77,9 +77,15 @@ HOST_TEST_INTERPRETER_MAKE_JOBS = 5
 
 def RunSteps(api: DEPS, props):
   manifest_branch = props.manifest_branch or 'master-art'
+
+  # Clear the content of legacy "art" cache to reclaim disk space.
+  art_cache = api.path.cache_dir / 'art'
+  if api.path.exists(art_cache):
+    api.file.rmcontents('clean legacy art cache', art_cache)
+
+  # Use different cache directory for RISCV to avoid interference.
+  cache_name = 'builder' if props.device == 'qemu-riscv64' else 'src'
   if props.device:
-    # Use different cache directory for RISCV to avoid interference.
-    cache_name = "builder" if props.device == 'qemu-riscv64' else "art"
     with api.context(cwd=api.path.cache_dir / cache_name):
       setup_target(
         api,
@@ -95,7 +101,7 @@ def RunSteps(api: DEPS, props):
         output_directories=props.output_directories,
       )
   else:
-    with api.context(cwd=api.path.cache_dir / 'art'):
+    with api.context(cwd=api.path.cache_dir / cache_name):
       setup_host_x86(
         api,
         build_only=props.build_only,
@@ -104,6 +110,14 @@ def RunSteps(api: DEPS, props):
         test_steps=props.test_steps,
         test_env=props.test_env,
       )
+
+
+def setup_out(api: DEPS):
+  out_dir = api.path.cache_dir / 'out'
+  api.file.ensure_directory('ensure out dir', out_dir)
+  src_out = api.context.cwd.joinpath('out')
+  if not api.path.exists(src_out):
+    api.file.symlink('symlink out dir', out_dir, src_out)
 
 
 def checkout(api: DEPS, branch, repo_root):
@@ -223,6 +237,7 @@ def setup_host_x86(
 ):
   checkout(api, manifest_branch, repo_root)
   clobber(api)
+  setup_out(api)
 
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
@@ -435,6 +450,7 @@ def setup_target(
 
   checkout(api, manifest_branch, repo_root)
   clobber(api)
+  setup_out(api)
 
   device_test_env = env.copy()
   device_test_env.update(
@@ -1038,14 +1054,14 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'art.superproject-git2repo',  # repo checkout after git checkout.
     api.buildbucket.ci_build(experiments=[]),
-    api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+    api.path.exists(api.path.cache_dir.joinpath("src/.git")),
     api.properties(build_only=True),
   )
 
   yield api.test(
     'art.superproject-repo2git',  # git checkout after repo checkout.
     api.buildbucket.ci_build(experiments=['art.superproject']),
-    api.path.exists(api.path.cache_dir.joinpath("art/.repo")),
+    api.path.exists(api.path.cache_dir.joinpath("src/.repo")),
     api.step_data(
       "checkout.find super-project commit",
       stdout=api.raw_io.output_text("42424242"),
@@ -1056,11 +1072,17 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'art.superproject-incremental',  # repeated git checkout.
     api.buildbucket.ci_build(experiments=['art.superproject']),
-    api.path.exists(api.path.cache_dir.joinpath("art/.git")),
+    api.path.exists(api.path.cache_dir.joinpath("src/.git")),
     api.step_data(
       "checkout.find super-project commit",
       stdout=api.raw_io.output_text("42424242"),
     ),
+    api.properties(build_only=True),
+  )
+
+  yield api.test(
+    'clean-legacy-art-cache',
+    api.path.exists(api.path.cache_dir.joinpath("art")),
     api.properties(build_only=True),
   )
 

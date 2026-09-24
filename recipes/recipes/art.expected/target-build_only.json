@@ -15,7 +15,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -47,7 +47,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -93,7 +93,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -125,7 +125,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -171,7 +171,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -203,7 +203,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -244,7 +244,7 @@
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/7zz",
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/7z"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -269,7 +269,7 @@
       "-b",
       "master-art"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -296,7 +296,7 @@
       "-j16",
       "--no-tags"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -323,7 +323,7 @@
       "-o",
       "-"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -344,16 +344,71 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure out dir"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "symlink",
+      "[CACHE]/out",
+      "[CACHE]/src/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "symlink out dir"
+  },
+  {
+    "cmd": [
+      "[CACHE]/src/art/tools/buildbot-build.sh",
       "--target",
       "--installclean"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
-      "ADB": "[CACHE]/art/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/art/out/target/product/arm_krait",
-      "PATH": "[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/art/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
+      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CACHE]/src",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/arm_krait",
+      "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -373,9 +428,9 @@
     "cmd": [
       "tar",
       "-C",
-      "[CACHE]/art",
+      "[CACHE]/src",
       "-cf",
-      "[CACHE]/art/out/target_build.tar",
+      "[CACHE]/src/out/target_build.tar",
       "out/target/product/arm_krait/system",
       "out/target/product/arm_krait/data",
       "out/target/product/arm_krait/linkerconfig",
@@ -386,7 +441,7 @@
       "out/host/linux-x86/framework",
       "out/host/linux-x86/etc"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "luci_context": {
       "realm": {
         "name": "art:ci"
@@ -412,7 +467,7 @@
       "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -448,7 +503,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -480,7 +535,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -521,9 +576,9 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"[CACHE]/art\", \"out/target_build.tar\"]]"
+      "[[\"[CACHE]/src\", \"out/target_build.tar\"]]"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {

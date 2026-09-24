@@ -8,7 +8,7 @@
       "-b",
       "master-art"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -35,7 +35,7 @@
       "-j16",
       "--no-tags"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -62,7 +62,7 @@
       "-o",
       "-"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
       "DEPOT_TOOLS_UPDATE": "0"
     },
@@ -89,9 +89,9 @@
       "--json-output",
       "/path/to/tmp/json",
       "rmtree",
-      "[CACHE]/art/out"
+      "[CACHE]/src/out"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -109,14 +109,69 @@
   },
   {
     "cmd": [
-      "[CACHE]/art/art/tools/buildbot-build.sh",
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "ensure out dir"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "symlink",
+      "[CACHE]/out",
+      "[CACHE]/src/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "symlink out dir"
+  },
+  {
+    "cmd": [
+      "[CACHE]/src/art/tools/buildbot-build.sh",
       "--host",
       "--installclean"
     ],
-    "cwd": "[CACHE]/art",
+    "cwd": "[CACHE]/src",
     "env": {
-      "ANDROID_BUILD_TOP": "[CACHE]/art",
-      "PATH": "[CACHE]/art/out/host/linux-x86/bin:[CACHE]/art/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
+      "ANDROID_BUILD_TOP": "[CACHE]/src",
+      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
     },
     "luci_context": {
       "realm": {
