@@ -24,6 +24,7 @@ from RECIPE_MODULES.recipe_engine import (
   context,
   defer,
   file,
+  led,
   path,
   properties,
   raw_io,
@@ -43,6 +44,7 @@ class DEPS(RecipeScriptApi):
   defer: defer.API
   file: file.API
   git: git.API
+  led: led.API
   path: path.API
   properties: properties.API
   raw_io: raw_io.API
@@ -60,6 +62,7 @@ class TEST_DEPS(RecipeTestApi):
   context: context.TEST_API
   file: file.TEST_API
   git: git.TEST_API
+  led: led.TEST_API
   path: path.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
@@ -329,25 +332,42 @@ def _get_gce_subbuild(api: DEPS, gce_subbuilder):
     if (commit.host and commit.project and commit.id)
     else []
   )
-  existing = [
-    b
-    for b in api.buildbucket.search(
-      builds_service_pb2.BuildPredicate(
-        builder=builder_common_pb2.BuilderID(
-          project=api.buildbucket.build.builder.project or 'art',
-          bucket=api.buildbucket.build.builder.bucket or 'ci',
-          builder=gce_subbuilder,
-        ),
-        tags=tags,
-        include_experimental=api.buildbucket.build.input.experimental,
-      ),
-      limit=5,
-      fields=['id', 'status', 'output.properties'],
-      step_name='search existing GCE target build',
+  # Under LED, tag subbuilds with the recipe CAS digest so that subbuild reuse
+  # is specific to this exact recipe bundle revision.
+  if api.led.rbe_cas_input and api.led.rbe_cas_input.digest.hash:
+    tags.append(
+      common_pb2.StringPair(
+        key='recipe_cas',
+        value=api.led.rbe_cas_input.digest.hash,
+      )
     )
-    if b.status
-    in (common_pb2.SUCCESS, common_pb2.SCHEDULED, common_pb2.STARTED)
-  ]
+  # Only search for existing builds if we have distinguishing tags (e.g.
+  # gitiles commit, Gerrit changes, or recipe CAS digest under LED). Searching
+  # with empty tags would match arbitrary builds, allowing untagged LED runs to
+  # reuse stale GCE target build artifacts.
+  existing = (
+    [
+      b
+      for b in api.buildbucket.search(
+        builds_service_pb2.BuildPredicate(
+          builder=builder_common_pb2.BuilderID(
+            project=api.buildbucket.build.builder.project or 'art',
+            bucket=api.buildbucket.build.builder.bucket or 'ci',
+            builder=gce_subbuilder,
+          ),
+          tags=tags,
+          include_experimental=api.buildbucket.build.input.experimental,
+        ),
+        limit=5,
+        fields=['id', 'status', 'output.properties'],
+        step_name='search existing GCE target build',
+      )
+      if b.status
+      in (common_pb2.SUCCESS, common_pb2.SCHEDULED, common_pb2.STARTED)
+    ]
+    if tags
+    else []
+  )
   return (
     existing[0].id
     if existing
@@ -355,6 +375,7 @@ def _get_gce_subbuild(api: DEPS, gce_subbuilder):
       [
         api.buildbucket.schedule_request(
           builder=gce_subbuilder,
+          tags=tags,
           as_shadow_if_parent_is_led=True,
           led_inherit_parent=True,
         )
@@ -1113,6 +1134,46 @@ def GenTests(api: TEST_DEPS):
           'env': {'ART_TEST_NO_SYNC': 'true'},
         },
       ],
+    ),
+    api.buildbucket.simulated_collect_output(
+      [completed_gce_build],
+      step_name='wait for GCE target build',
+    ),
+  )
+
+  yield api.test(
+    'target-docker-parent-gce-subbuild-led',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo='https://googleplex-android.googlesource.com/platform/art',
+      revision='2d2b87e5f9c872902d8508f6377470a4a6fa87e1',
+    ),
+    api.properties(
+      **{
+        '$recipe_engine/led': {
+          'led_run_id': 'fake-run-id',
+          'rbe_cas_input': {
+            'cas_instance': (
+              'projects/chromium-swarm/instances/default_instance'
+            ),
+            'digest': {
+              'hash': 'examplehash',
+              'size_bytes': 71,
+            },
+          },
+        },
+        'device': 'target.arm.64',
+        'bitness': 64,
+        'product': 'armv8',
+        'gce_subbuilder': 'target.arm.build_only.64',
+        'test_steps': [
+          {
+            'name': 'test gtest',
+            'cmd': ['art/tools/run-gtests.sh'],
+            'env': {'ART_TEST_NO_SYNC': 'true'},
+          },
+        ],
+      }
     ),
     api.buildbucket.simulated_collect_output(
       [completed_gce_build],
