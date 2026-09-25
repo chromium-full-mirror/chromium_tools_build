@@ -2109,11 +2109,14 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self._enable_snoopy:
       self.m.bcid_reporter.report_stage('fetch')
+
+    turboci_source_check_id = SOURCE_CHECK_ID
     update_result, build_dir, targets_config = self.prepare_checkout(
       builder_config,
       timeout=3600,
       root_solution_revision=root_solution_revision,
       add_blamelists=True,
+      turboci_source_check_id=turboci_source_check_id,
     )
     checkout_dir = update_result.checkout_dir
     source_dir = update_result.source_root.path
@@ -2137,6 +2140,27 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     if self._enable_snoopy:
       self.m.bcid_reporter.report_stage('compile')
+
+    # Only create turboci build check for compiling builders.
+    turboci_build_check_id = ''
+    if builder_config.execution_mode == ctbc.COMPILE_AND_TEST:
+      turboci_build_check_id = BUILD_CHECK_ID
+
+    if turboci_build_check_id:
+      # Post-submit builders doesn't run analyze, so all of the configured
+      # compile targets are known as soon as the targets spec has been read.
+      self.m.chromium_turboci.create_build_check(
+        turboci_build_check_id, turboci_source_check_id
+      )
+      self.m.chromium_turboci.update_build_check_compile_targets(
+        turboci_build_check_id,
+        targets_config.compile_targets,
+        'targets from targets spec',
+      )
+      self.m.chromium_turboci.set_build_check_planned(
+        turboci_build_check_id, 'compile targets determined'
+      )
+
     compile_result, compile_output = self.compile_specific_targets(
       build_dir,
       builder_id,
@@ -2149,6 +2173,11 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       mb_phase=mb_phase,
       include_utr_instruction=True,
     )
+
+    if turboci_build_check_id:
+      self.m.chromium_turboci.finalize_build_check(
+        turboci_build_check_id, 'executed compile', raw_result=compile_result
+      )
 
     if compile_result and compile_result.status != common_pb.SUCCESS:
       return compile_result, update_result

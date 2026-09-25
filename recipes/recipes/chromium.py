@@ -17,6 +17,7 @@ from RECIPE_MODULES.build import (
   chromium_swarming,
   chromium_tests,
   chromium_tests_builder_config,
+  chromium_turboci,
   isolate,
   test_utils,
 )
@@ -45,6 +46,7 @@ class DEPS(RecipeScriptApi):
   chromium_swarming: chromium_swarming.API
   chromium_tests: chromium_tests.API
   chromium_tests_builder_config: chromium_tests_builder_config.API
+  chromium_turboci: chromium_turboci.API
   commit_position: commit_position.API
   file: file.API
   gsutil: gsutil.API
@@ -77,7 +79,10 @@ def RunSteps(api: DEPS):
   builder_id, builder_config = (
     api.chromium_tests_builder_config.lookup_builder()
   )
-  with api.chromium.chromium_layout():
+  with (
+    api.chromium.chromium_layout(),
+    api.chromium_turboci.display_turboci_checks(),
+  ):
     build_result, _ = api.chromium_tests.main_waterfall_steps(
       builder_id, builder_config
     )
