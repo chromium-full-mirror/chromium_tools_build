@@ -1120,6 +1120,16 @@ class ArchiveApi(recipe_api.RecipeApi):
     ):
       return upload_results
 
+    # Trybuilders using $build/archive (config is None) or a source-side spec
+    # may only verify archive paths (unlike explicit in-memory configs).
+    if (
+      config is None or config.source_side_spec_path
+    ) and self.m.tryserver.is_tryserver:
+      assert archive_config.verify_paths_only, (
+        'verify_paths_only must be True when configuring archives on '
+        'trybuilders'
+      )
+
     if archive_config.verify_paths_only:
       self._verify_archive_paths(
         checkout_dir, build_dir, archive_config=archive_config

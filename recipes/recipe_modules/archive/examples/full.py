@@ -17,6 +17,7 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import archive, chromium, squashfs
 from RECIPE_MODULES.recipe_engine import (
   assertions,
+  buildbucket,
   file,
   json,
   path,
@@ -43,6 +44,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   archive: archive.TEST_API
+  buildbucket: buildbucket.TEST_API
   chromium: chromium.TEST_API
   file: file.TEST_API
   json: json.TEST_API
@@ -768,6 +770,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'verify_paths_only_should_copy_to_source_side_archive_spec',
+    api.buildbucket.try_build(project='chromium', builder='linux-rel'),
     api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
     api.archive._read_source_side_archive_spec(
       source_side_spec_path[-1],
@@ -785,6 +788,30 @@ def GenTests(api: TEST_DEPS):
       post_process.StepFailure, 'Verify Archive Paths.Validate files'
     ),
     api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  input_properties = properties.InputProperties()
+  input_properties.source_side_spec_path.extend(source_side_spec_path)
+  input_properties.verify_paths_only = False
+
+  yield api.test(
+    'trybuilder_requires_verify_paths_only',
+    api.buildbucket.try_build(project='chromium', builder='linux-rel'),
+    api.properties(gcs_archive=True, **{'$build/archive': input_properties}),
+    api.archive._read_source_side_archive_spec(
+      source_side_spec_path[-1],
+      {
+        "archive_datas": [
+          {
+            "files": [
+              "existing-file.json",
+            ],
+          },
+        ],
+      },
+    ),
+    api.expect_exception('AssertionError'),
     api.post_process(post_process.DropExpectation),
   )
 
