@@ -15,6 +15,8 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
+from PB.go.chromium.org.luci.lucictx import sections as sections_pb2
+
 from RECIPE_MODULES.build import repo
 from RECIPE_MODULES.depot_tools import git
 from RECIPE_MODULES.recipe_engine import (
@@ -28,6 +30,7 @@ from RECIPE_MODULES.recipe_engine import (
   path,
   properties,
   raw_io,
+  resultdb,
   runtime,
   step,
   time,
@@ -49,6 +52,7 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
   raw_io: raw_io.API
   repo: repo.API
+  resultdb: resultdb.API
   runtime: runtime.API
   step: step.API
   time: time.API
@@ -66,6 +70,7 @@ class TEST_DEPS(RecipeTestApi):
   path: path.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
   step: step.TEST_API
   time: time.TEST_API
 
@@ -233,6 +238,19 @@ def ensure_tool(api: DEPS, package, version, subdir=""):
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
 
 
+def _wrap_test_cmd(api: DEPS, step):
+  cmd = list(step.cmd)
+  if api.resultdb.enabled:
+    return api.resultdb.wrap(
+      cmd,
+      base_variant={
+        'builder': api.buildbucket.builder_name,
+        'test_suite': step.name,
+      },
+    )
+  return cmd
+
+
 def setup_host_x86(
   api: DEPS,
   build_only=False,
@@ -273,7 +291,7 @@ def setup_host_x86(
     with api.defer.context() as defer:
       for step in test_steps or []:
         with api.context(env=env | dict(step.env)):
-          defer(api.step, step.name, list(step.cmd))
+          defer(api.step, step.name, _wrap_test_cmd(api, step))
 
 
 def _archive_target_build(
@@ -587,7 +605,7 @@ def setup_target(
 
     for step in test_steps or []:
       with api.context(env=device_test_env | dict(step.env)):
-        defer(api.step, step.name, list(step.cmd))
+        defer(api.step, step.name, _wrap_test_cmd(api, step))
       test_logging(api, step.name)
 
     with api.context(env=device_test_env):
@@ -1181,5 +1199,22 @@ def GenTests(api: TEST_DEPS):
     api.buildbucket.simulated_collect_output(
       [completed_gce_build],
       step_name='wait for GCE target build',
+    ),
+  )
+
+  yield api.test(
+    'host-x86_64-no-resultdb',
+    api.context.luci_context(resultdb=sections_pb2.ResultDB()),
+    api.properties(
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': [
+            'build/soong/soong_ui.bash',
+            '--make-mode',
+            'test-art-host-gtest64',
+          ],
+        },
+      ],
     ),
   )

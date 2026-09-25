@@ -559,6 +559,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test gtest",
+      "--",
       "art/tools/run-gtests.sh"
     ],
     "cwd": "[CACHE]/src",
@@ -726,6 +733,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test optimizing",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -896,6 +910,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test optimizing all-isa-features",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1068,6 +1089,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test debuggable",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1239,6 +1267,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test jit debuggable",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1410,6 +1445,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test interpreter",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1580,6 +1622,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test baseline",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1750,6 +1799,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test jit",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -1920,6 +1976,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test jit-on-first-use",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -2090,6 +2153,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test speed-profile",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--target",
       "--verbose",
@@ -2260,6 +2330,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libcore",
+      "--",
       "art/tools/run-libcore-tests.sh",
       "--mode=device",
       "--variant=X64",
@@ -2429,6 +2506,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libjdwp jit",
+      "--",
       "art/tools/run-libjdwp-tests.sh",
       "--mode=device",
       "--variant=X64",
@@ -2598,6 +2682,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libjdwp interpreter",
+      "--",
       "art/tools/run-libjdwp-tests.sh",
       "--mode=device",
       "--variant=X64",

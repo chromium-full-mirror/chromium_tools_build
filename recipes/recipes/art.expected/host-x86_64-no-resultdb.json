@@ -1,0 +1,126 @@
+[
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "init",
+      "-u",
+      "https://android.googlesource.com/platform/manifest",
+      "-b",
+      "master-art"
+    ],
+    "cwd": "[CACHE]/src",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "repo init"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "sync",
+      "-c",
+      "-j16",
+      "--no-tags"
+    ],
+    "cwd": "[CACHE]/src",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "repo sync"
+  },
+  {
+    "cmd": [
+      "RECIPE_REPO[depot_tools]/repo",
+      "manifest",
+      "-r",
+      "-o",
+      "-"
+    ],
+    "cwd": "[CACHE]/src",
+    "env": {
+      "DEPOT_TOOLS_UPDATE": "0"
+    },
+    "infra_step": true,
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "repo manifest"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CACHE]/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "create out dir"
+  },
+  {
+    "cmd": [
+      "bash",
+      "-c",
+      "rm -rf \"$1\" && ln -s \"$2\" \"$1\"",
+      "--",
+      "[CACHE]/src/out",
+      "[CACHE]/out"
+    ],
+    "cwd": "[CACHE]/src",
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "symlink out dir"
+  },
+  {
+    "cmd": [
+      "[CACHE]/src/art/tools/buildbot-build.sh",
+      "--host",
+      "--installclean"
+    ],
+    "cwd": "[CACHE]/src",
+    "env": {
+      "ANDROID_BUILD_TOP": "[CACHE]/src",
+      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
+    },
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "build"
+  },
+  {
+    "cmd": [
+      "build/soong/soong_ui.bash",
+      "--make-mode",
+      "test-art-host-gtest64"
+    ],
+    "cwd": "[CACHE]/src",
+    "env": {
+      "ANDROID_BUILD_TOP": "[CACHE]/src",
+      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
+    },
+    "luci_context": {
+      "resultdb": {}
+    },
+    "name": "test gtest"
+  },
+  {
+    "name": "$result"
+  }
+]

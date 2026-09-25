@@ -174,6 +174,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test gtest",
+      "--",
       "build/soong/soong_ui.bash",
       "--make-mode",
       "test-art-host-gtest32"
@@ -213,6 +220,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test optimizing",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -254,6 +268,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test debuggable",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -296,6 +317,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test interpreter",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -338,6 +366,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test baseline",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -379,6 +414,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test jit",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -420,6 +462,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test speed-profile",
+      "--",
       "./art/test/testrunner/testrunner.py",
       "--verbose",
       "--host",
@@ -461,6 +510,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libcore",
+      "--",
       "art/tools/run-libcore-tests.sh",
       "--mode=host",
       "--variant=X32"
@@ -500,6 +556,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libjdwp jit",
+      "--",
       "art/tools/run-libjdwp-tests.sh",
       "--mode=host",
       "--variant=X32"
@@ -539,6 +602,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test libjdwp interpreter",
+      "--",
       "art/tools/run-libjdwp-tests.sh",
       "--mode=host",
       "--variant=X32",

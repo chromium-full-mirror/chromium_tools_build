@@ -577,6 +577,13 @@
   },
   {
     "cmd": [
+      "rdb",
+      "stream",
+      "-var",
+      "builder:builder",
+      "-var",
+      "test_suite:test gtest",
+      "--",
       "art/tools/run-gtests.sh"
     ],
     "cwd": "[CACHE]/src",
