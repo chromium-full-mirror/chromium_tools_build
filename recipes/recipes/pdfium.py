@@ -341,11 +341,6 @@ def _gn_gen_builds(
   if use_cxx23 is not None:
     args.append('use_cxx23=%s' % gn_bool[use_cxx23])
 
-  # TODO(crbug.com/452209505): Enable clang modules when all Macs have Xcode 26
-  # or later.
-  if api.platform.is_mac:
-    args.append('use_clang_modules=false')
-
   if api.platform.is_win and not memory_tool:
     args.append('symbol_level=1')
 
