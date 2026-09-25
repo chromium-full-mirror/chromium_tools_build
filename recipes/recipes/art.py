@@ -117,10 +117,13 @@ def RunSteps(api: DEPS, props):
 
 def setup_out(api: DEPS):
   out_dir = api.path.cache_dir / 'out'
-  api.file.ensure_directory('ensure out dir', out_dir)
+  if not api.path.exists(out_dir):
+    api.file.ensure_directory('create out dir', out_dir)
   src_out = api.context.cwd.joinpath('out')
-  if not api.path.exists(src_out):
-    api.file.symlink('symlink out dir', out_dir, src_out)
+  api.step(
+    'symlink out dir',
+    ['bash', '-c', 'rm -rf "$1" && ln -s "$2" "$1"', '--', src_out, out_dir],
+  )
 
 
 def checkout(api: DEPS, branch, repo_root):

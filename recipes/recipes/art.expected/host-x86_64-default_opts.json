@@ -107,21 +107,18 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "ensure out dir"
+    "name": "create out dir"
   },
   {
     "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "symlink",
-      "[CACHE]/out",
-      "[CACHE]/src/out"
+      "bash",
+      "-c",
+      "rm -rf \"$1\" && ln -s \"$2\" \"$1\"",
+      "--",
+      "[CACHE]/src/out",
+      "[CACHE]/out"
     ],
     "cwd": "[CACHE]/src",
-    "infra_step": true,
     "luci_context": {
       "realm": {
         "name": "art:ci"
