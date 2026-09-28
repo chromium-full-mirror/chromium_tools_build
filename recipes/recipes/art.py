@@ -9,7 +9,6 @@ from PB.go.chromium.org.luci.buildbucket.proto import (
 )
 from PB.recipes.build.art import InputProperties
 
-from contextlib import contextmanager
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
@@ -31,10 +30,8 @@ from RECIPE_MODULES.recipe_engine import (
   properties,
   raw_io,
   resultdb,
-  runtime,
   step,
   time,
-  url,
 )
 
 
@@ -53,10 +50,8 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   repo: repo.API
   resultdb: resultdb.API
-  runtime: runtime.API
   step: step.API
   time: time.API
-  url: url.API
 
 
 @dataclass
@@ -80,44 +75,15 @@ REPO_SYNC_JOBS = 16
 
 PROPERTIES = InputProperties
 
-HOST_TEST_INTERPRETER_MAKE_JOBS = 5
-
 
 def RunSteps(api: DEPS, props):
-  manifest_branch = props.manifest_branch or 'master-art'
-
   # Clear the content of legacy "art" cache to reclaim disk space.
   art_cache = api.path.cache_dir / 'art'
   if api.path.exists(art_cache):
     api.file.rmcontents('clean legacy art cache', art_cache)
 
-  # Use different cache directory for RISCV to avoid interference.
-  cache_name = 'builder' if props.device == 'qemu-riscv64' else 'src'
-  if props.device:
-    with api.context(cwd=api.path.cache_dir / cache_name):
-      setup_target(
-        api,
-        device=props.device,
-        product=props.product,
-        build_only=props.build_only,
-        on_virtual_machine=props.on_virtual_machine,
-        repo_root=props.repo_root,
-        manifest_branch=manifest_branch or 'master-art',
-        test_steps=props.test_steps,
-        test_env=props.test_env,
-        gce_subbuilder=props.gce_subbuilder,
-        output_directories=props.output_directories,
-      )
-  else:
-    with api.context(cwd=api.path.cache_dir / cache_name):
-      setup_host_x86(
-        api,
-        build_only=props.build_only,
-        repo_root=props.repo_root,
-        manifest_branch=manifest_branch or 'master-art',
-        test_steps=props.test_steps,
-        test_env=props.test_env,
-      )
+  with api.context(cwd=api.path.cache_dir / 'src'):
+    _run_steps(api, props)
 
 
 def setup_out(api: DEPS):
@@ -251,53 +217,9 @@ def _wrap_test_cmd(api: DEPS, step):
   return cmd
 
 
-def setup_host_x86(
-  api: DEPS,
-  build_only=False,
-  repo_root=None,
-  manifest_branch="master-art",
-  test_steps=None,
-  test_env=None,
-):
-  checkout(api, manifest_branch, repo_root)
-  clobber(api)
-  setup_out(api)
-
-  build_top_dir = api.context.cwd
-  art_tools = api.context.cwd.joinpath('art', 'tools')
-
-  env = dict(test_env) if test_env else {}
-  env.update(
-    {
-      'ANDROID_BUILD_TOP': build_top_dir,
-      'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
-      + api.path.pathsep
-      + str(
-        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
-      )
-      + api.path.pathsep
-      + '%(PATH)s',
-    }
-  )
-
-  with api.context(env=env):
-    api.step(
-      'build', [art_tools / 'buildbot-build.sh', '--host', '--installclean']
-    )
-
-    if build_only:
-      return
-
-    with api.defer.context() as defer:
-      for step in test_steps or []:
-        with api.context(env=env | dict(step.env)):
-          defer(api.step, step.name, _wrap_test_cmd(api, step))
-
-
 def _archive_target_build(
   api: DEPS,
   build_top_dir,
-  target_product,
   output_directories=None,
 ):
   tar_path = build_top_dir.joinpath('out', 'target_build.tar')
@@ -310,21 +232,7 @@ def _archive_target_build(
       '-cf',
       tar_path,
     ]
-    + (
-      list(output_directories)
-      if output_directories
-      else [
-        f'out/target/product/{target_product}/system',
-        f'out/target/product/{target_product}/data',
-        f'out/target/product/{target_product}/linkerconfig',
-        f'out/target/product/{target_product}/symbols',
-        'out/target/common/obj/JAVA_LIBRARIES',
-        'out/host/linux-x86/bin',
-        'out/host/linux-x86/lib64',
-        'out/host/linux-x86/framework',
-        'out/host/linux-x86/etc',
-      ]
-    ),
+    + list(output_directories or ['out']),
   )
   digest = api.cas.archive(
     'archive target build to CAS',
@@ -406,110 +314,115 @@ def _get_gce_subbuild(api: DEPS, gce_subbuilder):
   )
 
 
-def setup_target(
-  api: DEPS,
-  device=None,
-  product=None,
-  build_only=False,
-  on_virtual_machine=False,
-  repo_root=None,
-  manifest_branch="master-art",
-  test_steps=None,
-  test_env=None,
-  gce_subbuilder=None,
-  output_directories=None,
-):
-
+def _run_steps(api: DEPS, props):
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
 
-  qemu_path = ensure_tool(
-    api=api,
-    package='fuchsia/third_party/qemu/${platform}',
-    version='integration',
-    subdir='bin',
-  )
-
-  openssh_path = ensure_tool(
-    api=api,
-    package='fuchsia/third_party/openssh-portable/${platform}',
-    version='latest',
-    subdir='bin',
-  )
-
-  sevenz_path = ensure_tool(
-    api=api,
-    package='infra/3pp/tools/7z/${platform}',
-    version='latest',
-  )
-
-  # This 7z package has a 7zz binary instead of a 7z binary, so this symlinks
-  # from 7z to 7zz. This dependency is required for buildbot-vm.sh
-  api.file.symlink(
-    'symlink 7z to 7zz',
-    api.path.join(sevenz_path, '7zz'),
-    api.path.join(sevenz_path, '7z'),
-  )
-
-  env = dict(test_env) if test_env else {}
+  env = dict(props.test_env)
   env.update(
     {
       'ANDROID_BUILD_TOP': build_top_dir,
-      'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
-      'PATH': str(
-        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
-      )
-      + api.path.pathsep
-      +
-      # Add adb to the path.
-      str(build_top_dir.joinpath('prebuilts', 'runtime'))
-      + api.path.pathsep
-      +
-      # Add 7z to the path.
-      str(sevenz_path)
-      + api.path.pathsep
-      +
-      # Add openssh-portable to the path.
-      str(openssh_path)
-      + api.path.pathsep
-      +
-      # Add qemu to the path.
-      str(qemu_path)
-      + api.path.pathsep
-      + '%(PATH)s',
-    }
-  )
-  if product:
-    env['ANDROID_PRODUCT_OUT'] = build_top_dir.joinpath(
-      'out', 'target', 'product', product
-    )
-
-  gce_build_id = (
-    _get_gce_subbuild(api, gce_subbuilder)
-    if (gce_subbuilder and not build_only)
-    else None
-  )
-
-  checkout(api, manifest_branch, repo_root)
-  clobber(api)
-  setup_out(api)
-
-  device_test_env = env.copy()
-  device_test_env.update(
-    {
       'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
       + api.path.pathsep
       + str(
         build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
       )
       + api.path.pathsep
-      +
-      # Add adb in the path.
-      str(build_top_dir.joinpath('prebuilts', 'runtime'))
-      + api.path.pathsep
-      + '%(PATH)s'
+      + '%(PATH)s',
     }
   )
+
+  if props.device:
+    qemu_path = ensure_tool(
+      api=api,
+      package='fuchsia/third_party/qemu/${platform}',
+      version='integration',
+      subdir='bin',
+    )
+
+    openssh_path = ensure_tool(
+      api=api,
+      package='fuchsia/third_party/openssh-portable/${platform}',
+      version='latest',
+      subdir='bin',
+    )
+
+    sevenz_path = ensure_tool(
+      api=api,
+      package='infra/3pp/tools/7z/${platform}',
+      version='latest',
+    )
+
+    # This 7z package has a 7zz binary instead of a 7z binary, so this symlinks
+    # from 7z to 7zz. This dependency is required for buildbot-vm.sh
+    api.file.symlink(
+      'symlink 7z to 7zz',
+      api.path.join(sevenz_path, '7zz'),
+      api.path.join(sevenz_path, '7z'),
+    )
+
+    env.update(
+      {
+        'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
+        'PATH': str(
+          build_top_dir.joinpath(
+            'prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'
+          )
+        )
+        + api.path.pathsep
+        +
+        # Add adb to the path.
+        str(build_top_dir.joinpath('prebuilts', 'runtime'))
+        + api.path.pathsep
+        +
+        # Add 7z to the path.
+        str(sevenz_path)
+        + api.path.pathsep
+        +
+        # Add openssh-portable to the path.
+        str(openssh_path)
+        + api.path.pathsep
+        +
+        # Add qemu to the path.
+        str(qemu_path)
+        + api.path.pathsep
+        + '%(PATH)s',
+      }
+    )
+    if props.product:
+      env['ANDROID_PRODUCT_OUT'] = build_top_dir.joinpath(
+        'out', 'target', 'product', props.product
+      )
+
+  gce_build_id = (
+    _get_gce_subbuild(api, props.gce_subbuilder)
+    if (props.gce_subbuilder and not props.build_only)
+    else None
+  )
+
+  checkout(api, props.manifest_branch or 'master-art', props.repo_root)
+  clobber(api)
+  setup_out(api)
+
+  device_test_env = env.copy()
+  if props.device:
+    device_test_env.update(
+      {
+        'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
+        + api.path.pathsep
+        + str(
+          build_top_dir.joinpath(
+            'prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'
+          )
+        )
+        + api.path.pathsep
+        +
+        # Add adb in the path.
+        str(build_top_dir.joinpath('prebuilts', 'runtime'))
+        + api.path.pathsep
+        + '%(PATH)s'
+      }
+    )
   if gce_build_id:
     gce_build = api.buildbucket.collect_build(
       gce_build_id,
@@ -534,25 +447,30 @@ def setup_target(
         build_top_dir.joinpath('out', 'target_build.tar'),
       ],
     )
-  else:
+  elif props.device:
     with api.context(env=env):
       api.step(
         'build target',
         [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'],
       )
 
-    if build_only:
+    if props.build_only:
       _archive_target_build(
         api,
         build_top_dir,
-        product or 'armv8',
-        output_directories=output_directories,
+        props.output_directories,
+      )
+  else:
+    with api.context(env=env):
+      api.step(
+        'build',
+        [art_tools.joinpath('buildbot-build.sh'), '--host', '--installclean'],
       )
 
-  if build_only:
+  if props.build_only:
     return
 
-  if on_virtual_machine:
+  if props.on_virtual_machine:
     with api.context(env=env):
       api.step(
         'create the virtual machine',
@@ -570,25 +488,26 @@ def setup_target(
       )
 
   with api.defer.context() as defer:
-    with api.context(env=device_test_env):
-      defer(
-        api.step,
-        'device pre-run cleanup',
-        [art_tools.joinpath('buildbot-cleanup-device.sh')],
-      )
+    if props.device:
+      with api.context(env=device_test_env):
+        defer(
+          api.step,
+          'device pre-run cleanup',
+          [art_tools.joinpath('buildbot-cleanup-device.sh')],
+        )
 
-      defer(
-        api.step,
-        'setup device',
-        [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'],
-      )
+        defer(
+          api.step,
+          'setup device',
+          [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'],
+        )
 
-    with api.context(env=env):
-      defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
+      with api.context(env=env):
+        defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
 
     def test_logging(api: DEPS, test_name):
       # adb doesn't know about the VM and will hang.
-      if on_virtual_machine:
+      if not props.device or props.on_virtual_machine:
         return
       with api.context(env=device_test_env):
         defer(
@@ -603,25 +522,26 @@ def setup_target(
         )
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
-    for step in test_steps or []:
+    for step in props.test_steps:
       with api.context(env=device_test_env | dict(step.env)):
         defer(api.step, step.name, _wrap_test_cmd(api, step))
       test_logging(api, step.name)
 
-    with api.context(env=device_test_env):
-      defer(
-        api.step,
-        'tear down device',
-        [art_tools.joinpath('buildbot-teardown-device.sh')],
-      )
+    if props.device:
+      with api.context(env=device_test_env):
+        defer(
+          api.step,
+          'tear down device',
+          [art_tools.joinpath('buildbot-teardown-device.sh')],
+        )
 
-      defer(
-        api.step,
-        'device post-run cleanup',
-        [art_tools.joinpath('buildbot-cleanup-device.sh')],
-      )
+        defer(
+          api.step,
+          'device post-run cleanup',
+          [art_tools.joinpath('buildbot-cleanup-device.sh')],
+        )
 
-    if on_virtual_machine:
+    if props.on_virtual_machine:
       with api.context(env=env):
         defer(
           api.step,
@@ -637,10 +557,6 @@ def GenTests(api: TEST_DEPS):
       project='art',
     ),
     api.properties(
-      bitness=32,
-      debug=False,
-      concurrent_collector=True,
-      generational_cc=True,
       test_env={
         'ART_HEAP_POISONING': 'false',
         'ART_TEST_KEEP_GOING': 'true',
@@ -763,14 +679,7 @@ def GenTests(api: TEST_DEPS):
       project='art',
     ),
     api.properties(
-      bitness=64,
-      debug=True,
-      generational_cc=False,
       clobber='',
-      concurrent_collector=False,
-      heap_poisoning=True,
-      gcstress=True,
-      continuousgc=True,
     ),
   )
 
@@ -788,15 +697,9 @@ def GenTests(api: TEST_DEPS):
       project='art',
     ),
     api.properties(
-      debug=False,
       device="angler-armv7",
       build_only=False,
-      concurrent_collector=True,
-      gcstress=False,
-      generational_cc=True,
-      heap_poisoning=False,
       on_virtual_machine=False,
-      bitness=32,
       product="arm_krait",
     ),
   )
@@ -807,11 +710,7 @@ def GenTests(api: TEST_DEPS):
       project='art',
     ),
     api.properties(
-      bitness=64,
-      concurrent_collector=True,
-      debug=True,
       device="target.arm.64",
-      generational_cc=True,
       product="armv8",
       test_env={
         'ART_BUILD_HOST_DEBUG': 'false',
@@ -970,15 +869,8 @@ def GenTests(api: TEST_DEPS):
       project='art',
     ),
     api.properties(
-      debug=True,
       device="fugu",
-      concurrent_collector=False,
-      gcstress=True,
-      continuousgc=True,
-      generational_cc=False,
-      heap_poisoning=True,
       on_virtual_machine=True,
-      bitness=32,
       product="silvermont",
       test_steps=[
         {
@@ -997,7 +889,6 @@ def GenTests(api: TEST_DEPS):
     api.properties(
       device="angler-armv7",
       build_only=True,
-      bitness=32,
       product="arm_krait",
       output_directories=[
         'out/target/product/arm_krait/system',
@@ -1022,10 +913,7 @@ def GenTests(api: TEST_DEPS):
     api.step_data('setup device', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
-      bot_id='TestBot',
       device='angler-armv7',
-      debug=False,
-      bitness=32,
       product="arm_krait",
     ),
   )
@@ -1039,10 +927,7 @@ def GenTests(api: TEST_DEPS):
     api.step_data('device pre-run cleanup', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
-      bot_id='TestBot',
       device='angler-armv7',
-      debug=False,
-      bitness=32,
       product="arm_krait",
     ),
   )
@@ -1145,7 +1030,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.properties(
       device='target.arm.64',
-      bitness=64,
       product='armv8',
       gce_subbuilder='target.arm.build_only.64',
       test_steps=[
@@ -1184,7 +1068,6 @@ def GenTests(api: TEST_DEPS):
           },
         },
         'device': 'target.arm.64',
-        'bitness': 64,
         'product': 'armv8',
         'gce_subbuilder': 'target.arm.build_only.64',
         'test_steps': [

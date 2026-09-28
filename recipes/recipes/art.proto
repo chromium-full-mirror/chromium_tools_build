@@ -7,32 +7,11 @@ syntax = "proto3";
 package recipes.build.art;
 
 message InputProperties {
-  // Whether to build with debug symbols.
-  bool debug = 1;
-
   // What target device to build for. If unset, the recipe will run in host mode.
   string device = 2;
 
-  // The bitness of the target architecture to build for.
-  int64 bitness = 3;
-
   // Which repo manifest branch to use. If unset, default is 'master-art'.
   string manifest_branch = 4;
-
-  // Whether to enable the heap_poisoning build variant.
-  bool heap_poisoning = 5;
-
-  // Whether to enable the concurrent_collector build variant.
-  bool concurrent_collector = 6;
-
-  // Whether to enable the gcstress build variant.
-  bool gcstress = 7;
-
-  // Whether to enable the generational_cc build variant.
-  bool generational_cc = 8;
-
-  // Ignored - used to be the level of cdex to use.
-  string cdex_level = 9 [deprecated=true];
 
   // Whether to boot up a virtual machine before running tests.
   bool on_virtual_machine = 10;
@@ -44,14 +23,8 @@ message InputProperties {
   // The TARGET_PRODUCT to build for.
   string product = 12;
 
-  // Command line arguments for the testrunner.py script.
-  repeated string testrunner_args = 13;
-
   // Base url to use for checkout.
   string repo_root = 14;
-
-  // Whether to enable the continuousgc build variant.
-  bool continuousgc = 15;
 
   message TestStep {
     string name = 1;
