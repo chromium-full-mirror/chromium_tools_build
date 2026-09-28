@@ -153,36 +153,6 @@
       "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
       "--json-output",
       "/path/to/tmp/json",
-      "rmtree",
-      "[CACHE]/builder/devtools-frontend/out/Debug"
-    ],
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/devtools-frontend/third_party"
-      ]
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "devtools:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "clean outdir"
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
       "ensure-directory",
       "--mode",
       "0o777",

@@ -64,16 +64,6 @@ class DevToolsAPI(recipe_api.RecipeApi):
     with self.m.context(env_prefixes={'PATH': [depot_tools_path]}):
       yield
 
-  def clean_out_dir(self, builder_config, clobber):
-    if clobber:
-      dir_to_clean = 'Release'
-    elif self.is_debug(builder_config):
-      dir_to_clean = 'Debug'
-    else:
-      return
-    path_to_clean = self.source_dir.joinpath('out', dir_to_clean)
-    self.m.file.rmtree('clean outdir', path_to_clean)
-
   def is_debug(self, builder_config):
     return builder_config == 'Debug'
 

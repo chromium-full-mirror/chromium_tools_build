@@ -65,7 +65,6 @@ def RunSteps(api: DEPS, properties):
   api.devtools.update()
 
   with api.devtools.depot_on_path():
-    api.devtools.clean_out_dir(builder_config, properties.clobber)
     build_dir = api.chromium.default_build_dir(api.devtools.source_dir)
     api.chromium.run_gn(api.devtools.source_dir, build_dir)
     api.step.empty(
@@ -181,7 +180,6 @@ def GenTests(api: TEST_DEPS):
     'debug',
     api.properties(builder_config='Debug'),
     try_build(),
-    api.post_process(post_process.MustRun, 'clean outdir'),
     api.post_process(post_process.DropExpectation),
     status='SUCCESS',
   )
@@ -190,7 +188,6 @@ def GenTests(api: TEST_DEPS):
     'clobber',
     api.properties(clobber=True),
     try_build(),
-    api.post_process(post_process.MustRun, 'clean outdir'),
     api.post_process(post_process.DropExpectation),
     status='SUCCESS',
   )
