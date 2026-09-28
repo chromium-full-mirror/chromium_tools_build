@@ -66,7 +66,7 @@ def GenTests(api: TEST_DEPS):
         builder=buildername,
         patch_set=1,
       ),
-      # Supress analysis so that all targets show up as affected and we run
+      # Suppress analysis so that all targets show up as affected and we run
       # recipe code for each configured test
       api.post_process(post_process.DropExpectation),
     )
