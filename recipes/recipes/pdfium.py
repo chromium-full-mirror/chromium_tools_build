@@ -485,11 +485,14 @@ def _run_tests(
     swarming,
   )
 
+  use_fontations = rust and not skia
+
   # pdfium_unittests:
-  test_runner.request_unit_tests()
+  test_runner.request_unit_tests(fontations=False)
+  if use_fontations:
+    test_runner.request_unit_tests(fontations=True)
 
   # pdfium_embeddertests:
-  use_fontations = rust and not skia
   test_runner.request_embedder_tests(fontations=False)
   if use_fontations:
     test_runner.request_embedder_tests(fontations=True)
@@ -864,8 +867,22 @@ class _TestRunner:
 
     return env
 
-  def request_unit_tests(self):
-    self._request_gtest('unittests', target=('', 'pdfium_unittests'))
+  def request_unit_tests(self, fontations):
+    test_name = 'unittests'
+    args = []
+    test_suite_suffix = ''
+
+    if fontations:
+      test_name = f'{test_name} (fontations)'
+      args.append('--fontations')
+      test_suite_suffix = 'fontations'
+
+    self._request_gtest(
+      test_name,
+      target=('', 'pdfium_unittests'),
+      args=args,
+      test_suite_suffix=test_suite_suffix or None,
+    )
 
   def request_embedder_tests(self, fontations):
     for renderer in self.embedder_test_renderers:
@@ -1323,6 +1340,14 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'win_xfa_rust',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, rust=True, xfa=True),
+    _gen_ci_build(api, 'win_xfa_rust'),
+  )
+
+  yield api.test(
     'linux_component',
     api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
@@ -1400,6 +1425,14 @@ def GenTests(api: TEST_DEPS):
     api.builder_group.for_current('client.pdfium'),
     _gen_properties(api, xfa=True, rel=True),
     _gen_ci_build(api, 'mac_xfa_rel'),
+  )
+
+  yield api.test(
+    'mac_xfa_rust',
+    api.platform('mac', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, rust=True, xfa=True),
+    _gen_ci_build(api, 'mac_xfa_rust'),
   )
 
   yield api.test(
