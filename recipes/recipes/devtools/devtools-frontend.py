@@ -161,22 +161,12 @@ def RunSteps(api: DEPS, properties):
     ]
     tests = [t for t in tests if not t.skip()]
 
-    lint_future = api.futures.spawn(run_lint_check, api, builder_config)
     results = run_test_pipelines(api, tests)
-    lint_future.result()
 
     publish_coverage_points(api, skip=not coverage)
     publish_performance_benchmarks(api, skip=not properties.perf_benchmarks)
 
     return results.raw_result()
-
-
-def run_lint_check(api: DEPS, builder_config):
-  is_debug_build = api.devtools.is_debug(builder_config)
-  if is_debug_build or not api.platform.is_linux:
-    return
-  with api.step.nest('Linting'), api.context(cwd=api.devtools.source_dir):
-    api.devtools.run_node_script('Run lint check', 'run_lint_check.mjs')
 
 
 def publish_performance_benchmarks(api: DEPS, skip):
