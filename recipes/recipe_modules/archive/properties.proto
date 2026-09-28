@@ -295,7 +295,65 @@ message CIPDArchiveData {
   bool only_set_refs_on_tests_success = 7;
 }
 
-// Next id: 4
+// Next id: 13
+message NpmArchiveData {
+  // Name of the npm package (e.g. "chromium-bidi").
+  string package_name = 1;
+
+  // URL of the npm registry, e.g.
+  // "https://us-npm.pkg.dev/oss-exit-gate-prod/chrome-devtools-npm--npm/".
+  string registry_url = 2;
+
+  // Path (relative to source_dir) to the root of the npm package source.
+  // Files in package_root_files are copied from here.
+  string package_source_dir = 3;
+
+  // List of files (relative to package_source_dir) to copy to the package root.
+  // e.g. ["package.json", "README.md", "LICENSE", ".browser"]
+  repeated string package_root_files = 4;
+
+  // Directories from build_dir to copy into the package.
+  // Map from source path (relative to build_dir) to target path inside package.
+  // e.g. {"gen/third_party/chromium-bidi/src": "out/Default/gen/src"}
+  map<string, string> artifact_mappings = 5;
+
+  // Additional file copies from source_dir to target path inside package.
+  // `from_file` is relative to source_dir; `to_file` is the target path inside
+  // the package.
+  // e.g. [{"from_file": "third_party/chromium-bidi/src/index.ts",
+  //        "to_file": "out/Default/gen/src/index.js"}]
+  repeated ArchiveFileRename file_mappings = 6;
+
+  // File globs to prune from the staged package directory before publishing.
+  // e.g. ["*.tsbuildinfo", "*-tsconfig.json", "*.test.*"]
+  repeated string pruned_outputs = 7;
+
+  // GCS bucket for the publishing manifest.
+  // e.g. "oss-exit-gate-prod-projects-bucket"
+  string manifest_bucket = 8;
+
+  // Destination path in GCS for the publishing manifest.
+  // e.g. "chrome-devtools-npm/npm/manifests/publishing_manifest.json"
+  string manifest_path = 9;
+
+  // Pinned Node.js CIPD package version.
+  // Defaults to "version:3@26.8.2" if unspecified.
+  string nodejs_version = 10;
+
+  // Version to set on the npm package. Supports the same string substitutions
+  // as |ArchiveData.gcs_path| (e.g. "{%chromium_version%}").
+  // A 4-part version (A.B.C.D) is converted to A.B.C-D. That is a SemVer
+  // prerelease, so |dist_tag| must be set as well.
+  // If unset, the version from package.json is published as-is.
+  string version = 11;
+
+  // npm dist-tag to publish the package under (`npm publish --tag`). npm >= 11
+  // requires it for prerelease versions. If unset, npm uses "latest".
+  // Supports the same string substitutions as |ArchiveData.gcs_path|.
+  string dist_tag = 12;
+}
+
+// Next id: 6
 message InputProperties {
   repeated ArchiveData archive_datas = 1;
   repeated CIPDArchiveData cipd_archive_datas = 2;
@@ -322,6 +380,11 @@ message InputProperties {
   // This option could be enabled via archive input properties with
   // source_side_spec_path specified.
   bool verify_paths_only = 4;
+
+  // npm packages to publish. Experimental and try builds only do a dry run,
+  // and versions that are already in the registry are not published again.
+  // Ignored if verify_paths_only is set.
+  repeated NpmArchiveData npm_archive_datas = 5;
 }
 
 // Next id: 3

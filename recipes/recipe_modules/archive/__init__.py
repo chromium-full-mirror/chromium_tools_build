@@ -35,7 +35,9 @@ from RECIPE_MODULES.recipe_engine import (
   path,
   platform,
   properties,
+  raw_io,
   runtime,
+  service_account,
   step,
   time,
 )
@@ -62,7 +64,9 @@ class DEPS(RecipeScriptApi):
   path: path.API
   platform: platform.API
   properties: properties.API
+  raw_io: raw_io.API
   runtime: runtime.API
+  service_account: service_account.API
   step: step.API
   time: time.API
   squashfs: squashfs.API

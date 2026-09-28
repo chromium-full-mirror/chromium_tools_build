@@ -8,6 +8,7 @@ import base64
 import re
 import os
 import typing
+import urllib.parse
 
 from . import manual_bisect_files
 
@@ -1069,7 +1070,7 @@ class ArchiveApi(recipe_api.RecipeApi):
     use_hardlink=False,
     generate_sboms=False,
   ):
-    """Archives one or multiple packages to either google cloud storage or CIPD.
+    """Archives one or multiple packages to google cloud storage, CIPD or npm.
 
     The exact configuration of the archive is specified by InputProperties. See
     archive/properties.proto.
@@ -1104,11 +1105,14 @@ class ArchiveApi(recipe_api.RecipeApi):
              destination urls.
         cipd: A dictionary containing information about unused references for
               each package.
+        npm: A list of dictionaries with the name, version and registry url of
+             each npm package.
 
     """
     upload_results = {}
     upload_results['cipd'] = {}
     upload_results['gcs'] = []
+    upload_results['npm'] = []
     upload_results['sbom'] = {}
     upload_results['update_properties'] = update_properties
     upload_results['custom_vars'] = custom_vars
@@ -1116,7 +1120,9 @@ class ArchiveApi(recipe_api.RecipeApi):
     archive_config = self._get_archive_config(checkout_dir, config)
 
     if (
-      not archive_config.archive_datas and not archive_config.cipd_archive_datas
+      not archive_config.archive_datas
+      and not archive_config.cipd_archive_datas
+      and not archive_config.npm_archive_datas
     ):
       return upload_results
 
@@ -1160,6 +1166,16 @@ class ArchiveApi(recipe_api.RecipeApi):
             custom_vars,
             cipd_archive_data,
             report_artifacts=report_artifacts,
+          )
+        )
+      for npm_archive_data in archive_config.npm_archive_datas:
+        upload_results['npm'].append(
+          self.npm_archive(
+            source_dir,
+            build_dir,
+            update_properties,
+            custom_vars,
+            npm_archive_data,
           )
         )
     return upload_results
@@ -1834,3 +1850,244 @@ class ArchiveApi(recipe_api.RecipeApi):
           'instance': create_results[1],
         }
     return upload_results
+
+  def npm_archive(
+    self,
+    source_dir: Path,
+    build_dir: Path,
+    update_properties,
+    custom_vars,
+    npm_archive_data,
+  ):
+    """Packages and publishes an npm package to an npm registry / OSS Exit Gate.
+
+    A published npm version can never be reused. So experimental and try builds
+    only do a dry run, and a version that is already in the registry is not
+    published again (e.g. when a build is retried).
+
+    Args:
+      source_dir: Path to the source repository root (e.g. chromium/src).
+      build_dir: Path to the build output directory (e.g. out/Release).
+      update_properties: The properties from the bot_update step.
+      custom_vars: Dict of custom string substitutions.
+      npm_archive_data: An instance of archive/properties.proto: NpmArchiveData.
+
+    Returns:
+      A dict with the name, version and registry url of the package.
+    """
+    package_name = npm_archive_data.package_name
+    step_name = f'publish {package_name} to npm'
+    with self.m.step.nest(step_name):
+      registry_url = self._replace_placeholders(
+        source_dir,
+        update_properties,
+        custom_vars,
+        npm_archive_data.registry_url,
+      )
+      dist_tag = self._replace_placeholders(
+        source_dir,
+        update_properties,
+        custom_vars,
+        npm_archive_data.dist_tag,
+      )
+      manifest_bucket = self._replace_placeholders(
+        source_dir,
+        update_properties,
+        custom_vars,
+        npm_archive_data.manifest_bucket,
+      )
+      manifest_path = self._replace_placeholders(
+        source_dir,
+        update_properties,
+        custom_vars,
+        npm_archive_data.manifest_path,
+      )
+      dry_run_only = (
+        self.m.runtime.is_experimental or self.m.tryserver.is_tryserver
+      )
+
+      # 1. Ensure Node.js & npm via CIPD
+      nodejs_version = npm_archive_data.nodejs_version or 'version:3@26.8.2'
+      npm_exe = 'npm.cmd' if self.m.platform.is_win else 'bin/npm'
+      npm_bin = self.m.cipd.ensure_tool(
+        'infra/3pp/tools/nodejs/${platform}',
+        nodejs_version,
+        executable_path=npm_exe,
+      )
+
+      # 2. Setup clean package directory
+      pkg_dir = self.m.path.cleanup_dir / f'{package_name}-npm'
+      self.m.file.rmtree('clean package dir', pkg_dir)
+      self.m.file.ensure_directory('ensure package dir', pkg_dir)
+
+      # 3. Copy root files from package_source_dir
+      package_source_dir = source_dir
+      if npm_archive_data.package_source_dir:
+        package_source_dir = source_dir.joinpath(
+          *npm_archive_data.package_source_dir.split('/')
+        )
+      for root_file in npm_archive_data.package_root_files:
+        src_file = package_source_dir / root_file
+        dest_file = pkg_dir / root_file
+        self.m.file.ensure_directory(
+          f'ensure dir for {root_file}', dest_file.parent
+        )
+        self.m.file.copy(f'copy {root_file}', src_file, dest_file)
+
+      # 4. Copy build artifacts according to artifact_mappings
+      for src_rel, dest_rel in npm_archive_data.artifact_mappings.items():
+        src_path = build_dir.joinpath(*src_rel.split('/'))
+        dest_path = pkg_dir.joinpath(*dest_rel.split('/'))
+        self.m.file.ensure_directory(
+          f'ensure dir for {dest_rel}', dest_path.parent
+        )
+        self.m.file.copytree(f'copy {src_rel}', src_path, dest_path)
+
+      # 5. Copy extra source/checkout files according to file_mappings
+      for file_mapping in npm_archive_data.file_mappings:
+        src_rel = file_mapping.from_file
+        dest_rel = self._replace_placeholders(
+          source_dir,
+          update_properties,
+          custom_vars,
+          file_mapping.to_file,
+        )
+        src_path = source_dir.joinpath(*src_rel.split('/'))
+        dest_path = pkg_dir.joinpath(*dest_rel.split('/'))
+        self.m.file.ensure_directory(
+          f'ensure dir for {dest_rel}', dest_path.parent
+        )
+        self.m.file.copy(f'copy {dest_rel}', src_path, dest_path)
+
+      # 6. Prune unwanted outputs
+      for pattern in npm_archive_data.pruned_outputs:
+        self.m.file.rmglob(f'prune {pattern}', pkg_dir, pattern)
+
+      with self.m.context(cwd=pkg_dir, env_prefixes={'PATH': [npm_bin.parent]}):
+        # 7. Set package version (converting 4-part Chrome version to SemVer)
+        if npm_archive_data.version:
+          package_version = self._replace_placeholders(
+            source_dir,
+            update_properties,
+            custom_vars,
+            npm_archive_data.version,
+          )
+          if '-' not in package_version and package_version.count('.') == 3:
+            base, patch = package_version.rsplit('.', 1)
+            package_version = f'{base}-{patch}'
+          self.m.step(
+            'npm version',
+            [
+              npm_bin,
+              'version',
+              package_version,
+              '--no-git-tag-version',
+              '--allow-same-version',
+            ],
+          )
+        else:
+          package_version = self.m.file.read_json(
+            'read package.json',
+            pkg_dir / 'package.json',
+            test_data={'version': '1.0.0'},
+          )['version']
+
+        # 8. Authenticate to the registry. npm never packs .npmrc, and
+        # include_log=False keeps the token out of the step logs.
+        token = self.m.service_account.default().get_access_token(
+          scopes=['https://www.googleapis.com/auth/cloud-platform']
+        )
+        registry = urllib.parse.urlsplit(registry_url)
+        registry_path = registry.path.rstrip('/')
+        self.m.file.write_text(
+          'write .npmrc',
+          pkg_dir / '.npmrc',
+          f'//{registry.netloc}{registry_path}/:_authToken="{token}"\n',
+          include_log=False,
+        )
+
+        # 9. Publish to registry
+        publish_cmd = [
+          npm_bin,
+          'publish',
+          '--registry',
+          registry_url,
+          '--access',
+          'public',
+        ]
+        if dist_tag:
+          publish_cmd.extend(['--tag', dist_tag])
+        if self._is_npm_version_published(
+          npm_bin, package_name, package_version, registry_url
+        ):
+          self.m.step.empty(
+            'skip npm publish',
+            step_text=f'{package_name}@{package_version} is already published',
+          )
+        else:
+          self.m.step('npm publish (dry run)', publish_cmd + ['--dry-run'])
+          if dry_run_only:
+            self.m.step.empty(
+              'skip npm publish',
+              step_text='experimental and try builds only do a dry run',
+            )
+          else:
+            self.m.step('npm publish', publish_cmd)
+
+      # 10. Upload publishing manifest to GCS if configured
+      if manifest_bucket and manifest_path and not dry_run_only:
+        manifest_content = (
+          self.m.json.dumps(
+            {
+              'publish_all': False,
+              'publishing_groups': [{'packages': [{'name': package_name}]}],
+            },
+            indent=2,
+          )
+          + '\n'
+        )
+        manifest_file = pkg_dir / 'publishing_manifest.json'
+        self.m.file.write_text(
+          'write publishing manifest', manifest_file, manifest_content
+        )
+        self.m.gsutil.upload(
+          manifest_file,
+          manifest_bucket,
+          manifest_path,
+          name='upload publishing manifest to OSS Exit Gate',
+        )
+
+      return {
+        'package_name': package_name,
+        'version': package_version,
+        'registry_url': registry_url,
+      }
+
+  def _is_npm_version_published(
+    self,
+    npm_bin: Path,
+    package_name: str,
+    package_version: str,
+    registry_url: str,
+  ) -> bool:
+    """Returns whether the package version is already in the registry.
+
+    `npm view` fails for a package that doesn't exist yet and prints nothing
+    for a version that doesn't exist. Both mean "not published". Other failures
+    (e.g. missing permissions) make the following `npm publish` steps fail.
+    """
+    result = self.m.step(
+      'check if version is already published',
+      [
+        npm_bin,
+        'view',
+        f'{package_name}@{package_version}',
+        'version',
+        '--registry',
+        registry_url,
+      ],
+      stdout=self.m.raw_io.output_text(),
+      ok_ret='any',
+      step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(''),
+    )
+    return (result.stdout or '').strip() == package_version
