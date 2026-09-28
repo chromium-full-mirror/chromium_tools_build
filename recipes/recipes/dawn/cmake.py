@@ -518,19 +518,12 @@ def RunSteps(api: DEPS, properties):
         with api.context(cwd=source_dir):
           api.step(
             'Check WGSL fuzzer',
-            ['./tools/run', 'fuzz', '--check', '--build', rel_build_path],
+            ['./tools/run', 'fuzz', 'check', '-build', rel_build_path],
             wrapper=shell_wrapper,
           )
           api.step(
             'Check IR fuzzer',
-            [
-              './tools/run',
-              'fuzz',
-              '--check',
-              '--ir',
-              '--build',
-              rel_build_path,
-            ],
+            ['./tools/run', 'fuzz', 'check', '-ir', '-build', rel_build_path],
             wrapper=shell_wrapper,
           )
 

@@ -777,8 +777,8 @@
     "cmd": [
       "./tools/run",
       "fuzz",
-      "--check",
-      "--build",
+      "check",
+      "-build",
       "cmake-build"
     ],
     "cwd": "[CACHE]/uncached/dawn",
@@ -815,9 +815,9 @@
     "cmd": [
       "./tools/run",
       "fuzz",
-      "--check",
-      "--ir",
-      "--build",
+      "check",
+      "-ir",
+      "-build",
       "cmake-build"
     ],
     "cwd": "[CACHE]/uncached/dawn",
