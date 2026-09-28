@@ -205,9 +205,12 @@ def _process_packages(
 
     with api.step.nest(package.sdk_package_name):
       # Uninstall first to remove potential installation from previous attempt.
+      # This is best-effort: since Android CLI 1.0.16406183, `sdk remove`
+      # exits 1 when the package isn't installed (the normal case here, since
+      # the "remove existing packages" step wipes the SDK root).
       uninstall_cmd = ['remove', package.sdk_package_name]
       with api.context(env=env):
-        api.step('cleanup', sdk_cmd + uninstall_cmd)
+        api.step('cleanup', sdk_cmd + uninstall_cmd, ok_ret=(0, 1))
 
       install_cmd = ['install']
       if channel == 'BETA':
@@ -394,6 +397,10 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     package_version_stable_steps(),
+    # Android CLI exits 1 when removing a package that isn't installed.
+    api.step_data(
+      'Process STABLE channel for linux x86_64.emulator.cleanup', retcode=1
+    ),
     api.post_process(
       post_process.MustRun,
       'Process STABLE channel for linux x86_64.emulator.cleanup',
