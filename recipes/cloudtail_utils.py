@@ -87,7 +87,7 @@ def wait_termination_win(pid):
     pid(int): pid of process which this function waits termination.
 
   Raises:
-    Error: WaitForSingleObject to wait process termination returns neigher of
+    Error: WaitForSingleObject to wait process termination returns neither of
            WAIT_TIMEOUT or WAIT_OBJECT_0 (i.e. termination succeeded).
     NotDiedError: if cloudtail kept on running 10 seconds after it signaled.
   """
@@ -180,7 +180,7 @@ def stop_cloudtail(args):
   """
   with open(args.killed_pid_file) as f:
     # cloudtail flushes log and terminates
-    # within 5 seconds when it recieves SIGINT.
+    # within 5 seconds when it receives SIGINT.
     pid = int(f.read())
   try:
     wait_termination(pid)
