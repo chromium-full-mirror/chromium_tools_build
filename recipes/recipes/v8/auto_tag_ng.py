@@ -51,6 +51,7 @@ from RECIPE_MODULES.recipe_engine import (
   runtime,
   service_account,
   step,
+  time,
 )
 
 
@@ -70,6 +71,7 @@ class DEPS(RecipeScriptApi):
   runtime: runtime.API
   service_account: service_account.API
   step: step.API
+  time: time.API
   v8: v8.API
 
 
@@ -83,6 +85,7 @@ class TEST_DEPS(RecipeTestApi):
   raw_io: raw_io.TEST_API
   runtime: runtime.TEST_API
   step: step.TEST_API
+  time: time.TEST_API
   v8: v8.TEST_API
 
 
@@ -326,7 +329,12 @@ def verify_floating_refs(
   before the Chromium branch and the Chromium version doesn't exist yet.
   It will be updated as soon as it is provided by the active milestone.
   """
-  branch_head = get_commit_for_ref(api, f'refs/tags/{version_at_head}')
+  branch_head = get_commit_for_ref(
+    api, f'refs/tags/{version_at_head}', retry_on_empty=True
+  )
+  assert branch_head, (
+    f"Expected a valid commit for ref refs/tags/{version_at_head}, but got empty string."
+  )
   lkgr_ref = f'refs/heads/{branch_version}-lkgr'
   verify_ref(api, 'LKGR', lkgr_ref, branch_head, build_results)
   if chromium_version:
@@ -335,6 +343,7 @@ def verify_floating_refs(
 
 
 def verify_ref(api: DEPS, name, ref, branch_head, build_results):
+  assert branch_head, "Expected non-empty branch_head, but got empty string."
   with api.step.nest(f'Verify {name}'):
     current_commit = get_commit_for_ref(api, ref)
     api.step(f'{name} commit {current_commit}', [])
@@ -353,17 +362,25 @@ def set_ref(api: DEPS, branch_head, ref, build_results):
   build_results.performed_actions.append(f'Updated {ref}')
 
 
-def get_commit_for_ref(api: DEPS, ref):
-  result = api.v8.git_output(
-    'ls-remote',
-    REMOTE_REPO_URL,
-    ref,
-    # Need str() to turn unicode into ascii in production.
-    name=str('git ls-remote %s' % ref.replace('/', '_')),
-  )
-  if result:
-    # Extract hash if available. Otherwise keep empty string.
-    result = result.split()[0]
+def get_commit_for_ref(api: DEPS, ref, retry_on_empty=False):
+  for attempt in range(3):
+    result = api.v8.git_output(
+      'ls-remote',
+      REMOTE_REPO_URL,
+      ref,
+      # Need str() to turn unicode into ascii in production.
+      name=str('git ls-remote %s' % ref.replace('/', '_')),
+    )
+    if result:
+      # Extract hash if available. Otherwise keep empty string.
+      result = result.split()[0]
+
+    if result or not retry_on_empty:
+      return result
+
+    if attempt < 2:
+      api.time.sleep(5)
+
   return result
 
 
@@ -610,6 +627,7 @@ def GenTests(api: TEST_DEPS):
       'Checking V8 branch 11.2.Verify pgo tag.Commit at 11.4.3.2-pgo', '123'
     ),
     stdout('Checking V8 branch 11.2.Verify version tag.Commit at HEAD', '123'),
+    stdout('Checking V8 branch 11.2.git ls-remote refs_tags_11.4.3.2', '123'),
     version_file(1, 'branch-heads/11.1', prefix="Checking V8 branch 11.1."),
     api.post_process(MustRun, 'Checking V8 branch 11.2.Verify LKGR'),
     api.post_process(DoesNotRunRE, 'Checking V8 branch 11.2.Verify Chromium.*'),
@@ -625,6 +643,7 @@ def GenTests(api: TEST_DEPS):
       'Checking V8 branch 11.1.Verify pgo tag.Commit at 11.4.3.1-pgo', '121'
     ),
     stdout('Checking V8 branch 11.1.Verify version tag.Commit at HEAD', '121'),
+    stdout('Checking V8 branch 11.1.git ls-remote refs_tags_11.4.3.1', '121'),
     api.post_process(MustRun, 'Checking V8 branch 11.1.Verify LKGR'),
     api.post_process(MustRun, 'Checking V8 branch 11.1.Verify Chromium'),
     api.post_process(DropExpectation),
@@ -829,4 +848,63 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(DropExpectation),
     status='SUCCESS',
+  )
+
+  yield test(
+    'branch_head-retry-success',
+    milestones(113),
+    chromium_versions(5113),
+    version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+    stdout(
+      'Checking V8 branch 11.3.Proof of version change',
+      'dummy proof of version change',
+    ),
+    stdout(
+      'Checking V8 branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'
+    ),
+    stdout(
+      'Checking V8 branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'
+    ),
+    stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD', '123'),
+    stdout(
+      'Checking V8 branch 11.3.Verify LKGR.git ls-remote refs_heads_11.3-lkgr',
+      '112233',
+    ),
+    stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3', ''),
+    stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (2)', ''),
+    stdout(
+      'Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (3)', '112233'
+    ),
+    api.post_process(
+      MustRun, 'Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (3)'
+    ),
+    api.post_process(DropExpectation),
+    status='SUCCESS',
+  )
+
+  yield test(
+    'branch_head-retry-failure',
+    milestones(113),
+    chromium_versions(5113),
+    version_file(3, 'branch-heads/11.3', prefix="Checking V8 branch 11.3."),
+    stdout(
+      'Checking V8 branch 11.3.Proof of version change',
+      'dummy proof of version change',
+    ),
+    stdout(
+      'Checking V8 branch 11.3.Verify version tag.Commit at 11.4.3.3', '123'
+    ),
+    stdout(
+      'Checking V8 branch 11.3.Verify pgo tag.Commit at 11.4.3.3-pgo', '123'
+    ),
+    stdout('Checking V8 branch 11.3.Verify version tag.Commit at HEAD', '123'),
+    stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3', ''),
+    stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (2)', ''),
+    stdout('Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (3)', ''),
+    api.post_process(
+      MustRun, 'Checking V8 branch 11.3.git ls-remote refs_tags_11.4.3.3 (3)'
+    ),
+    api.expect_exception('AssertionError'),
+    api.post_process(DropExpectation),
+    status='INFRA_FAILURE',
   )
