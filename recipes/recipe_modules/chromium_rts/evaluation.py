@@ -4,6 +4,7 @@
 
 from __future__ import annotations
 
+import traceback
 from typing import Any, TypedDict
 
 from recipe_engine import recipe_api
@@ -70,11 +71,13 @@ def evaluate_rts(
       )
       presentation.properties['rts_evaluation_status'] = 'SUCCESS'
     except Exception as e:
+      presentation.status = api.m.step.FAILURE
       presentation.step_text = (
         f'RTS safety evaluation encountered internal error: {e}'
       )
       presentation.properties['rts_evaluation_status'] = 'ERROR'
       presentation.properties['rts_evaluation_error'] = str(e)
+      presentation.logs['exception'] = traceback.format_exc().splitlines()
 
 
 def _evaluate_all_tests(

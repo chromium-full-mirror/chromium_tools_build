@@ -605,6 +605,7 @@ def GenTests(api: TEST_DEPS):
       'Evaluate chromium-rts safety.read MockTest filter file', retcode=1
     ),
     api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+    api.post_process(post_process.StepFailure, 'Evaluate chromium-rts safety'),
     api.post_process(
       post_process.PropertyEquals, 'rts_evaluation_status', 'ERROR'
     ),
@@ -866,5 +867,18 @@ def GenTests(api: TEST_DEPS):
         }
       },
     ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'evaluation_banned_suites_read_failure',
+    api.chromium.try_build(
+      builder='linux-rel', experiments=['chromium_rts.filter_file_analysis']
+    ),
+    api.step_data('read rts_banned_suites.json', retcode=1),
+    api.post_process(post_process.MustRun, 'read rts_banned_suites.json'),
+    api.post_process(post_process.StepFailure, 'read rts_banned_suites.json'),
+    api.post_process(post_process.DoesNotRun, 'Evaluate chromium-rts safety'),
+    api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.DropExpectation),
   )
