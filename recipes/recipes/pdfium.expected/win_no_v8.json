@@ -49,7 +49,7 @@
     "cwd": "[CACHE]\\builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/windows_no_v8/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_no_v8/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -128,7 +128,7 @@
     ],
     "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/windows_no_v8/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_no_v8/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -250,7 +250,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_unittests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:pdfium_unittests",
       "-tag",
@@ -288,7 +288,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:pdfium_embeddertests",
       "-tag",
@@ -326,7 +326,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:pixel",
       "-tag",
@@ -345,7 +345,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled"
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -369,7 +369,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:pixel_oneshot",
       "-tag",
@@ -388,7 +388,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite oneshot symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite oneshot symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -413,7 +413,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:pixel_reverse_byte_order",
       "-tag",
@@ -432,7 +432,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite reverse_byte_order symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite reverse_byte_order symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -457,7 +457,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:corpus",
       "-tag",
@@ -476,7 +476,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled"
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -500,7 +500,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:corpus_oneshot",
       "-tag",
@@ -519,7 +519,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite oneshot symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite oneshot symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -544,7 +544,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:windows_no_v8",
+      "builder:win_no_v8",
       "-var",
       "test_suite:corpus_reverse_byte_order",
       "-tag",
@@ -563,7 +563,7 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os windows partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite reverse_byte_order symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite reverse_byte_order symbol_level 1 use_reclient false use_siso true v8 false xfa false xfa_runtime disabled",
       "--reverse-byte-order"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",

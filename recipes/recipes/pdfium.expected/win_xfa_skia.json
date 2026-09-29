@@ -49,7 +49,7 @@
     "cwd": "[CACHE]\\builder",
     "env": {
       "CHROME_HEADLESS": "1",
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_skia_brotli/8945511751514863184",
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_xfa_skia/8945511751514863184",
       "GIT_BACKENDINFO": "1",
       "GIT_DAPPER_TRACE": "1",
       "GIT_HTTP_LOW_SPEED_LIMIT": "102400",
@@ -128,7 +128,7 @@
     ],
     "cwd": "[CACHE]\\builder",
     "env": {
-      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_skia_brotli/8945511751514863184"
+      "DEPOT_TOOLS_REPORT_BUILD": "pdfium/ci/win_xfa_skia/8945511751514863184"
     },
     "env_suffixes": {
       "PATH": [
@@ -157,8 +157,8 @@
       "--check",
       "--root=[CACHE]\\builder\\pdfium",
       "gen",
-      "//out/debug_skia_v8_brotli",
-      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_brotli=true pdf_enable_fontations=false pdf_enable_rust_bmp=false pdf_enable_rust_jpeg=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=false pdf_is_standalone=true pdf_use_partition_alloc=true pdf_use_skia=true use_reclient=false use_remoteexec=true use_siso=true symbol_level=1"
+      "//out/debug_skia_xfa_v8",
+      "--args=enable_rust=false enable_rust_cxx=false is_component_build=false is_debug=true pdf_enable_brotli=false pdf_enable_fontations=false pdf_enable_rust_bmp=false pdf_enable_rust_jpeg=false pdf_enable_rust_png=false pdf_enable_v8=true pdf_enable_xfa=true pdf_is_standalone=true pdf_use_partition_alloc=true pdf_use_skia=true use_reclient=false use_remoteexec=true use_siso=true symbol_level=1"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -214,7 +214,7 @@
       "--reapi_instance",
       "default_instance",
       "-C",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8",
       "pdfium_all"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -250,7 +250,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_unittests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pdfium_unittests",
       "-tag",
@@ -263,7 +263,7 @@
       "-result-file",
       "[CLEANUP]\\tmp_tmp_1",
       "--",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\pdfium_unittests.exe",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\pdfium_unittests.exe",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_1"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -288,7 +288,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pdfium_embeddertests_agg",
       "-tag",
@@ -301,7 +301,7 @@
       "-result-file",
       "[CLEANUP]\\tmp_tmp_2",
       "--",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\pdfium_embeddertests.exe",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\pdfium_embeddertests.exe",
       "--use-renderer=agg",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
     ],
@@ -327,7 +327,7 @@
       "-test-id-prefix",
       "ninja://:pdfium_embeddertests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pdfium_embeddertests_skia",
       "-tag",
@@ -340,7 +340,7 @@
       "-result-file",
       "[CLEANUP]\\tmp_tmp_3",
       "--",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\pdfium_embeddertests.exe",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\pdfium_embeddertests.exe",
       "--use-renderer=skia",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_3"
     ],
@@ -366,7 +366,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:javascript",
       "-tag",
@@ -376,16 +376,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_javascript_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -409,7 +409,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_javascript_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:javascript_javascript_disabled",
       "-tag",
@@ -419,16 +419,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_javascript_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -451,9 +451,53 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_javascript_tests/",
+      "-var",
+      "builder:win_xfa_skia",
+      "-var",
+      "test_suite:javascript_xfa_disabled",
+      "-tag",
+      "step_name:javascript tests (xfa disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_javascript_tests.py",
+      "--build-dir",
+      "out\\debug_skia_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite xfa_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "javascript tests (xfa disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pixel",
       "-tag",
@@ -463,16 +507,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -496,7 +540,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pixel_oneshot",
       "-tag",
@@ -506,16 +550,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite oneshot symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite oneshot symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -540,7 +584,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:pixel_javascript_disabled",
       "-tag",
@@ -550,16 +594,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -582,9 +626,53 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_pixel_tests/",
+      "-var",
+      "builder:win_xfa_skia",
+      "-var",
+      "test_suite:pixel_xfa_disabled",
+      "-tag",
+      "step_name:pixel tests (xfa disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
+      "--build-dir",
+      "out\\debug_skia_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite xfa_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "pixel tests (xfa disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:corpus",
       "-tag",
@@ -594,16 +682,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled"
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
     "luci_context": {
@@ -627,7 +715,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:corpus_oneshot",
       "-tag",
@@ -637,16 +725,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite oneshot symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite oneshot symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
       "--render-oneshot"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -671,7 +759,7 @@
       "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
-      "builder:win_skia_brotli",
+      "builder:win_xfa_skia",
       "-var",
       "test_suite:corpus_javascript_disabled",
       "-tag",
@@ -681,16 +769,16 @@
       "-u",
       "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
       "--build-dir",
-      "out\\debug_skia_v8_brotli",
+      "out\\debug_skia_xfa_v8",
       "--gold_output_dir",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_v8_brotli\\gold_output",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
       "--run-skia-gold",
       "--git-revision",
       "2d72510e447ab60a9728aeea2362d8be2cbd7789",
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli true debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa false xfa_runtime disabled",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite javascript_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
       "--disable-javascript"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -707,6 +795,50 @@
       }
     },
     "name": "corpus tests (javascript disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_corpus_tests/",
+      "-var",
+      "builder:win_xfa_skia",
+      "-var",
+      "test_suite:corpus_xfa_disabled",
+      "-tag",
+      "step_name:corpus tests (xfa disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
+      "--build-dir",
+      "out\\debug_skia_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_xfa_v8\\gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os win partition_alloc true rust_bmp false rust_jpeg false rust_png false skia true suite xfa_disabled symbol_level 1 use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "corpus tests (xfa disabled)"
   },
   {
     "name": "$result"
