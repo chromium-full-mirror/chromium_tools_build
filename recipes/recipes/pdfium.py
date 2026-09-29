@@ -1227,12 +1227,23 @@ def RunSteps(
 
 def GenTests(api: TEST_DEPS):
   yield api.test(
-    'win',
-    api.platform('win', 64),
+    'android',
+    api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api),
-    _gen_ci_build(api, 'windows'),
+    _gen_properties(
+      api, target_os='android', target_cpu='arm64', skip_test=True
+    ),
+    _gen_ci_build(api, 'android'),
   )
+
+  yield api.test(
+    'android_32',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, target_os='android', skip_test=True),
+    _gen_ci_build(api, 'android'),
+  )
+
   yield api.test(
     'linux',
     api.platform('linux', 64),
@@ -1240,111 +1251,13 @@ def GenTests(api: TEST_DEPS):
     _gen_properties(api),
     _gen_ci_build(api, 'linux'),
   )
+
   yield api.test(
-    'linux_cxx23',
+    'linux_asan_lsan',
     api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, use_cxx23=True),
-    _gen_ci_build(api, 'linux'),
-  )
-  yield api.test(
-    'mac',
-    api.platform('mac', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api),
-    _gen_ci_build(api, 'mac'),
-  )
-
-  yield api.test(
-    'win_no_v8',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, v8=False),
-    _gen_ci_build(api, 'windows_no_v8'),
-  )
-  yield api.test(
-    'linux_no_v8',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, v8=False),
-    _gen_ci_build(api, 'linux_no_v8'),
-  )
-  yield api.test(
-    'mac_no_v8',
-    api.platform('mac', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, v8=False),
-    _gen_ci_build(api, 'mac_no_v8'),
-  )
-
-  yield api.test(
-    'win_component',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, component=True, xfa=True),
-    _gen_ci_build(api, 'win_component'),
-  )
-
-  yield api.test(
-    'win_gdi',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, xfa=True, renderers=['gdi']),
-    _gen_ci_build(api, 'windows_gdi'),
-  )
-  yield api.test(
-    'win_gdi_skia',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, xfa=True, renderers=['gdi']),
-    _gen_ci_build(api, 'windows_gdi_skia'),
-  )
-  yield api.test(
-    'win_agg_gdi_skia',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, xfa=True, renderers=['agg', 'gdi', 'skia']),
-    _gen_ci_build(api, 'windows_agg_gdi_skia'),
-  )
-
-  yield api.test(
-    'win_skia',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, xfa=True),
-    _gen_ci_build(api, 'windows_skia'),
-  )
-
-  yield api.test(
-    'win_xfa_32',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, xfa=True, target_cpu='x86'),
-    _gen_ci_build(api, 'windows_xfa_32'),
-  )
-
-  yield api.test(
-    'win_xfa',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, xfa=True),
-    _gen_ci_build(api, 'windows_xfa'),
-  )
-
-  yield api.test(
-    'win_xfa_rel',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, xfa=True, rel=True),
-    _gen_ci_build(api, 'windows_xfa_rel'),
-  )
-
-  yield api.test(
-    'win_xfa_rust',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, rust=True, xfa=True),
-    _gen_ci_build(api, 'win_xfa_rust'),
+    _gen_properties(api, memory_tool='asan'),
+    _gen_ci_build(api, 'linux_asan_lsan'),
   )
 
   yield api.test(
@@ -1356,11 +1269,51 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'linux_cxx23',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, use_cxx23=True),
+    _gen_ci_build(api, 'linux'),
+  )
+
+  yield api.test(
+    'linux_msan',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, memory_tool='msan', rel=True),
+    _gen_ci_build(api, 'linux_msan'),
+  )
+
+  yield api.test(
+    'linux_no_partition_alloc',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, partition_alloc=False),
+    _gen_ci_build(api, 'linux'),
+  )
+
+  yield api.test(
+    'linux_no_v8',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, v8=False),
+    _gen_ci_build(api, 'linux_no_v8'),
+  )
+
+  yield api.test(
     'linux_skia',
     api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
     _gen_properties(api, skia=True, xfa=True),
     _gen_ci_build(api, 'linux_skia'),
+  )
+
+  yield api.test(
+    'linux_skia_brotli',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, skia=True, brotli=True, clobber=''),
+    _gen_ci_build(api, 'linux_skia_brotli'),
   )
 
   yield api.test(
@@ -1372,11 +1325,11 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'linux_xfa_rust',
+    'linux_ubsan',
     api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, rust=True, xfa=True),
-    _gen_ci_build(api, 'linux_xfa_rust'),
+    _gen_properties(api, memory_tool='ubsan', rel=True),
+    _gen_ci_build(api, 'linux_ubsan'),
   )
 
   yield api.test(
@@ -1388,11 +1341,51 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'linux_xfa_asan_lsan',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, memory_tool='asan', xfa=True),
+    _gen_ci_build(api, 'linux_xfa_asan_lsan'),
+  )
+
+  yield api.test(
+    'linux_xfa_msan',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, memory_tool='msan', rel=True, xfa=True),
+    _gen_ci_build(api, 'linux_xfa_msan'),
+  )
+
+  yield api.test(
     'linux_xfa_rel',
     api.platform('linux', 64),
     api.builder_group.for_current('client.pdfium'),
     _gen_properties(api, xfa=True, rel=True),
     _gen_ci_build(api, 'linux_xfa_rel'),
+  )
+
+  yield api.test(
+    'linux_xfa_rust',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, rust=True, xfa=True),
+    _gen_ci_build(api, 'linux_xfa_rust'),
+  )
+
+  yield api.test(
+    'linux_xfa_ubsan',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, memory_tool='ubsan', rel=True, xfa=True),
+    _gen_ci_build(api, 'linux_xfa_ubsan'),
+  )
+
+  yield api.test(
+    'mac',
+    api.platform('mac', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api),
+    _gen_ci_build(api, 'mac'),
   )
 
   yield api.test(
@@ -1404,11 +1397,27 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'mac_no_v8',
+    api.platform('mac', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, v8=False),
+    _gen_ci_build(api, 'mac_no_v8'),
+  )
+
+  yield api.test(
     'mac_skia',
     api.platform('mac', 64),
     api.builder_group.for_current('client.pdfium'),
     _gen_properties(api, skia=True, xfa=True),
     _gen_ci_build(api, 'mac_skia'),
+  )
+
+  yield api.test(
+    'mac_skia_brotli',
+    api.platform('mac', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, skia=True, brotli=True, clobber=''),
+    _gen_ci_build(api, 'mac_skia_brotli'),
   )
 
   yield api.test(
@@ -1436,59 +1445,19 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'linux_asan_lsan',
-    api.platform('linux', 64),
+    'win',
+    api.platform('win', 64),
     api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='asan'),
-    _gen_ci_build(api, 'linux_asan_lsan'),
+    _gen_properties(api),
+    _gen_ci_build(api, 'windows'),
   )
 
   yield api.test(
-    'linux_msan',
-    api.platform('linux', 64),
+    'win_agg_gdi_skia',
+    api.platform('win', 64),
     api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='msan', rel=True),
-    _gen_ci_build(api, 'linux_msan'),
-  )
-
-  yield api.test(
-    'linux_ubsan',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='ubsan', rel=True),
-    _gen_ci_build(api, 'linux_ubsan'),
-  )
-
-  yield api.test(
-    'linux_no_partition_alloc',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, partition_alloc=False),
-    _gen_ci_build(api, 'linux'),
-  )
-
-  yield api.test(
-    'linux_xfa_asan_lsan',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='asan', xfa=True),
-    _gen_ci_build(api, 'linux_xfa_asan_lsan'),
-  )
-
-  yield api.test(
-    'linux_xfa_msan',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='msan', rel=True, xfa=True),
-    _gen_ci_build(api, 'linux_xfa_msan'),
-  )
-
-  yield api.test(
-    'linux_xfa_ubsan',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, memory_tool='ubsan', rel=True, xfa=True),
-    _gen_ci_build(api, 'linux_xfa_ubsan'),
+    _gen_properties(api, skia=True, xfa=True, renderers=['agg', 'gdi', 'skia']),
+    _gen_ci_build(api, 'windows_agg_gdi_skia'),
   )
 
   yield api.test(
@@ -1500,6 +1469,70 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'win_component',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, component=True, xfa=True),
+    _gen_ci_build(api, 'win_component'),
+  )
+
+  yield api.test(
+    'win_gdi',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, renderers=['gdi']),
+    _gen_ci_build(api, 'windows_gdi'),
+  )
+
+  yield api.test(
+    'win_gdi_skia',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, skia=True, xfa=True, renderers=['gdi']),
+    _gen_ci_build(api, 'windows_gdi_skia'),
+  )
+
+  yield api.test(
+    'win_no_v8',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, v8=False),
+    _gen_ci_build(api, 'windows_no_v8'),
+  )
+
+  yield api.test(
+    'win_skia',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, skia=True, xfa=True),
+    _gen_ci_build(api, 'windows_skia'),
+  )
+
+  yield api.test(
+    'win_skia_brotli',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, skia=True, brotli=True, clobber=''),
+    _gen_ci_build(api, 'windows_skia_brotli'),
+  )
+
+  yield api.test(
+    'win_xfa',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True),
+    _gen_ci_build(api, 'windows_xfa'),
+  )
+
+  yield api.test(
+    'win_xfa_32',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, target_cpu='x86'),
+    _gen_ci_build(api, 'windows_xfa_32'),
+  )
+
+  yield api.test(
     'win_xfa_asan',
     api.platform('win', 64),
     api.builder_group.for_current('client.pdfium'),
@@ -1508,29 +1541,27 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'win_xfa_rel',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, rel=True),
+    _gen_ci_build(api, 'windows_xfa_rel'),
+  )
+
+  yield api.test(
+    'win_xfa_rust',
+    api.platform('win', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, rust=True, xfa=True),
+    _gen_ci_build(api, 'win_xfa_rust'),
+  )
+
+  yield api.test(
     'try-linux-gerrit_xfa_asan_lsan',
     api.platform('linux', 64),
     api.builder_group.for_current('tryserver.client.pdfium'),
     _gen_properties(api, xfa=True, memory_tool='asan'),
     _gen_try_build(api, 'linux_xfa_asan_lsan'),
-  )
-
-  yield api.test(
-    'android',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(
-      api, target_os='android', target_cpu='arm64', skip_test=True
-    ),
-    _gen_ci_build(api, 'android'),
-  )
-
-  yield api.test(
-    'android_32',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, target_os='android', skip_test=True),
-    _gen_ci_build(api, 'android'),
   )
 
   yield api.test(
@@ -1558,30 +1589,6 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'linux_skia_brotli',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, brotli=True, clobber=''),
-    _gen_ci_build(api, 'linux_skia_brotli'),
-  )
-
-  yield api.test(
-    'win_skia_brotli',
-    api.platform('win', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, brotli=True, clobber=''),
-    _gen_ci_build(api, 'windows_skia_brotli'),
-  )
-
-  yield api.test(
-    'mac_skia_brotli',
-    api.platform('mac', 64),
-    api.builder_group.for_current('client.pdfium'),
-    _gen_properties(api, skia=True, brotli=True, clobber=''),
-    _gen_ci_build(api, 'mac_skia_brotli'),
-  )
-
-  yield api.test(
     'swarming-win',
     api.platform('win', 64),
     api.builder_group.for_current('client.pdfium'),
@@ -1597,6 +1604,7 @@ def GenTests(api: TEST_DEPS):
     ),
     _gen_ci_build(api, 'windows'),
   )
+
   yield api.test(
     'swarming-try-win',
     api.platform('win', 64),
@@ -1613,6 +1621,7 @@ def GenTests(api: TEST_DEPS):
     ),
     _gen_try_build(api, 'windows'),
   )
+
   yield api.test(
     'swarming-eager-task',
     api.platform('linux', 64),
@@ -1667,6 +1676,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
   )
+
   yield api.test(
     'swarming-eager-task-new-cli',
     api.platform('linux', 64),
@@ -1711,6 +1721,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
   )
+
   yield api.test(
     'swarming-expired-task',
     api.platform('linux', 64),
@@ -1984,6 +1995,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.expect_status('INFRA_FAILURE'),
   )
+
   yield api.test(
     'fail-swarming-command',
     api.platform('linux', 64),
@@ -2042,6 +2054,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.expect_status('FAILURE'),
   )
+
   yield api.test(
     'fail-swarming-local-test',
     api.platform('linux', 64),
