@@ -1236,6 +1236,29 @@
   },
   {
     "cmd": [
+      "python3",
+      "RECIPE_MODULE[infra::codesearch]/resources/enrich_rust_project_json.py",
+      "[CACHE]/builder/src/out/ios-Debug/rust-project.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create rust kzip.enrich rust-project.json",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[START_DIR]/packages/kythe-go/rust",
       "--corpus",
       "chromium.googlesource.com/chromium/src",
