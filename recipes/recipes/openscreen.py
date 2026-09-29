@@ -494,31 +494,38 @@ def RunSteps(api: recipe_api.RecipeApi):
   paths = RepositoryPaths(api, update_result.source_root.path)
   api.gclient.runhooks()
 
-  # Download coverage merge scripts from Chromium if they are missing.
-  # The revision should match 'chrome_version' in openscreen/DEPS.
-  chrome_version = '4a1c93eb7da3e438ea5cb677c783379a282ed75d'
-  scripts_to_download = [
-    'merge_results.py',
-    'merge_steps.py',
-    'merge_lib.py',
-  ]
-  with api.step.nest('download coverage scripts'):
-    for script in scripts_to_download:
-      api.step(
-        f'download {script}',
-        [
-          'python3',
-          update_result.source_root.path
-          / 'tools'
-          / 'download-chromium-file.py',
-          '--revision',
-          chrome_version,
-          '--path',
-          f'testing/merge_scripts/code_coverage/{script}',
-          '--output',
-          update_result.source_root.path / 'build' / 'code_coverage' / script,
-        ],
-      )
+  is_ci = api.properties.get('is_ci', False)
+  use_clang_coverage = api.properties.get('use_clang_coverage', False)
+  build_targets = list(
+    api.properties.get('build_targets', DEFAULT_BUILD_TARGETS)
+  )
+
+  if use_clang_coverage:
+    # Download coverage merge scripts from Chromium if they are missing.
+    # The revision should match 'chrome_version' in openscreen/DEPS.
+    chrome_version = '4a1c93eb7da3e438ea5cb677c783379a282ed75d'
+    scripts_to_download = [
+      'merge_results.py',
+      'merge_steps.py',
+      'merge_lib.py',
+    ]
+    with api.step.nest('download coverage scripts'):
+      for script in scripts_to_download:
+        api.step(
+          f'download {script}',
+          [
+            'python3',
+            update_result.source_root.path
+            / 'tools'
+            / 'download-chromium-file.py',
+            '--revision',
+            chrome_version,
+            '--path',
+            f'testing/merge_scripts/code_coverage/{script}',
+            '--output',
+            update_result.source_root.path / 'build' / 'code_coverage' / script,
+          ],
+        )
 
   GenerateCoverageTestConstants(api, paths)
 
@@ -531,12 +538,6 @@ def RunSteps(api: recipe_api.RecipeApi):
     env['ASAN_SYMBOLIZER_PATH'] = str(
       api.profiles.llvm_exec_path('llvm-symbolizer')
     )
-
-  is_ci = api.properties.get('is_ci', False)
-  use_clang_coverage = api.properties.get('use_clang_coverage', False)
-  build_targets = list(
-    api.properties.get('build_targets', DEFAULT_BUILD_TARGETS)
-  )
 
   with api.context(cwd=paths.checkout_path, env=env):
     if use_clang_coverage:
