@@ -16,11 +16,14 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
+  buildbucket,
   cas,
   context,
+  defer,
   file,
   path,
   platform,
+  resultdb,
   step,
   url,
 )
@@ -29,13 +32,16 @@ from RECIPE_MODULES.recipe_engine import (
 @dataclass
 class DEPS(RecipeScriptApi):
   bot_update: bot_update.API
+  buildbucket: buildbucket.API
   cas: cas.API
   context: context.API
+  defer: defer.API
   file: file.API
   gclient: gclient.API
   gsutil: gsutil.API
   path: path.API
   platform: platform.API
+  resultdb: resultdb.API
   step: step.API
   url: url.API
   zip: zip_module.API
@@ -43,6 +49,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
   context: context.TEST_API
   file: file.TEST_API
   path: path.TEST_API
@@ -61,6 +68,12 @@ _CAS_DIR_PREFIX = 'cq_archive_'
 _VERSION_RE = re.compile(r'^\d+(\.\d+)+$')
 
 
+def _wrap_resultdb(api: DEPS, cmd, **kwargs):
+  if api.resultdb.enabled:
+    return api.resultdb.wrap(cmd, **kwargs)
+  return cmd
+
+
 def RunSteps(api: DEPS):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
@@ -69,33 +82,43 @@ def RunSteps(api: DEPS):
   chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')
 
   cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
-  try:
-    # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows in CQ.
-    if not api.platform.is_win:
-      api.step(
-        'Run Unit Tests',
-        [
-          'vpython3',
-          'crossbench/tests/crossbench/runner.py',
-          f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
-        ],
-      )
+  with api.defer.context() as defer:
+    try:
+      # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows
+      # in CQ.
+      if not api.platform.is_win:
+        defer(
+          api.step,
+          'Run Unit Tests',
+          _wrap_resultdb(
+            api,
+            [
+              'vpython3',
+              'crossbench/tests/crossbench/runner.py',
+              f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
+            ],
+          ),
+        )
 
-    api.step(
-      'Run End2End Tests',
-      [
-        'vpython3',
-        '-Xutf8',
-        'crossbench/tests/end2end/runner.py',
-        f'--test-browser-path={chrome_app_path}',
-        f'--test-driver-path={chrome_driver_path}',
-        f'--cas-archive={cas_archive}',
-        f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
-        '--ignore-tests=android',
-      ],
-    )
-  finally:
-    api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
+      defer(
+        api.step,
+        'Run End2End Tests',
+        _wrap_resultdb(
+          api,
+          [
+            'vpython3',
+            '-Xutf8',
+            'crossbench/tests/end2end/runner.py',
+            f'--test-browser-path={chrome_app_path}',
+            f'--test-driver-path={chrome_driver_path}',
+            f'--cas-archive={cas_archive}',
+            f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
+            '--ignore-tests=android',
+          ],
+        ),
+      )
+    finally:
+      api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
 
 
 def GenTests(api: TEST_DEPS):
@@ -107,6 +130,9 @@ def GenTests(api: TEST_DEPS):
   )
   yield api.test(
     'linux-intel-64',
+    api.buildbucket.try_build(
+      project='crossbench', builder='e2e Linux x64 Try'
+    ),
     api.platform('linux', 64),
     api.platform.arch('intel'),
   )
@@ -237,6 +263,13 @@ def GenTests(api: TEST_DEPS):
       },
     ),
     api.expect_exception('ValueError'),
+  )
+  yield api.test(
+    'unit-tests-failure-defers',
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.step_data('Run Unit Tests', retcode=1),
+    api.expect_status('FAILURE'),
   )
 
 

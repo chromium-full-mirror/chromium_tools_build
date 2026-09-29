@@ -148,10 +148,10 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 69, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 82, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 340, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 373, in download_chrome",
       "    raise ValueError(",
       "ValueError: No CFT download URL found for platform 'linux64'"
     ]

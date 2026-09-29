@@ -26,12 +26,14 @@ from RECIPE_MODULES.recipe_engine import (
   cas,
   cipd,
   context,
+  defer,
   file,
   json,
   path,
   platform,
   properties,
   raw_io,
+  resultdb,
   step,
 )
 
@@ -44,6 +46,7 @@ class DEPS(RecipeScriptApi):
   cas: cas.API
   cipd: cipd.API
   context: context.API
+  defer: defer.API
   depot_tools: depot_tools.API
   file: file.API
   gclient: gclient.API
@@ -53,11 +56,13 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   raw_io: raw_io.API
+  resultdb: resultdb.API
   step: step.API
 
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
   json: json.TEST_API
   path: path.TEST_API
   platform: platform.TEST_API
@@ -237,6 +242,12 @@ class AndroidEmulator:
         )
 
 
+def _wrap_resultdb(api: DEPS, cmd, **kwargs):
+  if api.resultdb.enabled:
+    return api.resultdb.wrap(cmd, **kwargs)
+  return cmd
+
+
 def RunSteps(api: DEPS, properties):
   api.gclient.set_config('crossbench')
   api.bot_update.ensure_checkout()
@@ -249,31 +260,40 @@ def RunSteps(api: DEPS, properties):
   else:
     configs = [TestRunConfig(sdk_version=properties.android_sdk, avd_suffix='')]
 
-  for config in configs:
-    android_emulator = AndroidEmulator(
-      api, config.sdk_version, avd_suffix=config.avd_suffix
-    )
-    with android_emulator.start():
-      env = {}
-      with api.context(env=env):
-        cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
-        try:
-          api.step(
-            'Run Android End2End Tests',
-            [
-              'vpython3',
-              test_driver,
-              f'--adb-device-id={android_emulator.adb_device_id}',
-              f'--adb-path={android_emulator.adb_path}',
-              f'--cas-archive={cas_archive}',
-              f'--log-file={cas_archive}/pytest.tests.android.out.txt',
-              *(config.extra_flags or []),
-            ],
-          )
-        finally:
-          api.cas.archive(
-            'Copy End2End test logs to CAS', cas_archive, cas_archive
-          )
+  with api.defer.context() as defer:
+    for config in configs:
+      android_emulator = AndroidEmulator(
+        api, config.sdk_version, avd_suffix=config.avd_suffix
+      )
+      with android_emulator.start():
+        env = {}
+        with api.context(env=env):
+          cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+          try:
+            base_variant = {'android_sdk': str(config.sdk_version)}
+            if config.avd_suffix:
+              base_variant['avd_suffix'] = config.avd_suffix
+            defer(
+              api.step,
+              'Run Android End2End Tests',
+              _wrap_resultdb(
+                api,
+                [
+                  'vpython3',
+                  test_driver,
+                  f'--adb-device-id={android_emulator.adb_device_id}',
+                  f'--adb-path={android_emulator.adb_path}',
+                  f'--cas-archive={cas_archive}',
+                  f'--log-file={cas_archive}/pytest.tests.android.out.txt',
+                  *(config.extra_flags or []),
+                ],
+                base_variant=base_variant,
+              ),
+            )
+          finally:
+            api.cas.archive(
+              'Copy End2End test logs to CAS', cas_archive, cas_archive
+            )
 
 
 def GenTests(api: TEST_DEPS):
@@ -303,6 +323,9 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'basic-android-test',
+    api.buildbucket.try_build(
+      project='crossbench', builder='e2e-Others Android x64 Try'
+    ),
     api.platform('linux', 64),
     api.platform.arch('intel'),
     api.properties(android_sdk=37),
@@ -337,4 +360,20 @@ def GenTests(api: TEST_DEPS):
     api.platform.arch('intel'),
     api.properties(InputProperties(test_run_config=[run_config])),
     api.path.exists(gen_adb_path()),
+  )
+
+  run_config_foldable = TestRunConfig(sdk_version=37, avd_suffix='_foldable')
+  yield api.test(
+    'multiple-test-run-configs-defer-failures',
+    api.buildbucket.try_build(
+      project='crossbench', builder='e2e-Others Android x64 Try'
+    ),
+    api.platform('linux', 64),
+    api.platform.arch('intel'),
+    api.properties(
+      InputProperties(test_run_config=[run_config, run_config_foldable])
+    ),
+    api.path.exists(gen_adb_path()),
+    api.step_data('Run Android End2End Tests', retcode=1),
+    api.expect_status('FAILURE'),
   )
