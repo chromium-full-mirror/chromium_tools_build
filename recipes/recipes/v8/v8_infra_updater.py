@@ -48,7 +48,7 @@ class TEST_DEPS(RecipeTestApi):
 
 
 HASHTAG = 'v8-infra-update'
-MAX_ACTIVE_BRANCHES = 6
+MAX_ACTIVE_BRANCHES = 8
 
 
 def RunSteps(api: DEPS):
@@ -109,6 +109,10 @@ def RunSteps(api: DEPS):
           raise api.step.StepFailure(f'Added branch {new_branch} is the oldest')
 
       if removed:
+        if len(removed) > 2:
+          raise api.step.StepFailure(
+            f'Too many branches removed: {", ".join(removed)} (max 2)'
+          )
         if current_branches[0] in removed:
           raise api.step.StepFailure(
             f'Newest branch {current_branches[0]} was removed'
@@ -168,6 +172,8 @@ def GenTests(api: TEST_DEPS):
     api.test("too many branches", status='FAILURE')
     + fake_milestones(
       [
+        {'milestone': 129, 'v8_branch': '12.9'},
+        {'milestone': 128, 'v8_branch': '12.8'},
         {'milestone': 127, 'v8_branch': '12.7'},
         {'milestone': 126, 'v8_branch': '12.6'},
         {'milestone': 125, 'v8_branch': '12.5'},
@@ -177,10 +183,24 @@ def GenTests(api: TEST_DEPS):
         {'milestone': 121, 'v8_branch': '12.1'},
       ]
     )
-    + stdout('Read branch definitions', 'ACTIVE_BRANCHES = ["12.5"]')
+    + stdout('Read branch definitions', 'ACTIVE_BRANCHES = ["12.9"]')
     + api.post_process(
       post_process.SummaryMarkdown,
-      f'Too many active branches: 7 (max {MAX_ACTIVE_BRANCHES})',
+      f'Too many active branches: 9 (max {MAX_ACTIVE_BRANCHES})',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test("too many branches removed", status='FAILURE')
+    + fake_milestones([{'milestone': 124, 'v8_branch': '12.4'}])
+    + stdout(
+      'Read branch definitions',
+      'ACTIVE_BRANCHES = ["12.4", "12.3", "12.2", "12.1"]',
+    )
+    + api.post_process(
+      post_process.SummaryMarkdown,
+      'Too many branches removed: 12.3, 12.2, 12.1 (max 2)',
     )
     + api.post_process(post_process.DropExpectation)
   )
