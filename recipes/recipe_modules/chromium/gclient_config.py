@@ -472,6 +472,7 @@ def checkout_mutter(c):
   c.solutions[0].custom_vars['checkout_mutter'] = 'True'
 
 
+# TODO(crbug.com/40226863): Remove `checkout_bazel` if no bot uses it.
 @CONFIG_CTX()
 def checkout_bazel(c):
   c.solutions[0].custom_vars['checkout_bazel'] = 'True'

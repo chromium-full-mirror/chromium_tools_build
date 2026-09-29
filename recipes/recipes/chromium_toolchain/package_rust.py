@@ -57,11 +57,6 @@ BUILDERS = {
           'TARGET_PLATFORM': 'linux',
           'TARGET_BITS': 64,
         },
-        gclient_apply_config=[
-          # 'checkout_bazel' is required by tools/rust/build_crubit.py
-          # (see also https://crbug.com/1329611).
-          'checkout_bazel'
-        ],
       ),
     },
   },
@@ -73,11 +68,6 @@ BUILDERS = {
           'TARGET_PLATFORM': 'mac',
           'TARGET_BITS': 64,
         },
-        gclient_apply_config=[
-          # 'checkout_bazel' is required by tools/rust/build_crubit.py
-          # (see also https://crbug.com/1329611).
-          'checkout_bazel'
-        ],
       ),
       'mac_upload_rust_arm': chromium_types.BuilderSpec.create(
         chromium_config_kwargs={
@@ -85,11 +75,6 @@ BUILDERS = {
           'TARGET_PLATFORM': 'mac',
           'TARGET_BITS': 64,
         },
-        gclient_apply_config=[
-          # 'checkout_bazel' is required by tools/rust/build_crubit.py
-          # (see also https://crbug.com/1329611).
-          'checkout_bazel'
-        ],
       ),
     },
   },
@@ -101,11 +86,6 @@ BUILDERS = {
           'TARGET_PLATFORM': 'win',
           'TARGET_BITS': 32,
         },
-        gclient_apply_config=[
-          # 'checkout_bazel' is required by tools/rust/build_crubit.py
-          # (see also https://crbug.com/1329611).
-          'checkout_bazel'
-        ],
       ),
     },
   },
