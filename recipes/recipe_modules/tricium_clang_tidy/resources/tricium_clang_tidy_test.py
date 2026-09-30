@@ -3,13 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# [VPYTHON:BEGIN]
-# python_version: "3.11"
-# wheel: <
-#    name: "infra/python/wheels/pyyaml-py3"
-#    version: "version:5.3.1"
-# >
-# [VPYTHON:END]
+# /// script
+# requires-python = '>=3.11,<3.12'
+# dependencies = [
+#   'pyyaml==5.3.1'
+# ]
+# ///
 
 from __future__ import annotations
 

@@ -12,7 +12,7 @@ hooks = [
     "pattern": ".",
     "action": [
       "vpython3",
-      "-vpython-spec", ".vpython3",
+      "-vpython-spec", "vpython.toml",
       "-vpython-tool", "install",
     ],
   },

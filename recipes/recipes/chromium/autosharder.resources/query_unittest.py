@@ -2,6 +2,36 @@
 # Copyright 2025 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# /// script
+# requires-python = '>=3.11,<3.12'
+# dependencies = [
+#   'google-cloud-bigquery==3.23.1',
+#   'google-api-core==2.24.2',
+#   'requests==2.31.0',
+#   'google-auth==2.16.2',
+#   'googleapis-common-protos==1.69.2',
+#   'proto-plus==1.26.1',
+#   'protobuf==6.30.2',
+#   'pyasn1-modules==0.2.4',
+#   'rsa==3.4.2',
+#   'cachetools==5.3.3',
+#   'six==1.15.0',
+#   'python-dateutil==2.8.1',
+#   'packaging==21.3',
+#   'google-cloud-core==2.3.3',
+#   'google-resumable-media==2.3.0',
+#   'google-crc32c==1.5.0+chromium.1',
+#   'pyparsing==2.4.7',
+#   'pyasn1==0.4.5',
+#   'charset-normalizer==2.0.4',
+#   'idna==2.8',
+#   'urllib3==1.26.6',
+#   'certifi==2020.11.8',
+#   'grpcio==1.57.0',
+#   'grpcio-status==1.57.0'
+# ]
+# ///
+
 """Tests for autosharder queries.
 
 These tests should not be automated because they are too slow and work
@@ -13,111 +43,6 @@ uuid in their dataset names. This, however, will also require the
 teardown to delete the dataset which will make debugging the tests more
 difficult without artifacts from the last run.
 """
-
-# [VPYTHON:BEGIN]
-# python_version: "3.11"
-#
-# wheel: <
-#   name: "infra/python/wheels/google-cloud-bigquery-py3"
-#   version: "version:3.23.1"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-api-core-py3"
-#   version: "version:2.24.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/requests-py3"
-#   version: "version:2.31.0"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-auth-py3"
-#   version: "version:2.16.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-auth-py3"
-#   version: "version:2.16.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/googleapis-common-protos-py2_py3"
-#   version: "version:1.69.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/proto-plus-py3"
-#   version: "version:1.26.1"
-# >
-# wheel: <
-#   name: "infra/python/wheels/protobuf-py3"
-#   version: "version:6.30.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/pyasn1_modules-py2_py3"
-#   version: "version:0.2.4"
-# >
-# wheel: <
-#   name: "infra/python/wheels/rsa-py2_py3"
-#   version: "version:3.4.2"
-# >
-# wheel: <
-#   name: "infra/python/wheels/cachetools-py3"
-#   version: "version:5.3.3"
-# >
-# wheel: <
-#   name: "infra/python/wheels/six-py2_py3"
-#   version: "version:1.15.0"
-# >
-# wheel: <
-#   name: "infra/python/wheels/python-dateutil-py2_py3"
-#   version: "version:2.8.1"
-# >
-# wheel: <
-#   name: "infra/python/wheels/packaging-py3"
-#   version: "version:21.3"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-cloud-core-py3"
-#   version: "version:2.3.3"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-resumable-media-py3"
-#   version: "version:2.3.0"
-# >
-# wheel: <
-#   name: "infra/python/wheels/google-crc32c/${vpython_platform}"
-#   version: "version:1.5.0.chromium.1"
-# >
-# wheel: <
-#   name: "infra/python/wheels/pyparsing-py2_py3"
-#   version: "version:2.4.7"
-# >
-# wheel: <
-#   name: "infra/python/wheels/pyasn1-py2_py3"
-#   version: "version:0.4.5"
-# >
-# wheel: <
-#   name: "infra/python/wheels/charset_normalizer-py3"
-#   version: "version:2.0.4"
-# >
-# wheel: <
-#   name: "infra/python/wheels/idna-py2_py3"
-#   version: "version:2.8"
-# >
-# wheel: <
-#   name: "infra/python/wheels/urllib3-py2_py3"
-#   version: "version:1.26.6"
-# >
-# wheel: <
-#   name: "infra/python/wheels/certifi-py2_py3"
-#   version: "version:2020.11.8"
-# >
-# wheel: <
-#   name: "infra/python/wheels/grpcio/${vpython_platform}"
-#   version: "version:1.57.0"
-# >
-# wheel: <
-#   name: "infra/python/wheels/grpcio-status-py3"
-#   version: "version:1.57.0"
-# >
-# [VPYTHON:END]
 
 import datetime
 import os

@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
-# vim:fenc=utf-8:shiftwidth=2
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+# /// script
+# requires-python = '>=3.11,<3.12'
+# dependencies = [
+#   'numpy==1.23.5+chromium.4'
+# ]
+# ///
 
 """Compute some statistics over the build dependencies in v8.
 

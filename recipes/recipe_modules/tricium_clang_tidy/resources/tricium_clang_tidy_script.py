@@ -2,6 +2,13 @@
 # Copyright 2019 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+# /// script
+# requires-python = '>=3.11,<3.12'
+# dependencies = [
+#   'pyyaml==5.3.1'
+# ]
+# ///
+
 """Helper for running clang-tidy on various files via recipes.
 
 This will build all dependencies of the cc/c++ files you specify, then run
@@ -9,14 +16,6 @@ clang-tidy on all of them in parallel. Results are dumped as JSON to the given
 findings file. For more information on what to expect in the findings file,
 please see the nicely commented blob near the end of the script. :)
 """
-
-# [VPYTHON:BEGIN]
-# python_version: "3.11"
-# wheel: <
-#    name: "infra/python/wheels/pyyaml-py3"
-#    version: "version:5.3.1"
-# >
-# [VPYTHON:END]
 
 # TODO(crbug.com/1307542) Once pylint can correctly resolve the
 # tricium_clang_tidy import to this file instead of the recipe module, this can

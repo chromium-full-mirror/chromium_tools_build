@@ -3,13 +3,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# [VPYTHON:BEGIN]
-# python_version: "3.11"
-# wheel: <
-#   name: "infra/python/wheels/pytz-py2_py3"
-#   version: "version:2021.1"
-# >
-# [VPYTHON:END]
+# /// script
+# requires-python = '>=3.11,<3.12'
+# dependencies = [
+#   'pytz==2021.1'
+# ]
+# ///
 """A dumb script that simply prints the current datetime in US/Pacific.
 
 Should handle DST gracefully.
