@@ -645,13 +645,29 @@ def MakeZip(
 
   MaybeMakeDirectory(archive_dir)
   if not no_copy_mode:
-    for needed_file in file_list:
+    # Stage parents before their children (sorting by path components puts
+    # 'a/b' before 'a/b/c'), so that an entry already brought in by an
+    # ancestor's link/copy (or a duplicate entry) can be skipped below.
+    # Otherwise linking or copying onto an existing path raises
+    # FileExistsError.
+    def _PathComponents(path):
+      return os.path.normcase(os.path.normpath(path.rstrip())).split(os.sep)
+
+    for needed_file in sorted(file_list, key=_PathComponents):
       needed_file = needed_file.rstrip()
       print('Copying: %s' % needed_file)
       # These paths are relative to the file_relative_dir.  We need to copy
       # them over maintaining the relative directories, where applicable.
       src_path = os.path.join(file_relative_dir, needed_file)
       dst_path = os.path.join(archive_dir, needed_file)
+      # Existing directories are always skipped. Existing files are skipped
+      # only when linking (Windows). Otherwise files are re-copied so that
+      # strip_files still applies.
+      if os.path.isdir(dst_path) or (
+        _WIN_LINK_FUNC and os.path.lexists(dst_path)
+      ):
+        print('Skipping %s: already included by a previous entry' % needed_file)
+        continue
       dirname, basename = os.path.split(needed_file)
       dest_dir = os.path.join(archive_dir, dirname)
       if dest_dir != archive_dir:
