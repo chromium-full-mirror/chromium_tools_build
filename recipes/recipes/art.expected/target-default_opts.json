@@ -265,7 +265,7 @@
       "RECIPE_REPO[depot_tools]/repo",
       "init",
       "-u",
-      "https://android.googlesource.com/platform/manifest",
+      "https://googleplex-android.googlesource.com/platform/manifest",
       "-b",
       "master-art"
     ],

@@ -7,7 +7,7 @@
     "cmd": [
       "git",
       "clone",
-      "https://android.googlesource.com/platform/superproject/master",
+      "https://googleplex-android.googlesource.com/platform/superproject/master",
       "."
     ],
     "cwd": "[CACHE]/src",

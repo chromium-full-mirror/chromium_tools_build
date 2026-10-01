@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 from PB.go.chromium.org.luci.buildbucket.proto import (
+  build as build_pb2,
   builder_common as builder_common_pb2,
   builds_service as builds_service_pb2,
   common as common_pb2,
@@ -10,7 +11,10 @@ from PB.go.chromium.org.luci.buildbucket.proto import (
 from PB.recipes.build.art import InputProperties
 
 from dataclasses import dataclass
+import json
+from urllib.parse import urlparse
 
+from recipe_engine import post_process
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -73,10 +77,29 @@ class TEST_DEPS(RecipeTestApi):
 # Value passed to option `-j` of command `repo sync`.
 REPO_SYNC_JOBS = 16
 
+# Default base url to use for checkout.
+DEFAULT_REPO_ROOT = 'https://googleplex-android.googlesource.com'
+
+# Experiment which selects the git superproject checkout (instead of repo).
+SUPERPROJECT_EXPERIMENT = 'art.superproject'
+
 PROPERTIES = InputProperties
 
 
+def _use_superproject(api: DEPS):
+  return SUPERPROJECT_EXPERIMENT in api.buildbucket.build.input.experiments
+
+
 def RunSteps(api: DEPS, props):
+  if props.gce_subbuilder and not _use_superproject(api):
+    # Subbuilds are incompatible with the repo checkout: 'repo sync' can not
+    # be pinned to the commit which the subbuild is scheduled with.
+    api.step.empty(
+      'ignore gce_subbuilder',
+      step_text='subbuilds are incompatible with repo checkout',
+    )
+    props.gce_subbuilder = ''
+
   # Clear the content of legacy "art" cache to reclaim disk space.
   art_cache = api.path.cache_dir / 'art'
   if api.path.exists(art_cache):
@@ -97,18 +120,19 @@ def setup_out(api: DEPS):
   )
 
 
-def checkout(api: DEPS, branch, repo_root):
-  if 'art.superproject' in api.buildbucket.build.input.experiments:
+def checkout(api: DEPS, branch, repo_root, commit):
+  repo_root = repo_root or DEFAULT_REPO_ROOT
+  if _use_superproject(api):
     if api.path.exists(api.context.cwd.joinpath(".repo")):
       api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_git(api, branch, repo_root or "https://android.googlesource.com")
+    checkout_git(api, branch, repo_root, commit)
   else:
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_repo(api, branch, repo_root or "https://android.googlesource.com")
+    checkout_repo(api, branch, repo_root)
 
 
-def checkout_git(api: DEPS, branch, repo_root):
+def checkout_git(api: DEPS, branch, repo_root, commit):
   with api.step.nest('checkout'):
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.git("fetch")
@@ -116,28 +140,27 @@ def checkout_git(api: DEPS, branch, repo_root):
       url = repo_root + "/platform/superproject/master"
       api.git("clone", url, ".")
 
-    ref = 'origin/' + branch
-    if api.buildbucket.gitiles_commit.id:
-      ref = api.buildbucket.gitiles_commit.id
-      # Search for super-project commit that first mentions the given
-      # sub-project commit (either as submodule or in .supermanifest).
-      args = ["log", '--pretty=format:%H', f"-S{ref}", f"origin/{branch}"]
-      for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
-        # If the CL was just submitted, the super-project entry might not exist
-        # yet.
-        if retry > 0:
-          api.time.sleep(delay * 60)
-          api.git("fetch")
-        cmd = api.git(
-          *args,
-          name="find super-project commit"
-          + (f" (retry {retry})" if retry else ""),
-          stdout=api.raw_io.output_text(),
-        )
-        if cmd.stdout:
-          break
-      assert cmd.stdout, f"Commit {ref} was not found in the git superproject"
-      ref = cmd.stdout.strip().split("\n")[-1]
+    # Search for super-project commit that first mentions the given
+    # sub-project commit (either as submodule or in .supermanifest).
+    args = ["log", '--pretty=format:%H', f"-S{commit.id}", f"origin/{branch}"]
+    for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
+      # If the CL was just submitted, the super-project entry might not exist
+      # yet.
+      if retry > 0:
+        api.time.sleep(delay * 60)
+        api.git("fetch")
+      cmd = api.git(
+        *args,
+        name="find super-project commit"
+        + (f" (retry {retry})" if retry else ""),
+        stdout=api.raw_io.output_text(),
+      )
+      if cmd.stdout:
+        break
+    assert cmd.stdout, (
+      f"Commit {commit.id} was not found in the git superproject"
+    )
+    ref = cmd.stdout.strip().split("\n")[-1]
 
     api.git("checkout", "--force", ref)
     api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
@@ -243,23 +266,45 @@ def _archive_target_build(
   export_step.presentation.properties['cas_digest'] = digest
 
 
-def _get_gce_subbuild(api: DEPS, gce_subbuilder):
-  commit = api.buildbucket.build.input.gitiles_commit
+def _get_art_commit(api: DEPS, repo_root):
+  """Returns the build's gitiles_commit, or resolves ART HEAD if unset."""
+  build_input = api.buildbucket.build.input
+  if build_input.gitiles_commit.id:
+    return build_input.gitiles_commit
+
+  url = f'{repo_root or DEFAULT_REPO_ROOT}/platform/art'
+  step = api.git(
+    'ls-remote',
+    '--symref',
+    url,
+    'HEAD',
+    name='resolve ART HEAD',
+    stdout=api.raw_io.output_text(),
+  )
+  # Output: "ref: <ref>\tHEAD" followed by "<sha>\tHEAD".
+  symref_line, sha_line = step.stdout.strip().splitlines()
+  ref = symref_line.split('\t')[0].removeprefix('ref: ')
+  sha = sha_line.split('\t')[0]
+  step.presentation.step_text = f'{ref} at {sha}'
+  return common_pb2.GitilesCommit(
+    host=urlparse(url).netloc, project='platform/art', ref=ref, id=sha
+  )
+
+
+def _get_gce_subbuild(api: DEPS, props, commit):
+  build_input = api.buildbucket.build.input
   tags = [
     common_pb2.StringPair(
       key='buildset',
       value=f'patch/gerrit/{c.host}/{c.change}/{c.patchset}',
     )
-    for c in api.buildbucket.build.input.gerrit_changes
-  ] + (
-    [
-      common_pb2.StringPair(
-        key='buildset',
-        value=f'commit/gitiles/{commit.host}/{commit.project}/+/{commit.id}',
-      )
-    ]
-    if (commit.host and commit.project and commit.id)
-    else []
+    for c in build_input.gerrit_changes
+  ]
+  tags.append(
+    common_pb2.StringPair(
+      key='buildset',
+      value=f'commit/gitiles/{commit.host}/{commit.project}/+/{commit.id}',
+    )
   )
   # Under LED, tag subbuilds with the recipe CAS digest so that subbuild reuse
   # is specific to this exact recipe bundle revision.
@@ -270,41 +315,59 @@ def _get_gce_subbuild(api: DEPS, gce_subbuilder):
         value=api.led.rbe_cas_input.digest.hash,
       )
     )
-  # Only search for existing builds if we have distinguishing tags (e.g.
-  # gitiles commit, Gerrit changes, or recipe CAS digest under LED). Searching
-  # with empty tags would match arbitrary builds, allowing untagged LED runs to
-  # reuse stale GCE target build artifacts.
-  existing = (
-    [
-      b
-      for b in api.buildbucket.search(
-        builds_service_pb2.BuildPredicate(
-          builder=builder_common_pb2.BuilderID(
-            project=api.buildbucket.build.builder.project or 'art',
-            bucket=api.buildbucket.build.builder.bucket or 'ci',
-            builder=gce_subbuilder,
-          ),
-          tags=tags,
-          include_experimental=api.buildbucket.build.input.experimental,
+
+  # Tag search matches supersets (e.g. a CI build tagged with a commit would
+  # match a try build tagged with the same commit plus a patch), so require
+  # the relevant tags to match exactly.
+  wanted_tags = {(t.key, t.value) for t in tags}
+
+  def is_reusable(build):
+    return build.status in (
+      common_pb2.SUCCESS,
+      common_pb2.SCHEDULED,
+      common_pb2.STARTED,
+    ) and wanted_tags == {
+      (t.key, t.value)
+      for t in build.tags
+      if t.key in ('buildset', 'recipe_cas')
+    }
+
+  existing = [
+    b
+    for b in api.buildbucket.search(
+      builds_service_pb2.BuildPredicate(
+        builder=builder_common_pb2.BuilderID(
+          project=api.buildbucket.build.builder.project or 'art',
+          bucket=api.buildbucket.build.builder.bucket or 'ci',
+          builder=props.gce_subbuilder,
         ),
-        limit=5,
-        fields=['id', 'status', 'output.properties'],
-        step_name='search existing GCE target build',
-      )
-      if b.status
-      in (common_pb2.SUCCESS, common_pb2.SCHEDULED, common_pb2.STARTED)
-    ]
-    if tags
-    else []
-  )
+        tags=tags,
+        include_experimental=build_input.experimental,
+      ),
+      limit=5,
+      fields=['id', 'status', 'tags'],
+      step_name='search existing GCE target build',
+    )
+    if is_reusable(b)
+  ]
   return (
     existing[0].id
     if existing
     else api.buildbucket.schedule(
       [
         api.buildbucket.schedule_request(
-          builder=gce_subbuilder,
+          builder=props.gce_subbuilder,
+          gitiles_commit=commit,
+          # Repo checkout would ignore the pinned commit.
+          experiments={SUPERPROJECT_EXPERIMENT: True},
+          # Clear the property to prevent infinite recursion if the subbuilder
+          # also has gce_subbuilder set.
+          properties={'gce_subbuilder': ''},
           tags=tags,
+          # All desired buildset tags are already in `tags`; avoid inheriting
+          # extra parent buildset tags that would break the exact-match check in
+          # is_reusable() above.
+          inherit_buildsets=False,
           as_shadow_if_parent_is_led=True,
           led_inherit_parent=True,
         )
@@ -394,13 +457,14 @@ def _run_steps(api: DEPS, props):
         'out', 'target', 'product', props.product
       )
 
+  commit = (
+    _get_art_commit(api, props.repo_root) if _use_superproject(api) else None
+  )
   gce_build_id = (
-    _get_gce_subbuild(api, props.gce_subbuilder)
-    if (props.gce_subbuilder and not props.build_only)
-    else None
+    _get_gce_subbuild(api, props, commit) if props.gce_subbuilder else None
   )
 
-  checkout(api, props.manifest_branch or 'master-art', props.repo_root)
+  checkout(api, props.manifest_branch or 'master-art', props.repo_root, commit)
   clobber(api)
   setup_out(api)
 
@@ -972,9 +1036,22 @@ def GenTests(api: TEST_DEPS):
     api.properties(build_only=True),
   )
 
+  art_repo = 'https://googleplex-android.googlesource.com/platform/art'
+  art_revision = '2d2b87e5f9c872902d8508f6377470a4a6fa87e1'
+
   yield api.test(
     'art.superproject-try',  # tests gerrit_changes path.
     api.buildbucket.try_build(experiments=['art.superproject']),
+    api.step_data(
+      'resolve ART HEAD',
+      stdout=api.raw_io.output_text(
+        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
+      ),
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
+    ),
     api.properties(build_only=True),
   )
 
@@ -1013,45 +1090,189 @@ def GenTests(api: TEST_DEPS):
     api.properties(build_only=True),
   )
 
-  completed_gce_build = api.buildbucket.ci_build_message(
-    build_id=8922054662172514000,
-    status='SUCCESS',
+  commit_buildset = common_pb2.StringPair(
+    key='buildset',
+    value='commit/gitiles/googleplex-android.googlesource.com/platform/art/+/'
+    + art_revision,
   )
-  completed_gce_build.output.properties['cas_digest'] = (
+  cas_digest = (
     'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0'
   )
 
-  yield api.test(
-    'target-docker-parent-gce-subbuild',
-    api.buildbucket.ci_build(
-      project='art',
-      git_repo='https://googleplex-android.googlesource.com/platform/art',
-      revision='2d2b87e5f9c872902d8508f6377470a4a6fa87e1',
-    ),
-    api.properties(
-      device='target.arm.64',
-      product='armv8',
-      gce_subbuilder='target.arm.build_only.64',
-      test_steps=[
+  def _check_subbuild_request(check, steps, ref, commit_id):
+    """Checks the subbuild is pinned to a commit and won't recurse."""
+    req = json.loads(steps['schedule GCE target subbuild'].logs['request'])
+    req = req['requests'][0]['scheduleBuild']
+    check(req['properties'] == {'gce_subbuilder': ''})
+    check(req['experiments'].get('art.superproject') is True)
+    check(req['gitilesCommit']['ref'] == ref)
+    check(req['gitilesCommit']['id'] == commit_id)
+    check(f'-S{commit_id}' in steps['checkout.find super-project commit'].cmd)
+
+  def completed_subbuild(build_id=8922054662172514000):
+    build = api.buildbucket.ci_build_message(
+      build_id=build_id,
+      status='SUCCESS',
+    )
+    build.output.properties['cas_digest'] = cas_digest
+    return build
+
+  def collect_subbuild(build_id=8922054662172514000):
+    return api.buildbucket.simulated_collect_output(
+      [completed_subbuild(build_id)],
+      step_name='wait for GCE target build',
+    )
+
+  def subbuild_props(**kwargs):
+    props = {
+      'device': 'target.arm.64',
+      'product': 'armv8',
+      'gce_subbuilder': 'target.arm.build_only.64',
+      'test_steps': [
         {
           'name': 'test gtest',
           'cmd': ['art/tools/run-gtests.sh'],
           'env': {'ART_TEST_NO_SYNC': 'true'},
         },
       ],
+    }
+    props.update(kwargs)
+    return api.properties(**props)
+
+  yield api.test(
+    'target-docker-parent-gce-subbuild',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
+      experiments=['art.superproject'],
     ),
-    api.buildbucket.simulated_collect_output(
-      [completed_gce_build],
-      step_name='wait for GCE target build',
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
     ),
+    subbuild_props(),
+    collect_subbuild(),
+    api.post_process(post_process.DoesNotRun, 'resolve ART HEAD'),
+    api.post_process(_check_subbuild_request, 'refs/heads/main', art_revision),
+  )
+
+  yield api.test(
+    'subbuild-try-resolves-art-head',
+    api.buildbucket.try_build(
+      project='art',
+      builder='target.arm.64',
+      experiments=['art.superproject'],
+    ),
+    api.step_data(
+      'resolve ART HEAD',
+      stdout=api.raw_io.output_text(
+        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
+      ),
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
+    ),
+    subbuild_props(),
+    collect_subbuild(),
+    api.post_process(post_process.MustRun, 'resolve ART HEAD'),
+    api.post_process(_check_subbuild_request, 'refs/heads/main', art_revision),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'subbuild-build_only',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
+      experiments=['art.superproject'],
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
+    ),
+    subbuild_props(build_only=True),
+    collect_subbuild(),
+    api.post_process(
+      post_process.MustRun,
+      'wait for GCE target build',
+      'download target build from CAS',
+      'extract target build',
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      'build target',
+      'archive target build to CAS',
+      'export cas_digest',
+      'test gtest',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'subbuild-reuse-exact-match',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
+      experiments=['art.superproject'],
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
+    ),
+    subbuild_props(),
+    api.buildbucket.simulated_search_results(
+      [
+        # Same commit, but with an extra patch: must not be reused.
+        build_pb2.Build(
+          id=8922054662172514001,
+          status=common_pb2.SUCCESS,
+          tags=[
+            commit_buildset,
+            common_pb2.StringPair(
+              key='buildset',
+              value='patch/gerrit/android-review.googlesource.com/123/1',
+            ),
+          ],
+        ),
+        # Exact match, but failed: must not be reused.
+        build_pb2.Build(
+          id=8922054662172514002,
+          status=common_pb2.FAILURE,
+          tags=[commit_buildset],
+        ),
+        # Exact match: reused.
+        build_pb2.Build(
+          id=8922054662172514003,
+          status=common_pb2.STARTED,
+          tags=[
+            commit_buildset,
+            common_pb2.StringPair(key='user_agent', value='recipe'),
+          ],
+        ),
+      ],
+      step_name='search existing GCE target build',
+    ),
+    collect_subbuild(8922054662172514003),
+    api.post_process(post_process.DoesNotRun, 'schedule GCE target subbuild'),
+    api.post_process(post_process.MustRun, 'download target build from CAS'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
     'target-docker-parent-gce-subbuild-led',
     api.buildbucket.ci_build(
       project='art',
-      git_repo='https://googleplex-android.googlesource.com/platform/art',
-      revision='2d2b87e5f9c872902d8508f6377470a4a6fa87e1',
+      git_repo=art_repo,
+      revision=art_revision,
+      experiments=['art.superproject'],
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text('42424242'),
     ),
     api.properties(
       **{
@@ -1079,10 +1300,25 @@ def GenTests(api: TEST_DEPS):
         ],
       }
     ),
-    api.buildbucket.simulated_collect_output(
-      [completed_gce_build],
-      step_name='wait for GCE target build',
+    collect_subbuild(),
+  )
+
+  yield api.test(
+    'subbuild-ignored-in-repo-mode',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
     ),
+    subbuild_props(),
+    api.post_process(post_process.MustRun, 'ignore gce_subbuilder'),
+    api.post_process(post_process.MustRun, 'repo init', 'build target'),
+    api.post_process(
+      post_process.DoesNotRun,
+      'schedule GCE target subbuild',
+      'download target build from CAS',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(

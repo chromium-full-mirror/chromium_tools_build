@@ -1,5 +1,32 @@
 [
   {
+    "cmd": [
+      "git",
+      "ls-remote",
+      "--symref",
+      "https://googleplex-android.googlesource.com/platform/art",
+      "HEAD"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "resolve ART HEAD",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@refs/heads/main at 2d2b87e5f9c872902d8508f6377470a4a6fa87e1@@@"
+    ]
+  },
+  {
     "cmd": [],
     "name": "checkout"
   },
@@ -7,7 +34,7 @@
     "cmd": [
       "git",
       "clone",
-      "https://android.googlesource.com/platform/superproject/master",
+      "https://googleplex-android.googlesource.com/platform/superproject/master",
       "."
     ],
     "cwd": "[CACHE]/src",
@@ -32,9 +59,36 @@
   {
     "cmd": [
       "git",
+      "log",
+      "--pretty=format:%H",
+      "-S2d2b87e5f9c872902d8508f6377470a4a6fa87e1",
+      "origin/master-art"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.find super-project commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
       "checkout",
       "--force",
-      "origin/master-art"
+      "42424242"
     ],
     "cwd": "[CACHE]/src",
     "infra_step": true,

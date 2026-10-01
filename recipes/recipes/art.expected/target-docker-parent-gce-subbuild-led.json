@@ -282,7 +282,7 @@
       }
     },
     "name": "search existing GCE target build",
-    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,output.properties,status\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}]}}}]}",
+    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,status,tags\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}]}}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
@@ -297,7 +297,7 @@
       "@@@STEP_LOG_LINE@request@    {@@@",
       "@@@STEP_LOG_LINE@request@      \"searchBuilds\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"mask\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,output.properties,status\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,status,tags\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"pageSize\": 5,@@@",
       "@@@STEP_LOG_LINE@request@        \"predicate\": {@@@",
@@ -322,7 +322,7 @@
       "@@@STEP_LOG_LINE@request@  ]@@@",
       "@@@STEP_LOG_LINE@request@}@@@",
       "@@@STEP_LOG_END@request@@@",
-      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22builder%22%3A+%7B%22project%22%3A+%22art%22%2C+%22bucket%22%3A+%22ci%22%2C+%22builder%22%3A+%22target.arm.build_only.64%22%7D%2C+%22tags%22%3A+%5B%7B%22key%22%3A+%22buildset%22%2C+%22value%22%3A+%22commit%2Fgitiles%2Fgoogleplex-android.googlesource.com%2Fplatform%2Fart%2F%2B%2F2d2b87e5f9c872902d8508f6377470a4a6fa87e1%22%7D%2C+%7B%22key%22%3A+%22recipe_cas%22%2C+%22value%22%3A+%22examplehash%22%7D%5D%7D%2C+%22pageSize%22%3A+5%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Coutput.properties%2Cstatus%22%7D%7D@@@"
+      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22builder%22%3A+%7B%22project%22%3A+%22art%22%2C+%22bucket%22%3A+%22ci%22%2C+%22builder%22%3A+%22target.arm.build_only.64%22%7D%2C+%22tags%22%3A+%5B%7B%22key%22%3A+%22buildset%22%2C+%22value%22%3A+%22commit%2Fgitiles%2Fgoogleplex-android.googlesource.com%2Fplatform%2Fart%2F%2B%2F2d2b87e5f9c872902d8508f6377470a4a6fa87e1%22%7D%2C+%7B%22key%22%3A+%22recipe_cas%22%2C+%22value%22%3A+%22examplehash%22%7D%5D%7D%2C+%22pageSize%22%3A+5%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Cstatus%2Ctags%22%7D%7D@@@"
     ]
   },
   {
@@ -347,7 +347,7 @@
       }
     },
     "name": "schedule GCE target subbuild",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"experimental\": \"NO\", \"experiments\": {\"art.superproject\": true, \"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"gce_subbuilder\": \"\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
@@ -360,11 +360,17 @@
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"id\": \"8922054662172514000\",@@@",
       "@@@STEP_LOG_LINE@json.output@        \"input\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"experiments\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"art.superproject\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          ],@@@",
       "@@@STEP_LOG_LINE@json.output@          \"gitilesCommit\": {@@@",
       "@@@STEP_LOG_LINE@json.output@            \"host\": \"googleplex-android.googlesource.com\",@@@",
       "@@@STEP_LOG_LINE@json.output@            \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\",@@@",
       "@@@STEP_LOG_LINE@json.output@            \"project\": \"platform/art\",@@@",
       "@@@STEP_LOG_LINE@json.output@            \"ref\": \"refs/heads/main\"@@@",
+      "@@@STEP_LOG_LINE@json.output@          },@@@",
+      "@@@STEP_LOG_LINE@json.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"gce_subbuilder\": \"\"@@@",
       "@@@STEP_LOG_LINE@json.output@          }@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"tags\": [@@@",
@@ -401,6 +407,7 @@
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"experimental\": \"NO\",@@@",
       "@@@STEP_LOG_LINE@request@        \"experiments\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"art.superproject\": true,@@@",
       "@@@STEP_LOG_LINE@request@          \"luci.buildbucket.parent_tracking\": false@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\",@@@",
@@ -411,6 +418,9 @@
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@request@          \"gce_subbuilder\": \"\"@@@",
+      "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\",@@@",
       "@@@STEP_LOG_LINE@request@        \"tags\": [@@@",
       "@@@STEP_LOG_LINE@request@          {@@@",
@@ -439,45 +449,17 @@
     ]
   },
   {
-    "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "init",
-      "-u",
-      "https://android.googlesource.com/platform/manifest",
-      "-b",
-      "master-art"
-    ],
-    "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "repo init"
+    "cmd": [],
+    "name": "checkout"
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "sync",
-      "-c",
-      "-j16",
-      "--no-tags"
+      "git",
+      "clone",
+      "https://googleplex-android.googlesource.com/platform/superproject/master",
+      "."
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -491,20 +473,20 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "repo sync"
+    "name": "checkout.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "manifest",
-      "-r",
-      "-o",
-      "-"
+      "git",
+      "log",
+      "--pretty=format:%H",
+      "-S2d2b87e5f9c872902d8508f6377470a4a6fa87e1",
+      "origin/master-art"
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -518,7 +500,171 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "repo manifest"
+    "name": "checkout.find super-project commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "--force",
+      "42424242"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffxd",
+      "-e",
+      "out",
+      "-e",
+      "vm"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git show",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "sed",
+      "-i",
+      "/submodule/ s:/:-:g",
+      ".gitmodules"
+    ],
+    "cwd": "[CACHE]/src",
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.patch .gitmodules",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "--force",
+      "--depth",
+      "1",
+      "--jobs",
+      "32",
+      "--checkout"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git submodule",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "status",
+      "--ignore-submodules=none"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git status",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
