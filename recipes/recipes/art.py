@@ -10,6 +10,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import (
 )
 from PB.recipes.build.art import InputProperties
 
+import contextlib
 from dataclasses import dataclass
 import json
 from urllib.parse import urlparse
@@ -225,6 +226,26 @@ def ensure_tool(api: DEPS, package, version, subdir=""):
     )
   )[0]
   return api.path.abs_to_path(api.path.abspath(dirname.joinpath(subdir)))
+
+
+@contextlib.contextmanager
+def _without_local_auth(api: DEPS):
+  if not api.resultdb.enabled:
+    yield
+    return
+  # Clear local_auth from LUCI_CONTEXT so `rdb stream` does not attach a
+  # LUCI_CONTEXT OAuth token alongside the ResultDB invocation update-token.
+  # ResultDB's global OAuth middleware rejects expired/transiently unverified
+  # OAuth tokens with Unauthenticated before Recorder can check update-token.
+  old_luci_context = api.context._state.luci_context
+  api.context._state.luci_context = {
+    **old_luci_context,
+    'local_auth': sections_pb2.LocalAuth(),
+  }
+  try:
+    yield
+  finally:
+    api.context._state.luci_context = old_luci_context
 
 
 def _wrap_test_cmd(api: DEPS, step):
@@ -587,7 +608,10 @@ def _run_steps(api: DEPS, props):
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
     for step in props.test_steps:
-      with api.context(env=device_test_env | dict(step.env)):
+      with (
+        api.context(env=device_test_env | dict(step.env)),
+        _without_local_auth(api),
+      ):
         defer(api.step, step.name, _wrap_test_cmd(api, step))
       test_logging(api, step.name)
 

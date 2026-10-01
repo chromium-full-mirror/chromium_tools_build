@@ -205,6 +205,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -253,6 +254,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -302,6 +304,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -351,6 +354,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -399,6 +403,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -447,6 +452,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -495,6 +501,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -541,6 +548,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -587,6 +595,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -634,6 +643,7 @@
       "TARGET_RELEASE": "trunk_staging"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },

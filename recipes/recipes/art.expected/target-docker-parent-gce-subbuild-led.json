@@ -1111,6 +1111,7 @@
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },

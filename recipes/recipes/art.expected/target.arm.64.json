@@ -592,6 +592,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -769,6 +770,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -948,6 +950,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -1126,6 +1129,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -1304,6 +1308,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -1481,6 +1486,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -1658,6 +1664,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -1835,6 +1842,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -2012,6 +2020,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -2189,6 +2198,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -2365,6 +2375,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -2541,6 +2552,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
@@ -2718,6 +2730,7 @@
       "USE_DEX2OAT_DEBUG": "false"
     },
     "luci_context": {
+      "local_auth": {},
       "realm": {
         "name": "art:ci"
       },
