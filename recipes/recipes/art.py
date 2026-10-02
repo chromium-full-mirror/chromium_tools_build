@@ -21,7 +21,6 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.go.chromium.org.luci.lucictx import sections as sections_pb2
 
-from RECIPE_MODULES.build import repo
 from RECIPE_MODULES.depot_tools import git
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
@@ -53,7 +52,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   properties: properties.API
   raw_io: raw_io.API
-  repo: repo.API
   resultdb: resultdb.API
   step: step.API
   time: time.API
@@ -75,32 +73,13 @@ class TEST_DEPS(RecipeTestApi):
   time: time.TEST_API
 
 
-# Value passed to option `-j` of command `repo sync`.
-REPO_SYNC_JOBS = 16
-
 # Default base url to use for checkout.
 DEFAULT_REPO_ROOT = 'https://googleplex-android.googlesource.com'
-
-# Experiment which selects the git superproject checkout (instead of repo).
-SUPERPROJECT_EXPERIMENT = 'art.superproject'
 
 PROPERTIES = InputProperties
 
 
-def _use_superproject(api: DEPS):
-  return SUPERPROJECT_EXPERIMENT in api.buildbucket.build.input.experiments
-
-
 def RunSteps(api: DEPS, props):
-  if props.gce_subbuilder and not _use_superproject(api):
-    # Subbuilds are incompatible with the repo checkout: 'repo sync' can not
-    # be pinned to the commit which the subbuild is scheduled with.
-    api.step.empty(
-      'ignore gce_subbuilder',
-      step_text='subbuilds are incompatible with repo checkout',
-    )
-    props.gce_subbuilder = ''
-
   # Clear the content of legacy "art" cache to reclaim disk space.
   art_cache = api.path.cache_dir / 'art'
   if api.path.exists(art_cache):
@@ -123,17 +102,6 @@ def setup_out(api: DEPS):
 
 def checkout(api: DEPS, branch, repo_root, commit):
   repo_root = repo_root or DEFAULT_REPO_ROOT
-  if _use_superproject(api):
-    if api.path.exists(api.context.cwd.joinpath(".repo")):
-      api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_git(api, branch, repo_root, commit)
-  else:
-    if api.path.exists(api.context.cwd.joinpath(".git")):
-      api.file.rmcontents("clean", api.context.cwd)  # Clean the other checkout.
-    checkout_repo(api, branch, repo_root)
-
-
-def checkout_git(api: DEPS, branch, repo_root, commit):
   with api.step.nest('checkout'):
     if api.path.exists(api.context.cwd.joinpath(".git")):
       api.git("fetch")
@@ -189,25 +157,6 @@ def checkout_git(api: DEPS, branch, repo_root, commit):
           ref = f"refs/changes/{str(cl.change)[-2:]}/{cl.change}/{cl.patchset}"
           api.git("fetch", f"https://{cl.host}/{cl.project}", ref)
           api.git("cherry-pick", "FETCH_HEAD")
-
-
-def checkout_repo(api: DEPS, manifest_branch, repo_root):
-  # (https://crbug.com/1153114): do not attempt to update repo when
-  # 'repo sync' runs.
-  env = {'DEPOT_TOOLS_UPDATE': '0'}
-  with api.context(env=env):
-    api.repo.init(repo_root + '/platform/manifest', '-b', manifest_branch)
-    api.repo.sync('-c', '-j%d' % (REPO_SYNC_JOBS), "--no-tags")
-
-    build_input = api.buildbucket.build.input
-    if build_input.gerrit_changes:
-      for change in build_input.gerrit_changes:
-        api.repo(
-          ['download', change.project, f"{change.change}/{change.patchset}"],
-          f"checkout change ref: {change.change}/{change.patchset}",
-        )
-
-    api.repo.manifest()
 
 
 def clobber(api: DEPS):
@@ -379,8 +328,6 @@ def _get_gce_subbuild(api: DEPS, props, commit):
         api.buildbucket.schedule_request(
           builder=props.gce_subbuilder,
           gitiles_commit=commit,
-          # Repo checkout would ignore the pinned commit.
-          experiments={SUPERPROJECT_EXPERIMENT: True},
           # Clear the property to prevent infinite recursion if the subbuilder
           # also has gce_subbuilder set.
           properties={'gce_subbuilder': ''},
@@ -478,9 +425,7 @@ def _run_steps(api: DEPS, props):
         'out', 'target', 'product', props.product
       )
 
-  commit = (
-    _get_art_commit(api, props.repo_root) if _use_superproject(api) else None
-  )
+  commit = _get_art_commit(api, props.repo_root)
   gce_build_id = (
     _get_gce_subbuild(api, props, commit) if props.gce_subbuilder else None
   )
@@ -639,10 +584,18 @@ def _run_steps(api: DEPS, props):
 
 
 def GenTests(api: TEST_DEPS):
+  art_repo = 'https://googleplex-android.googlesource.com/platform/art'
+  art_revision = '2d2b87e5f9c872902d8508f6377470a4a6fa87e1'
+  random_commit_for_test = '42424242'
+
   yield api.test(
     'host-x86_64-default_opts',
     api.buildbucket.ci_build(
       project='art',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       test_env={
@@ -766,6 +719,10 @@ def GenTests(api: TEST_DEPS):
     api.buildbucket.ci_build(
       project='art',
     ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.properties(
       clobber='',
     ),
@@ -777,12 +734,26 @@ def GenTests(api: TEST_DEPS):
       project='art',
       builder='angler-armv7-ndebug',
     ),
+    api.step_data(
+      'resolve ART HEAD',
+      stdout=api.raw_io.output_text(
+        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
+      ),
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
   )
 
   yield api.test(
     'target-default_opts',
     api.buildbucket.ci_build(
       project='art',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       device="angler-armv7",
@@ -796,6 +767,10 @@ def GenTests(api: TEST_DEPS):
     'target.arm.64',
     api.buildbucket.ci_build(
       project='art',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       device="target.arm.64",
@@ -956,6 +931,10 @@ def GenTests(api: TEST_DEPS):
     api.buildbucket.ci_build(
       project='art',
     ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.properties(
       device="fugu",
       on_virtual_machine=True,
@@ -973,6 +952,10 @@ def GenTests(api: TEST_DEPS):
     'target-build_only',
     api.buildbucket.ci_build(
       project='art',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       device="angler-armv7",
@@ -998,6 +981,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       builder='angler-armv7-ndebug',
     ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.step_data('setup device', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
@@ -1012,6 +999,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       builder='angler-armv7-ndebug',
     ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.step_data('device pre-run cleanup', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
@@ -1022,30 +1013,30 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'art.superproject-ci',  # tests gitiles_commit path.
-    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.buildbucket.ci_build(),
     api.step_data(
       "checkout.find super-project commit",
-      stdout=api.raw_io.output_text("42424242"),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
 
   yield api.test(
     'art.superproject-ci-retry',  # tests gitiles_commit path.
-    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.buildbucket.ci_build(),
     api.step_data(
       "checkout.find super-project commit", stdout=api.raw_io.output_text("")
     ),
     api.step_data(
       "checkout.find super-project commit (retry 1)",
-      stdout=api.raw_io.output_text("42424242"),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
 
   yield api.test(
     'art.superproject-ci-retry-2',  # tests gitiles_commit path.
-    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.buildbucket.ci_build(),
     api.step_data(
       "checkout.find super-project commit", stdout=api.raw_io.output_text("")
     ),
@@ -1055,17 +1046,14 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data(
       "checkout.find super-project commit (retry 2)",
-      stdout=api.raw_io.output_text("42424242"),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
 
-  art_repo = 'https://googleplex-android.googlesource.com/platform/art'
-  art_revision = '2d2b87e5f9c872902d8508f6377470a4a6fa87e1'
-
   yield api.test(
     'art.superproject-try',  # tests gerrit_changes path.
-    api.buildbucket.try_build(experiments=['art.superproject']),
+    api.buildbucket.try_build(),
     api.step_data(
       'resolve ART HEAD',
       stdout=api.raw_io.output_text(
@@ -1074,36 +1062,18 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
-    ),
-    api.properties(build_only=True),
-  )
-
-  yield api.test(
-    'art.superproject-git2repo',  # repo checkout after git checkout.
-    api.buildbucket.ci_build(experiments=[]),
-    api.path.exists(api.path.cache_dir.joinpath("src/.git")),
-    api.properties(build_only=True),
-  )
-
-  yield api.test(
-    'art.superproject-repo2git',  # git checkout after repo checkout.
-    api.buildbucket.ci_build(experiments=['art.superproject']),
-    api.path.exists(api.path.cache_dir.joinpath("src/.repo")),
-    api.step_data(
-      "checkout.find super-project commit",
-      stdout=api.raw_io.output_text("42424242"),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
 
   yield api.test(
     'art.superproject-incremental',  # repeated git checkout.
-    api.buildbucket.ci_build(experiments=['art.superproject']),
+    api.buildbucket.ci_build(),
     api.path.exists(api.path.cache_dir.joinpath("src/.git")),
     api.step_data(
       "checkout.find super-project commit",
-      stdout=api.raw_io.output_text("42424242"),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
@@ -1111,6 +1081,16 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'clean-legacy-art-cache',
     api.path.exists(api.path.cache_dir.joinpath("art")),
+    api.step_data(
+      'resolve ART HEAD',
+      stdout=api.raw_io.output_text(
+        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
+      ),
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.properties(build_only=True),
   )
 
@@ -1128,7 +1108,6 @@ def GenTests(api: TEST_DEPS):
     req = json.loads(steps['schedule GCE target subbuild'].logs['request'])
     req = req['requests'][0]['scheduleBuild']
     check(req['properties'] == {'gce_subbuilder': ''})
-    check(req['experiments'].get('art.superproject') is True)
     check(req['gitilesCommit']['ref'] == ref)
     check(req['gitilesCommit']['id'] == commit_id)
     check(f'-S{commit_id}' in steps['checkout.find super-project commit'].cmd)
@@ -1169,11 +1148,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-      experiments=['art.superproject'],
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(),
     collect_subbuild(),
@@ -1186,7 +1164,6 @@ def GenTests(api: TEST_DEPS):
     api.buildbucket.try_build(
       project='art',
       builder='target.arm.64',
-      experiments=['art.superproject'],
     ),
     api.step_data(
       'resolve ART HEAD',
@@ -1196,7 +1173,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(),
     collect_subbuild(),
@@ -1211,11 +1188,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-      experiments=['art.superproject'],
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(build_only=True),
     collect_subbuild(),
@@ -1241,11 +1217,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-      experiments=['art.superproject'],
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(),
     api.buildbucket.simulated_search_results(
@@ -1292,11 +1267,10 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-      experiments=['art.superproject'],
     ),
     api.step_data(
       'checkout.find super-project commit',
-      stdout=api.raw_io.output_text('42424242'),
+      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       **{
@@ -1328,26 +1302,18 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'subbuild-ignored-in-repo-mode',
-    api.buildbucket.ci_build(
-      project='art',
-      git_repo=art_repo,
-      revision=art_revision,
-    ),
-    subbuild_props(),
-    api.post_process(post_process.MustRun, 'ignore gce_subbuilder'),
-    api.post_process(post_process.MustRun, 'repo init', 'build target'),
-    api.post_process(
-      post_process.DoesNotRun,
-      'schedule GCE target subbuild',
-      'download target build from CAS',
-    ),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
     'host-x86_64-no-resultdb',
     api.context.luci_context(resultdb=sections_pb2.ResultDB()),
+    api.step_data(
+      'resolve ART HEAD',
+      stdout=api.raw_io.output_text(
+        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
+      ),
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
     api.properties(
       test_steps=[
         {

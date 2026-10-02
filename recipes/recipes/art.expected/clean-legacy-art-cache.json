@@ -14,49 +14,140 @@
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "init",
-      "-u",
-      "https://googleplex-android.googlesource.com/platform/manifest",
-      "-b",
-      "master-art"
+      "git",
+      "ls-remote",
+      "--symref",
+      "https://googleplex-android.googlesource.com/platform/art",
+      "HEAD"
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
-    "name": "repo init"
+    "name": "resolve ART HEAD",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@refs/heads/main at 2d2b87e5f9c872902d8508f6377470a4a6fa87e1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "checkout"
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "sync",
-      "-c",
-      "-j16",
-      "--no-tags"
+      "git",
+      "clone",
+      "https://googleplex-android.googlesource.com/platform/superproject/master",
+      "."
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
-    "name": "repo sync"
+    "name": "checkout.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "manifest",
-      "-r",
-      "-o",
-      "-"
+      "git",
+      "log",
+      "--pretty=format:%H",
+      "-S2d2b87e5f9c872902d8508f6377470a4a6fa87e1",
+      "origin/master-art"
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
-    "name": "repo manifest"
+    "name": "checkout.find super-project commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "--force",
+      "42424242"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffxd",
+      "-e",
+      "out",
+      "-e",
+      "vm"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git show",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "sed",
+      "-i",
+      "/submodule/ s:/:-:g",
+      ".gitmodules"
+    ],
+    "cwd": "[CACHE]/src",
+    "name": "checkout.patch .gitmodules",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "--force",
+      "--depth",
+      "1",
+      "--jobs",
+      "32",
+      "--checkout"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git submodule",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "status",
+      "--ignore-submodules=none"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git status",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [

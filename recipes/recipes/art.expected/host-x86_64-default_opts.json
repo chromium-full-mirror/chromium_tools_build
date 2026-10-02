@@ -1,44 +1,16 @@
 [
   {
-    "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "init",
-      "-u",
-      "https://googleplex-android.googlesource.com/platform/manifest",
-      "-b",
-      "master-art"
-    ],
-    "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "repo init"
+    "cmd": [],
+    "name": "checkout"
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "sync",
-      "-c",
-      "-j16",
-      "--no-tags"
+      "git",
+      "clone",
+      "https://googleplex-android.googlesource.com/platform/superproject/master",
+      "."
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -52,20 +24,20 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "repo sync"
+    "name": "checkout.git clone",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
-      "RECIPE_REPO[depot_tools]/repo",
-      "manifest",
-      "-r",
-      "-o",
-      "-"
+      "git",
+      "log",
+      "--pretty=format:%H",
+      "-S2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "origin/master-art"
     ],
     "cwd": "[CACHE]/src",
-    "env": {
-      "DEPOT_TOOLS_UPDATE": "0"
-    },
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -79,7 +51,171 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "repo manifest"
+    "name": "checkout.find super-project commit",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "checkout",
+      "--force",
+      "42424242"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git checkout",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "clean",
+      "-ffxd",
+      "-e",
+      "out",
+      "-e",
+      "vm"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git clean",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "show"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git show",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "sed",
+      "-i",
+      "/submodule/ s:/:-:g",
+      ".gitmodules"
+    ],
+    "cwd": "[CACHE]/src",
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.patch .gitmodules",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "submodule",
+      "update",
+      "--init",
+      "--force",
+      "--depth",
+      "1",
+      "--jobs",
+      "32",
+      "--checkout"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git submodule",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "status",
+      "--ignore-submodules=none"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "checkout.git status",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
