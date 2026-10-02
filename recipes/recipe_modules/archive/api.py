@@ -199,14 +199,16 @@ class ArchiveApi(recipe_api.RecipeApi):
     """Collects the necessary runtime dependencies for the compile targets by
     reading the `.runtime_deps` file for each target in the `build_dir`.
 
-    Returns the sorted set (list) of runtime dependencies with paths relative
-    to the archive_root.
+    Returns the sorted list of runtime dependencies with paths relative
+    to the archive_root. Dependencies that are already covered by an ancestor
+    directory dependency are omitted, as archiving a directory includes its
+    contents.
 
     Raises:
       file.Error: If any target's `.runtime_deps` file does not exist in the
         `build_dir`.
     """
-    runtime_deps = set()
+    runtime_deps: set[Path] = set()
 
     with self.m.context(cwd=source_dir):
       with self.m.step.nest(
@@ -222,19 +224,30 @@ class ArchiveApi(recipe_api.RecipeApi):
             f'./{target_name}_dependency\n'
             '../../testing/data/fuzzer_seed.txt',
           )
-          deps = deps_content.splitlines()
+          # Path normalizes '.', '..', and trailing separators on construction,
+          # so the ancestor check below can't be fooled by `foo/../bar/baz`.
           runtime_deps.update(
-            # relpath() resolves paths relative to archive_root and normalizes
-            # the paths (removes trailing slashes on directory dependencies).
-            self.m.path.relpath(build_dir / dep, archive_root)
-            for dep in deps
+            build_dir / dep for dep in deps_content.splitlines()
           )
           # Archive the .runtime_deps file itself, as it is needed by
           # ClusterFuzz to do target unpacking for coverage-guided fuzzers.
-          runtime_deps.add(self.m.path.relpath(deps_file, archive_root))
-        runtime_deps = sorted(runtime_deps)
-        step_result.logs['paths_to_archive'] = runtime_deps
-    return runtime_deps
+          runtime_deps.add(deps_file)
+
+        # Targets can declare deps at both `foo` and `foo/bar` granularity,
+        # including across two different targets' `.runtime_deps` files.
+        # Descendants are redundant since archiving a directory includes its
+        # contents, and on Windows `zip_archive.py` stages entries by linking,
+        # so a descendant staged after its ancestor resolves to its own source
+        # path and fails with `FileExistsError`.
+        paths_to_archive = sorted(
+          # relpath() renders the path relative to archive_root using the
+          # platform separator.
+          self.m.path.relpath(dep, archive_root)
+          for dep in runtime_deps
+          if not any(parent in runtime_deps for parent in dep.parents)
+        )
+        step_result.logs['paths_to_archive'] = paths_to_archive
+        return paths_to_archive
 
   def clusterfuzz_archive_targets(
     self,
