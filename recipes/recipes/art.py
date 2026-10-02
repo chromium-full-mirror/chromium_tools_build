@@ -109,27 +109,30 @@ def checkout(api: DEPS, branch, repo_root, commit):
       url = repo_root + "/platform/superproject/master"
       api.git("clone", url, ".")
 
-    # Search for super-project commit that first mentions the given
-    # sub-project commit (either as submodule or in .supermanifest).
-    args = ["log", '--pretty=format:%H', f"-S{commit.id}", f"origin/{branch}"]
-    for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
-      # If the CL was just submitted, the super-project entry might not exist
-      # yet.
-      if retry > 0:
-        api.time.sleep(delay * 60)
-        api.git("fetch")
-      cmd = api.git(
-        *args,
-        name="find super-project commit"
-        + (f" (retry {retry})" if retry else ""),
-        stdout=api.raw_io.output_text(),
+    if commit.project == "platform/superproject/master":
+      ref = commit.id
+    else:
+      # Search for super-project commit that first mentions the given
+      # sub-project commit (either as submodule or in .supermanifest).
+      args = ["log", '--pretty=format:%H', f"-S{commit.id}", f"origin/{branch}"]
+      for retry, delay in enumerate([0, 1, 2, 5, 10, 15]):
+        # If the CL was just submitted, the super-project entry might not exist
+        # yet.
+        if retry > 0:
+          api.time.sleep(delay * 60)
+          api.git("fetch")
+        cmd = api.git(
+          *args,
+          name="find super-project commit"
+          + (f" (retry {retry})" if retry else ""),
+          stdout=api.raw_io.output_text(),
+        )
+        if cmd.stdout:
+          break
+      assert cmd.stdout, (
+        f"Commit {commit.id} was not found in the git superproject"
       )
-      if cmd.stdout:
-        break
-    assert cmd.stdout, (
-      f"Commit {commit.id} was not found in the git superproject"
-    )
-    ref = cmd.stdout.strip().split("\n")[-1]
+      ref = cmd.stdout.strip().split("\n")[-1]
 
     api.git("checkout", "--force", ref)
     api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
@@ -1157,6 +1160,34 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(),
     api.post_process(post_process.DoesNotRun, 'resolve ART HEAD'),
     api.post_process(_check_subbuild_request, 'refs/heads/main', art_revision),
+  )
+
+  superproject_repo = (
+    'https://googleplex-android.googlesource.com/platform/superproject/master'
+  )
+  superproject_revision = '8297b7040c1717483174d5925ab35650f0600107'
+
+  yield api.test(
+    'superproject-commit-input',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=superproject_repo,
+      git_ref='refs/heads/master-art',
+      revision=superproject_revision,
+    ),
+    subbuild_props(),
+    collect_subbuild(),
+    api.post_process(
+      post_process.DoesNotRun,
+      'resolve ART HEAD',
+      'checkout.find super-project commit',
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'checkout.git checkout',
+      [superproject_revision],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
