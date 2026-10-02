@@ -25,10 +25,10 @@
     },
     "name": "gsutil ls",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-103.0.5060.114.tar.xz@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-103.0.5060.114-lite.tar.xz@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-103.0.5060.114-testdata.tar.xz@@@",
-      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-103.0.5060.114-nacl.tar.xz@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-148.0.7752.0.tar.xz@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-148.0.7752.0-lite.tar.xz@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-148.0.7752.0-testdata.tar.xz@@@",
+      "@@@STEP_LOG_LINE@raw_io.output_text@gs://chromium-browser-official/chromium-148.0.7752.0-nacl.tar.xz@@@",
       "@@@STEP_LOG_END@raw_io.output_text@@@"
     ]
   },

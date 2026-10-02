@@ -34,7 +34,7 @@
       "-u",
       "RECIPE_MODULE[recipe_engine::url]/resources/pycurl.py",
       "--url",
-      "https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103",
+      "https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>145",
       "--status-json",
       "/path/to/tmp/json",
       "--outfile",
@@ -52,13 +52,13 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "GET https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103"
+    "name": "GET https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>145"
   },
   {
     "cmd": [],
     "name": "1 new releases need publishing",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@missing release@103.0.5060.114@@@",
+      "@@@STEP_LOG_LINE@missing release@148.0.7752.0@@@",
       "@@@STEP_LOG_END@missing release@@@"
     ]
   },
@@ -83,8 +83,8 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "trigger publish_tarball for 103.0.5060.114",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"publish_tarball\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"version\": \"103.0.5060.114\"}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000001500000}",
+    "name": "trigger publish_tarball for 148.0.7752.0",
+    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"publish_tarball\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"version\": \"148.0.7752.0\"}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000001500000}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@input@{@@@",
       "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
@@ -98,7 +98,7 @@
       "@@@STEP_LOG_LINE@input@            \"trigger\": {@@@",
       "@@@STEP_LOG_LINE@input@                \"buildbucket\": {@@@",
       "@@@STEP_LOG_LINE@input@                    \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@input@                        \"version\": \"103.0.5060.114\"@@@",
+      "@@@STEP_LOG_LINE@input@                        \"version\": \"148.0.7752.0\"@@@",
       "@@@STEP_LOG_LINE@input@                    },@@@",
       "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
       "@@@STEP_LOG_LINE@input@                        \"parent_buildername:builder\",@@@",

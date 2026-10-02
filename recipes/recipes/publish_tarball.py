@@ -77,234 +77,31 @@ class TEST_DEPS(RecipeTestApi):
   url: url.TEST_API
 
 
+# The minimum version that this script will try to publish a tarball for. Older
+# versions may fail due to a number of reasons (including infra ones) and are
+# of no relevance to anyone building a recent Chromium version at this point.
+MINIMUM_VERSION_FOR_TARBALLS = '145.0.7624.0'
+
+
 # Sometimes a revision will be bad because the checkout will fail, causing
 # publish_tarball to fail.  The version will stay in the version list for
 # several months and publish_tarball will keep re-running on the same broken
 # version.  This denylist exists to exclude those broken versions so the bot
 # doesn't keep retrying and sending build failure emails out.
-DENYLISTED_VERSIONS = [
-  # crbug.com/1493085: https://crrev.com/c/4952605 introduced a cherry-pick
-  # from a rust-lang/rust GitHub fork, but the commit was force-pushed on
-  # 2023-10-26 and the "download rustc sources" step was broken until
-  # https://crrev.com/c/4983487, which is part of 120.0.6098.0.
-  '120.0.6087.2',
-  '120.0.6089.1',
-  '120.0.6089.2',
-  '120.0.6089.3',
-  '120.0.6090.0',
-  '120.0.6090.1',
-  '120.0.6091.0',
-  '120.0.6091.1',
-  '120.0.6091.2',
-  '120.0.6091.3',
-  '120.0.6091.4',
-  '120.0.6091.6',
-  '120.0.6092.0',
-  '120.0.6092.1',
-  '120.0.6093.0',
-  '120.0.6093.1',
-  '120.0.6094.0',
-  '120.0.6094.1',
-  '120.0.6095.0',
-  '120.0.6095.1',
-  '120.0.6096.0',
-  '120.0.6096.1',
-  '120.0.6097.0',
-  '120.0.6097.1',
-  # crbug.com/374696520: https://crrev.com/c/5926131 (#1367659) changed a
-  # cherry-pick to use a revision that did not apply cleanly with the current
-  # RUST_REVISION, breaking the "download rustc sources" step. This was fixed
-  # on trunk in https://crrev.com/c/5952413 (#1372923) which updated the
-  # RUST_REVISION, and on the M131 branch in https://crrev.com/c/6029791.
-  '131.0.6772.0',
-  '131.0.6772.1',
-  '131.0.6773.0',
-  '131.0.6773.1',
-  '131.0.6774.0',
-  '131.0.6774.1',
-  '131.0.6775.0',
-  '131.0.6775.1',
-  '131.0.6776.0',
-  '131.0.6776.1',
-  '131.0.6777.0',
-  '131.0.6777.1',
-  '131.0.6777.2',
-  '131.0.6778.0',
-  '131.0.6778.1',
-  '131.0.6778.2',
-  '131.0.6778.3',
-  '131.0.6778.4',
-  '131.0.6778.5',
-  '131.0.6778.6',
-  '131.0.6778.7',
-  '131.0.6778.8',
-  '131.0.6778.9',
-  '131.0.6778.10',
-  '131.0.6778.11',
-  '131.0.6778.12',
-  '131.0.6778.13',
-  '131.0.6778.14',
-  '131.0.6778.15',
-  '131.0.6778.16',
-  '131.0.6778.17',
-  '131.0.6778.18',
-  '131.0.6778.19',
-  '131.0.6778.20',
-  '131.0.6778.21',
-  '131.0.6778.22',
-  '131.0.6778.23',
-  '131.0.6778.24',
-  '131.0.6778.25',
-  '131.0.6778.26',
-  '131.0.6778.27',
-  '131.0.6778.28',
-  '131.0.6778.29',
-  '131.0.6778.30',
-  '131.0.6778.31',
-  '131.0.6778.32',
-  '131.0.6778.33',
-  '131.0.6778.34',
-  '131.0.6778.35',
-  '131.0.6778.36',
-  '131.0.6778.37',
-  '131.0.6778.38',
-  '131.0.6778.39',
-  '131.0.6778.40',
-  '131.0.6778.41',
-  '131.0.6778.42',
-  '131.0.6778.43',
-  '131.0.6778.44',
-  '131.0.6778.45',
-  '131.0.6778.46',
-  '131.0.6778.47',
-  '131.0.6778.48',
-  '131.0.6778.49',
-  '131.0.6778.50',
-  '131.0.6778.51',
-  '131.0.6778.52',
-  '131.0.6778.53',
-  '131.0.6778.54',
-  '131.0.6778.55',
-  '131.0.6778.56',
-  '131.0.6778.57',
-  '131.0.6778.58',
-  '131.0.6778.59',
-  '131.0.6778.60',
-  '131.0.6778.61',
-  '131.0.6778.62',
-  '131.0.6778.63',
-  '131.0.6778.64',
-  '131.0.6778.65',
-  '131.0.6778.66',
-  '131.0.6778.67',
-  '131.0.6778.68',
-  '131.0.6778.69',
-  '131.0.6778.70',
-  '131.0.6778.71',
-  '131.0.6778.72',
-  '131.0.6778.73',
-  '131.0.6778.74',
-  '131.0.6778.75',
-  '131.0.6778.80',
-  '132.0.6779.0',
-  '132.0.6779.1',
-  '132.0.6780.0',
-  '132.0.6780.1',
-  '132.0.6781.0',
-  '132.0.6781.1',
-  '132.0.6782.0',
-  '132.0.6782.1',
-  '132.0.6783.0',
-  '132.0.6783.1',
-  '132.0.6784.0',
-  '132.0.6784.1',
-  '132.0.6784.2',
-  '132.0.6785.0',
-  '132.0.6785.1',
-  '132.0.6786.0',
-  '132.0.6786.1',
-  '132.0.6787.0',
-  '132.0.6787.1',
-  '132.0.6788.0',
-  '132.0.6788.1',
-  '132.0.6789.0',
-  '132.0.6789.1',
-  '132.0.6790.0',
-  '132.0.6790.1',
-  '132.0.6790.2',
-  '132.0.6791.0',
-  '132.0.6791.1',
-  '132.0.6792.0',
-  '132.0.6792.2',
-  '132.0.6793.0',
-  '132.0.6793.1',
-  '132.0.6793.2',
-  '132.0.6793.3',
-  '132.0.6794.0',
-  '132.0.6794.1',
-  '132.0.6794.2',
-  '132.0.6795.0',
-  # crbug.com/433513424: https://crrev.com/c/6781967 (140.0.7317.0)
-  # introduced a Rust cherry-pick that did not apply. This was fixed in
-  # https://crrev.com/c/6796139 (140.0.7327.0).
-  '140.0.7317.0',
-  '140.0.7317.1',
-  '140.0.7318.0',
-  '140.0.7318.1',
-  '140.0.7319.0',
-  '140.0.7319.1',
-  '140.0.7320.0',
-  '140.0.7320.1',
-  '140.0.7321.0',
-  '140.0.7321.1',
-  '140.0.7322.0',
-  '140.0.7322.1',
-  '140.0.7323.0',
-  '140.0.7323.1',
-  '140.0.7324.0',
-  '140.0.7324.1',
-  '140.0.7324.2',
-  '140.0.7325.0',
-  '140.0.7325.1',
-  '140.0.7325.2',
-  '140.0.7326.0',
-  '140.0.7326.1',
-  '140.0.7326.2',
-  # This specific version contains https://crrev.com/c/6868589, which
-  # introduced a bug in the build.py clang script, but lacks
-  # https://crrev.com/c/6872233, which contains the fix for the bug.
-  '141.0.7370.0',
-  # https://crrev.com/c/6896856 introduced a git revert call on the Rust
-  # source code that fails to work correctly. This was fixed in 141.0.7384.0
-  # by https://crrev.com/c/6899997.
-  '141.0.7382.0',
-  '141.0.7383.0',
-  # third_party/angle/DEPS pointed to VK-GL-CTS commit 2e03601bd4ee, which
-  # was removed upstream after the main branch was force-pushed (which seems
-  # to happen occasionally, see ANGLE bug 449156265). Skip some M145
-  # revisions that depend on an ANGLE revision that depends on this commit
-  # were not built before it disappeared to avoid errors like
-  # https://ci.chromium.org/ui/b/8692896401331842305
-  # This was fixed in Chromium with the ANGLE roll in commit 4b114ef7d
-  # (present in 145.0.7624.0).
-  '145.0.7620.2',
-  '145.0.7620.3',
-  '145.0.7623.0',
-]
-
-# NaCl support was removed from the Linux builds in
-# https://crrev.com/c/4938760, which switched to only checking out the
-# NaCl repository on ChromeOS.
-# Even though the CL got reverted, it was relanded shortly afterward
-# so we can stick to the first time it landed as the version to stop
-# shipping NaCl packages.
-FIRST_RELEASE_WITHOUT_NACL = '121.0.6110.0'
+#
+# Note: MINIMUM_VERSION_FOR_TARBALLS is the minimum version that this script
+# will attempt to build a tarball for, so entries in this list should be >=
+# MINIMUM_VERSION_FOR_TARBALLS.
+DENYLISTED_VERSIONS = []
 
 
-def version_ships_nacl(version):
-  return [int(x) for x in version.split('.')] < [
-    int(x) for x in FIRST_RELEASE_WITHOUT_NACL.split('.')
-  ]
+def should_skip_tarball_for_version(version):
+  # Anything older than MINIMUM_VERSION_FOR_TARBALLS is skipped.
+  # Any version in DENYLISTED_VERSIONS is skipped.
+  return (
+    [int(x) for x in version.split('.')]
+    < [int(x) for x in MINIMUM_VERSION_FOR_TARBALLS.split('.')]
+  ) or version in DENYLISTED_VERSIONS
 
 
 def gsutil_upload(api: DEPS, source, bucket, dest, args):
@@ -323,18 +120,12 @@ def published_test_tarball(version, ls_result):
   return 'chromium-%s-testdata.tar.xz' % version in ls_result
 
 
-def published_nacl_tarball(version, ls_result):
-  return 'chromium-%s-nacl.tar.xz' % version in ls_result
-
-
 def published_all_tarballs(version, ls_result):
   checks = [
     published_full_tarball,
     published_lite_tarball,
     published_test_tarball,
   ]
-  if version_ships_nacl(version):
-    checks.append(published_nacl_tarball)
   return all((check(version, ls_result) for check in checks))
 
 
@@ -401,14 +192,6 @@ def export_lite_tarball(api: DEPS, source_dir, version):
       'third_party/instrumented_libs',
       'third_party/libphonenumber/dist/resources/metadata',
     ]
-
-    if version_ships_nacl(version):
-      prune_directories.extend(
-        [
-          'native_client',
-          'native_client_sdk',
-        ]
-      )
 
     # These directories will be deleted completely rather than pruned.
     # Only add items that do not ship to end users! We need to retain
@@ -489,49 +272,6 @@ def export_lite_tarball(api: DEPS, source_dir, version):
     )
 
 
-def export_nacl_tarball(api: DEPS, source_dir, version):
-  # Make destructive file operations on the copy of the checkout.
-  with copytree_checkout(api, source_dir) as dest_dir:
-    # Based on instructions from https://sites.google.com/a/chromium.org/dev/
-    # nativeclient/pnacl/building-pnacl-components-for-distribution-packagers
-    api.step(
-      'download pnacl toolchain dependencies',
-      [
-        'python3',
-        api.path.join(
-          dest_dir,
-          'native_client',
-          'toolchain_build',
-          'toolchain_build_pnacl.py',
-        ),
-        '--verbose',
-        '--sync',
-        '--sync-only',
-        '--disable-git-cache',
-      ],
-    )
-
-    export_tarball(
-      api,
-      # Verbose output helps avoid a buildbot timeout when no output
-      # is produced for a long time.
-      [
-        '--remove-nonessential-files',
-        '--basename',
-        'chromium-%s' % version,
-        'chromium-%s-nacl' % version,
-        '--verbose',
-        '--progress',
-        '--version',
-        version,
-        '--src-dir',
-        dest_dir,
-      ],
-      'chromium-%s-nacl.tar.xz' % version,
-      'nacl',
-    )
-
-
 def fetch_pgo_profiles(api: DEPS, source_dir):
   cmd = [
     'python3',
@@ -552,11 +292,11 @@ def trigger_publish_tarball_jobs(api: DEPS):
   # TODO(phajdan.jr): find better solution than hardcoding version number.
   # We do that currently (carryover from a solution this recipe is replacing)
   # to avoid running into errors with older releases.
-  URL = 'https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103'
+  URL = 'https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>145'
   TEST_DATA = """{ "releases": [
-    { "name": "chrome/platforms/ios/channels/canary/versions/103.0.5060.114/releases/1234567890" },
-    { "name": "chrome/platforms/mac/channels/canary/versions/103.0.5060.114/releases/1234567890" },
-    { "name": "chrome/platforms/win64/channels/canary_asan/versions/103.0.5060.114/releases/1234567890" }
+    { "name": "chrome/platforms/ios/channels/canary/versions/148.0.7752.0/releases/1234567890" },
+    { "name": "chrome/platforms/mac/channels/canary/versions/148.0.7752.0/releases/1234567890" },
+    { "name": "chrome/platforms/win64/channels/canary_asan/versions/148.0.7752.0/releases/1234567890" }
   ]}"""
   text = api.url.get_text(URL, default_test_data=TEST_DATA)
   for release in json.loads(text.output)['releases']:
@@ -580,7 +320,7 @@ def trigger_publish_tarball_jobs(api: DEPS):
     )
 
   for version in missing_releases:
-    if version not in DENYLISTED_VERSIONS:
+    if not should_skip_tarball_for_version(version):
       api.scheduler.emit_trigger(
         api.scheduler.BuildbucketTrigger(properties={'version': version}),
         project='infra',
@@ -596,8 +336,11 @@ def publish_tarball(api: DEPS):
   # DENYLISTED_VERSIONS, it may have already triggered multiple jobs before a
   # version is added to the list. The check here prevents these jobs that will
   # inevitably fail from being run in the first place.
-  if version in DENYLISTED_VERSIONS:
-    api.step.empty(f'Version {version} is in DENYLISTED_VERSIONS. Skipping.')
+  if should_skip_tarball_for_version(version):
+    api.step.empty(
+      f'Version {version} is in DENYLISTED_VERSIONS (or is older than '
+      f'{MINIMUM_VERSION_FOR_TARBALLS}). Skipping.'
+    )
     return
 
   ls_result = api.gsutil(
@@ -643,10 +386,6 @@ def publish_tarball(api: DEPS):
     '--skip-build',
     '--without-fuchsia',
   ]
-  # This argument was removed in https://crrev.com/c/4702649
-  # See https://bugs.chromium.org/p/chromium/issues/detail?id=1459650#c17
-  if [int(x) for x in version.split('.')] < [117, 0, 5917, 0]:
-    update_args.append('--gcc-toolchain=/usr')
   # Explicitly passing python3 will not be necessary once
   # https://chromium-review.googlesource.com/c/chromium/src/+/3253157
   # is in all release channels.
@@ -658,58 +397,26 @@ def publish_tarball(api: DEPS):
 
   fetch_pgo_profiles(api, source_dir)
 
-  # This was originally enabled for all versions in https://crrev.com/c/4658882
-  # but failed on M115. It is safe to assume that this only works as expected
-  # in the Publish Tarball bot from M117 on.
-  # (Rust support was officially enabled on Linux in M116, but enabling it here
-  # from M117 on should be fine per https://crrev.com/c/4681323)
-  if int(version.split('.')[0]) >= 117:
-    build_rust_script = 'build_rust.py'
-    build_rust_args = ['--sync-for-gnrt']
-    api.step(
-      'download rustc sources',
-      ['python3', source_dir.joinpath('tools', 'rust', build_rust_script)]
-      + build_rust_args,
-    )
+  build_rust_script = 'build_rust.py'
+  build_rust_args = ['--sync-for-gnrt']
+  api.step(
+    'download rustc sources',
+    ['python3', source_dir.joinpath('tools', 'rust', build_rust_script)]
+    + build_rust_args,
+  )
 
-  # https://chromium.googlesource.com/chromium/src/+/065d83e42bb327e81b045fd04c37eef2934be298
-  if [int(x) for x in version.split('.')] >= [113, 0, 5656, 0]:
-    api.step(
-      'Fetch V8 PGO profiles',
-      [
-        'python3',
-        source_dir.joinpath(
-          'v8', 'tools', 'builtins-pgo', 'download_profiles.py'
-        ),
-        'download',
-        '--depot-tools',
-        source_dir.joinpath('third_party', 'depot_tools'),
-      ],
-    )
-
-  # The structure of the archive has been changed because of the GCS first class
-  # migration in https://crrev.com/c/5564966
-  # The archive will be downloaded and extracted in gclient sync and no longer
-  # use download_from_google_storage.py.
-  if [int(x) for x in version.split('.')] < [128, 0, 6534, 0]:
-    node_modules_sha_path = source_dir.joinpath(
-      'third_party', 'node', 'node_modules.tar.gz.sha1'
-    )
-    if api.path.exists(node_modules_sha_path):
-      api.step(
-        'webui_node_modules',
-        [
-          'python3',
-          api.depot_tools.download_from_google_storage_path,
-          '--no_resume',
-          '--extract',
-          '--no_auth',
-          '--bucket',
-          'chromium-nodejs',
-          '-s',
-          node_modules_sha_path,
-        ],
-      )
+  api.step(
+    'Fetch V8 PGO profiles',
+    [
+      'python3',
+      source_dir.joinpath(
+        'v8', 'tools', 'builtins-pgo', 'download_profiles.py'
+      ),
+      'download',
+      '--depot-tools',
+      source_dir.joinpath('third_party', 'depot_tools'),
+    ],
+  )
 
   try:
     temp_dir = api.path.mkdtemp('gn')
@@ -803,11 +510,6 @@ def publish_tarball(api: DEPS):
     if not published_lite_tarball(version, ls_result):
       defer(export_lite_tarball, api, source_dir, version)
 
-    if version_ships_nacl(version) and not published_nacl_tarball(
-      version, ls_result
-    ):
-      defer(export_nacl_tarball, api, source_dir, version)
-
 
 def RunSteps(api: DEPS):
   if 'version' not in api.properties:
@@ -822,76 +524,11 @@ def GenTests(api: TEST_DEPS):
   yield (
     api.test('basic')
     + api.buildbucket.generic_build()
-    + api.properties(version='128.0.6534.0')
+    + api.properties(version='148.0.7752.0')
     + api.platform('linux', 64)
     + api.step_data('gsutil ls', stdout=api.raw_io.output_text(''))
     + api.step_data(
       'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')
-    )
-  )
-
-  yield (
-    api.test('basic-without-nacl-with-nodejs')
-    + api.buildbucket.generic_build()
-    + api.properties(version='121.0.6110.0')
-    + api.platform('linux', 64)
-    + api.step_data('gsutil ls', stdout=api.raw_io.output_text(''))
-    + api.step_data(
-      'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')
-    )
-    + api.path.exists(
-      api.path.start_dir.joinpath(
-        'src', 'third_party', 'node', 'node_modules.tar.gz.sha1'
-      )
-    )
-    + api.post_process(post_process.MustRun, 'webui_node_modules')
-  )
-
-  yield (
-    api.test('basic-with-nacl')
-    + api.buildbucket.generic_build()
-    + api.properties(version='117.0.5884.0')
-    + api.platform('linux', 64)
-    + api.step_data('gsutil ls', stdout=api.raw_io.output_text(''))
-    + api.step_data(
-      'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')
-    )
-    + api.path.exists(
-      api.path.start_dir.joinpath(
-        'src', 'third_party', 'node', 'node_modules.tar.gz.sha1'
-      )
-    )
-  )
-
-  yield (
-    api.test('basic-with-gcc-toolchain-arg')
-    + api.buildbucket.generic_build()
-    + api.properties(version='117.0.5884.0')
-    + api.platform('linux', 64)
-    + api.step_data('gsutil ls', stdout=api.raw_io.output_text(''))
-    + api.step_data(
-      'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')
-    )
-    + api.path.exists(
-      api.path.start_dir.joinpath(
-        'src', 'third_party', 'node', 'node_modules.tar.gz.sha1'
-      )
-    )
-  )
-
-  yield (
-    api.test('basic-no-dawn-version')
-    + api.buildbucket.generic_build()
-    + api.properties(version='103.0.4273.0')
-    + api.platform('linux', 64)
-    + api.step_data('gsutil ls', stdout=api.raw_io.output_text(''))
-    + api.step_data(
-      'get gn version', stdout=api.raw_io.output_text('1496 (0790d304)')
-    )
-    + api.path.exists(
-      api.path.start_dir.joinpath(
-        'src', 'third_party', 'node', 'node_modules.tar.gz.sha1'
-      )
     )
   )
 
@@ -920,22 +557,22 @@ def GenTests(api: TEST_DEPS):
   yield (
     api.test('dupe')
     + api.buildbucket.generic_build()
-    + api.properties(version='103.0.5060.114')
+    + api.properties(version='148.0.7752.0')
     + api.platform('linux', 64)
     + api.step_data(
       'gsutil ls',
       stdout=api.raw_io.output_text(
-        'gs://chromium-browser-official/chromium-103.0.5060.114.tar.xz\n'
-        'gs://chromium-browser-official/chromium-103.0.5060.114-lite.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0-lite.tar.xz\n'
         'gs://chromium-browser-official/'
-        'chromium-103.0.5060.114-testdata.tar.xz\n'
-        'gs://chromium-browser-official/chromium-103.0.5060.114-nacl.tar.xz\n'
+        'chromium-148.0.7752.0-testdata.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0-nacl.tar.xz\n'
       ),
     )
   )
 
   yield (
-    api.test('triggered-in-denylisted_versions')
+    api.test('skipped-version')
     + api.buildbucket.generic_build()
     + api.properties(version='140.0.7325.0')
     + api.platform('linux', 64)
@@ -953,18 +590,18 @@ def GenTests(api: TEST_DEPS):
     api.buildbucket.generic_build(),
     api.platform('linux', 64),
     api.url.text(
-      'GET https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>103',
+      'GET https://versionhistory.googleapis.com/v1/chrome/platforms/all/channels/all/versions/all/releases?filter=version>145',
       """{ "releases": [
-            { "name": "chrome/platforms/linux/channels/canary/versions/104.0.5112.79/releases/1234567890" }
+            { "name": "chrome/platforms/linux/channels/canary/versions/148.0.7752.0/releases/1234567890" }
           ]}""",
     ),
     api.step_data(
       'gsutil ls',
       stdout=api.raw_io.output_text(
-        'gs://chromium-browser-official/chromium-104.0.5112.79.tar.xz\n'
-        'gs://chromium-browser-official/chromium-104.0.5112.79-lite.tar.xz\n'
-        'gs://chromium-browser-official/chromium-104.0.5112.79-testdata.tar.xz\n'
-        'gs://chromium-browser-official/chromium-104.0.5112.79-nacl.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0-lite.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0-testdata.tar.xz\n'
+        'gs://chromium-browser-official/chromium-148.0.7752.0-nacl.tar.xz\n'
       ),
     ),
     api.post_process(post_process.MustRun, 'no new releases need publishing'),
