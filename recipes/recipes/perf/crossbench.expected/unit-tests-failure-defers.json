@@ -191,7 +191,9 @@
     "cmd": [
       "vpython3",
       "crossbench/tests/crossbench/runner.py",
-      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.crossbench.out.txt"
+      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.crossbench.out.txt",
+      "--cov=crossbench",
+      "--cov-report=lcov:[CLEANUP]/cq_archive__tmp_1/lcov.info"
     ],
     "name": "Run Unit Tests",
     "~followup_annotations": [
@@ -207,7 +209,10 @@
       "--test-driver-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver/chromedriver-linux64/chromedriver",
       "--cas-archive=[CLEANUP]/cq_archive__tmp_1",
       "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.end2end.desktop.out.txt",
-      "--ignore-tests=android"
+      "--ignore-tests=android",
+      "--cov=crossbench",
+      "--cov-append",
+      "--cov-report=lcov:[CLEANUP]/cq_archive__tmp_1/lcov.info"
     ],
     "name": "Run End2End Tests"
   },

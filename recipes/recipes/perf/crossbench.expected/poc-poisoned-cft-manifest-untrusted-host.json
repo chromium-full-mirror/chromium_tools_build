@@ -148,12 +148,12 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 82, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 85, in RunSteps",
       "    chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')",
       "                                          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 377, in download_chrome",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 443, in download_chrome",
       "    _validate_cft_url(url, version, cft_platform, 'chrome')",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 308, in _validate_cft_url",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/perf/crossbench.py\", line 374, in _validate_cft_url",
       "    raise ValueError(",
       "ValueError: Untrusted CFT URL 'https://evil.com/chrome-for-testing-public/131.0.6778.204/linux64/chrome-linux64.zip': expected https://storage.googleapis.com/..."
     ]

@@ -354,7 +354,9 @@
       "--",
       "vpython3",
       "crossbench/tests/crossbench/runner.py",
-      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.crossbench.out.txt"
+      "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.crossbench.out.txt",
+      "--cov=crossbench",
+      "--cov-report=lcov:[CLEANUP]/cq_archive__tmp_1/lcov.info"
     ],
     "luci_context": {
       "realm": {
@@ -382,7 +384,10 @@
       "--test-driver-path=[CACHE]/builder/chrome/Stable/131.0.6778.204/chromedriver/chromedriver-linux64/chromedriver",
       "--cas-archive=[CLEANUP]/cq_archive__tmp_1",
       "--log-file=[CLEANUP]/cq_archive__tmp_1/pytest.tests.end2end.desktop.out.txt",
-      "--ignore-tests=android"
+      "--ignore-tests=android",
+      "--cov=crossbench",
+      "--cov-append",
+      "--cov-report=lcov:[CLEANUP]/cq_archive__tmp_1/lcov.info"
     ],
     "luci_context": {
       "realm": {
@@ -397,6 +402,162 @@
       }
     },
     "name": "Run End2End Tests"
+  },
+  {
+    "cmd": [],
+    "name": "Process coverage data"
+  },
+  {
+    "cmd": [
+      "sed",
+      "-i",
+      "/^DA:0,/d",
+      "[CLEANUP]/cq_archive__tmp_1/lcov.info"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "crossbench:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Process coverage data.Sanitize lcov.info",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "{}",
+      "[CLEANUP]/cq_archive__tmp_1/diff_mapping.json"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "crossbench:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Process coverage data.Write diff mapping",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@diff_mapping.json@{}@@@",
+      "@@@STEP_LOG_END@diff_mapping.json@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/cq_archive__tmp_1/coverage_metadata"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "crossbench:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Process coverage data.Ensure coverage metadata dir",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[build::code_coverage]/resources/generate_coverage_metadata_for_javascript.py",
+      "--src-path",
+      "[START_DIR]/crossbench",
+      "--output-dir",
+      "[CLEANUP]/cq_archive__tmp_1/coverage_metadata",
+      "--coverage-dir",
+      "[CLEANUP]/cq_archive__tmp_1",
+      "--diff-mapping-path",
+      "[CLEANUP]/cq_archive__tmp_1/diff_mapping.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "crossbench:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Process coverage data.Generate coverage metadata",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "python3",
+      "-u",
+      "RECIPE_MODULE[depot_tools::gsutil]/resources/gsutil_smart_retry.py",
+      "--",
+      "RECIPE_REPO[depot_tools]/gsutil.py",
+      "-m",
+      "----",
+      "cp",
+      "-r",
+      "[CLEANUP]/cq_archive__tmp_1/coverage_metadata",
+      "gs://code-coverage-data/presubmit/chromium-review.googlesource.com/123456/7/try/e2e Linux x64 Try/8945511751514863184/metadata"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "crossbench:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "Process coverage data.gsutil Upload coverage metadata",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LINK@gsutil.upload@https://console.cloud.google.com/storage/browser/code-coverage-data/presubmit/chromium-review.googlesource.com/123456/7/try/e2e%20Linux%20x64%20Try/8945511751514863184/metadata@@@",
+      "@@@SET_BUILD_PROPERTY@coverage_gs_bucket@\"code-coverage-data\"@@@",
+      "@@@SET_BUILD_PROPERTY@coverage_metadata_gs_paths@[\"presubmit/chromium-review.googlesource.com/123456/7/try/e2e Linux x64 Try/8945511751514863184/metadata\"]@@@",
+      "@@@SET_BUILD_PROPERTY@gsutil_urls@{\"Process coverage data|gsutil Upload coverage metadata\": \"gs://code-coverage-data/presubmit/chromium-review.googlesource.com/123456/7/try/e2e Linux x64 Try/8945511751514863184/metadata\"}@@@",
+      "@@@SET_BUILD_PROPERTY@mimic_builder_names@[\"e2e Linux x64 Try\"]@@@"
+    ]
   },
   {
     "cmd": [

@@ -13,6 +13,7 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
+from RECIPE_MODULES.build import code_coverage
 from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
@@ -34,6 +35,7 @@ class DEPS(RecipeScriptApi):
   bot_update: bot_update.API
   buildbucket: buildbucket.API
   cas: cas.API
+  code_coverage: code_coverage.API
   context: context.API
   defer: defer.API
   file: file.API
@@ -65,6 +67,7 @@ MOCK_VER = '131.0.6778.204'
 MOCK_URL = f'https://storage.googleapis.com/{ALLOWED_CFT_BUCKET}/{MOCK_VER}'
 # The prefix is used in the tests to identify whether they are running in CQ.
 _CAS_DIR_PREFIX = 'cq_archive_'
+_COVERAGE_BUCKET = 'code-coverage-data'
 _VERSION_RE = re.compile(r'^\d+(\.\d+)+$')
 
 
@@ -76,12 +79,13 @@ def _wrap_resultdb(api: DEPS, cmd, **kwargs):
 
 def RunSteps(api: DEPS):
   api.gclient.set_config('crossbench')
-  api.bot_update.ensure_checkout()
+  update_result = api.bot_update.ensure_checkout()
   api.gclient.runhooks()
 
   chrome_app_path, chrome_driver_path = download_chrome(api, 'Stable')
 
   cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
+  lcov_file = cas_archive / 'lcov.info'
   with api.defer.context() as defer:
     try:
       # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows
@@ -96,29 +100,91 @@ def RunSteps(api: DEPS):
               'vpython3',
               'crossbench/tests/crossbench/runner.py',
               f'--log-file={cas_archive}/pytest.tests.crossbench.out.txt',
+              '--cov=crossbench',
+              f'--cov-report=lcov:{lcov_file}',
             ],
           ),
         )
 
+      e2e_cmd = [
+        'vpython3',
+        '-Xutf8',
+        'crossbench/tests/end2end/runner.py',
+        f'--test-browser-path={chrome_app_path}',
+        f'--test-driver-path={chrome_driver_path}',
+        f'--cas-archive={cas_archive}',
+        f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
+        '--ignore-tests=android',
+      ]
+      if not api.platform.is_win:
+        e2e_cmd.extend(
+          [
+            '--cov=crossbench',
+            '--cov-append',
+            f'--cov-report=lcov:{lcov_file}',
+          ]
+        )
       defer(
         api.step,
         'Run End2End Tests',
-        _wrap_resultdb(
-          api,
-          [
-            'vpython3',
-            '-Xutf8',
-            'crossbench/tests/end2end/runner.py',
-            f'--test-browser-path={chrome_app_path}',
-            f'--test-driver-path={chrome_driver_path}',
-            f'--cas-archive={cas_archive}',
-            f'--log-file={cas_archive}/pytest.tests.end2end.desktop.out.txt',
-            '--ignore-tests=android',
-          ],
-        ),
+        _wrap_resultdb(api, e2e_cmd),
       )
+      defer(upload_coverage, api, update_result.source_root.path, cas_archive)
     finally:
       api.cas.archive('Copy End2End test logs to CAS', cas_archive, cas_archive)
+
+
+def upload_coverage(api: DEPS, source_dir, cas_archive):
+  if (
+    not api.platform.is_linux or not api.buildbucket.build.input.gerrit_changes
+  ):
+    return
+  with api.step.nest('Process coverage data'):
+    api.step(
+      'Sanitize lcov.info',
+      ['sed', '-i', '/^DA:0,/d', cas_archive / 'lcov.info'],
+    )
+    diff_mapping_path = cas_archive / 'diff_mapping.json'
+    api.file.write_json('Write diff mapping', diff_mapping_path, {})
+    metadata_dir = cas_archive / 'coverage_metadata'
+    api.file.ensure_directory('Ensure coverage metadata dir', metadata_dir)
+    api.step(
+      'Generate coverage metadata',
+      [
+        'vpython3',
+        api.code_coverage.resource(
+          'generate_coverage_metadata_for_javascript.py'
+        ),
+        '--src-path',
+        source_dir,
+        '--output-dir',
+        metadata_dir,
+        '--coverage-dir',
+        cas_archive,
+        '--diff-mapping-path',
+        diff_mapping_path,
+      ],
+    )
+    build = api.buildbucket.build
+    change = build.input.gerrit_changes[0]
+    builder = build.builder.builder
+    gs_path = (
+      f'presubmit/{change.host}/{change.change}/{change.patchset}/'
+      f'{build.builder.bucket}/{builder}/{build.id}/metadata'
+    )
+    api.gsutil.upload(
+      source=metadata_dir,
+      bucket=_COVERAGE_BUCKET,
+      dest=gs_path,
+      args=['-r'],
+      multithreaded=True,
+      name='Upload coverage metadata',
+      ok_ret='any',
+    )
+    result = api.step.active_result
+    result.presentation.properties['coverage_gs_bucket'] = _COVERAGE_BUCKET
+    result.presentation.properties['coverage_metadata_gs_paths'] = [gs_path]
+    result.presentation.properties['mimic_builder_names'] = [builder]
 
 
 def GenTests(api: TEST_DEPS):
