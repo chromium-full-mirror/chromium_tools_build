@@ -256,14 +256,6 @@ _AddIsolatedTestSpec(
 _AddIsolatedTestSpec(
   'android-brya-kano-i5-8gb-perf', 'android', 'android-desktop-x64-builder-perf'
 )
-_AddIsolatedTestSpec(
-  'android-corsola-steelix-8gb-perf',
-  'android',
-  'android-desktop-arm-builder-perf',
-)
-_AddIsolatedTestSpec(
-  'android-nissa-uldren-8gb-perf', 'android', 'android-desktop-x64-builder-perf'
-)
 
 _AddIsolatedTestSpec(
   'android-go-wembley-perf', 'android', 'android-builder-perf', target_bits=32
