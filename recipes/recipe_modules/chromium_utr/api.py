@@ -28,7 +28,7 @@ from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium.config import get_expected_host_platform
 
-if typing.TYPE_CHECKING:  # pragma: no cover
+if typing.TYPE_CHECKING:
   from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 gclient_aliases = {
