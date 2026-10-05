@@ -158,7 +158,7 @@
       "--root=[CACHE]/builder/pdfium",
       "gen",
       "//out/debug_skia_rust_xfa_v8",
-      "--args=enable_rust=true enable_rust_cxx=true is_component_build=false is_debug=true pdf_enable_brotli=false pdf_enable_fontations=true pdf_enable_rust_bmp=true pdf_enable_rust_jpeg=true pdf_enable_rust_png=true pdf_enable_v8=true pdf_enable_xfa=true pdf_is_standalone=true pdf_use_partition_alloc=true pdf_use_skia=true use_reclient=false use_remoteexec=true use_siso=true"
+      "--args=enable_rust=true enable_rust_cxx=true is_component_build=false is_debug=true pdf_enable_brotli=false pdf_enable_fontations=true pdf_enable_rust_bmp=true pdf_enable_rust_jpeg=true pdf_enable_rust_png=true pdf_enable_v8=true pdf_enable_xfa=true pdf_is_standalone=true pdf_use_partition_alloc=true pdf_use_skia=true use_reclient=false use_remoteexec=true use_siso=true pdf_use_agg=false"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -290,45 +290,6 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:pdfium_embeddertests_agg",
-      "-tag",
-      "step_name:embeddertests (agg)",
-      "--",
-      "[CACHE]/builder/pdfium/tools/resultdb/result_adapter",
-      "gtest_json",
-      "-artifact-directory",
-      "[CLEANUP]",
-      "-result-file",
-      "[CLEANUP]/tmp_tmp_2",
-      "--",
-      "[CACHE]/builder/pdfium/out/debug_skia_rust_xfa_v8/pdfium_embeddertests",
-      "--use-renderer=agg",
-      "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
-    ],
-    "cwd": "[CACHE]/builder/pdfium",
-    "luci_context": {
-      "realm": {
-        "name": "pdfium:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "embeddertests (agg)"
-  },
-  {
-    "cmd": [
-      "rdb",
-      "stream",
-      "-test-id-prefix",
-      "ninja://:pdfium_embeddertests/",
-      "-var",
-      "builder:linux_xfa_skia_rust",
-      "-var",
       "test_suite:pdfium_embeddertests_skia",
       "-tag",
       "step_name:embeddertests (skia)",
@@ -338,11 +299,11 @@
       "-artifact-directory",
       "[CLEANUP]",
       "-result-file",
-      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_2",
       "--",
       "[CACHE]/builder/pdfium/out/debug_skia_rust_xfa_v8/pdfium_embeddertests",
       "--use-renderer=skia",
-      "--gtest_output=json:[CLEANUP]/tmp_tmp_3"
+      "--gtest_output=json:[CLEANUP]/tmp_tmp_2"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -368,9 +329,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:javascript",
+      "test_suite:javascript__skia",
       "-tag",
-      "step_name:javascript tests",
+      "step_name:javascript tests (skia)",
       "--",
       "vpython3",
       "-u",
@@ -385,7 +346,8 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -400,7 +362,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "javascript tests"
+    "name": "javascript tests (skia)"
   },
   {
     "cmd": [
@@ -411,9 +373,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:javascript_javascript_disabled",
+      "test_suite:javascript_javascript_disabled_skia",
       "-tag",
-      "step_name:javascript tests (javascript disabled)",
+      "step_name:javascript tests (javascript disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -428,8 +390,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-javascript"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-javascript",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -444,7 +407,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "javascript tests (javascript disabled)"
+    "name": "javascript tests (javascript disabled) (skia)"
   },
   {
     "cmd": [
@@ -455,9 +418,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:javascript_xfa_disabled",
+      "test_suite:javascript_xfa_disabled_skia",
       "-tag",
-      "step_name:javascript tests (xfa disabled)",
+      "step_name:javascript tests (xfa disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -472,8 +435,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -488,7 +452,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "javascript tests (xfa disabled)"
+    "name": "javascript tests (xfa disabled) (skia)"
   },
   {
     "cmd": [
@@ -499,9 +463,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:pixel",
+      "test_suite:pixel__skia",
       "-tag",
-      "step_name:pixel tests",
+      "step_name:pixel tests (skia)",
       "--",
       "vpython3",
       "-u",
@@ -516,7 +480,8 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -531,7 +496,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "pixel tests"
+    "name": "pixel tests (skia)"
   },
   {
     "cmd": [
@@ -542,9 +507,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:pixel_oneshot",
+      "test_suite:pixel_oneshot_skia",
       "-tag",
-      "step_name:pixel tests (oneshot rendering enabled)",
+      "step_name:pixel tests (oneshot rendering enabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -559,8 +524,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite oneshot use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
-      "--render-oneshot"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite oneshot use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "--render-oneshot",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -575,7 +541,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "pixel tests (oneshot rendering enabled)"
+    "name": "pixel tests (oneshot rendering enabled) (skia)"
   },
   {
     "cmd": [
@@ -586,9 +552,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:pixel_javascript_disabled",
+      "test_suite:pixel_javascript_disabled_skia",
       "-tag",
-      "step_name:pixel tests (javascript disabled)",
+      "step_name:pixel tests (javascript disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -603,8 +569,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-javascript"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-javascript",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -619,7 +586,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "pixel tests (javascript disabled)"
+    "name": "pixel tests (javascript disabled) (skia)"
   },
   {
     "cmd": [
@@ -630,9 +597,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:pixel_xfa_disabled",
+      "test_suite:pixel_xfa_disabled_skia",
       "-tag",
-      "step_name:pixel tests (xfa disabled)",
+      "step_name:pixel tests (xfa disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -647,8 +614,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -663,7 +631,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "pixel tests (xfa disabled)"
+    "name": "pixel tests (xfa disabled) (skia)"
   },
   {
     "cmd": [
@@ -674,9 +642,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:corpus",
+      "test_suite:corpus__skia",
       "-tag",
-      "step_name:corpus tests",
+      "step_name:corpus tests (skia)",
       "--",
       "vpython3",
       "-u",
@@ -691,7 +659,8 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -706,7 +675,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "corpus tests"
+    "name": "corpus tests (skia)"
   },
   {
     "cmd": [
@@ -717,9 +686,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:corpus_oneshot",
+      "test_suite:corpus_oneshot_skia",
       "-tag",
-      "step_name:corpus tests (oneshot rendering enabled)",
+      "step_name:corpus tests (oneshot rendering enabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -734,8 +703,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite oneshot use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
-      "--render-oneshot"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite oneshot use_reclient false use_siso true v8 true xfa true xfa_runtime enabled",
+      "--render-oneshot",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -750,7 +720,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "corpus tests (oneshot rendering enabled)"
+    "name": "corpus tests (oneshot rendering enabled) (skia)"
   },
   {
     "cmd": [
@@ -761,9 +731,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:corpus_javascript_disabled",
+      "test_suite:corpus_javascript_disabled_skia",
       "-tag",
-      "step_name:corpus tests (javascript disabled)",
+      "step_name:corpus tests (javascript disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -778,8 +748,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-javascript"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-javascript",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -794,7 +765,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "corpus tests (javascript disabled)"
+    "name": "corpus tests (javascript disabled) (skia)"
   },
   {
     "cmd": [
@@ -805,9 +776,9 @@
       "-var",
       "builder:linux_xfa_skia_rust",
       "-var",
-      "test_suite:corpus_xfa_disabled",
+      "test_suite:corpus_xfa_disabled_skia",
       "-tag",
-      "step_name:corpus tests (xfa disabled)",
+      "step_name:corpus tests (xfa disabled) (skia)",
       "--",
       "vpython3",
       "-u",
@@ -822,8 +793,9 @@
       "--buildbucket-id",
       "8945511751514863184",
       "--gold_key",
-      "brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
-      "--disable-xfa"
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_reclient false use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa",
+      "--use-renderer=skia"
     ],
     "cwd": "[CACHE]/builder/pdfium",
     "luci_context": {
@@ -838,7 +810,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "corpus tests (xfa disabled)"
+    "name": "corpus tests (xfa disabled) (skia)"
   },
   {
     "name": "$result"

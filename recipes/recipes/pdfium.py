@@ -90,6 +90,7 @@ from recipe_engine.config import Set
 from recipe_engine.recipe_api import Property
 
 PROPERTIES = {
+  'agg': Property(default=None, kind=bool),
   'brotli': Property(default=False, kind=bool),
   'component': Property(default=False, kind=bool),
   'memory_tool': Property(default=None, kind=str),
@@ -312,6 +313,7 @@ def _gn_gen_builds(
   target_os,
   use_cxx23,
   out_dir,
+  agg,
 ):
   gn_bool = {True: 'true', False: 'false'}
   # Generate build files by GN.
@@ -337,6 +339,9 @@ def _gn_gen_builds(
     'use_remoteexec=true',
     'use_siso=true',
   ]
+
+  if not agg:
+    args.append('pdf_use_agg=false')
 
   if use_cxx23 is not None:
     args.append('use_cxx23=%s' % gn_bool[use_cxx23])
@@ -452,6 +457,7 @@ def _run_tests(
   run_skia_gold,
   renderers,
   swarming,
+  agg,
 ):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
@@ -466,11 +472,15 @@ def _run_tests(
     embedder_test_renderers = renderers
     python_test_renderers = renderers
   else:
-    if skia:
+    if skia and not agg:
+      embedder_test_renderers = [_SKIA_RENDERER]
+      python_test_renderers = [_SKIA_RENDERER]
+    elif skia:
       embedder_test_renderers = [_AGG_RENDERER, _SKIA_RENDERER]
+      python_test_renderers = [None]
     else:
       embedder_test_renderers = [None]
-    python_test_renderers = [None]
+      python_test_renderers = [None]
   test_runner = _TestRunner(
     api,
     source_root,
@@ -1169,7 +1179,11 @@ def RunSteps(
   renderers,
   swarming,
   use_cxx23,
+  agg,
 ):
+  if agg is None:
+    agg = not (skia and rust)
+
   update_result = _checkout_step(api, target_os, rust, skia, v8)
   source_dir = update_result.source_root.path
   revision = update_result.properties['got_revision']
@@ -1200,6 +1214,7 @@ def RunSteps(
       target_os,
       use_cxx23,
       out_dir,
+      agg,
     )
     if not run_skia_gold:
       build_config = {}
@@ -1222,6 +1237,7 @@ def RunSteps(
       run_skia_gold,
       renderers,
       swarming,
+      agg,
     )
 
 
