@@ -39,13 +39,14 @@ CONFIG = {
   "excludes": [
     "extensions/cxx_debugging/third_party/lldb-eval/src",
     "extensions/cxx_debugging/third_party/llvm/src",
-    "third_party/chrome/chrome-win",
-    "third_party/chrome/chrome-mac-x64",
-    "third_party/chrome/chrome-mac-arm64",
+    "scripts/ai_assistance/suite/outputs",
+    "test/ai_evals/test_sites",
     "third_party/chrome/chrome-linux",
+    "third_party/chrome/chrome-mac-arm64",
+    "third_party/chrome/chrome-mac-x64",
+    "third_party/chrome/chrome-win",
     "third_party/cmake",
     "third_party/esbuild",
-    "scripts/ai_assistance/suite/outputs",
   ],
   "show_commit_log": False,
 }
