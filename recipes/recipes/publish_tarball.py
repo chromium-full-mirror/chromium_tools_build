@@ -92,7 +92,11 @@ MINIMUM_VERSION_FOR_TARBALLS = '145.0.7624.0'
 # Note: MINIMUM_VERSION_FOR_TARBALLS is the minimum version that this script
 # will attempt to build a tarball for, so entries in this list should be >=
 # MINIMUM_VERSION_FOR_TARBALLS.
-DENYLISTED_VERSIONS = []
+DENYLISTED_VERSIONS = [
+  # https://crrev.com/c/8497377 broke the clang scripts. Fixed in 157.0.8083.0
+  # by https://crrev.com/c/8501956.
+  '157.0.8082.0',
+]
 
 
 def should_skip_tarball_for_version(version):
