@@ -27,6 +27,7 @@ from RECIPE_MODULES.build import (
   code_coverage,
   filter as filter_module,
   gn,
+  profiles,
 )
 from RECIPE_MODULES.depot_tools import depot_tools, gsutil, tryserver
 from RECIPE_MODULES.recipe_engine import (
@@ -61,6 +62,7 @@ class DEPS(RecipeScriptApi):
   json: json.API
   path: path.API
   platform: platform.API
+  profiles: profiles.API
   properties: properties.API
   raw_io: raw_io.API
   runtime: runtime.API
@@ -112,16 +114,13 @@ def gn_refs(
   }
 
 
-def copy_path(api: DEPS, source_dir: Path, build_dir: Path, path_name):
+def copy_path(api: DEPS, source_dir: Path, build_dir: Path, path_name: str):
   """Copies the path_name, which could be a file or a directory
   into ${build_dir}/src_root.
   """
-  assert path_name.startswith('../../'), (
-    path_name + " is expected to start with ../../"
-  )
-  relative_path = path_name[len('../../') :]
-  src = source_dir / relative_path
-  dest = build_dir / 'src_root' / relative_path
+  src = build_dir / path_name
+  # relative_to() raises ValueError if src is not inside source_dir.
+  dest = build_dir / 'src_root' / src.relative_to(source_dir)
   if api.path.exists(dest):
     # Nothing to be done as this file/directory already exists in destination.
     return
@@ -222,6 +221,7 @@ def RunSteps(api: DEPS, properties):
   update_result = api.chromium_checkout.ensure_checkout()
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
+  api.profiles.source_dir = source_dir
   build_dir = api.chromium.default_build_dir(source_dir)
 
   api.chromium.ensure_toolchains(checkout_dir)
@@ -351,7 +351,7 @@ def RunSteps(api: DEPS, properties):
       # obj/.../XXX_fuzzer. The last part of the path is the target name to be
       # compiled.
       if api.chromium.c.TARGET_PLATFORM == 'ios':
-        targets = [target.split('/')[-1] for target in targets]
+        targets = [api.path.basename(target) for target in targets]
 
       # Same as above, the list of targets can grow so large that Windows chokes
       # on a single `ninja` invocation against the full list.
@@ -372,15 +372,12 @@ def RunSteps(api: DEPS, properties):
 
     if properties.collect_fuzz_coverage:
       try:
-        corpora_dir = 'current-corpora-from-clusterfuzz'
-        profdata_dir = str(
-          api.chromium_checkout.source_dir.joinpath(
-            'out', 'profdata-output-dir'
-          )
-        )
-        api.step('make corpora directory', ['mkdir', corpora_dir])
+        corpora_dir = source_dir / 'current-corpora-from-clusterfuzz'
+        profdata_dir = source_dir / 'out' / 'profdata-output-dir'
+        api.file.rmtree('ensure corpora directory blank', corpora_dir)
+        api.file.ensure_directory('make corpora directory', corpora_dir)
         api.file.rmtree('ensure profdata directory blank', profdata_dir)
-        api.step('make profdata directory', ['mkdir', '-p', profdata_dir])
+        api.file.ensure_directory('make profdata directory', profdata_dir)
         download_cmd = [
           'python3',
           'tools/code_coverage/download_fuzz_corpora.py',
@@ -395,38 +392,36 @@ def RunSteps(api: DEPS, properties):
           download_cmd.extend(['--arch', get_target_cpu(api, gn_args)])
         api.step('download corpora', download_cmd)
 
-        # Figure out what we need to start X. Some fuzzers rely on an
-        # X environment
-        withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
-        withxvfb_args = ['--target', api.chromium.c.build_config_fs]
-        withxvfb_args.append('--build-dir=%s' % build_dir)
-
-        run_cmd = (
-          ['python3', withxvfb_path]
-          + withxvfb_args
-          + [
-            '--',
-            'python3',
-            'tools/code_coverage/run_all_fuzzers.py',
-            '--fuzzer-binaries-dir',
-            build_dir,
-            '--fuzzer-corpora-dir',
-            corpora_dir,
-            '--profdata-outdir',
-            profdata_dir,
-            '--fuzzer',
-            properties.fuzz_engine,
-          ]
-        )
+        run_cmd = [
+          'python3',
+          'tools/code_coverage/run_all_fuzzers.py',
+          '--fuzzer-binaries-dir',
+          build_dir,
+          '--fuzzer-corpora-dir',
+          corpora_dir,
+          '--profdata-outdir',
+          profdata_dir,
+          '--fuzzer',
+          properties.fuzz_engine,
+        ]
         if properties.fuzz_engine != 'fuzzilli':
-          target_list_dir = str(
-            api.chromium_checkout.source_dir.joinpath('out', 'target-list-dir')
-          )
+          target_list_dir = source_dir / 'out' / 'target-list-dir'
           api.file.rmtree('ensure target list directory blank', target_list_dir)
-          api.step(
-            'make target list directory', ['mkdir', '-p', target_list_dir]
+          api.file.ensure_directory(
+            'make target list directory', target_list_dir
           )
           run_cmd.extend(['--target-list-dir', target_list_dir])
+
+        if api.platform.is_linux:
+          withxvfb_path = api.repo_resource('recipes', 'withxvfb.py')
+          withxvfb_args = [
+            '--target',
+            api.chromium.c.build_config_fs,
+            '--build-dir=%s' % build_dir,
+          ]
+          run_cmd = (
+            ['python3', withxvfb_path] + withxvfb_args + ['--'] + run_cmd
+          )
 
         api.step('run all fuzzers', run_cmd)
 
@@ -446,9 +441,9 @@ def RunSteps(api: DEPS, properties):
             'read successful targets', targets_file
           )
           for target in successful_targets:
-            profdata_path = api.path.join(profdata_dir, f'{target}.profdata')
+            profdata_path = profdata_dir / f'{target}.profdata'
             api.code_coverage.get_chromium_fuzz_coverage(
-              api.chromium_checkout.source_dir,
+              source_dir,
               build_dir,
               profdata_path,
               {target},
@@ -456,12 +451,8 @@ def RunSteps(api: DEPS, properties):
               use_cache=True,
             )
 
-        profdata_path = api.chromium_checkout.source_dir.joinpath(
-          'total_fuzz_coverage.profdata'
-        )
-        llvm_profdata_path = api.chromium_checkout.source_dir.joinpath(
-          'third_party', 'llvm-build', 'Release+Asserts', 'bin', 'llvm-profdata'
-        )
+        profdata_path = source_dir / 'total_fuzz_coverage.profdata'
+        llvm_profdata_path = api.profiles.llvm_profdata_exec
         api.step(
           'merge all fuzzers',
           [
@@ -477,21 +468,10 @@ def RunSteps(api: DEPS, properties):
         )
 
         api.code_coverage.get_chromium_fuzz_coverage(
-          api.chromium_checkout.source_dir,
-          build_dir,
-          profdata_path,
-          targets,
-          use_cache=True,
+          source_dir, build_dir, profdata_path, targets, use_cache=True
         )
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
-        api.step('diagnostic: df -h', ['df', '-h'])
-        api.step('diagnostic: df -ih', ['df', '-ih'])
-        api.step(
-          'diagnostic: ls -laR /dev/shm',
-          ['ls', '-laR', '/dev/shm'],
-          ok_ret='any',
-        )
         raise
 
     else:
@@ -546,7 +526,8 @@ def RunSteps(api: DEPS, properties):
 
       with api.step.nest('copy runtime dependencies to build directory'):
         for path in runtime_deps:
-          if path.startswith('../../'):
+          dep_path = build_dir / path
+          if build_dir not in dep_path.parents and dep_path != build_dir:
             copy_path(api, source_dir, build_dir, path)
 
       fuzz_target_paths = [
@@ -994,7 +975,24 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.platform.name('linux'),
-    generate_test(is_coverage=True),
+    generate_test(is_coverage=True, drop_expectation=False),
+    api.post_check(
+      post_process.MustRun,
+      'ensure corpora directory blank',
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'run all fuzzers',
+      ['RECIPE_REPO[build]/recipes/withxvfb.py'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'merge all fuzzers',
+      [
+        '[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata'
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -1017,7 +1015,64 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.platform.name('mac'),
-    generate_test(is_coverage=True),
+    generate_test(is_coverage=True, drop_expectation=False),
+    api.post_check(
+      post_process.MustRun,
+      'ensure corpora directory blank',
+    ),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'run all fuzzers',
+      ['RECIPE_REPO[build]/recipes/withxvfb.py'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'merge all fuzzers',
+      [
+        '[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata'
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'win-coverage',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'win',
+              },
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('win'),
+    generate_test(is_coverage=True, drop_expectation=False),
+    api.post_check(
+      post_process.MustRun,
+      'ensure corpora directory blank',
+    ),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'run all fuzzers',
+      ['RECIPE_REPO[build]\\recipes\\withxvfb.py'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'merge all fuzzers',
+      [
+        '[CACHE]\\builder\\src\\third_party\\llvm-build\\Release+Asserts\\bin\\llvm-profdata.exe'
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
