@@ -283,17 +283,21 @@ def RunSteps(api: DEPS, properties):
       if properties.collect_fuzz_coverage:
         # `gn ls ... chrome --as=output` will output `phony/chrome/chrome` [0],
         # which can be passed to `compile()` but doesn't represent a path to
-        # the real `chrome(.exe)` executable. On Linux and Windows, we need to
-        # give `gn ls` the `//chrome:chrome_initial` label that actually
-        # outputs the executable.
+        # the real `chrome` executable. On Linux we need to give `gn ls` the
+        # `//chrome:chrome_initial` label that actually outputs the executable.
         #
         # On macOS, `//chrome:chrome_app` is a `create_bundle` target that
         # resolves to `phony/chrome/chrome_app`, which `llvm-cov` cannot open.
         # Use `//chrome:chrome_framework_shared_library` instead, which outputs
         # the real `Chromium Framework` Mach-O binary containing Chrome's code.
+        # On Windows, `//chrome:chrome_initial` builds the thin launcher
+        # (`initialexe/chrome.exe`), whereas Chrome's code lives in
+        # `//chrome:chrome_dll`.
         #
         # [0]: https://gn.googlesource.com/gn/+/master/docs/reference.md#phony-rules
-        if api.platform.is_win or api.platform.is_linux:
+        if api.platform.is_win:
+          all_fuzzers.add('//chrome:chrome_dll')
+        elif api.platform.is_linux:
           all_fuzzers.add('//chrome:chrome_initial')
         elif api.platform.is_mac:
           all_fuzzers.add('//chrome:chrome_framework_shared_library')
@@ -1069,6 +1073,41 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandDoesNotContain,
       'list gn targets',
       ['//chrome:chrome_app'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  # Verify Windows fuzz coverage builds //chrome:chrome_dll rather than the
+  # //chrome:chrome_initial launcher executable.
+  yield api.test(
+    'win-coverage-chrome-binary-is-not-the-launcher',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'win',
+              },
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('win'),
+    generate_test(is_coverage=True, drop_expectation=False),
+    api.post_check(
+      post_process.StepCommandContains,
+      'list gn targets',
+      ['//chrome:chrome_dll'],
+    ),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'list gn targets',
+      ['//chrome:chrome_initial'],
     ),
     api.post_process(post_process.DropExpectation),
   )

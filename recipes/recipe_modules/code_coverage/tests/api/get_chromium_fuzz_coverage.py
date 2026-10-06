@@ -18,19 +18,26 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import code_coverage
-from RECIPE_MODULES.recipe_engine import path, properties, raw_io
+from RECIPE_MODULES.recipe_engine import (
+  path,
+  platform,
+  properties,
+  raw_io,
+)
 
 
 @dataclass
 class DEPS(RecipeScriptApi):
   code_coverage: code_coverage.API
   path: path.API
+  platform: platform.API
   properties: properties.API
   raw_io: raw_io.API
 
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  platform: platform.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
 
@@ -152,6 +159,43 @@ def GenTests(api: TEST_DEPS):
     api.properties(targets=[]),
     api.post_process(
       post_process.MustRun, 'no fuzz targets to generate coverage for'
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'windows',
+    api.platform.name('win'),
+    api.properties(
+      targets=['fake_fuzzer', 'other_fuzzer.exe', 'chrome.dll.lib']
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      'process fuzz coverage (overall).chmod llvm file',
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'process fuzz coverage (overall).generate coverage metadata',
+      [
+        '--llvm-cov',
+        '[START_DIR]\\checkout\\third_party\\llvm-build\\Release+Asserts\\bin\\llvm-cov.exe',
+        '--src-path',
+        '[START_DIR]\\checkout',
+      ],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'process fuzz coverage (overall).generate coverage metadata',
+      [
+        '--binaries',
+        '[START_DIR]\\build\\chrome.dll',
+        '[START_DIR]\\build\\fake_fuzzer.exe',
+        '[START_DIR]\\build\\other_fuzzer.exe',
+      ],
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'process fuzz coverage (overall).gsutil Upload coverage artifacts',
     ),
     api.post_process(DropExpectation),
   )

@@ -1456,8 +1456,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         overall: Whether we're computing overall merged coverage.
         use_cache: Whether to use cached GN results.
     """
+    llvm_cov_name = 'llvm-cov' + ('.exe' if self.m.platform.is_win else '')
     llvm_cov = (
-      source_dir / 'third_party/llvm-build/Release+Asserts/bin/llvm-cov'
+      source_dir / 'third_party/llvm-build/Release+Asserts/bin' / llvm_cov_name
     )
     if not targets:
       self.m.step.empty('no fuzz targets to generate coverage for')
@@ -1467,7 +1468,8 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     else:
       (test_type,) = targets
     with self.m.step.nest(f'process fuzz coverage ({test_type})'):
-      self.m.file.chmod('chmod llvm file', llvm_cov, '777')
+      if not self.m.platform.is_win:
+        self.m.file.chmod('chmod llvm file', llvm_cov, '777')
       output_dir = self._ensure_metadata_dir(test_type, constants.tools.CLANG)
       binaries = self._resolve_binaries_for_fuzzing(
         build_dir, targets, use_cache=use_cache
@@ -1503,9 +1505,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     targets: set[str],
     use_cache: bool = False,
   ) -> set[config_types.Path]:
-    """Get a list of relevant ELF files to extract coverage data for.
-
-    ELF is the executable format for Linux and macOS.
+    """Get a list of relevant binaries to extract coverage data for.
 
     Some fuzzers invoke multiple binaries (notably fuzztest, where a thin
     wrapper binary invokes a more substantial unit test binary). For each
@@ -1513,6 +1513,19 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     executables or shared objects.
     """
     # Extract coverage for the fuzzers themselves.
+    if self.m.platform.is_win:
+      # On Windows, `gn ls --as=output` reports shared_library targets as their
+      # `.dll.lib` import library rather than `.dll`.
+      targets = {
+        t.removesuffix('.lib') if t.endswith('.dll.lib') else t for t in targets
+      }
+      # Overall coverage receives outputs from `gn ls --as=output` (which
+      # already include `.exe` or `.dll` extensions), whereas per-target
+      # coverage receives target names derived from ClusterFuzz corpus directory
+      # names without extensions. Append `.exe` to any extensionless target.
+      targets = {
+        t if '.' in self.m.path.basename(t) else f'{t}.exe' for t in targets
+      }
     binaries = {build_dir / target for target in targets}
     # Convert fuzzers back into GN target labels for consumption by `gn desc`
     # (e.g., `base64_encode_fuzzer` -> `//base:base64_encode_fuzzer`). Do not
