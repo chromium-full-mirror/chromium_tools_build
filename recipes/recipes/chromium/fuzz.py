@@ -287,14 +287,16 @@ def RunSteps(api: DEPS, properties):
         # give `gn ls` the `//chrome:chrome_initial` label that actually
         # outputs the executable.
         #
-        # macOS packages Chrome as an app bundle, so we give `gn ls` the
-        # `//chrome:chrome_app` label instead.
+        # On macOS, `//chrome:chrome_app` is a `create_bundle` target that
+        # resolves to `phony/chrome/chrome_app`, which `llvm-cov` cannot open.
+        # Use `//chrome:chrome_framework_shared_library` instead, which outputs
+        # the real `Chromium Framework` Mach-O binary containing Chrome's code.
         #
         # [0]: https://gn.googlesource.com/gn/+/master/docs/reference.md#phony-rules
         if api.platform.is_win or api.platform.is_linux:
           all_fuzzers.add('//chrome:chrome_initial')
         elif api.platform.is_mac:
-          all_fuzzers.add('//chrome:chrome_app')
+          all_fuzzers.add('//chrome:chrome_framework_shared_library')
       targets = sorted(all_fuzzers - no_clusterfuzz)
 
       api.step.active_result.presentation.logs['all_fuzzers'] = sorted(
@@ -1035,6 +1037,41 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  # Verify macOS fuzz coverage builds //chrome:chrome_framework_shared_library
+  # rather than the phony //chrome:chrome_app bundle target.
+  yield api.test(
+    'mac-coverage-chrome-binary-is-not-phony',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'mac',
+              },
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('mac'),
+    generate_test(is_coverage=True, drop_expectation=False),
+    api.post_check(
+      post_process.StepCommandContains,
+      'list gn targets',
+      ['//chrome:chrome_framework_shared_library'],
+    ),
+    api.post_check(
+      post_process.StepCommandDoesNotContain,
+      'list gn targets',
+      ['//chrome:chrome_app'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
   yield api.test(
     'win-coverage',
     api.chromium_tests_builder_config.ci_build(
