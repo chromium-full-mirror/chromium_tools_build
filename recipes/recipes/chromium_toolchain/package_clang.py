@@ -139,10 +139,8 @@ def _trigger_tbi(api: DEPS):
     api.chromium_toolchain.trusted_package(
       step_name='package clang using TBI',
     )
-  except (api.step.StepFailure, api.step.InfraFailure) as e:
-    api.step.active_result.presentation.step_text = (
-      "TBI failed or infra issue: %s" % e
-    )
+  except (api.step.StepFailure, api.step.InfraFailure):
+    pass
 
 
 def RunSteps(api: DEPS, properties):
@@ -214,7 +212,7 @@ def RunSteps(api: DEPS, properties):
       if tbi_background:
         if not tbi_background.done and not api._test_data.enabled:
           tbi_background.cancel()  # pragma: no cover
-          tbi_background.result()  # pragma: no cover
+        tbi_background.result()
 
 
 def GenTests(api: TEST_DEPS):
