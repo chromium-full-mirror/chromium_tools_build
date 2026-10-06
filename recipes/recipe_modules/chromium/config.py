@@ -262,7 +262,7 @@ def BASE(c):
       'infra/tools/mac_toolchain/${platform}'
     )
     c.mac_toolchain.installer_version = (
-      'git_revision:ed58ac9443fe1754e84d596bdaf9961cbaa6e85b'
+      'git_revision:bc2eb815d4eb1d66007cc1f19dcbe57f59a76b2d'
     )
     c.mac_toolchain.installer_cmd = 'mac_toolchain'
 
