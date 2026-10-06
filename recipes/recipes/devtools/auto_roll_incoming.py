@@ -40,6 +40,7 @@ CONFIG = {
     "extensions/cxx_debugging/third_party/lldb-eval/src",
     "extensions/cxx_debugging/third_party/llvm/src",
     "scripts/ai_assistance/suite/outputs",
+    "test/ai_evals/eval_data",
     "test/ai_evals/test_sites",
     "third_party/chrome/chrome-linux",
     "third_party/chrome/chrome-mac-arm64",
