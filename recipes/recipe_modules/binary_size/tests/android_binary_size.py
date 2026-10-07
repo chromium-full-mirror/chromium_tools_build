@@ -15,7 +15,7 @@ from dataclasses import dataclass
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import binary_size, filter as filter_module
+from RECIPE_MODULES.build import binary_size, chromium, filter as filter_module
 from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
   file,
@@ -29,6 +29,7 @@ from RECIPE_MODULES.recipe_engine import (
 @dataclass
 class DEPS(RecipeScriptApi):
   binary_size: binary_size.API
+  chromium: chromium.API
   file: file.API
   filter: filter_module.API
   json: json.API
@@ -41,6 +42,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   binary_size: binary_size.TEST_API
+  chromium: chromium.TEST_API
   file: file.TEST_API
   filter: filter_module.TEST_API
   json: json.TEST_API
@@ -196,6 +198,43 @@ def GenTests(api: TEST_DEPS):
     api.binary_size.properties(
       analyze_targets=['//foo:bar_binary'], compile_targets=['bar_binary']
     ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  def uses_size_config(expected_basename):
+    def check_size_config(check, steps):
+      cmd = steps['Generate commit size analysis files'].cmd
+      size_config_path = cmd[cmd.index('--size-config-json') + 1]
+      check(size_config_path.endswith(expected_basename))
+
+    return api.post_check(check_size_config)
+
+  yield api.test(
+    'default_size_config_on_trunk',
+    api.binary_size.build(override_commit_log=True),
+    api.chromium.override_version(
+      major=constants.DEFAULT_SIZE_CONFIG_MILESTONE
+    ),
+    uses_size_config(constants.DEFAULT_SIZE_CONFIG_JSON),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  # TODO(crbug.com/532501271): Remove together with the milestone gating.
+  yield api.test(
+    'legacy_size_config_on_release_branch',
+    api.binary_size.build(override_commit_log=True),
+    api.chromium.override_version(
+      major=constants.DEFAULT_SIZE_CONFIG_MILESTONE - 1
+    ),
+    uses_size_config(constants.LEGACY_SIZE_CONFIG_JSON),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'explicit_size_config',
+    api.binary_size.build(override_commit_log=True),
+    api.binary_size.properties(size_config_json='config/fake_size_config.json'),
+    uses_size_config('config/fake_size_config.json'),
     api.post_process(post_process.DropExpectation),
   )
 

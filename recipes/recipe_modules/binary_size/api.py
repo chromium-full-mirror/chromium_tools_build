@@ -76,12 +76,28 @@ class BinarySizeApi(recipe_api.RecipeApi):
       properties.results_bucket or constants.RESULTS_GS_BUCKET
     )
 
-    # Path relative to Chromium output directory.
-    self._size_config_json = (
-      properties.size_config_json or constants.DEFAULT_SIZE_CONFIG_JSON
-    )
+    # Path relative to Chromium output directory. Empty when not set via
+    # properties, in which case _get_size_config_json() picks a default based
+    # on the milestone of the checkout.
+    self._size_config_json = properties.size_config_json
 
     self.arm64_size_config_json = properties.arm64_size_config_json
+
+  def _get_size_config_json(self, source_dir: Path) -> str:
+    """Returns the size config JSON path, relative to the output directory.
+
+    Args:
+      source_dir: The path to the top-level repo.
+    """
+    if self._size_config_json:
+      return self._size_config_json
+    # TODO(crbug.com/532501271): Remove the milestone gating once no release
+    # branch older than M157 still runs android-binary-size. See
+    # constants.LEGACY_SIZE_CONFIG_JSON.
+    milestone = int(self.m.chromium.get_version(source_dir)['MAJOR'])
+    if milestone < constants.DEFAULT_SIZE_CONFIG_MILESTONE:
+      return constants.LEGACY_SIZE_CONFIG_JSON
+    return constants.DEFAULT_SIZE_CONFIG_JSON
 
   def get_first_committed_ancestor_position(
     self, url, revision, step_name_suffix=None, ancestor_index=1
@@ -388,7 +404,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
           review_subject,
           review_url,
           source_dir,
-          os.path.basename(self._size_config_json),
+          os.path.basename(self._get_size_config_json(source_dir)),
           without_results_dir,
           with_results_dir,
           size_results_path,
@@ -525,7 +541,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
       source_dir / 'tools/binary_size/generate_commit_size_analysis.py'
     )
     cmd = [generator_script]
-    cmd += ['--size-config-json', build_dir / self._size_config_json]
+    cmd += [
+      '--size-config-json',
+      build_dir / self._get_size_config_json(source_dir),
+    ]
     cmd += ['--staging-dir', staging_dir]
     cmd += ['--chromium-output-directory', build_dir]
     self.m.step(name='Generate commit size analysis files', cmd=cmd)

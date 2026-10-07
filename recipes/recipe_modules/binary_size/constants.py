@@ -6,16 +6,25 @@ from __future__ import annotations
 
 
 DEFAULT_ANALYZE_TARGETS = [
-  '//chrome/android:trichrome_32_minimal_apks',
+  '//chrome/android:chrome_and_webview_32_minimal_apks',
+  '//chrome/android:chrome_and_webview_64_minimal_apks',
   '//tools/binary_size:binary_size_trybot_py',
 ]
 DEFAULT_COMPILE_TARGETS = [
-  'trichrome_32_minimal_apks',
-  'trichrome_library_64_apk',
+  'chrome_and_webview_32_minimal_apks',
+  'chrome_and_webview_64_minimal_apks',
 ]
 
-# Path is relative to Chromium output directory.
-DEFAULT_SIZE_CONFIG_JSON = 'config/Trichrome_size_config.json'
+# Paths are relative to Chromium output directory.
+DEFAULT_SIZE_CONFIG_JSON = 'config/ChromeAndWebView_size_config.json'
+# Release branches run this recipe from refs/heads/main but build sources that
+# only emit the Trichrome size config, so the default must depend on the
+# milestone being built.
+# TODO(crbug.com/532501271): Remove LEGACY_SIZE_CONFIG_JSON and the milestone
+# gating once no release branch older than M157 still runs android-binary-size
+# (M150 was the oldest one when this was added).
+LEGACY_SIZE_CONFIG_JSON = 'config/Trichrome_size_config.json'
+DEFAULT_SIZE_CONFIG_MILESTONE = 157
 
 EXPECTATIONS_STEP_NAME = 'Checking for expectation failures'
 

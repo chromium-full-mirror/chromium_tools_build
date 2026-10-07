@@ -97,7 +97,7 @@ def RunSteps(api: DEPS):
     staging_dir = api.path.mkdtemp('binary-size-generator-tot')
     api.binary_size.android_size_analysis(source_dir, build_dir, staging_dir)
     api.binary_size.arm64_size_config_json = (
-      'config/TrichromeLibrary64_size_config.json'
+      'config/ChromeAndWebView64_size_config.json'
     )
     api.binary_size.android_size_analysis_arm64(
       source_dir, build_dir, staging_dir
