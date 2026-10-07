@@ -12,6 +12,7 @@ from RECIPE_MODULES.build import (
   chromium,
   chromium_swarming,
   chromium_tests,
+  dawn,
   test_utils,
 )
 from RECIPE_MODULES.recipe_engine import (
@@ -29,6 +30,7 @@ class DEPS(RecipeScriptApi):
   chromium: chromium.API
   chromium_swarming: chromium_swarming.API
   chromium_tests: chromium_tests.API
+  dawn: dawn.API
   json: json.API
   resultdb: resultdb.API
   step: step.API

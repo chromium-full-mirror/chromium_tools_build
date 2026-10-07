@@ -143,3 +143,34 @@ def GenTests(api: TEST_DEPS):
     api.post_process(MustRun, 'send_result_to_luci_bisection'),
     api.post_process(DropExpectation),
   )
+
+  _dawn_spec = 'dawn', {'linux': {}}
+  _dawn_builders = ctbc.BuilderDatabase.create(
+    {
+      'dawn': {
+        'linux': ctbc.BuilderSpec.create(
+          chromium_config='dawn_base',
+          gclient_config='dawn',
+          simulation_platform='linux',
+        ),
+      },
+    }
+  )
+  props_proto = InputProperties()
+  props_proto.target_builder.group = 'dawn'
+  props_proto.target_builder.builder = 'linux'
+  yield api.test(
+    'dawn_compile',
+    api.chromium.ci_build(
+      builder_group='dawn',
+      builder='linux',
+      git_repo='https://dawn.googlesource.com/dawn',
+    ),
+    api.properties(props_proto),
+    api.chromium_tests.read_targets_spec(*_dawn_spec),
+    api.chromium_tests_builder_config.databases(_dawn_builders),
+    api.post_process(MustRun, 'bot_update'),
+    api.post_process(MustRun, 'compile'),
+    api.post_process(MustRun, 'send_result_to_luci_bisection'),
+    api.post_process(DropExpectation),
+  )
