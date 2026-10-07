@@ -1,0 +1,25 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+
+package recipes.build.chromium.rts_complement_trigger;
+
+message InputProperties {
+  // Names of the chromium/try CQ builders to sweep. Defaults to the builders
+  // where RTS actively skips tests.
+  repeated string builders = 1;
+
+  // How far back to look for CQ builds, in hours. It should cover the time
+  // since the previous run. Defaults to 24.
+  int32 lookback_hours = 2;
+
+  // Maximum number of runner builds to launch per run, over all builders.
+  // Defaults to 5.
+  int32 build_limit = 3;
+
+  // Maximum number of CQ builds to look at per builder, newest first.
+  // Defaults to 200.
+  int32 search_limit = 4;
+}
