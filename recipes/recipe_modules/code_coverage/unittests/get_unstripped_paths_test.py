@@ -121,6 +121,32 @@ class GetUnstrippedPathsTest(unittest.TestCase):
     actual_output = get_unstripped_paths._get_all_paths('/chromium/output/dir')
     self.assertListEqual(expected_output, actual_output)
 
+  @mock.patch.object(os.path, 'exists')
+  @mock.patch.object(os, 'walk')
+  def test_get_all_paths_use_mold(self, mock_walk, mock_exists):
+    mock_walk.side_effect = [self.LIB_WALK, self.EXE_WALK]
+    mock_exists.side_effect = lambda path: 'libandroid_browsertests' not in path
+
+    expected_output = [
+      '/chromium/output/dir/libbase_unittests__library.so',
+      '/chromium/output/dir/lib.unstripped/libandroid_browsertests__library.so',
+      '/chromium/output/dir/libimmediate_crash_test_helper.so',
+      '/chromium/output/dir/md5sum_bin',
+      '/chromium/output/dir/test_child_process',
+      '/chromium/output/dir/'
+      'obj/third_party/breakpad/breakpad_unittests/breakpad_unittests',
+      '/chromium/output/dir/'
+      'obj/sandbox/linux/sandbox_linux_unittests/sandbox_linux_unittests',
+    ]
+    with mock.patch(
+      'builtins.open',
+      mock.mock_open(read_data='{"use_mold": true}'),
+    ):
+      actual_output = get_unstripped_paths._get_all_paths(
+        '/chromium/output/dir'
+      )
+    self.assertListEqual(expected_output, actual_output)
+
 
 if __name__ == '__main__':
   unittest.main()

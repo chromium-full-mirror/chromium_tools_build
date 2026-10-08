@@ -10,6 +10,7 @@ https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/findit
 from __future__ import annotations
 
 from collections import defaultdict
+import logging
 import os
 import posixpath
 
@@ -31,6 +32,12 @@ def get_aggregated_coverage_data_from_files(
     GroupCoverageSummary data, and the other one is a dict mapping from
     component to GroupCoverageSummary data.
   """
+  if not files_coverage_data:
+    logging.error(
+      'Cannot aggregate coverage data: files_coverage_data is empty.'
+    )
+    return {}, {}
+
   per_directory_summaries = _caclulate_per_directory_summaries(
     files_coverage_data
   )
@@ -84,6 +91,9 @@ def _caclulate_per_directory_summaries(files_coverage_data):
   Returns:
     A dict mapping from directory to coverage metric summaries.
   """
+  if not files_coverage_data:
+    return {}
+
   per_directory_summaries = defaultdict(
     lambda: _new_summaries(files_coverage_data[0]['summaries'])
   )

@@ -91,6 +91,30 @@ class GetNativeLibrariesForAndroidTargetTest(unittest.TestCase):
     m.assert_called_once_with('/chromium/output/dir/target.isolate')
     self.assertListEqual(expected_output, actual_output)
 
+  @mock.patch.object(os.path, 'exists')
+  def test_get_lib_paths_use_mold(self, mock_exists):
+    mock_exists.side_effect = lambda path: (
+      'some_wanted_library_other_path_format' not in path
+    )
+    expected_output = [
+      '/chromium/output/dir/lib.unstripped/'
+      'some_wanted_library_other_path_format.so',
+      '/chromium/output/dir/some_wanted_library.so',
+    ]
+
+    def open_side_effect(path, *args, **kwargs):
+      if path.endswith('build_vars.json'):
+        return mock.mock_open(read_data='{"use_mold": true}')()
+      return mock.mock_open(read_data=self.INPUT_WITH_WANTED_LIB)()
+
+    with mock.patch('builtins.open', side_effect=open_side_effect):
+      actual_output = (
+        get_native_libraries_for_android_target._get_library_paths(
+          '/chromium/output/dir', 'target'
+        )
+      )
+    self.assertListEqual(expected_output, actual_output)
+
   def test_error_if_file_non_exist(self):
     """The input targets should use isolate, and isolate file should exist."""
     with self.assertRaises(FileNotFoundError):

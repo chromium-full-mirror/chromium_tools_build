@@ -43,8 +43,22 @@ def _parse_args(args):
   return params
 
 
+def _uses_mold(chromium_output_dir):
+  """Returns True if GN configured the build with use_mold."""
+  build_vars_path = os.path.join(chromium_output_dir, 'build_vars.json')
+  if not os.path.exists(build_vars_path):
+    return False
+  with open(build_vars_path) as f:
+    return bool(json.load(f).get('use_mold'))
+
+
 def _get_all_paths(chromium_output_dir):
-  """Gets all unstripped artifacts' paths.
+  """Gets all binary artifact paths for coverage.
+
+  When the linker is configured with use_mold = true (which uses
+  --separate-debug-file), files under lib.unstripped/exe.unstripped lack
+  __llvm_covmap and are resolved to the main binary in chromium_output_dir if
+  it exists.
 
   Args:
     chromium_output_dir: absolute path to the chromium output directory.
@@ -52,6 +66,7 @@ def _get_all_paths(chromium_output_dir):
   Returns:
     A list of all found paths.
   """
+  use_mold = _uses_mold(chromium_output_dir)
   search_dirs = [
     os.path.join(chromium_output_dir, 'lib.unstripped'),
     os.path.join(chromium_output_dir, 'exe.unstripped'),
@@ -60,7 +75,20 @@ def _get_all_paths(chromium_output_dir):
   for search_dir in search_dirs:
     for dir_path, _, file_names in os.walk(search_dir):
       for file_name in file_names:
-        paths.append(os.path.join(dir_path, file_name))
+        unstripped_path = os.path.join(dir_path, file_name)
+        if use_mold:
+          rel_to_search = os.path.relpath(unstripped_path, search_dir)
+          main_binary_path = os.path.join(chromium_output_dir, rel_to_search)
+          if os.path.exists(main_binary_path):
+            paths.append(main_binary_path)
+            continue
+          logging.warning(
+            'use_mold enabled, but main binary path %s does not '
+            'exist; falling back to %s',
+            main_binary_path,
+            unstripped_path,
+          )
+        paths.append(unstripped_path)
   return paths
 
 

@@ -48,8 +48,21 @@ def _parse_args(args):
   return params
 
 
+def _uses_mold(chromium_output_dir):
+  """Returns True if GN configured the build with use_mold."""
+  build_vars_path = os.path.join(chromium_output_dir, 'build_vars.json')
+  if not os.path.exists(build_vars_path):
+    return False
+  with open(build_vars_path) as f:
+    return bool(json.load(f).get('use_mold'))
+
+
 def _get_library_paths(chromium_output_dir, isolate_target):
-  """Gets all native libary artifacts' paths for a target.
+  """Gets all native library artifact paths for a target.
+
+  When the linker is configured with use_mold = true (which uses
+  --separate-debug-file), files under lib.unstripped lack __llvm_covmap and are
+  resolved to the main library in chromium_output_dir if it exists.
 
   Args:
     chromium_output_dir: absolute path to the chromium output directory.
@@ -58,6 +71,7 @@ def _get_library_paths(chromium_output_dir, isolate_target):
   Returns:
     A list of all found paths.
   """
+  use_mold = _uses_mold(chromium_output_dir)
   isolated_path = os.path.join(
     chromium_output_dir, '%s.isolate' % isolate_target
   )
@@ -71,9 +85,24 @@ def _get_library_paths(chromium_output_dir, isolate_target):
   )
 
   wanted_paths = [path for path in all_isolated_paths if is_wanted(path)]
-  return [
-    os.path.join(chromium_output_dir, lib_path) for lib_path in wanted_paths
-  ]
+  resolved_paths = []
+  for lib_path in wanted_paths:
+    unstripped_full = os.path.join(chromium_output_dir, lib_path)
+    if use_mold:
+      main_lib_rel = os.path.relpath(lib_path, 'lib.unstripped')
+      main_lib_full = os.path.join(chromium_output_dir, main_lib_rel)
+      if os.path.exists(main_lib_full):
+        resolved_paths.append(main_lib_full)
+        continue
+      logging.warning(
+        'use_mold enabled, but main library path %s does not exist '
+        'for %s; falling back to %s',
+        main_lib_full,
+        isolate_target,
+        unstripped_full,
+      )
+    resolved_paths.append(unstripped_full)
+  return resolved_paths
 
 
 def main():
