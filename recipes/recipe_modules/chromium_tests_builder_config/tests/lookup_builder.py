@@ -359,3 +359,14 @@ def GenTests(api: TEST_DEPS):
     api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'tester-in-official-bucket',
+    api.chromium.ci_build(
+      bucket='official',
+      builder_group='fake-group',
+      builder='fake-tester',
+    ),
+    api.expect_exception('AssertionError'),
+    api.post_process(post_process.DropExpectation),
+  )

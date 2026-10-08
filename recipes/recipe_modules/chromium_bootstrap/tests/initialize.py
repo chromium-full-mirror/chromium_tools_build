@@ -12,7 +12,12 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_bootstrap
-from RECIPE_MODULES.recipe_engine import assertions, json, properties
+from RECIPE_MODULES.recipe_engine import (
+  assertions,
+  buildbucket,
+  json,
+  properties,
+)
 
 
 @dataclass
@@ -25,6 +30,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
   chromium_bootstrap: chromium_bootstrap.TEST_API
   json: json.TEST_API
   properties: properties.TEST_API
@@ -59,6 +65,19 @@ def GenTests(api: TEST_DEPS):
         },
         indent=2,
       ),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'bootstrapped-in-official-bucket',
+    api.buildbucket.ci_build(bucket='official'),
+    api.chromium_bootstrap.properties(commits=[]),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      "Uncaught exception: "
+      "AssertionError('Official builders cannot be bootstrapped')",
     ),
     api.post_process(post_process.DropExpectation),
   )

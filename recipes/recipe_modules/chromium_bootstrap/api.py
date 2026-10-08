@@ -30,6 +30,11 @@ class ChromiumBootstrapApi(recipe_api.RecipeApi):
     # TODO(gbeaty) Once we have the ability to have Milo display the
     # bootstrapped properties, this can be removed
     if '$build/chromium_bootstrap' in self.m.properties:
+      bucket = self.m.buildbucket.build.builder.bucket
+      assert not (bucket == 'official' or bucket.startswith('official.')), (
+        'Official builders cannot be bootstrapped'
+      )
+
       result = self.m.step('bootstrapped properties', [])
       result.presentation.step_text = (
         'This build was bootstrapped, see properties log for actual properties'

@@ -36,6 +36,7 @@ from RECIPE_MODULES.depot_tools import (
   tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
+  buildbucket,
   platform,
   properties,
   step,
@@ -44,6 +45,7 @@ from RECIPE_MODULES.recipe_engine import (
 
 @dataclass
 class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
   chromium: chromium.API
   gsutil: gsutil.API
   tryserver: tryserver.API

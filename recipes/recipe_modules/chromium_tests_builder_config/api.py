@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from recipe_engine import recipe_api
 
-from . import builders, proto, trybots, BuilderConfig
+from . import builders, proto, trybots, BuilderConfig, TEST
 
 
 class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
@@ -104,24 +104,29 @@ class ChromiumTestsBuilderConfigApi(recipe_api.RecipeApi):
       default_retry_failed_shards
     )
 
-    if builder_config is not None:
-      return builder_id, builder_config
+    if builder_config is None:
+      if builder_db is None:
+        assert try_db is None
+        builder_db = self.builder_db
+        try_db = self.try_db
 
-    if builder_db is None:
-      assert try_db is None
-      builder_db = self.builder_db
-      try_db = self.try_db
+      if use_try_db is None:
+        use_try_db = self.m.tryserver.is_tryserver
 
-    if use_try_db is None:
-      use_try_db = self.m.tryserver.is_tryserver
+      builder_config_class = builder_config_class or BuilderConfig
+      builder_config = builder_config_class.lookup(
+        builder_id,
+        builder_db,
+        try_db,
+        use_try_db=use_try_db,
+        step_api=self.m.step,
+        default_retry_failed_shards=default_retry_failed_shards,
+      )
 
-    builder_config_class = builder_config_class or BuilderConfig
-    builder_config = builder_config_class.lookup(
-      builder_id,
-      builder_db,
-      try_db,
-      use_try_db=use_try_db,
-      step_api=self.m.step,
-      default_retry_failed_shards=default_retry_failed_shards,
-    )
+    bucket = self.m.buildbucket.build.builder.bucket
+    if bucket == 'official' or bucket.startswith('official.'):
+      assert builder_config.execution_mode != TEST, (
+        'Test-only builders are not allowed in official buckets '
+      )
+
     return builder_id, builder_config
