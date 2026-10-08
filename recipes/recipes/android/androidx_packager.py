@@ -148,22 +148,12 @@ def RunSteps(api: DEPS, properties):
   with api.step.nest('Roll //third_party/androidx'):
     RollSubproject(api, 'androidx', androidx_cipd_dir, androidx_roll_cmd)
 
-  # //third_party/android_deps/autorolled is being collapsed into
-  # //third_party/android_deps (crbug.com/562517138). Support both layouts
-  # until the move lands, then drop the old one.
   android_deps_dir = source_dir / 'third_party/android_deps'
-  autorolled_deps_dir = android_deps_dir / 'autorolled'
-  autorolled_script = autorolled_deps_dir / 'fetch_all_autorolled.py'
-  if api.path.exists(autorolled_script):
-    deps_label = 'android_deps/autorolled'
-    deps_dir = autorolled_deps_dir
-    roll_cmd = [autorolled_script, '-v']
-  else:
-    deps_label = 'android_deps'
-    deps_dir = android_deps_dir
-    roll_cmd = [android_deps_dir / 'fetch_all.py', '-v']
-  with api.step.nest(f'Roll //third_party/{deps_label}'):
-    RollSubproject(api, deps_label, deps_dir / 'cipd', roll_cmd)
+  android_deps_roll_cmd = [android_deps_dir / 'fetch_all.py', '-v']
+  with api.step.nest('Roll //third_party/android_deps'):
+    RollSubproject(
+      api, 'android_deps', android_deps_dir / 'cipd', android_deps_roll_cmd
+    )
 
   if not api.led.led_build:
     api.bcid_reporter.report_stage("upload-complete")
@@ -173,11 +163,6 @@ def GenTests(api: TEST_DEPS):
   androidx_dir = api.path.checkout_dir.joinpath('third_party', 'androidx')
   androidx_sample_lib = androidx_dir.joinpath('libs', 'androidx_dino')
   androidx_step_prefix = 'Roll //third_party/androidx.'
-  android_deps_dir = api.path.checkout_dir.joinpath(
-    'third_party', 'android_deps'
-  )
-  autorolled_dir = android_deps_dir / 'autorolled'
-  autorolled_step_prefix = 'Roll //third_party/android_deps/autorolled.'
   android_deps_step_prefix = 'Roll //third_party/android_deps.'
 
   yield api.test(
@@ -188,7 +173,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib / 'README.chromium',
     ),
@@ -207,42 +191,6 @@ def GenTests(api: TEST_DEPS):
       post_process.MustRun, f'{androidx_step_prefix}register cipd.yaml'
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}Read cipd.yaml',
-      api.file.read_text('# version: cr-1\npackage: package2'),
-    ),
-    api.override_step_data(
-      f'{autorolled_step_prefix}cipd search package2 cr-1',
-      api.cipd.example_error('error'),
-    ),
-    api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}Run fetch_all script'
-    ),
-    api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}register cipd.yaml'
-    ),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-    'collapsed_android_deps',
-    api.buildbucket.ci_build(
-      project='chromium',
-      git_repo='https://chromium.googlesource.com/chromium/src',
-      builder='android-androidx-packager',
-    ),
-    api.path.exists(
-      androidx_dir / 'fetch_all_androidx.py',
-      androidx_sample_lib / 'README.chromium',
-    ),
-    api.override_step_data(
-      f'{androidx_step_prefix}Read cipd.yaml',
-      api.file.read_text('# version: cr-1\npackage: package1'),
-    ),
-    api.override_step_data(
-      f'{androidx_step_prefix}cipd search package1 cr-1',
-      api.cipd.example_error('error'),
-    ),
-    api.override_step_data(
       f'{android_deps_step_prefix}Read cipd.yaml',
       api.file.read_text('# version: cr-1\npackage: package2'),
     ),
@@ -256,9 +204,6 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.MustRun, f'{android_deps_step_prefix}register cipd.yaml'
     ),
-    api.post_process(
-      post_process.DoesNotRun, f'{autorolled_step_prefix}Run fetch_all script'
-    ),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -270,7 +215,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib.joinpath('README.chromium'),
     ),
@@ -290,7 +234,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib / 'README.chromium',
     ),
@@ -309,18 +252,18 @@ def GenTests(api: TEST_DEPS):
       post_process.DoesNotRun, f'{androidx_step_prefix}register cipd.yaml'
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}Read cipd.yaml',
+      f'{android_deps_step_prefix}Read cipd.yaml',
       api.file.read_text('# version: cr-1\npackage: package2'),
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}cipd search package2 cr-1',
+      f'{android_deps_step_prefix}cipd search package2 cr-1',
       api.cipd.example_search('package2', instances=1),
     ),
     api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}Run fetch_all script'
+      post_process.MustRun, f'{android_deps_step_prefix}Run fetch_all script'
     ),
     api.post_process(
-      post_process.DoesNotRun, f'{autorolled_step_prefix}register cipd.yaml'
+      post_process.DoesNotRun, f'{android_deps_step_prefix}register cipd.yaml'
     ),
     api.post_process(post_process.DropExpectation),
   )
@@ -334,7 +277,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib / 'README.chromium',
     ),
@@ -353,18 +295,18 @@ def GenTests(api: TEST_DEPS):
       post_process.MustRun, f'{androidx_step_prefix}register cipd.yaml'
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}Read cipd.yaml',
+      f'{android_deps_step_prefix}Read cipd.yaml',
       api.file.read_text('package: package1'),
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}cipd search package1 cr-3',
+      f'{android_deps_step_prefix}cipd search package1 cr-3',
       api.cipd.example_error('error'),
     ),
     api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}Run fetch_all script'
+      post_process.MustRun, f'{android_deps_step_prefix}Run fetch_all script'
     ),
     api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}register cipd.yaml'
+      post_process.MustRun, f'{android_deps_step_prefix}register cipd.yaml'
     ),
     api.post_process(post_process.DropExpectation),
   )
@@ -378,7 +320,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib / 'README.chromium',
     ),
@@ -414,7 +355,6 @@ def GenTests(api: TEST_DEPS):
       builder='android-androidx-packager',
     ),
     api.path.exists(
-      autorolled_dir / 'fetch_all_autorolled.py',
       androidx_dir / 'fetch_all_androidx.py',
       androidx_sample_lib / 'README.chromium',
     ),
@@ -431,19 +371,19 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data(f'{androidx_step_prefix}register cipd.yaml', retcode=1),
     api.override_step_data(
-      f'{autorolled_step_prefix}Read cipd.yaml',
+      f'{android_deps_step_prefix}Read cipd.yaml',
       api.file.read_text('# version: cr-1\npackage: package2'),
     ),
     api.override_step_data(
-      f'{autorolled_step_prefix}cipd search package2 cr-1',
+      f'{android_deps_step_prefix}cipd search package2 cr-1',
       api.cipd.example_error('error'),
     ),
-    api.step_data(f'{autorolled_step_prefix}register cipd.yaml', retcode=1),
+    api.step_data(f'{android_deps_step_prefix}register cipd.yaml', retcode=1),
     api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}Run fetch_all script'
+      post_process.MustRun, f'{android_deps_step_prefix}Run fetch_all script'
     ),
     api.post_process(
-      post_process.MustRun, f'{autorolled_step_prefix}register cipd.yaml'
+      post_process.MustRun, f'{android_deps_step_prefix}register cipd.yaml'
     ),
     api.post_process(post_process.DropExpectation),
   )
