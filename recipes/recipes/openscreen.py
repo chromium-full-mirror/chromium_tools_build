@@ -2,7 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Recipe for building and running tests for Open Screen stand-alone."""
+"""Recipe for building and running tests for Open Screen stand-alone.
+
+DEPRECATED: This recipe has moved into the Open Screen repository:
+https://chromium.googlesource.com/openscreen/+/main/infra/recipes/recipes/openscreen.py
+
+Please make any changes there instead. This copy is only kept until the
+Open Screen builders are switched over to the
+infra/recipe_bundles/chromium.googlesource.com/openscreen recipe bundle, after
+which it will be deleted. See b/566998334.
+"""
 
 from __future__ import annotations
 
