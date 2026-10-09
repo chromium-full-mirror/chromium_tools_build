@@ -616,6 +616,9 @@ def RunSteps(api: DEPS):
         file_path,
         GERRIT_TOPIC,
         [f'Created for {api.tryserver.gerrit_change_review_url}'],
+        # A trailing blank line in a .cc file gets flagged by clang-format
+        # in directories whose PRESUBMIT.py enforces formatting.
+        trailing_line='// Dummy comment' if file_path.endswith('.cc') else '',
       )
       cls_by_filepath[file_path] = cl
 

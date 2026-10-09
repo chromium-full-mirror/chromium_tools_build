@@ -25,11 +25,12 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
     topic: str,
     extra_commit_msg_lines: Iterable[str] | None = None,
     git_footers: Iterable[str] | None = None,
+    trailing_line: str = '',
   ) -> tuple[common_pb.GerritChange, str]:
     """Creates a throw-away CL in chromium/src.git via Gerrit's REST API.
 
     The CL is intended to be used for interacting with tryjobs, and not for
-    submission. The CL contents will simply consist of whitespace appended to
+    submission. The CL contents will simply consist of a new line appended to
     the end of the given file.
 
     Args:
@@ -38,6 +39,10 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
       extra_commit_msg_lines - List of lines to add to the commit message.
       git_footers - Like extra_commit_msg_lines, but list of lines to put at
         the very end of the commit msg.
+      trailing_line - Contents of the new line appended to the end of the file.
+        Defaults to an empty line. Note that an empty trailing line may be
+        flagged by formatters (e.g. clang-format), so callers may want to pass
+        in a comment appropriate for the file type.
 
     Returns tuple of (buildbucket.common.GerritChange of the CL, full URL of
       the CL)
@@ -50,9 +55,9 @@ class ChromiumGerritUitlsApi(recipe_api.RecipeApi):
       step_test_data=lambda: self.m.json.test_api.output({'value': ''}),
     )
 
-    # Add the whitespace to the end of the file, since adding it add the top might
+    # Add the new line to the end of the file, since adding it add the top might
     # make some copyright header detection checks fail.
-    new_contents = old_contents + '\n'
+    new_contents = old_contents + trailing_line + '\n'
     new_contents_by_file_path = {file_path: new_contents}
     commit_msg_lines = [
       'Test commit; testing a recipe CL',
