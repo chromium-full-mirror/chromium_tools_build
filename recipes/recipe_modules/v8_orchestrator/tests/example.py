@@ -109,6 +109,7 @@ def GenTests(api: TEST_DEPS):
         'googlesource.com", "patchset": "7", "project": "project"}]'
       ),
     ),
+    api.post_check(StepStdinContains, 'trigger compilator', '"priority": 25'),
     api.post_process(MustRun, 'trigger compilator'),
     api.post_process(MustRun, 'compilator steps'),
     api.post_process(SummaryMarkdown, 'All good!'),

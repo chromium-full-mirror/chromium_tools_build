@@ -121,7 +121,7 @@
       }
     },
     "name": "trigger compilators.1.1.2.0 x86.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -182,7 +182,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -241,7 +241,7 @@
       }
     },
     "name": "trigger compilators.1.1.2.0 x64.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133a\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -302,7 +302,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -361,7 +361,7 @@
       }
     },
     "name": "trigger compilators.1.1.2.0 x86-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000133d\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -422,7 +422,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -481,7 +481,7 @@
       }
     },
     "name": "trigger compilators.1.1.2.0 x64-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"43ff\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001340\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -542,7 +542,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"43ff\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -601,7 +601,7 @@
       }
     },
     "name": "trigger compilators.1.1.1.4 x86.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001343\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -662,7 +662,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -721,7 +721,7 @@
       }
     },
     "name": "trigger compilators.1.1.1.4 x64.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Linux64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001346\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -782,7 +782,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -841,7 +841,7 @@
       }
     },
     "name": "trigger compilators.1.1.1.4 x86-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win32 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001349\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -902,7 +902,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
@@ -961,7 +961,7 @@
       }
     },
     "name": "trigger compilators.1.1.1.4 x64-rl.trigger compilator",
-    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000134c\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
+    "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"V8 Win64 PGO instrumentation - builder\", \"project\": \"v8\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"chromium.googlesource.com\", \"project\": \"project\", \"ref\": \"refs/heads/main\"}, \"priority\": 25, \"properties\": {\"revision\": \"cd12\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-00000000134c\", \"swarming\": {\"parentRunId\": \"fake-task-id\"}, \"tags\": [{\"key\": \"hide-in-gerrit\", \"value\": \"pointless\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -1022,7 +1022,7 @@
       "@@@STEP_LOG_LINE@request@          \"project\": \"project\",@@@",
       "@@@STEP_LOG_LINE@request@          \"ref\": \"refs/heads/main\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"priority\": 30,@@@",
+      "@@@STEP_LOG_LINE@request@        \"priority\": 25,@@@",
       "@@@STEP_LOG_LINE@request@        \"properties\": {@@@",
       "@@@STEP_LOG_LINE@request@          \"revision\": \"cd12\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
