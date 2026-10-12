@@ -434,7 +434,9 @@ def RunSteps(api: DEPS, properties):
         if properties.fuzz_engine != 'fuzzilli':
           # For libfuzzer or centipede, upload the succeeded targets in a
           # json file to GCS
-          gcs_dir = f'fuzz-targets/{properties.fuzz_engine}/'
+          gcs_dir = (
+            f'fuzz-targets/{properties.fuzz_engine}/{api.platform.name}/'
+          )
           revision = api.buildbucket.gitiles_commit.id[:7]
           targets_file = api.path.join(
             target_list_dir, properties.fuzz_engine + '.json'
@@ -993,6 +995,11 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       post_process.StepCommandContains,
+      'gsutil upload',
+      ['gs://code-coverage-data/fuzz-targets/libfuzzer/linux/2d72510/'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
       'merge all fuzzers',
       [
         '[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata'
@@ -1030,6 +1037,11 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandDoesNotContain,
       'run all fuzzers',
       ['RECIPE_REPO[build]/recipes/withxvfb.py'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'gsutil upload',
+      ['gs://code-coverage-data/fuzz-targets/libfuzzer/mac/2d72510/'],
     ),
     api.post_check(
       post_process.StepCommandContains,
@@ -1143,6 +1155,11 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       post_process.StepCommandContains,
+      'gsutil upload',
+      ['gs://code-coverage-data/fuzz-targets/libfuzzer/win/2d72510/'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
       'merge all fuzzers',
       [
         '[CACHE]\\builder\\src\\third_party\\llvm-build\\Release+Asserts\\bin\\llvm-profdata.exe'
@@ -1209,7 +1226,13 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.platform.name('linux'),
-    generate_test(is_coverage=True, engine='centipede'),
+    generate_test(is_coverage=True, engine='centipede', drop_expectation=False),
+    api.post_check(
+      post_process.StepCommandContains,
+      'gsutil upload',
+      ['gs://code-coverage-data/fuzz-targets/centipede/linux/2d72510/'],
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
