@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import datetime
+
 from PB.recipe_modules.build.chromium_toolchain import (
   properties as properties_pb,
 )
@@ -43,6 +45,18 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
         'latest',
       )
 
+      generic_args = []
+      if properties.trusted_build_instance:
+        generic_args.extend(['--instance', properties.trusted_build_instance])
+      if properties.trusted_build_instance_pool:
+        generic_args.extend(['--pool', properties.trusted_build_instance_pool])
+      if properties.trusted_build_instance_env:
+        generic_args.extend(['--env', properties.trusted_build_instance_env])
+      if properties.trusted_build_instance_project:
+        generic_args.extend(
+          ['--project', properties.trusted_build_instance_project]
+        )
+
       args = [
         tbi_client,
         '--result_file',
@@ -54,14 +68,7 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
       if properties.config_path:
         args.extend(['--config', properties.config_path])
 
-      if properties.trusted_build_instance:
-        args.extend(['--instance', properties.trusted_build_instance])
-      if properties.trusted_build_instance_pool:
-        args.extend(['--pool', properties.trusted_build_instance_pool])
-      if properties.trusted_build_instance_env:
-        args.extend(['--env', properties.trusted_build_instance_env])
-      if properties.trusted_build_instance_project:
-        args.extend(['--project', properties.trusted_build_instance_project])
+      args.extend(generic_args)
 
       if self.m.buildbucket.build.id:
         args.extend(['--build_prefix', f'bb-{self.m.buildbucket.build.id}'])
@@ -92,6 +99,63 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
 
       # Run the TBI client.
       with self.m.context(env=env):
-        res = self.m.step('request build', args)
+        res = self.m.step(
+          'request build',
+          args,
+          step_test_data=lambda: self.m.json.test_api.output(
+            data={
+              'buildName': (
+                'projects/fake-project/locations/fake-location/'
+                'instances/fake-instance/pools/fake-pool/builds/fake-build'
+              ),
+            },
+            name='summary',
+          ),
+        )
         if res.exc_result.retcode == 0:
           res.presentation.step_text = 'TBI finished successfully'
+
+      build_name = None
+      summary = res.json.outputs.get('summary') or res.json.output
+      if summary and isinstance(summary, dict):
+        build_name = summary.get('buildName')
+
+      if build_name:
+        fetch_args = [
+          tbi_client,
+          '--build_name',
+          build_name,
+          '--logs=false',
+        ] + generic_args
+
+        fetch_res = self.m.step(
+          'fetch build',
+          fetch_args,
+          stdout=self.m.json.output(),
+          step_test_data=lambda: self.m.json.test_api.output_stream(
+            {
+              'timestamps': {
+                'createdTime': '2026-10-11T19:00:34.630447Z',
+                'startedTime': '2026-10-11T19:41:23.110447Z',
+                'finishedTime': '2026-10-11T22:10:00.105871Z',
+                'lastModifiedTime': '2026-10-11T22:10:00.105871Z',
+              },
+            }
+          ),
+        )
+        build_details = fetch_res.stdout
+        if build_details and isinstance(build_details, dict):
+          timestamps = build_details.get('timestamps')
+          if timestamps and isinstance(timestamps, dict):
+            created_str = timestamps.get('createdTime')
+            started_str = timestamps.get('startedTime')
+            if created_str and started_str:
+              created_time = datetime.datetime.fromisoformat(
+                created_str.replace('Z', '+00:00')
+              )
+              started_time = datetime.datetime.fromisoformat(
+                started_str.replace('Z', '+00:00')
+              )
+              ttfs = round((started_time - created_time).total_seconds(), 6)
+              fetch_res.presentation.properties['time-to-first-tbi-step'] = ttfs
+              fetch_res.presentation.step_text = f'TTFS: {ttfs}s'

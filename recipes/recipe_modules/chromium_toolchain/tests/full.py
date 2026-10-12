@@ -16,6 +16,7 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium_toolchain
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
+  json,
   platform,
   properties,
 )
@@ -31,6 +32,7 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(recipe_test_api.RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   chromium_toolchain: chromium_toolchain.TEST_API
+  json: json.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
 
@@ -80,6 +82,24 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
       post_process.StepCommandDoesNotContain,
       'package clang.request build',
       ['-chromium_src_ref'],
+    ),
+    api.post_process(post_process.MustRun, 'package clang.fetch build'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'package clang.fetch build',
+      [
+        '--build_name',
+        (
+          'projects/fake-project/locations/fake-location/'
+          'instances/fake-instance/pools/fake-pool/builds/fake-build'
+        ),
+        '--logs=false',
+      ],
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'time-to-first-tbi-step',
+      2448.48,
     ),
   )
 
@@ -244,6 +264,26 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
         'a' * 40,
       ],
     ),
+    api.post_process(post_process.MustRun, 'package clang.fetch build'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'package clang.fetch build',
+      [
+        '--instance',
+        'fake-instance',
+        '--pool',
+        'fake-pool',
+        '--env',
+        'fake-env',
+        '--project',
+        'fake-project',
+      ],
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'time-to-first-tbi-step',
+      2448.48,
+    ),
   )
 
   yield api.test(
@@ -289,4 +329,71 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
       'package clang.request build',
       ['--clang'],
     ),
+  )
+
+  yield api.test(
+    'no_build_name_in_summary',
+    api.platform.name('linux'),
+    api.buildbucket.ci_build(
+      project='chromium',
+      bucket='ci',
+      builder='trusted-packaging-linux-clang',
+      git_ref='refs/heads/main',
+      revision='a' * 40,
+    ),
+    gen_props(properties_pb.InputProperties.CLANG),
+    api.step_data(
+      'package clang.request build',
+      api.json.output(name='summary', data={}),
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.MustRun, 'package clang.request build'),
+    api.post_process(post_process.DoesNotRun, 'package clang.fetch build'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'no_timestamps_in_build_details',
+    api.platform.name('linux'),
+    api.buildbucket.ci_build(
+      project='chromium',
+      bucket='ci',
+      builder='trusted-packaging-linux-clang',
+      git_ref='refs/heads/main',
+      revision='a' * 40,
+    ),
+    gen_props(properties_pb.InputProperties.CLANG),
+    api.step_data(
+      'package clang.fetch build',
+      stdout=api.json.output({}),
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.MustRun, 'package clang.fetch build'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'missing_time_fields_in_timestamps',
+    api.platform.name('linux'),
+    api.buildbucket.ci_build(
+      project='chromium',
+      bucket='ci',
+      builder='trusted-packaging-linux-clang',
+      git_ref='refs/heads/main',
+      revision='a' * 40,
+    ),
+    gen_props(properties_pb.InputProperties.CLANG),
+    api.step_data(
+      'package clang.fetch build',
+      stdout=api.json.output(
+        {
+          'timestamps': {
+            'createdTime': '2026-10-11T19:00:34.630447Z',
+          },
+        }
+      ),
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.MustRun, 'package clang.fetch build'),
+    api.post_process(post_process.DropExpectation),
   )

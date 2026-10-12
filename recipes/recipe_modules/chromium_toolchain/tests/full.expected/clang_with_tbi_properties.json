@@ -119,9 +119,53 @@
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_TEXT@TBI finished successfully@@@",
-      "@@@STEP_LOG_END@json.output[summary] (invalid)@@@",
-      "@@@STEP_LOG_LINE@json.output[summary] (exception)@Expecting value: line 1 column 1 (char 0)@@@",
-      "@@@STEP_LOG_END@json.output[summary] (exception)@@@"
+      "@@@STEP_LOG_LINE@json.output[summary]@{@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@  \"buildName\": \"projects/fake-project/locations/fake-location/instances/fake-instance/pools/fake-pool/builds/fake-build\"@@@",
+      "@@@STEP_LOG_LINE@json.output[summary]@}@@@",
+      "@@@STEP_LOG_END@json.output[summary]@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra_internal/tools/security/lexan_tbi_client/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/lexan_tbi_client",
+      "--build_name",
+      "projects/fake-project/locations/fake-location/instances/fake-instance/pools/fake-pool/builds/fake-build",
+      "--logs=false",
+      "--instance",
+      "fake-instance",
+      "--pool",
+      "fake-pool",
+      "--env",
+      "fake-env",
+      "--project",
+      "fake-project"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "package clang.fetch build",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_TEXT@TTFS: 2448.48s@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"timestamps\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"createdTime\": \"2026-10-11T19:00:34.630447Z\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"finishedTime\": \"2026-10-11T22:10:00.105871Z\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"lastModifiedTime\": \"2026-10-11T22:10:00.105871Z\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"startedTime\": \"2026-10-11T19:41:23.110447Z\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@",
+      "@@@SET_BUILD_PROPERTY@time-to-first-tbi-step@2448.48@@@"
     ]
   },
   {
