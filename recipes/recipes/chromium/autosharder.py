@@ -258,7 +258,10 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
     )
 
   diff_step = api.git(
-    'diff', stdout=api.raw_io.output_text(), step_test_data=step_test_data
+    'diff',
+    git_config_options={'diff.ignoreSubmodules': 'all'},
+    stdout=api.raw_io.output_text(),
+    step_test_data=step_test_data,
   )
   diff_step.presentation.logs['stdout'] = diff_step.stdout
   if not diff_step.stdout:
@@ -275,7 +278,13 @@ def RunSteps(api: RecipeApi, properties: InputProperties):
 
   if not api.led.led_build:
     commit_message = COMMIT_MESSAGE.format(api.buildbucket.build.id)
-    api.git('commit', '-a', '-m', 'Autoshard test suites')
+    api.git(
+      'commit',
+      '-a',
+      '-m',
+      'Autoshard test suites',
+      git_config_options={'diff.ignoreSubmodules': 'all'},
+    )
     upload_args = [
       '--cq-dry-run',
       '--bypass-hooks',
@@ -854,7 +863,17 @@ def GenTests(api: RecipeApi):
       ],
     ),
     api.post_process(post_process.MustRun, 'query durations'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'git diff',
+      ['-c', 'diff.ignoreSubmodules=all'],
+    ),
     api.post_process(post_process.MustRun, 'regenerate targets specs'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'git commit',
+      ['-c', 'diff.ignoreSubmodules=all'],
+    ),
     api.post_process(post_process.MustRun, 'git cl upload'),
     api.post_process(
       check_sharding, 'chromium.linux', 'Linux Tests', 'browser_tests', 15
