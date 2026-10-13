@@ -153,7 +153,7 @@ def _fixup_finding_paths(finding):
 
 def _dedup_findings(api: DEPS, all_platforms, findings_by_platform):
   platforms_by_encoded_finding = collections.defaultdict(list)
-  for platform, findings in findings_by_platform.items():
+  for platform, findings in findings_by_platform.items():  # noqa: F402
     for f in findings:
       # sort the replacements and fixes to de-duplicate findings with same
       # fixes and replacements but in different order.

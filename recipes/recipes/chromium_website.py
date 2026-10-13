@@ -4,7 +4,7 @@
 """Recipe for building and deploying the www.chromium.org static website."""
 
 from recipe_engine.post_process import DropExpectation
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 
 from PB.recipe_engine import result as result_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
@@ -79,12 +79,10 @@ def RunSteps(api: DEPS):
     ).stdout
     out = out.decode('utf-8').strip()
 
-    # pylint: disable=line-too-long
     msg = (
       "Deployed site but don't know where.\n"
       "Please [file a bug](http://crbug.com/new?component=1456097&template=1923269)\n"
     )
-    # pylint: enable=line-too-long
 
     for line in out.splitlines():
       if api.tryserver.is_tryserver:
@@ -112,7 +110,6 @@ def RunSteps(api: DEPS):
 
 
 def GenTests(api: TEST_DEPS):
-  # pylint: disable=line-too-long
   yield api.test(
     'presubmit',
     api.buildbucket.try_build(
@@ -131,7 +128,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(DropExpectation),
   )
-  # pylint: enable=line-too-long
 
   yield api.test(
     'postsubmit',

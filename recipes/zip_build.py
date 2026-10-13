@@ -24,9 +24,9 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.abspath(os.path.join(THIS_DIR, '..', 'recipes')))
 sys.path.insert(0, os.path.abspath(os.path.join(THIS_DIR, '..', 'scripts')))
 
-from common import chromium_utils
-import bot_utils
-import build_directory
+from common import chromium_utils  # noqa: E402
+import bot_utils  # noqa: E402
+import build_directory  # noqa: E402
 
 _GS_PROTOCOL_PREFIX = 'gs://'
 
@@ -198,7 +198,6 @@ def WriteRevisionFile(dirname, build_revision):
   """
   try:
     # Script only works on python 2.6
-    # pylint: disable=E1123
     tmp_revision_file = tempfile.NamedTemporaryFile(
       mode='w', dir=dirname, delete=False
     )
@@ -598,7 +597,7 @@ def main(argv):
   # first unknown arg.  So throw a warning if we have two or more unknown
   # arguments.
   if args[1:]:
-    print('Warning -- unknown arguments' % args[1:])
+    print('Warning -- unknown arguments' % args[1:])  # noqa: F507
 
   versioned_file, revision_file = Archive(options)
   urls = Upload(options, versioned_file, revision_file)

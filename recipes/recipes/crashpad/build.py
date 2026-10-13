@@ -4,7 +4,7 @@
 
 """Buildbot recipe definition for the various Crashpad continuous builders."""
 
-import ast
+import ast  # noqa: F401
 import contextlib
 
 from recipe_engine.recipe_api import Property

@@ -5,7 +5,7 @@
 
 from PB.recipes.build.chromium.autotest_runner import (
   InputProperties,
-  EnvProperties,
+  EnvProperties,  # noqa: F401
   AutotestInvocation,
 )
 from PB.recipe_engine import result as result_pb
@@ -18,7 +18,6 @@ from recipe_engine.post_process import StepCommandRE, DropExpectation
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, chromium_checkout, gn
 from RECIPE_MODULES.depot_tools import depot_tools, gclient, osx_sdk

@@ -91,7 +91,6 @@ def wait_termination_win(pid):
            WAIT_TIMEOUT or WAIT_OBJECT_0 (i.e. termination succeeded).
     NotDiedError: if cloudtail kept on running 10 seconds after it signaled.
   """
-  # pylint: disable=import-outside-toplevel
   import win32api
   import win32con
   import win32event
@@ -104,12 +103,12 @@ def wait_termination_win(pid):
       win32con.PROCESS_QUERY_INFORMATION | win32con.SYNCHRONIZE, False, pid
     )
     try:
-      os.kill(pid, signal.CTRL_C_EVENT)  # pylint: disable=no-member
+      os.kill(pid, signal.CTRL_C_EVENT)
       print(
         'CTRL_C_EVENT has been sent to process %d. '
         'Going to wait for the process finishes.' % pid
       )
-    except WindowsError as e:  # pylint: disable=E0602
+    except WindowsError as e:
       # If a target process does not share terminal, we cannot send Ctrl-C.
       if e[0] == winerror.ERROR_INVALID_PARAMETER:
         os.kill(pid, signal.SIGINT)
@@ -163,7 +162,7 @@ def wait_termination(pid):
         )
         return
       raise
-    for _ in xrange(10):
+    for _ in xrange(10):  # noqa: F821
       time.sleep(1)
       if not is_running_posix(pid):
         return

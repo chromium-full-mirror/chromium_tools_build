@@ -67,12 +67,12 @@ class TEST_DEPS(RecipeTestApi):
   step: step.TEST_API
 
 
-from contextlib import contextmanager
-from dataclasses import dataclass
+from contextlib import contextmanager  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: E402, F401
 
-from PB.recipes.build.dawn.cmake import InputProperties
+from PB.recipes.build.dawn.cmake import InputProperties  # noqa: E402
 
 PROPERTIES = InputProperties
 

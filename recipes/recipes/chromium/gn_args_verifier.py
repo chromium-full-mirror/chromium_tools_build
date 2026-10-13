@@ -28,14 +28,14 @@ from PB.recipes.build.chromium import gn_args_verifier as gn_args_verifier_pb
 
 PROPERTIES = gn_args_verifier_pb.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import chromium, gn
-from RECIPE_MODULES.depot_tools import bot_update, gclient, tryserver
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.build import chromium, gn  # noqa: E402
+from RECIPE_MODULES.depot_tools import bot_update, gclient, tryserver  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   context,
   file,

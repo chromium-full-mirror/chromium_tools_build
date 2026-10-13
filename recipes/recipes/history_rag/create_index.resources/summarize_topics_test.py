@@ -4,7 +4,7 @@
 
 import json
 import shutil
-import sys
+import sys  # noqa: F401
 import tempfile
 import unittest
 from pathlib import Path

@@ -7,7 +7,7 @@ Recipe for building and running tests for Libyuv stand-alone.
 """
 
 from recipe_engine import post_process
-from recipe_engine.engine_types import freeze
+from recipe_engine.engine_types import freeze  # noqa: F401
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build.libyuv import builders
 
@@ -159,7 +159,7 @@ def GenTests(api: TEST_DEPS):
     return test
 
   for (
-    builder_group,
+    builder_group,  # noqa: F402
     group_config,
   ) in builders.BUILDERS_DB.builders_by_group.items():
     for buildername in group_config.keys():

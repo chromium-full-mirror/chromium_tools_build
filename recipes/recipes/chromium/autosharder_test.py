@@ -18,19 +18,19 @@ TARGET_RUNTIME = 15.0
 
 SKIP_FOOTER = 'Autosharder-Skip'
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import chromium_checkout, chromium_gerrit_utils
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.build import chromium_checkout, chromium_gerrit_utils  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   gclient,
   git,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   context,
   file,

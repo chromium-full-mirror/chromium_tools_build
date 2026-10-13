@@ -13,7 +13,7 @@ from PB.recipes.build.v8.release_branch_updater import (
   ChannelSource,
 )
 
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 from recipe_engine import post_process as post
 
 from dataclasses import dataclass

@@ -25,8 +25,8 @@ sys.path.insert(
   THIS_DIR,
 )
 
-import bot_utils
-import xvfb
+import bot_utils  # noqa: E402, F401
+import xvfb  # noqa: E402
 
 USAGE = '%s [options] start|stop' % os.path.basename(sys.argv[0])
 

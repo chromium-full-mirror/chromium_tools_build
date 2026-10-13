@@ -10,7 +10,7 @@ import unittest
 THIS_DIR = os.path.dirname(__file__)
 
 sys.path.insert(0, THIS_DIR)
-import parse_sdk_list
+import parse_sdk_list  # noqa: E402
 
 
 def _format_package_line(name, version, description=None, update_version=None):

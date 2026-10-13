@@ -112,7 +112,7 @@ def StartVirtualX(build_dir):
     if xdisplayproc.returncode != 0:
       print('xdisplaycheck failed after %d seconds.' % checktime)
       print('xdisplaycheck output:')
-      for l in logs.splitlines():
+      for l in logs.splitlines():  # noqa: E741
         print('> %s' % l)
       rc = proc.poll()
       if rc is None:
@@ -122,13 +122,13 @@ def StartVirtualX(build_dir):
         print('Xvfb exited, code %d' % rc)
 
       print('Xvfb output:')
-      for l in proc.communicate()[0].splitlines():
+      for l in proc.communicate()[0].splitlines():  # noqa: E741
         print('> %s' % l)
       raise Exception(logs)
 
     print('xdisplaycheck succeeded after %d seconds.' % checktime)
     print('xdisplaycheck output:')
-    for l in logs.splitlines():
+    for l in logs.splitlines():  # noqa: E741
       print('> %s' % l)
     print('...OK')
 

@@ -12,7 +12,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,  #
 )
 from recipe_engine.post_process import (
-  DoesNotRun,
+  DoesNotRun,  # noqa: F401
   DropExpectation,
   Filter,
   MustRun,

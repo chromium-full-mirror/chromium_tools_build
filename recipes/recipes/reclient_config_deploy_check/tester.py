@@ -10,18 +10,18 @@ from PB.recipes.build.reclient_config_deploy_check import tester as tester_pb
 
 PROPERTIES = tester_pb.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   gclient,
   git,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   context,
   path,

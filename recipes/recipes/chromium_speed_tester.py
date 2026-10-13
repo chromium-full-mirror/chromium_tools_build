@@ -47,9 +47,9 @@ class TEST_DEPS(RecipeTestApi):
 
 NO_SUFFIX = ''
 
-from recipe_engine import post_process
-from PB.recipes.build.chromium_speed_tester import InputProperties
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from recipe_engine import post_process  # noqa: E402
+from PB.recipes.build.chromium_speed_tester import InputProperties  # noqa: E402
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc  # noqa: E402
 
 PROPERTIES = InputProperties
 

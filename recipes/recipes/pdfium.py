@@ -6,13 +6,13 @@
 # Separately, python command used to run the steps in the recipe.
 PYTHON_CMD = ['vpython3', '-u']
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import builder_group, siso
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.build import builder_group, siso  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   depot_tools,
   gclient,
@@ -20,7 +20,7 @@ from RECIPE_MODULES.depot_tools import (
   osx_sdk,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cas,
   cipd,
@@ -78,16 +78,16 @@ class TEST_DEPS(RecipeTestApi):
   swarming: swarming.TEST_API
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from RECIPE_MODULES.recipe_engine.swarming.api import (
+from RECIPE_MODULES.recipe_engine.swarming.api import (  # noqa: E402
   TaskRequest,
   TaskRequestMetadata,
 )
-from RECIPE_MODULES.recipe_engine.swarming.state import TaskState
-from recipe_engine import post_process
-from recipe_engine.config import Set
-from recipe_engine.recipe_api import Property
+from RECIPE_MODULES.recipe_engine.swarming.state import TaskState  # noqa: E402
+from recipe_engine import post_process  # noqa: E402, F401
+from recipe_engine.config import Set  # noqa: E402
+from recipe_engine.recipe_api import Property  # noqa: E402
 
 PROPERTIES = {
   'agg': Property(default=None, kind=bool),

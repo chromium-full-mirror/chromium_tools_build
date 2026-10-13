@@ -5,9 +5,9 @@
 import unittest
 import json
 import subprocess
-import sys
+import sys  # noqa: F401
 from pathlib import Path
-from unittest.mock import patch, MagicMock, mock_open, call
+from unittest.mock import patch, MagicMock, mock_open, call  # noqa: F401
 
 import git_data_processor
 

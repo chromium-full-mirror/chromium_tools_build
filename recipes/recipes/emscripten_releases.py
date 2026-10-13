@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from recipe_engine.post_process import DropExpectation, Filter, MustRun
+from recipe_engine.post_process import DropExpectation, Filter, MustRun  # noqa: F401
 
 from dataclasses import dataclass
 
@@ -93,7 +93,7 @@ step_test_data = {
 
 
 def ExecBuildSteps(api: DEPS, build_steps, sync_dir, dir_flags):
-  for step in build_steps:
+  for step in build_steps:  # noqa: F402
     script = sync_dir / step['command'][0]
     args = step['command'][1:]
     api.step(step['name'], ['vpython3', script] + dir_flags + args)

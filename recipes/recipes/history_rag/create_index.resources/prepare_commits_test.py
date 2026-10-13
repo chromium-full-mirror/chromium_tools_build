@@ -9,7 +9,7 @@ import shutil
 import tempfile
 import sys
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock  # noqa: F401
 from io import StringIO
 
 import prepare_commits

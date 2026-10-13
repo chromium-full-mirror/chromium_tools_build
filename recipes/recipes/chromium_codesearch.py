@@ -23,13 +23,13 @@ from PB.recipes.build.chromium_codesearch import (
 
 PROPERTIES = InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import chromium, gn, siso
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.build import chromium, gn, siso  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   depot_tools,
   gclient,
@@ -37,8 +37,8 @@ from RECIPE_MODULES.depot_tools import (
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.infra import codesearch
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.infra import codesearch  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cipd,
   commit_position,
@@ -640,7 +640,7 @@ def GenTests(api: TEST_DEPS):
       + api.siso.properties()
     )
 
-  for platform in (
+  for platform in (  # noqa: F402
     'android',
     'lacros',
     'linux',

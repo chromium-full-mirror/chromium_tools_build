@@ -7,7 +7,7 @@ from recipe_engine.recipe_api import Property
 from recipe_engine.post_process import (
   DropExpectation,
   LogContains,
-  LogDoesNotContain,
+  LogDoesNotContain,  # noqa: F401
 )
 
 from dataclasses import dataclass

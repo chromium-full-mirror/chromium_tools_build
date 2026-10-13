@@ -7,7 +7,7 @@ import json
 import mock
 import os
 import unittest
-import subprocess
+import subprocess  # noqa: F401
 import sys
 
 from google.cloud import bigquery
@@ -21,7 +21,7 @@ sys.path.insert(
   ),
 )
 
-import query
+import query  # noqa: E402
 
 
 class QueryTest(unittest.TestCase):

@@ -45,12 +45,12 @@ sys.path.insert(
   THIS_DIR,
 )
 
-from common import chromium_utils
-from common import gtest_utils
+from common import chromium_utils  # noqa: E402
+from common import gtest_utils  # noqa: E402
 
-import bot_utils
-import crash_utils
-import xvfb
+import bot_utils  # noqa: E402
+import crash_utils  # noqa: E402
+import xvfb  # noqa: E402
 
 USAGE = '%s [options] test.exe [test args]' % os.path.basename(sys.argv[0])
 

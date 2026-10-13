@@ -18,7 +18,6 @@ from recipe_engine.post_process import (
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine.result import RawResult
 
-from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi

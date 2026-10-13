@@ -9,7 +9,7 @@ Upload destination is specified by UPLOAD_BUCKET.
 """
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 from PB.recipes.build.chrome_codeql import InputProperties
 import re
 

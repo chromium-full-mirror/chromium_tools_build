@@ -52,15 +52,12 @@ import time
 import unittest
 
 # vpython-provided modules.
-# pylint: disable=import-error
 from google.cloud import bigquery
 from google.api_core import exceptions
 from google.api_core.retry import Retry
 from zoneinfo import ZoneInfo
-# pylint: enable=import-error
 
 # Protected access is allowed for unittests.
-# pylint: disable=protected-access
 
 _CLOUD_PROJECT_ID = 'chrome-trooper-analytics'
 

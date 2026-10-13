@@ -1,7 +1,7 @@
 # Copyright 2025 The Chromium Authors
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
-from recipe_engine.post_process import StatusFailure, StatusSuccess, MustRun
+from recipe_engine.post_process import StatusFailure, StatusSuccess, MustRun  # noqa: F401
 
 DEPS = [
   'metadata_validator',

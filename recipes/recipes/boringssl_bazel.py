@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from contextlib import contextmanager
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 
 from dataclasses import dataclass
 

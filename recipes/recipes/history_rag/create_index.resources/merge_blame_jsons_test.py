@@ -7,7 +7,7 @@ import os
 import shutil
 import tempfile
 import stat
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch, MagicMock  # noqa: F401
 from merge_blame_jsons import merge_directories
 
 

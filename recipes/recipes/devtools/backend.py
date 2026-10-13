@@ -5,7 +5,7 @@
 from contextlib import contextmanager
 import re
 
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 from PB.recipes.build.devtools.backend import InputProperties
 
 from dataclasses import dataclass

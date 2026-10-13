@@ -13,7 +13,7 @@ smoke checker.
 """
 
 from recipe_engine import post_process
-from recipe_engine.config_types import Path
+from recipe_engine.config_types import Path  # noqa: F401
 from recipe_engine.recipe_api import RecipeApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -28,7 +28,6 @@ from RECIPE_MODULES.build.chromium_tests import steps
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
   chromium,

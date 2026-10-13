@@ -24,7 +24,7 @@ import sys
 import time
 from datetime import datetime
 from pathlib import Path
-import os
+import os  # noqa: F401
 
 from google import genai
 import numpy as np

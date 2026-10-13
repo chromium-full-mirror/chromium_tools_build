@@ -4,7 +4,7 @@
 
 import json
 
-from recipe_engine import recipe_test_api
+from recipe_engine import recipe_test_api  # noqa: F401
 from recipe_engine.post_process import (
   Filter,
   DoesNotRun,
@@ -12,7 +12,7 @@ from recipe_engine.post_process import (
   DropExpectation,
   MustRun,
   StepException,
-  StepFailure,
+  StepFailure,  # noqa: F401
   SummaryMarkdownRE,
 )
 from recipe_engine.recipe_api import Property

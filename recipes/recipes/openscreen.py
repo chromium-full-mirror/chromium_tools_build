@@ -569,7 +569,7 @@ def RunSteps(api: recipe_api.RecipeApi):
               f'coverage calculations for {len(changed_files)} files',
               step_text='\n'.join(changed_files),
             )
-        except Exception:  # pylint: disable=broad-except
+        except Exception:
           coverage_step.status = api.step.FAILURE
           use_clang_coverage = False
 

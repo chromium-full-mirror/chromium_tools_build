@@ -11,18 +11,18 @@ custom field `merge`. More info in go/merge-approval-block.
 
 import re
 
-from recipe_engine import post_process, recipe_api
+from recipe_engine import post_process, recipe_api  # noqa: F401
 from PB.recipes.build.merge_approval_blocker import InputProperties
 
 PROPERTIES = InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.depot_tools import gerrit, tryserver
-from RECIPE_MODULES.recipe_engine import properties, step
+from RECIPE_MODULES.depot_tools import gerrit, tryserver  # noqa: E402
+from RECIPE_MODULES.recipe_engine import properties, step  # noqa: E402
 
 
 @dataclass

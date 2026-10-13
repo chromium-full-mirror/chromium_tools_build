@@ -26,7 +26,7 @@ from recipe_engine.post_process import (
   MustRun,
   StepFailure,
 )
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 from PB.recipe_engine.result import RawResult
 
 from dataclasses import dataclass

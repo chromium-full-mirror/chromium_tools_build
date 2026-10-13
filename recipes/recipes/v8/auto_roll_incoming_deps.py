@@ -11,7 +11,7 @@ separate CLs, thus comming from separate roll bots.
 
 from recipe_engine.post_process import DropExpectation, MustRun
 from recipe_engine.recipe_api import Property
-from recipe_engine.config import ConfigGroup, Dict, Single, List
+from recipe_engine.config import ConfigGroup, Dict, Single, List  # noqa: F401
 
 from dataclasses import dataclass
 

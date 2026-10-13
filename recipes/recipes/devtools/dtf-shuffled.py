@@ -4,11 +4,11 @@
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from recipe_engine.post_process import (
-  DoesNotRun,
+  DoesNotRun,  # noqa: F401
   DropExpectation,
-  Filter,
-  MustRun,
-  SummaryMarkdown,
+  Filter,  # noqa: F401
+  MustRun,  # noqa: F401
+  SummaryMarkdown,  # noqa: F401
 )
 from PB.recipes.build.devtools.dtf_shuffled import InputProperties
 

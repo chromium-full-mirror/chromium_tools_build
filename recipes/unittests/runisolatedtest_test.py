@@ -13,7 +13,7 @@ import unittest
 BASE_PATH = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.dirname(os.path.dirname(BASE_PATH)))
 
-from recipes import runisolatedtest
+from recipes import runisolatedtest  # noqa: E402
 
 
 class TestAll(unittest.TestCase):

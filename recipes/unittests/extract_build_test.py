@@ -16,8 +16,8 @@ sys.path.extend(
   ]
 )
 
-import extract_build
-import bot_utils
+import extract_build  # noqa: E402
+import bot_utils  # noqa: E402
 
 
 class MockOptions:

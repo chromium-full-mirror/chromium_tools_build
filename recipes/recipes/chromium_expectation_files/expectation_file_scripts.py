@@ -23,19 +23,19 @@ from RECIPE_MODULES.build import proto_validation
 
 PROPERTIES = InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import chromium, chromium_bootstrap
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.build import chromium, chromium_bootstrap  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   gclient,
   git,
   git_cl,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   context,
   file,
   properties,

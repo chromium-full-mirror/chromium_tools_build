@@ -198,7 +198,6 @@ def RunSteps(
     )
   finally:
     if api.runtime.in_global_shutdown:
-      # pylint: disable=lost-exception
       # Cancellation can cause all sorts of spurious exceptions.
       return result_pb2.RawResult(
         status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE

@@ -8,7 +8,7 @@ at a short interval. It creates pull requests on GitHub for V8 commits that
 contain exportable changes and merges these pull requests.
 """
 
-import json
+import json  # noqa: F401
 
 from dataclasses import dataclass
 

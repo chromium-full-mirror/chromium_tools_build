@@ -3,13 +3,13 @@
 # found in the LICENSE file.
 
 import unittest
-from unittest.mock import MagicMock, patch, mock_open, call, ANY
+from unittest.mock import MagicMock, patch, mock_open, call, ANY  # noqa: F401
 import sys
 import json
 import pickle
 import io
 from pathlib import Path
-import numpy as np
+import numpy as np  # noqa: F401
 
 import group_and_package
 

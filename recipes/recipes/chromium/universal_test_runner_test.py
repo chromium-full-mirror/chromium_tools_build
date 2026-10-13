@@ -24,7 +24,6 @@ from PB.recipes.build.chromium.universal_test_runner_test import InputProperties
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
   chromium,

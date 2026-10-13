@@ -12,7 +12,7 @@ import io
 import json
 import math
 import os
-import re
+import re  # noqa: F401
 import shutil
 import stat
 import subprocess
@@ -138,7 +138,7 @@ def MeanAndStandardDeviation(data):
 
 
 def HistogramPercentiles(histogram, percentiles):
-  if not 'buckets' in histogram or not 'count' in histogram:
+  if 'buckets' not in histogram or 'count' not in histogram:
     return []
   computed_percentiles = _ComputePercentiles(
     histogram['buckets'], histogram['count'], percentiles
@@ -150,7 +150,7 @@ def HistogramPercentiles(histogram, percentiles):
 
 
 def GeomMeanAndStdDevFromHistogram(histogram):
-  if not 'buckets' in histogram:
+  if 'buckets' not in histogram:
     return 0.0, 0.0
   count = 0
   sum_of_logs = 0
@@ -262,7 +262,7 @@ def _ComputePercentiles(buckets, total, percentiles):
         next_percentile_index < len(percentiles)
         and current_percentage > percentiles[next_percentile_index]
       ):
-        if not 'high' in bucket:
+        if 'high' not in bucket:
           result[percentiles[next_percentile_index]] = bucket['low']
         else:
           result[percentiles[next_percentile_index]] = float(
@@ -893,7 +893,6 @@ class RunCommandFilter:
   """Class that should be subclassed to provide a filter for RunCommand."""
 
   # Method could be a function
-  # pylint: disable=R0201
 
   def FilterLine(self, line):
     """Called for each line of input.  The \n is included on a_line.  Should

@@ -14,9 +14,9 @@ build:
 """
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
-from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb  # noqa: F401
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  invocation as invocation_pb,
+  invocation as invocation_pb,  # noqa: F401
 )
 from PB.recipe_engine import result as result_pb2
 
@@ -28,7 +28,7 @@ from recipe_engine.post_process import (
 )
 from PB.recipes.build.devtools.compilator import InputProperties
 
-from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
+from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB  # noqa: F401
 
 from dataclasses import dataclass
 
@@ -114,7 +114,6 @@ def RunSteps(api: DEPS, properties):
     )
   finally:
     if api.runtime.in_global_shutdown:
-      # pylint: disable=lost-exception
       # Cancellation can cause all sorts of spurious exceptions.
       return result_pb2.RawResult(
         status=common_pb.CANCELED, summary_markdown=CANCELLATION_MESSAGE

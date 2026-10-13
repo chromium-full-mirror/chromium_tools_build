@@ -630,7 +630,7 @@ def GenTests(api: TEST_DEPS):
     api.expect_status('FAILURE'),
   )
 
-  for step, status in (
+  for step, status in (  # noqa: F402
     ('bot_update', 'INFRA_FAILURE'),
     ('gclient runhooks (with patch)', 'FAILURE'),
   ):

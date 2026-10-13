@@ -34,7 +34,7 @@ import sys
 def restart(cmd, pid_file_path):
   # Check for the pid_file to see if the daemon's already running
   # and restart it if it is.
-  if pid_file_path == None:
+  if pid_file_path == None:  # noqa: E711
     logging.error(
       'pid_file_path arg must be specified when restarting a daemon'
     )
@@ -117,7 +117,7 @@ def daemonize(cmd, pid_file_path):
 
 
 def stop(pid_file_path):
-  if pid_file_path == None:
+  if pid_file_path == None:  # noqa: E711
     logging.error("pid_file_path arg must be specified when stopping a daemon")
     return 1
   try:

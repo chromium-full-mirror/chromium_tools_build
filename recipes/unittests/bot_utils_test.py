@@ -16,8 +16,8 @@ sys.path.extend(
   ]
 )
 
-import bot_utils
-from common import chromium_utils
+import bot_utils  # noqa: E402
+from common import chromium_utils  # noqa: E402
 
 _BUILD_DIR = ROOT_DIR
 
@@ -52,7 +52,7 @@ class TestGetBuildRevisions(unittest.TestCase):
 @mock.patch('__main__.chromium_utils.RunCommand')
 class TestGSUtil(unittest.TestCase):
   def testGSUtilCopyCacheControl(
-    self,  # pylint: disable=no-self-use
+    self,
     run_command_mock,
   ):
     bot_utils.GSUtilCopyFile('foo', 'bar', cache_control='mock_cache')
@@ -68,7 +68,7 @@ class TestGSUtil(unittest.TestCase):
     )
 
   def testGSUtilCopyFileWithDestFilename(
-    self,  # pylint: disable=no-self-use
+    self,
     run_command_mock,
   ):
     bot_utils.GSUtilCopyFile(
@@ -86,7 +86,7 @@ class TestGSUtil(unittest.TestCase):
     )
 
   def testGSUtilCopyFileWithQuietFlag(
-    self,  # pylint: disable=no-self-use
+    self,
     run_command_mock,
   ):
     bot_utils.GSUtilCopyFile('foo', 'bar', add_quiet_flag=True)

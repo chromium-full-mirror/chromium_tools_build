@@ -18,8 +18,8 @@ sys.path.extend(
   ]
 )
 
-import zip_build
-from common import chromium_utils
+import zip_build  # noqa: E402
+from common import chromium_utils  # noqa: E402
 
 
 def _build_dir(options):

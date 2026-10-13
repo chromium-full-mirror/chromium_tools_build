@@ -20,7 +20,7 @@ sys.path.extend(
   ]
 )
 
-from common import gtest_utils
+from common import gtest_utils  # noqa: E402
 
 FAILURES = [
   'NavigationControllerTest.Reload',
@@ -987,7 +987,6 @@ class TestGTestJSONParserTests(unittest.TestCase):
       self.assertEqual(['FAILURE'], parser.TriesForTest('Test.Four'))
       self.assertEqual(['FAILURE'], parser.TriesForTest('Test.Five'))
 
-  # pylint: disable=R0201
   def testDoesNotThrowExceptionOnMissingIgnoredFailedTestsFile(self):
     parser = gtest_utils.GTestJSONParser()
     parser.ProcessJSONData(

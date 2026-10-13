@@ -5,7 +5,7 @@
 import re
 
 from recipe_engine.post_process import (
-  DoesNotRun,
+  DoesNotRun,  # noqa: F401
   DropExpectation,
   StepCommandContains,
   StepTextEquals,

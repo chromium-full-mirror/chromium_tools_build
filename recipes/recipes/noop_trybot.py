@@ -25,7 +25,7 @@ class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
 
 def RunSteps(api: DEPS):

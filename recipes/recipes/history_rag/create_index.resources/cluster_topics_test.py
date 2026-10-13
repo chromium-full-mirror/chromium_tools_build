@@ -3,9 +3,9 @@
 # found in the LICENSE file.
 
 import unittest
-import sys
+import sys  # noqa: F401
 import pickle
-import json
+import json  # noqa: F401
 import numpy as np
 from pathlib import Path
 from unittest.mock import MagicMock, patch, mock_open

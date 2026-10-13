@@ -50,7 +50,7 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from PB.recipes.build.catapult import InputProperties
+from PB.recipes.build.catapult import InputProperties  # noqa: E402
 
 PROPERTIES = InputProperties
 

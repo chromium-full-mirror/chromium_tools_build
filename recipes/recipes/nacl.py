@@ -2,7 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from contextlib import contextmanager
+from contextlib import contextmanager  # noqa: F401
 from recipe_engine.post_process import DropExpectation, MustRun
 
 from dataclasses import dataclass

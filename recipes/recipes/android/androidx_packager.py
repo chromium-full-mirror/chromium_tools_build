@@ -4,8 +4,8 @@
 """Packages Androidx libraries as CIPD packages."""
 
 from recipe_engine import post_process
-from PB.recipe_engine import result as result_pb
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine import result as result_pb  # noqa: F401
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb  # noqa: F401
 from PB.recipes.build.android import sdk_packager
 
 import math
@@ -112,7 +112,7 @@ def RollSubproject(api: DEPS, subproject_name, subproject_path, roll_cmd):
     cipd_search_name, cipd_search_cmd, ok_ret='any'
   ).json.output['result']
 
-  if not cipd_search_results or not 'instance_id' in cipd_search_results[0]:
+  if not cipd_search_results or 'instance_id' not in cipd_search_results[0]:
     try:
       api.bcid_reporter.create_from_yaml(
         yaml_path,

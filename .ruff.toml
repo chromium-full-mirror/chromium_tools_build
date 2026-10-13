@@ -16,5 +16,8 @@ extend-exclude = [
   "recipes/recipe_modules/v8/test_api.py",
 ]
 
+[lint]
+unfixable = ["F401"]
+
 [format]
 quote-style = "preserve"

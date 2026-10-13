@@ -34,28 +34,11 @@ def join(input_api, *args):
   )
 
 
-def CheckPylintOnCommit(input_api, output_api):
-  extra_paths_list = [
-    join(input_api, 'recipes'),
-    join(input_api, 'scripts'),
-    # Initially, a separate run was done for unit tests but now that
-    # pylint is fetched in memory with setuptools, it seems it caches
-    # sys.path so modifications to sys.path aren't kept.
-    join(input_api, 'recipes', 'unittests'),
-  ]
-  # 'cyclic-import' must be explicitly listed in disabled_warnings here to prevent
-  # depot_tools from spawning a separate single-threaded '--enable=cyclic-import'
-  # process across all files. Cyclic imports exist naturally in recipe module
-  # architecture between __init__.py and api.py/test_api.py (e.g. in
-  # recipe_modules/chromium_tests_builder_config and recipe_modules/tricium_clang_tidy).
-  return input_api.canned_checks.RunPylint(
+def CheckRuff(input_api, output_api):
+  return input_api.canned_checks.RunRuff(
     input_api,
     output_api,
     files_to_skip=GetFilesToSkip(input_api),
-    disabled_warnings=['cyclic-import'],
-    pylintrc='pylintrc-3.2',
-    extra_paths_list=extra_paths_list,
-    version='3.2',
   )
 
 
@@ -141,7 +124,7 @@ def CheckPanProjectChecks(input_api, output_api):
 
 
 def CheckConfigFilesParse(input_api, output_api):
-  file_filter = lambda x: x.LocalPath() == 'infra/config/recipes.cfg'
+  file_filter = lambda x: x.LocalPath() == 'infra/config/recipes.cfg'  # noqa: E731
   return input_api.canned_checks.CheckJsonParses(
     input_api, output_api, file_filter=file_filter
   )

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 from recipe_engine import post_process
-from google.protobuf import json_format
+from google.protobuf import json_format  # noqa: F401
 from PB.go.chromium.org.luci.common.proto.findings import (
   findings as findings_pb,
 )

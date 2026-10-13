@@ -12,7 +12,6 @@ from PB.recipe_engine import result as result_pb2
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
   builder_group,

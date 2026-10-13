@@ -15,7 +15,7 @@ import json
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
-from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb
+from PB.recipe_modules.recipe_engine.led import properties as led_properties_pb  # noqa: F401
 
 from recipe_engine.post_process import (
   DoesNotRun,
@@ -144,7 +144,6 @@ def RunSteps(api: DEPS, compilator_name):
     return orchestrator_steps(api, compilator_name)
   finally:
     if api.runtime.in_global_shutdown:
-      # pylint: disable=lost-exception
       # Cancellation can cause all sorts of spurious exceptions.
       return result_pb2.RawResult(
         status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY

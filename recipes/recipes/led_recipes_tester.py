@@ -4,7 +4,7 @@
 
 """Tests a recipe CL by running a chromium builder."""
 
-import attr
+import attr  # noqa: F401
 import collections
 import re
 
@@ -929,7 +929,7 @@ def GenTests(api: TEST_DEPS):
   )
 
   def step_text_lines(step):
-    return [l.strip() for l in step.step_text.split('<br/>')]
+    return [l.strip() for l in step.step_text.split('<br/>')]  # noqa: E741
 
   yield api.test(
     'footer_builder_with_invalid_format',

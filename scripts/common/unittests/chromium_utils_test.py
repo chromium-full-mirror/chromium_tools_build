@@ -20,7 +20,7 @@ sys.path.extend(
   ]
 )
 
-from common import chromium_utils
+from common import chromium_utils  # noqa: E402
 
 
 class FakeParser:
