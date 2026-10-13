@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_modules.build.chromium_toolchain import (
   properties as properties_pb,
 )
@@ -24,6 +25,7 @@ from RECIPE_MODULES.recipe_engine import (
 
 @dataclass
 class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
   chromium_toolchain: chromium_toolchain.API
   properties: properties.API
 
@@ -38,6 +40,15 @@ class TEST_DEPS(recipe_test_api.RecipeTestApi):
 
 
 def RunSteps(api: DEPS) -> None:
+  if output_commit := api.properties.get('output_commit'):
+    api.buildbucket.set_output_gitiles_commit(
+      common_pb.GitilesCommit(
+        host='chromium.googlesource.com',
+        project='chromium/src',
+        ref='refs/heads/main',
+        id=output_commit,
+      )
+    )
   if api.properties.get('pass_explicit_properties'):
     props = properties_pb.InputProperties(
       toolchain=properties_pb.InputProperties.CLANG
@@ -395,5 +406,30 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
     ),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.MustRun, 'package clang.fetch build'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'output_gitiles_commit',
+    api.platform.name('linux'),
+    api.buildbucket.ci_build(
+      project='chromium',
+      bucket='ci',
+      builder='trusted-packaging-linux-clang',
+      git_ref='',
+      revision='',
+    ),
+    gen_props(properties_pb.InputProperties.CLANG),
+    api.properties(output_commit='c' * 40),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.MustRun, 'package clang.request build'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'package clang.request build',
+      [
+        '-chromium_src_commit',
+        'c' * 40,
+      ],
+    ),
     api.post_process(post_process.DropExpectation),
   )

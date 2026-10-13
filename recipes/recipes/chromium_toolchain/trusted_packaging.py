@@ -7,6 +7,7 @@ from __future__ import annotations
 from collections.abc import Iterator
 from dataclasses import dataclass
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_modules.build.chromium_toolchain import (
   properties as properties_pb,
 )
@@ -14,6 +15,7 @@ from recipe_engine import post_process
 from recipe_engine import recipe_test_api
 from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import chromium_toolchain
+from RECIPE_MODULES.depot_tools import gitiles
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   platform,
@@ -23,13 +25,16 @@ from RECIPE_MODULES.recipe_engine import (
 
 @dataclass
 class DEPS(RecipeScriptApi):
+  buildbucket: buildbucket.API
   chromium_toolchain: chromium_toolchain.API
+  gitiles: gitiles.API
 
 
 @dataclass
 class TEST_DEPS(recipe_test_api.RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   chromium_toolchain: chromium_toolchain.TEST_API
+  gitiles: gitiles.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
 
@@ -41,6 +46,33 @@ def RunSteps(
   api: DEPS,
   properties: properties_pb.InputProperties,
 ) -> None:
+  if not api.buildbucket.build.input.gerrit_changes:
+    gitiles_commit = api.buildbucket.gitiles_commit
+    host = gitiles_commit.host or 'chromium.googlesource.com'
+    project = gitiles_commit.project or 'chromium/src'
+    ref = gitiles_commit.ref or 'refs/heads/main'
+    commit_id = gitiles_commit.id
+    if not commit_id:
+      commits, _ = api.gitiles.log(
+        f'https://{host}/{project}',
+        ref,
+        limit=1,
+        step_name='resolve HEAD commit',
+        step_test_data=lambda: api.gitiles.test_api.make_log_test_data(
+          'HEAD', n=1
+        ),
+      )
+      commit_id = commits[0]['commit']
+
+    api.buildbucket.set_output_gitiles_commit(
+      common_pb.GitilesCommit(
+        host=host,
+        project=project,
+        ref=ref,
+        id=commit_id,
+      )
+    )
+
   api.chromium_toolchain.trusted_package(properties)
 
 
@@ -134,14 +166,21 @@ def GenTests(api: TEST_DEPS) -> Iterator[recipe_test_api.TestData]:
     ),
     gen_props(properties_pb.InputProperties.CLANG),
     api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.MustRun, 'resolve HEAD commit'),
+    api.post_process(post_process.MustRun, 'set_output_gitiles_commit'),
     api.post_process(post_process.MustRun, 'package clang.request build'),
     api.post_process(
-      post_process.StepCommandDoesNotContain,
+      post_process.StepCommandContains,
       'package clang.request build',
       [
         '-chromium_src_commit',
-        '-chromium_src_ref',
+        api.gitiles.make_hash('fake HEAD hash 0'),
       ],
+    ),
+    api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'package clang.request build',
+      ['-chromium_src_ref'],
     ),
     api.post_process(post_process.DropExpectation),
   )

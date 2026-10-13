@@ -83,9 +83,12 @@ class ChromiumToolchainApi(recipe_api.RecipeApi):
       # For try jobs, lexan_tbi_client automatically detects Gerrit env vars.
       changes = self.m.buildbucket.build.input.gerrit_changes
       if not changes:
-        gitiles_commit = self.m.buildbucket.gitiles_commit
-        if gitiles_commit and gitiles_commit.id:
-          args.extend(['-chromium_src_commit', gitiles_commit.id])
+        commit_id = (
+          self.m.buildbucket.build.output.gitiles_commit.id
+          or self.m.buildbucket.gitiles_commit.id
+        )
+        if commit_id:
+          args.extend(['-chromium_src_commit', commit_id])
 
       env = {}
       if changes:
