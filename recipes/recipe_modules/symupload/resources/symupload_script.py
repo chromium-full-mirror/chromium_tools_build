@@ -12,7 +12,7 @@ the V2 protocol.
 from __future__ import annotations
 
 import argparse
-from ast import dump
+from ast import dump  # noqa: F401
 import hashlib
 import os
 import subprocess

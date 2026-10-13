@@ -74,17 +74,17 @@ def RunSteps(
   )
 
 
-import re
-from google.protobuf import timestamp_pb2, struct_pb2
+import re  # noqa: E402, F401
+from google.protobuf import timestamp_pb2, struct_pb2  # noqa: E402
 
-from recipe_engine import post_process
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+from recipe_engine import post_process  # noqa: E402
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
   common as common_pb2,  # go/pyformat-break
   invocation as invocation_pb2,  #
   resultdb as resultdb_pb2,  #
   test_result as test_result_pb2,  #
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import (
+from PB.go.chromium.org.luci.analysis.proto.v1 import (  # noqa: E402
   common as analysis_common_pb2,  # go/pyformat-break
   test_history,  #
   test_verdict,  #
@@ -203,7 +203,7 @@ def GenTests(api: TEST_DEPS):
     props.update(prop)
     return {'id': 1234, 'input': {'properties': props}}
 
-  verify_swarming_result = lambda id: api.swarming.task_result(
+  verify_swarming_result = lambda id: api.swarming.task_result(  # noqa: E731
     id=id,
     name='flaky reproducer verify on Linux Tests for MockUnitTests.FailTest',
     state=api.swarming.TaskState.COMPLETED,

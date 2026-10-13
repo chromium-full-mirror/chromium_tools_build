@@ -38,4 +38,4 @@ class DEPS(RecipeScriptApi):
   swarming: swarming.API
 
 
-from .api import V8OrchestratorApi as API
+from .api import V8OrchestratorApi as API  # noqa: E402, F401

@@ -40,7 +40,7 @@ PROPERTIES = {
 def RunSteps(
   api: DEPS,
   env,
-  resultdb,  # pylint: disable=redefined-outer-name
+  resultdb,
 ):
   api.isolate.run_isolated(
     'run_isolated',

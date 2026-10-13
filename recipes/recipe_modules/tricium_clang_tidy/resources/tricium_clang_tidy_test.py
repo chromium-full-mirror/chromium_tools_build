@@ -17,8 +17,8 @@ import dataclasses
 import io
 import json
 import logging
-import os
-import sys
+import os  # noqa: F401
+import sys  # noqa: F401
 import unittest
 
 import tricium_clang_tidy_script as tidy

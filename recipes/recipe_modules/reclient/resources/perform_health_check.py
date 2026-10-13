@@ -59,7 +59,7 @@ def check_for_ip_timeouts(log_dir, build_exit_status):
   with io.open(
     error_logs[0], mode='r', encoding='utf-8', errors='replace'
   ) as f:
-    for l in [l.strip() for l in f.readlines()]:
+    for l in [l.strip() for l in f.readlines()]:  # noqa: E741
       # TODO(b/233275188) replace with logic verifying LocalMetadata Stats once new entries are added
       if (
         'this build has encountered too many action input processing timeouts'

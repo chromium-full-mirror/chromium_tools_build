@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import contextlib
+import contextlib  # noqa: F401
 
 from recipe_engine import recipe_api
 

@@ -21,7 +21,6 @@ class StrategyRunnerTest(unittest.TestCase):
       'gtest_good_output.json': get_test_data('gtest_good_output.json'),
     }
 
-    # pylint: disable=redefined-builtin
     def mock_open_method(file, *args, **kwargs):
       filename = os.path.basename(file)
       return mock_open(read_data=mock_open_data.get(filename, 'data'))()

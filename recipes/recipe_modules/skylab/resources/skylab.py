@@ -100,7 +100,6 @@ def _list_child_trs_status(ctp_bbid, json_creds):
 
 
 def _fix_test_runner_status(task_result):
-  # pylint: disable=import-outside-toplevel
   from chromite.api.gen.test_platform import taskstate_pb2
 
   for v in task_result.prejob_steps:
@@ -160,7 +159,6 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
   # Import the protobuf binding for cros_test_platform requests(the entry
   # point for Skylab) from chromite. As the script lives in recipe repo,
   # it has to receive the chromium/src path from the input.
-  # pylint: disable=import-outside-toplevel
   from chromite.api.gen.chromiumos.test.api import ctp2_pb2 as ctpv2
 
   _bucket = opts.bucket.replace('gs://', '').rstrip('/')
@@ -244,7 +242,7 @@ def _clear_builder_name(builder_name):
 def _tests_from_file(f, board, builder_name):
   v = []
   with open(f, encoding='utf-8') as d:
-    for l in d:
+    for l in d:  # noqa: E741
       stripped = l.strip()
       if stripped == '':
         continue
@@ -305,7 +303,6 @@ def schedule_skylab_tests(opts):
   # Import the protobuf binding for cros_test_platform requests(the entry
   # point for Skylab) from chromite. As the script lives in recipe repo,
   # it has to receive the chromium/src path from the input.
-  # pylint: disable=import-outside-toplevel
   from chromite.api.gen.chromiumos.test.api import ctp2_pb2 as ctpv2
 
   v2req = ctpv2.CTPv2Request()
@@ -405,7 +402,6 @@ def schedule_skylab_tests(opts):
 
 
 def read_ctp_results(opts):
-  # pylint: disable=import-outside-toplevel
   from chromite.api.gen.test_platform.steps import execution_pb2
 
   bb_request_data = json.dumps(
@@ -449,7 +445,7 @@ def read_ctp_results(opts):
         else:
           try:
             shard = int(attempt.name.split('-shard-')[1])
-          except:  # pylint: disable=bare-except
+          except:  # noqa: E722
             pass
           k = attempt.name
         is_infra_failure = _fix_test_runner_status(attempt) == 'INFRA_FAILURE'

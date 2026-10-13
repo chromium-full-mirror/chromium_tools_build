@@ -7,9 +7,9 @@ from __future__ import annotations
 import re
 
 from .base_test_binary import (
-  BaseTestBinary,
-  TestBinaryWithBatchMixin,
-  TestBinaryWithParallelMixin,
+  BaseTestBinary,  # noqa: F401
+  TestBinaryWithBatchMixin,  # noqa: F401
+  TestBinaryWithParallelMixin,  # noqa: F401
 )
 from .gtest_test_binary import GTestTestBinary
 from .blink_web_tests_binary import BlinkWebTestsBinary
@@ -109,7 +109,7 @@ def create_test_binary_from_task_request(task_request):
 
 def create_test_binary_from_jsonish(json_data):
   """Gets test binary object from a jsonish"""
-  if not 'class_name' in json_data:
+  if 'class_name' not in json_data:
     raise ValueError('Invalid TestBinary json format, missing class_name.')
   if json_data['class_name'] not in TEST_BINARIES:
     raise ValueError(

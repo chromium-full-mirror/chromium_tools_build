@@ -13,7 +13,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, os.pardir, os.pardir))
 )
-import cloudtail_utils
+import cloudtail_utils  # noqa: E402
 
 
 def start_cloudtail(args):

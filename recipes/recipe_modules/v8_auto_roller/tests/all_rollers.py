@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import json
 
-from recipe_engine.post_process import DoesNotRunRE, DropExpectation, MustRun
+from recipe_engine.post_process import DoesNotRunRE, DropExpectation, MustRun  # noqa: F401
 
 from dataclasses import dataclass
 

@@ -10,7 +10,7 @@ import json
 from hashlib import md5
 from requests.models import PreparedRequest
 
-from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.build import chromium_swarming  # noqa: F401
 from recipe_engine.engine_types import freeze
 
 from . import formatting
@@ -63,8 +63,6 @@ EXONERATED_CRASH_TYPES = [
   # We keep this dummy to ease recipe testing.
   '_Magically_exonerated_crash_type_for_testing_',
 ]
-
-# pylint: disable=abstract-method
 
 
 class V8Variant:

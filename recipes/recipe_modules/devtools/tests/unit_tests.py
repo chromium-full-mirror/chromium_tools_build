@@ -5,7 +5,7 @@
 from recipe_engine import post_process
 from RECIPE_MODULES.build.devtools.commons import SwarmingTrigger
 from RECIPE_MODULES.build.devtools.test_runner_base import (
-  DevToolsTests,
+  DevToolsTests,  # noqa: F401
   ExonerableTests,
 )
 from RECIPE_MODULES.build.devtools.unit_tests_runner import UnitTests

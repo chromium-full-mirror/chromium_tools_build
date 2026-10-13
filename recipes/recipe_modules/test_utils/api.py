@@ -8,7 +8,7 @@ import collections
 import contextlib
 import itertools
 import traceback
-from collections.abc import Iterable
+from collections.abc import Iterable  # noqa: F401
 from urllib.parse import urlencode
 
 from recipe_engine import recipe_api
@@ -17,13 +17,13 @@ from recipe_engine.config_types import Path
 
 from .util import GTestResults, RDBPerSuiteResults, RDBResults
 from .util import IndividualTestStabilityAnalysis, StabilityAnalysisPerSuite
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2  # noqa: F401
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_exoneration as test_exoneration_pb2,
 )
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  test_result as test_result_pb2,
+  test_result as test_result_pb2,  # noqa: F401
 )
 
 from RECIPE_MODULES.build.chromium_tests import steps
@@ -1545,7 +1545,7 @@ class SkylabGroup(TestGroup):
       )
       t.pre_run(suffix, include_utr_instruction)
       for build_id in t.ctp_build_ids.values():
-        if not build_id in self.ctp_build_ids:
+        if build_id not in self.ctp_build_ids:
           self.ctp_build_ids.add(build_id)
 
     self.include_rdb_invocation(suffix, step_name='include skylab invocations')

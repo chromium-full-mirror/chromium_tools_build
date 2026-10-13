@@ -28,10 +28,10 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
+from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest  # noqa: E402
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
+from recipe_engine.recipe_api import Property  # noqa: E402
+from recipe_engine import post_process  # noqa: E402
 
 LACROS_GCS_PATH = 'gs://fake_bucket/lacros.squashfs'
 

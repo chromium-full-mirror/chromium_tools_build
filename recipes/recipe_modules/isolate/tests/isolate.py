@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from recipe_engine.recipe_api import Property  # noqa: F401
 
 from dataclasses import dataclass
 

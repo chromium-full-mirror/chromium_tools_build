@@ -38,10 +38,10 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
+from recipe_engine.recipe_api import Property  # noqa: E402
+from recipe_engine import post_process  # noqa: E402
 
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402
 
 PROPERTIES = {
   'retry_failed_shards': Property(default=False),

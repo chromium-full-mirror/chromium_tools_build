@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import re
+import re  # noqa: F401
 
 
 def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):

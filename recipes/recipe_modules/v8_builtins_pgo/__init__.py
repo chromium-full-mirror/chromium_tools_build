@@ -54,5 +54,5 @@ class DEPS(RecipeScriptApi):
   v8_tests: v8_tests.API
 
 
-from .api import V8BuiltinsPgoApi as API
-from .test_api import V8BuiltinsPgoTestApi as TEST_API
+from .api import V8BuiltinsPgoApi as API  # noqa: E402, F401
+from .test_api import V8BuiltinsPgoTestApi as TEST_API  # noqa: E402, F401

@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from contextlib import contextmanager
+from contextlib import contextmanager  # noqa: F401
 from .commons import Results
 
 NODE_UNIT_TESTS_OPTION = '--node-unit-tests'

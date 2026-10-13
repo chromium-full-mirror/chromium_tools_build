@@ -55,4 +55,4 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import FinditApi as API
+from .api import FinditApi as API  # noqa: E402, F401

@@ -9,7 +9,7 @@ import re
 
 from dataclasses import dataclass
 from functools import cached_property
-from typing import List, Optional, TypedDict, Union
+from typing import List, Optional, TypedDict, Union  # noqa: F401
 
 # The following dependencies are trusted - if new deps are added, their projects
 # need to be BCID L3 (http://go/bcid-ladder#level-3) compliant.
@@ -79,7 +79,7 @@ def commit_messages_log_entries(api, repo, from_commit, to_commit):
     from_commit: Parent of first rolled commit.
     to_commit: Newest rolled commit.
   """
-  step_test_data = lambda: api.json.test_api.output(
+  step_test_data = lambda: api.json.test_api.output(  # noqa: E731
     {
       'log': [
         {
@@ -177,7 +177,7 @@ class BaseArtifact(abc.ABC):
   artifact: any
 
   def __post_init__(self):
-    self.initial_version = self.version  # pylint: disable=attribute-defined-outside-init
+    self.initial_version = self.version
 
   @property
   @abc.abstractmethod
@@ -363,7 +363,7 @@ class CipdArtifact(BaseArtifact, RollToLatestArtifact):
     return f'{self.dep.path}:{package}@{self.version}'
 
 
-CLANG_MAPPING = lambda idx, oname: oname.split('-llvmorg-')[0]
+CLANG_MAPPING = lambda idx, oname: oname.split('-llvmorg-')[0]  # noqa: E731
 
 
 @dataclass

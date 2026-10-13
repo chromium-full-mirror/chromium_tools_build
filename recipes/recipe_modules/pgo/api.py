@@ -135,7 +135,7 @@ class PgoApi(recipe_api.RecipeApi):
     """
     step_test_data = None
     if test_data is not None:
-      step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)
+      step_test_data = lambda: self.m.raw_io.test_api.stream_output(test_data)  # noqa: E731
     return (
       self.m.git(
         'rev-parse',

@@ -36,10 +36,10 @@ import multiprocessing.pool
 import os
 import os.path
 import pipes
-import platform
+import platform  # noqa: F401
 import re
 import shlex
-import signal
+import signal  # noqa: F401
 import subprocess
 import sys
 import tempfile

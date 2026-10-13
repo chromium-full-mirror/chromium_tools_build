@@ -4,10 +4,10 @@
 
 from __future__ import annotations
 
-import base64
+import base64  # noqa: F401
 from recipe_engine import post_process
 
-from PB.recipe_modules.build.symupload import properties
+from PB.recipe_modules.build.symupload import properties  # noqa: F401
 
 from dataclasses import dataclass
 

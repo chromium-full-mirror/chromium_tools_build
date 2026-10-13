@@ -52,4 +52,4 @@ class DEPS(RecipeScriptApi):
   v8: v8.API
 
 
-from .api import V8AutoRoller as API
+from .api import V8AutoRoller as API  # noqa: E402, F401

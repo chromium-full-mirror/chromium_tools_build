@@ -55,21 +55,21 @@ class TEST_DEPS(RecipeTestApi):
   test_utils: test_utils.TEST_API
 
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
+from recipe_engine.recipe_api import Property  # noqa: E402
+from recipe_engine import post_process  # noqa: E402
 
-from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
-from PB.go.chromium.org.luci.buildbucket.proto import (
+from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2  # noqa: E402
+from PB.go.chromium.org.luci.buildbucket.proto import (  # noqa: E402
   builder_common as builder_common_pb2,
 )
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
   invocation as invocation_pb2,
 )
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
   test_result as test_result_pb2,
 )
 
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402
 
 PROPERTIES = {
   # This property is a boolean that indicates whether the test being run

@@ -42,7 +42,7 @@ class FormattingTest:
     self.api.assertions.assertEqual(actual, expected)
 
   def test_sizes(self):
-    size = lambda v: formatting.size({'x': v}, 'x')
+    size = lambda v: formatting.size({'x': v}, 'x')  # noqa: E731
     self.assertEqual(size(0), '0.0 B')
     self.assertEqual(size(1024), '1.0 kB')
     self.assertEqual(size(1.2 * 1024), '1.2 kB')
@@ -54,7 +54,7 @@ class FormattingTest:
     self.assertEqual(formatting.vms({'max_vms': 1023}), '1023.0 B')
 
   def test_duration(self):
-    duration = lambda v: formatting.duration({'duration': v})
+    duration = lambda v: formatting.duration({'duration': v})  # noqa: E731
     self.assertEqual(duration(0), '00:00:000')
     self.assertEqual(duration(23.001), '00:23:001')
     self.assertEqual(duration(1200.103), '20:00:103')

@@ -28,7 +28,7 @@ sys.path.extend(
     os.path.join(ROOT_DIR, 'recipes'),
   ]
 )
-import bot_utils
+import bot_utils  # noqa: E402
 
 
 def ArchiveRetrySummary(args):

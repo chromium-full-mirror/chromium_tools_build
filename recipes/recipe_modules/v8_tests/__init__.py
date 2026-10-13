@@ -57,5 +57,5 @@ class DEPS(RecipeScriptApi):
 # TODO(http://crbug.com/693058): provide coverage.
 DISABLE_STRICT_COVERAGE = True
 
-from .api import V8TestsApi as API
-from .test_api import V8TestApi as TEST_API
+from .api import V8TestsApi as API  # noqa: E402, F401
+from .test_api import V8TestApi as TEST_API  # noqa: E402, F401

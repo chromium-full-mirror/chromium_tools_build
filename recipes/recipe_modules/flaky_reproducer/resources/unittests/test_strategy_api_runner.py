@@ -90,7 +90,6 @@ class StrategyAPIRunnerTest(unittest.TestCase):
       api_runner.methods,
     )
     # mocked method
-    # pylint: disable-next=no-member
     api_runner.methods['summarize_reproducing_steps'].assert_called()
 
   def test_summarize_reproducing_steps(self):

@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import DropExpectation
+from recipe_engine.post_process import DropExpectation  # noqa: F401
 
 from dataclasses import dataclass
 

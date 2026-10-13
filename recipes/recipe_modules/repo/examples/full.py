@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: F401
 
 from dataclasses import dataclass
 

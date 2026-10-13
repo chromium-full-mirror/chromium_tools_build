@@ -8,9 +8,9 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict  # noqa: F401
 
-from recipe_engine.engine_types import freeze
+from recipe_engine.engine_types import freeze  # noqa: F401
 from .testing import V8Variant
 
 

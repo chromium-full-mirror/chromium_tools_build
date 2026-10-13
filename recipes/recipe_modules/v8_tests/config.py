@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from recipe_engine.config import config_item_context, ConfigGroup
-from recipe_engine.config import List, Single, Static
+from recipe_engine.config import List, Single, Static  # noqa: F401
 
 
 def BaseConfig(**_kwargs):

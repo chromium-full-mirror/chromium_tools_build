@@ -4,13 +4,13 @@
 
 from __future__ import annotations
 
-from .commons import Results
+from .commons import Results  # noqa: F401
 from .test_runner_base import (
   ExonerableTests,
-  FLAKE_DETECTION_OPTION,
-  FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,
+  FLAKE_DETECTION_OPTION,  # noqa: F401
+  FLAKE_DETECTION_SKIPPED_TESTS_FOOTER,  # noqa: F401
 )
-from functools import cached_property
+from functools import cached_property  # noqa: F401
 
 
 class E2ETests(ExonerableTests):

@@ -28,4 +28,4 @@ class DEPS(RecipeScriptApi):
   swarming: swarming.API
 
 
-from .api import SwarmingClientApi as API
+from .api import SwarmingClientApi as API  # noqa: E402, F401

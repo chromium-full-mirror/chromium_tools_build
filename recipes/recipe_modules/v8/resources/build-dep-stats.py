@@ -148,10 +148,10 @@ def main():
 
   data = get_stats(nodes)
 
-  get_ext = lambda n: os.path.splitext(n.label)[1][1:]
+  get_ext = lambda n: os.path.splitext(n.label)[1][1:]  # noqa: E731
 
   extensions = sorted(set(map(get_ext, nodes)))
-  get_ext_nodes = lambda e: [n for n in nodes if get_ext(n) == e]
+  get_ext_nodes = lambda e: [n for n in nodes if get_ext(n) == e]  # noqa: E731
   data['by_extension'] = {e: get_stats(get_ext_nodes(e)) for e in extensions}
 
   print('Top 500 header files:')

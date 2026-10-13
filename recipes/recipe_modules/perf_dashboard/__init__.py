@@ -39,4 +39,4 @@ class DEPS(RecipeScriptApi):
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
 
-from .api import PerfDashboardApi as API
+from .api import PerfDashboardApi as API  # noqa: E402, F401

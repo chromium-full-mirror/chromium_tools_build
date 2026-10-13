@@ -38,4 +38,4 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import LuciBisectionApi as API
+from .api import LuciBisectionApi as API  # noqa: E402, F401

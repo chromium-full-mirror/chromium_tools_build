@@ -31,7 +31,7 @@ def RunSteps(api: DEPS):
   api.flaky_reproducer.post_summary_to_monorail('123', 'summary')
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
 
 def GenTests(api: TEST_DEPS):

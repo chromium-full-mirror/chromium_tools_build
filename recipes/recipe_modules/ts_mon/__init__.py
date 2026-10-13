@@ -30,4 +30,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import TSMonApi as API
+from .api import TSMonApi as API  # noqa: E402, F401

@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import socket
+import socket  # noqa: F401
 
 from recipe_engine import recipe_api
 

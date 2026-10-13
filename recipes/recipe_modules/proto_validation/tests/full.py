@@ -36,7 +36,6 @@ def RunSteps(api: DEPS):
     for e in expected_errors:
       api.assertions.assertIn(e, errors)
 
-  # pylint: disable=unused-variable
   # The functions are called via indirection, so they don't end up used
 
   # Validating a message that has no registered validator returns no errors

@@ -53,5 +53,5 @@ class DEPS(RecipeScriptApi):
   json: json.API
 
 
-from .api import MetadataValidatorApi as API
-from .test_api import MetadataValidatorTestApi as TEST_API
+from .api import MetadataValidatorApi as API  # noqa: E402, F401
+from .test_api import MetadataValidatorTestApi as TEST_API  # noqa: E402, F401

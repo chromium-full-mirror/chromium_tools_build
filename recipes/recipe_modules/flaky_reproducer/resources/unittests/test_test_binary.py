@@ -281,7 +281,7 @@ class BaseTestBinaryTest(unittest.TestCase):
       newline=None,
       suffix=None,
       prefix=None,
-      dir=None,  # pylint: disable=redefined-builtin
+      dir=None,
       delete=True,
       *,
       errors=None,
@@ -456,7 +456,6 @@ class BaseTestBinaryTest(unittest.TestCase):
 class TestBinaryMixinTest(unittest.TestCase):
   def test_TestBinaryWithBatchMixin(self):
 
-    # pylint: disable-next=abstract-method
     class NewTestBinary(TestBinaryWithBatchMixin, BaseTestBinary):
       pass
 
@@ -468,7 +467,6 @@ class TestBinaryMixinTest(unittest.TestCase):
 
   def test_TestBinaryWithParallelMixin(self):
 
-    # pylint: disable-next=abstract-method
     class NewTestBinary(TestBinaryWithParallelMixin, BaseTestBinary):
       pass
 
@@ -480,7 +478,6 @@ class TestBinaryMixinTest(unittest.TestCase):
 
   def test_with_options_from_other(self):
 
-    # pylint: disable-next=abstract-method
     class NewTestBinary(
       TestBinaryWithBatchMixin, TestBinaryWithParallelMixin, BaseTestBinary
     ):

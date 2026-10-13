@@ -8,10 +8,10 @@ from PB.recipe_modules.build.xcode import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.recipe_engine import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   file,
   json,
   path,
@@ -27,4 +27,4 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
 
 
-from .api import XcodeApi as API
+from .api import XcodeApi as API  # noqa: E402, F401

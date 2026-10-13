@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import attr
 import copy
-import re
+import re  # noqa: F401
 
 from RECIPE_MODULES.build.chromium_tests import steps
 

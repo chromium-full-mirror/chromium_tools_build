@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 import io
-import sys
+import sys  # noqa: F401
 import unittest
 import typing
 from unittest.mock import patch

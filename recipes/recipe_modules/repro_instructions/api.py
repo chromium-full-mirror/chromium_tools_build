@@ -6,21 +6,21 @@
 from __future__ import annotations
 
 from collections.abc import Iterable
-from typing import Any
+from typing import Any  # noqa: F401
 import re
 
 from recipe_engine import recipe_api
 from recipe_engine import step_data
-from recipe_engine.config_types import Path
-from recipe_engine.util import Placeholder
+from recipe_engine.config_types import Path  # noqa: F401
+from recipe_engine.util import Placeholder  # noqa: F401
 
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: F401
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   instruction as instruction_pb,
 )
-from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb  # noqa: F401
 
 # Instruction content is limited to 10KB
 # https://chromium.googlesource.com/infra/luci/recipes-py/+/b44da3c0/recipe_proto/go.chromium.org/luci/resultdb/proto/v1/instruction.proto#109

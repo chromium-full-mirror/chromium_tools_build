@@ -61,5 +61,5 @@ class DEPS(RecipeScriptApi):
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
 
-from .api import LibyuvApi as API
-from .test_api import LibyuvTestApi as TEST_API
+from .api import LibyuvApi as API  # noqa: E402, F401
+from .test_api import LibyuvTestApi as TEST_API  # noqa: E402, F401

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from recipe_engine.post_process import StepCommandContains
 
-from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
+from PB.recipe_modules.build.ssci.properties import GeneratedSBOM  # noqa: F401
 
 from dataclasses import dataclass
 

@@ -53,10 +53,10 @@ def RunSteps(api: DEPS, task_id, build_id, test_name, test_id):
     presentation.step_text = 'task_id={0[0]} test_name={0[1]}'.format(ret)
 
 
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2  # noqa: E402, F401
 
-from recipe_engine import post_process
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+from recipe_engine import post_process  # noqa: E402
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
   common as common_pb2,  # go/pyformat-break
   resultdb as resultdb_pb2,  #
   test_result as test_result_pb2,  #

@@ -46,7 +46,7 @@ def RunSteps(api: DEPS, monorail_issue, test_id):
     presentation.logs['test_id'] = test_id
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
 
 def GenTests(api: TEST_DEPS):

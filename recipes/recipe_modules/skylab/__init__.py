@@ -40,5 +40,5 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import SkylabApi as API
-from .test_api import SkylabTestApi as TEST_API
+from .api import SkylabApi as API  # noqa: E402, F401
+from .test_api import SkylabTestApi as TEST_API  # noqa: E402, F401

@@ -9,7 +9,7 @@ import argparse
 import inspect
 import json
 
-from typing import Callable, List, get_args, get_origin, get_type_hints
+from typing import Callable, List, get_args, get_origin, get_type_hints  # noqa: F401
 
 from libs.result_summary import (
   create_result_summary_from_output_json,
@@ -72,7 +72,7 @@ def parse_args(args: list[str], methods: dict[str, Callable]):
       nargs = None
       argument_type = anns[parameter.name]
       if (
-        get_origin(argument_type) == list
+        get_origin(argument_type) == list  # noqa: E721
         and len(typ_args := get_args(argument_type)) == 1
       ):
         nargs = '*'

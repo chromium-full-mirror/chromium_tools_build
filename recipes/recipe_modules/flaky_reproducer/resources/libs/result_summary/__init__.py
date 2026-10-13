@@ -5,10 +5,10 @@
 from __future__ import annotations
 
 from .base_result_summary import (
-  BaseResultSummary,
-  TestStatus,
-  TestResult,
-  UnexpectedTestResult,
+  BaseResultSummary,  # noqa: F401
+  TestStatus,  # noqa: F401
+  TestResult,  # noqa: F401
+  UnexpectedTestResult,  # noqa: F401
 )
 from .blink_web_tests_result_summary import BlinkWebTestsResultSummary
 from .gtest_result_summary import GTestTestResultSummary

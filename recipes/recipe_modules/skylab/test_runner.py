@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import urllib
+import urllib  # noqa: F401
 
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, enum
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2

@@ -8,21 +8,21 @@ from PB.recipe_modules.build.pgo import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   chromium,
   code_coverage,
   gn,
   profiles,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   git,
   gitiles,
   gsutil,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   context,
   file,
@@ -55,5 +55,5 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import PgoApi as API
-from .test_api import PgoTestApi as TEST_API
+from .api import PgoApi as API  # noqa: E402, F401
+from .test_api import PgoTestApi as TEST_API  # noqa: E402, F401

@@ -112,7 +112,7 @@ class ProfilesApi(recipe_api.RecipeApi):
     if not identifier:
       return self._root_profile_dir
 
-    if not identifier in self._profile_subdirs:
+    if identifier not in self._profile_subdirs:
       path = self.normalize(identifier)
       new_subdir = self._root_profile_dir / path
       self.m.file.ensure_directory(

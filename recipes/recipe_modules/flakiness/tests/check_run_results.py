@@ -4,11 +4,11 @@
 
 from recipe_engine.post_process import DropExpectation, SummaryMarkdownRE
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  test_result as test_result_pb2,
+  test_result as test_result_pb2,  # noqa: F401
 )
-from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
-from RECIPE_MODULES.build.chromium_tests import steps
-import copy
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common  # noqa: F401
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: F401
+import copy  # noqa: F401
 
 DEPS = [
   'flakiness',

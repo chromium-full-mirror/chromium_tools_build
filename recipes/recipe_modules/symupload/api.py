@@ -8,7 +8,7 @@ import base64
 import datetime
 import logging
 import re
-from recipe_engine import recipe_api, util
+from recipe_engine import recipe_api, util  # noqa: F401
 
 from PB.recipe_modules.build.symupload import properties as symupload_properties
 

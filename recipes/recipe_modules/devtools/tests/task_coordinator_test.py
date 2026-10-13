@@ -123,7 +123,7 @@ def RunSteps(api: DEPS):
   coord = TaskCoordinator(api)
   coord.register_and_wait([])
   coord.register_and_wait([MockTask([])])
-  assert len(coord._pending) == 0, (  # pylint: disable=protected-access
+  assert len(coord._pending) == 0, (
     f'Expected 0 pending, got {len(coord._pending)}'
   )
 
@@ -162,9 +162,7 @@ def RunSteps(api: DEPS):
   assert 'no_task_runner' in completed, completed
   assert 'runner1' in completed, completed
   assert 'runner2' in completed, completed
-  assert len(coord._pending) == 0, (  # pylint: disable=protected-access
-    coord._pending
-  )
+  assert len(coord._pending) == 0, coord._pending
 
   api.step.empty('TaskCoordinator unit tests passed')
 

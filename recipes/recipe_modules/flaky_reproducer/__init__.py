@@ -44,5 +44,5 @@ class DEPS(RecipeScriptApi):
   isolate: isolate.API
 
 
-from .api import FlakyReproducer as API
-from .test_api import FlakyReproducerTestApi as TEST_API
+from .api import FlakyReproducer as API  # noqa: E402, F401
+from .test_api import FlakyReproducerTestApi as TEST_API  # noqa: E402, F401

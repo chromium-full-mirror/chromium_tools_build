@@ -26,5 +26,5 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import GnApi as API
-from .test_api import GnTestApi as TEST_API
+from .api import GnApi as API  # noqa: E402, F401
+from .test_api import GnTestApi as TEST_API  # noqa: E402, F401

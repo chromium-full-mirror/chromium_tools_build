@@ -61,7 +61,7 @@ class GnApi(recipe_api.RecipeApi):
     """
     local_lines = []
     non_local_lines = []
-    for l in args.splitlines():
+    for l in args.splitlines():  # noqa: E741
       match = self.ARG_RE.match(l)
       if match is not None and match.group(1) in self._NON_LOCAL_ARGS:
         non_local_lines.append(l)

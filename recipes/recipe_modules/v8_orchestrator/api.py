@@ -64,7 +64,6 @@ class V8OrchestratorApi(recipe_api.RecipeApi):
       return comp_props, None
     finally:
       if self.m.runtime.in_global_shutdown:
-        # pylint: disable=lost-exception
         # Cancellation can cause all sorts of spurious exceptions.
         return None, result_pb2.RawResult(
           status=common_pb.CANCELED, summary_markdown=BUILD_CANCELED_SUMMARY

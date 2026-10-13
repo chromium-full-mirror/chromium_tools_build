@@ -8,7 +8,7 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  test_result as test_result_pb2,
+  test_result as test_result_pb2,  # noqa: F401
 )
 
 from RECIPE_MODULES.build.chromium_types import BuilderId
@@ -20,7 +20,7 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils.util import (
   RDBPerSuiteResults,
-  RDBPerIndividualTestResults,
+  RDBPerIndividualTestResults,  # noqa: F401
 )
 
 from dataclasses import dataclass

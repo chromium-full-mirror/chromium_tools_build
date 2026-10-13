@@ -30,4 +30,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import ReproInstructionsApi as API
+from .api import ReproInstructionsApi as API  # noqa: E402, F401

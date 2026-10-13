@@ -8,15 +8,15 @@ from PB.recipe_modules.build.ssci import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import chromium
-from RECIPE_MODULES.depot_tools import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import chromium  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   depot_tools,
   gsutil,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cipd,
   context,
@@ -51,4 +51,4 @@ class DEPS(RecipeScriptApi):
   uuid: uuid.API
 
 
-from .api import SsciAPI as API
+from .api import SsciAPI as API  # noqa: E402, F401

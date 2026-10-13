@@ -28,4 +28,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import ProfilesApi as API
+from .api import ProfilesApi as API  # noqa: E402, F401

@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import collections
+import collections  # noqa: F401
 import math
 import logging
 import os

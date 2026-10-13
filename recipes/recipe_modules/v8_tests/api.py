@@ -13,7 +13,7 @@ import re
 from recipe_engine import recipe_api
 from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
-from .builders import TestSpec
+from .builders import TestSpec  # noqa: F401
 from . import builders as v8_builders
 from . import formatting
 from . import testing

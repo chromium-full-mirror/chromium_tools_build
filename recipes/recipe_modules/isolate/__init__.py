@@ -56,5 +56,5 @@ class DEPS(RecipeScriptApi):
   swarming_client: swarming_client.API
 
 
-from .api import IsolateApi as API
-from .test_api import IsolateTestApi as TEST_API
+from .api import IsolateApi as API  # noqa: E402, F401
+from .test_api import IsolateTestApi as TEST_API  # noqa: E402, F401

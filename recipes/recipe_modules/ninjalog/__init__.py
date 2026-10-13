@@ -34,4 +34,4 @@ class DEPS(RecipeScriptApi):
   uuid: uuid.API
 
 
-from .api import NinjalogApi as API
+from .api import NinjalogApi as API  # noqa: E402, F401

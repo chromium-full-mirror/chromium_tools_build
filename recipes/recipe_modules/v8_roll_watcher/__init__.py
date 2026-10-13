@@ -48,4 +48,4 @@ class DEPS(RecipeScriptApi):
   v8: v8.API
 
 
-from .api import V8RollWatcherApi as API
+from .api import V8RollWatcherApi as API  # noqa: E402, F401

@@ -5,22 +5,22 @@
 from __future__ import annotations
 
 from PB.recipe_modules.build.reclient import properties
-from PB.recipe_modules.build.reclient import rbe_metrics_bq
+from PB.recipe_modules.build.reclient import rbe_metrics_bq  # noqa: F401
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   ninjalog,
   siso,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   gclient,
   gsutil,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   archive,
   buildbucket,
   cipd,
@@ -62,5 +62,5 @@ class DEPS(RecipeScriptApi):
   siso: siso.API
 
 
-from .api import ReclientApi as API
-from .test_api import ReclientTestApi as TEST_API
+from .api import ReclientApi as API  # noqa: E402, F401
+from .test_api import ReclientTestApi as TEST_API  # noqa: E402, F401

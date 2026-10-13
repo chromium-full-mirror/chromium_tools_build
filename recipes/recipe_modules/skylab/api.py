@@ -8,7 +8,7 @@ import attr
 import base64
 import hashlib
 import os
-import re
+import re  # noqa: F401
 
 from google.protobuf import json_format
 from recipe_engine import recipe_api
@@ -18,11 +18,11 @@ from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
 
 from PB.go.chromium.org.luci.buildbucket.proto import (
   builds_service as builds_service_pb2,
-  common as common_pb2,
+  common as common_pb2,  # noqa: F401
 )
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  invocation as invocation_pb,
+  invocation as invocation_pb,  # noqa: F401
 )
 
 
@@ -361,7 +361,7 @@ class SkylabApi(recipe_api.RecipeApi):
         {
           k: getattr(resultdb, k)
           for k in attr.fields_dict(ResultDB)
-          if not getattr(resultdb, k) in [None, '']
+          if getattr(resultdb, k) not in [None, '']
         }
       )
 

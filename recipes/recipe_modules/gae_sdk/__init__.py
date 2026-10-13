@@ -20,4 +20,4 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
 
 
-from .api import GaeSdkApi as API
+from .api import GaeSdkApi as API  # noqa: E402, F401

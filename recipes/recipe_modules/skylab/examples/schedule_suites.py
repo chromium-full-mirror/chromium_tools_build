@@ -46,26 +46,25 @@ class TEST_DEPS(RecipeTestApi):
   time: time.TEST_API
 
 
-import base64
-import copy
-import datetime
-import json
-import re
+import base64  # noqa: E402, F401
+import copy  # noqa: E402
+import datetime  # noqa: E402
+import json  # noqa: E402
+import re  # noqa: E402
 
-from google.protobuf import json_format
+from google.protobuf import json_format  # noqa: E402
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
-  invocation as invocation_pb,
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2  # noqa: E402
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_rdb_pb  # noqa: E402
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
+  invocation as invocation_pb,  # noqa: F401
 )
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
-from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB
-from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest
+from RECIPE_MODULES.build.chromium_tests.resultdb import ResultDB  # noqa: E402
+from RECIPE_MODULES.build.chromium_tests.steps import SkylabTestSpec, SkylabTest  # noqa: E402
 
-from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from recipe_engine import post_process  # noqa: E402
+from recipe_engine.recipe_api import Property  # noqa: E402
 
 LACROS_GTEST_ARGS = '--gtest_filter="VaapiTest.*"'
 MAYBE_MISSING_VARS = 'ui\\.gaiaPoolDefault|anotherpackage\\..*'

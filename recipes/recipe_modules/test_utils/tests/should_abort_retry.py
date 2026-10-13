@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from collections import defaultdict
+from collections import defaultdict  # noqa: F401
 
 from recipe_engine import post_process
 

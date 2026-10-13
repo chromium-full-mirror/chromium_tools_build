@@ -32,7 +32,7 @@ def main():
     cov.stop()
     if cov.report(show_missing=True) < 100:
       print('FATAL: unittests cover less than 100% of libs.')
-      return 1  # pylint: disable=lost-exception
+      return 1
 
   return 0
 

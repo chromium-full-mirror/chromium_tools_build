@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import attr
+import attr  # noqa: F401
 
 from recipe_engine.recipe_api import Property
 from recipe_engine import post_process

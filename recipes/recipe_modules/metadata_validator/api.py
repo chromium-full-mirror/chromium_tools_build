@@ -8,7 +8,7 @@ import configparser
 
 from recipe_engine.recipe_api import RecipeApi
 from dataclasses import dataclass, field
-from recipe_engine.post_process import StatusFailure, StatusSuccess
+from recipe_engine.post_process import StatusFailure, StatusSuccess  # noqa: F401
 from PB.recipe_engine import result as result_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 

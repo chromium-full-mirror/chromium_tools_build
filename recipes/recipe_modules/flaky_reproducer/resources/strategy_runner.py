@@ -29,21 +29,18 @@ def parse_args(args):
   parser.add_argument(
     '--test-binary',
     required=True,
-    # pylint: disable=unexpected-keyword-arg
     type=argparse.FileType('r', encoding='utf-8'),
     help="Filepath to test binary JSON file.",
   )
   parser.add_argument(
     '--result-summary',
     required=True,
-    # pylint: disable=unexpected-keyword-arg
     type=argparse.FileType('r', encoding='utf-8'),
     help="Filepath to result summary file.",
   )
   parser.add_argument(
     '--output',
     required=False,
-    # pylint: disable=unexpected-keyword-arg
     type=argparse.FileType('w', encoding='utf-8'),
     help=(
       "Write reproducing step as JSON into specified filename. Otherwise "

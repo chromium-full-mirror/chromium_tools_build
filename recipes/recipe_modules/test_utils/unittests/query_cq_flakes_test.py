@@ -7,7 +7,7 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
+import subprocess  # noqa: F401
 import sys
 import tempfile
 import unittest
@@ -19,7 +19,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(_THIS_DIR, os.pardir, 'resources'))
 )
 
-import query_cq_flakes
+import query_cq_flakes  # noqa: E402
 
 
 class QueryCQFlakesTest(unittest.TestCase):

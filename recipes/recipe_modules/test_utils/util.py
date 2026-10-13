@@ -9,7 +9,7 @@ import collections
 import sys
 
 from . import canonical
-from google.protobuf import json_format
+from google.protobuf import json_format  # noqa: F401
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (

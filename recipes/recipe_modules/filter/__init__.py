@@ -42,5 +42,5 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import FilterApi as API
-from .test_api import FilterTestApi as TEST_API
+from .api import FilterApi as API  # noqa: E402, F401
+from .test_api import FilterTestApi as TEST_API  # noqa: E402, F401

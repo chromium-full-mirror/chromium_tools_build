@@ -160,7 +160,7 @@ def _parse_tidy_diagnostic(diagnostic, diagnostic_name, is_windows):
   if is_windows:
     fix_file_path = _fix_win_file_path
   else:
-    fix_file_path = lambda x: x
+    fix_file_path = lambda x: x  # noqa: E731
 
   base_message = diagnostic['message']
   base_line_number = diagnostic['line_number']
@@ -332,7 +332,7 @@ class TriciumClangTidyApi(RecipeApi):
     if is_windows:
       fix_file_path = _fix_win_file_path
     else:
-      fix_file_path = lambda x: x
+      fix_file_path = lambda x: x  # noqa: E731
 
     with self.m.siso.context():
       self.m.step('tricium_clang_tidy_script.py', tricium_clang_tidy_command)

@@ -9,14 +9,14 @@ import collections.abc
 import random
 import re
 
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2  # noqa: F401
 from recipe_engine import recipe_api
 from RECIPE_MODULES.build.chromium_tests import steps
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb2
 from PB.go.chromium.org.luci.analysis.proto.v1 import (
-  common as common_weetbix_pb2,
+  common as common_weetbix_pb2,  # noqa: F401
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2
+from PB.go.chromium.org.luci.analysis.proto.v1 import predicate as predicate_pb2  # noqa: F401
 from PB.recipe_engine import result as result_pb2
 
 from . import utils
@@ -194,12 +194,12 @@ class FlakinessApi(recipe_api.RecipeApi):
     case = case.replace('\\:', ':').replace('\\\\', '\\')
 
     if scheme == 'pyunit':
-      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted  # pylint: disable=line-too-long
+      # Example: ://chrome/test/chromedriver\:chromedriver_py_tests!pyunit:__main__:ChromeDriverW3cTest#testSendKeysLongStringNotCorrupted
       # Expected filter:
       # __main__.ChromeDriverW3cTest.testSendKeysLongStringNotCorrupted
       return f"{coarse}.{fine}.{case}"
     if scheme == 'gtest':
-      # Example: ://chrome/test:sync_integration_tests!gtest::WebAppIntegration#WAI_InstallOmniboxIconStandalone/kSyncTheFeature  # pylint: disable=line-too-long
+      # Example: ://chrome/test:sync_integration_tests!gtest::WebAppIntegration#WAI_InstallOmniboxIconStandalone/kSyncTheFeature
       # Expected filter:
       # WebAppIntegration.WAI_InstallOmniboxIconStandalone/kSyncTheFeature
       return f"{fine}.{case}"
@@ -556,7 +556,7 @@ class FlakinessApi(recipe_api.RecipeApi):
       )
 
       # Keep only test variants with unexpected results.
-      test_stats_filter = lambda item: item[1][2] > 0
+      test_stats_filter = lambda item: item[1][2] > 0  # noqa: E731
       flaky_non_experimental_test_stats = dict(
         filter(test_stats_filter, flaky_non_experimental_test_stats.items())
       )

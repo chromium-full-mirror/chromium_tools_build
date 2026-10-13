@@ -24,4 +24,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import RepoApi as API
+from .api import RepoApi as API  # noqa: E402, F401

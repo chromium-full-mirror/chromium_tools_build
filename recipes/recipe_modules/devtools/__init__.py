@@ -62,4 +62,4 @@ class DEPS(RecipeScriptApi):
   v8_tests: v8_tests.API
 
 
-from .api import DevToolsAPI as API
+from .api import DevToolsAPI as API  # noqa: E402, F401

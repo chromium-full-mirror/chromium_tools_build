@@ -68,7 +68,7 @@ def RunSteps(api: DEPS):
 
 
 def GenTests(api: TEST_DEPS):
-  for platform in ('linux', 'win', 'mac'):
+  for platform in ('linux', 'win', 'mac'):  # noqa: F402
     yield api.test(
       platform,
       api.platform.name(platform),

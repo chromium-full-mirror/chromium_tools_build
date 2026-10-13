@@ -70,7 +70,7 @@ def RunSteps(api: DEPS):
 
 
 def GenTests(api: TEST_DEPS):
-  for platform in ('linux', 'win', 'mac'):
+  for platform in ('linux', 'win', 'mac'):  # noqa: F402
     for staging in (True, False):
       yield api.test(
         platform + ('-staging' if staging else ''),

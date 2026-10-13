@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import json
+import json  # noqa: F401
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb

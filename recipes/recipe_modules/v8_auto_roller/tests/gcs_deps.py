@@ -5,7 +5,7 @@
 from __future__ import annotations
 
 from recipe_engine.post_process import (
-  DoesNotRun,
+  DoesNotRun,  # noqa: F401
   DropExpectation,
   MustRun,
   StepCommandContains,

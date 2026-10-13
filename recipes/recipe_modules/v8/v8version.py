@@ -95,7 +95,7 @@ def sorted_improvements(version_revisions, last_version):
     'Rolling padded versions is not supported.'
   )
 
-  timestamp = lambda commit_time: datetime.strptime(
+  timestamp = lambda commit_time: datetime.strptime(  # noqa: E731
     commit_time, '%a %b %d %H:%M:%S %Y %z'
   ).timestamp()
   improvements = [
