@@ -49,6 +49,7 @@ ESSENTIAL_FILES = (
 )
 
 TEST_DIRS = (
+  'android_webview/tools/cts_archive/cipd',
   'base/tracing/test/data',
   'chrome/test/data',
   'components/test/data',
@@ -77,6 +78,7 @@ TEST_DIRS = (
   'third_party/openh264/src/res',
   'third_party/opus/tests/resources',
   'third_party/ots/src/tests/fonts',
+  'third_party/robolectric/cipd',
   'third_party/rust-src/src/gcc/gcc/testsuite',
   'third_party/rust-src/src/llvm-project/clang/test',
   'third_party/rust-src/src/llvm-project/llvm/test',
