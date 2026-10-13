@@ -30,4 +30,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import ChromiumGerritUitlsApi as API
+from .api import ChromiumGerritUitlsApi as API  # noqa: E402, F401

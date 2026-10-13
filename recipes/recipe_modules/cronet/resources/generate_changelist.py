@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 import argparse
-import datetime
+import datetime  # noqa: F401
 import re
 import subprocess
 

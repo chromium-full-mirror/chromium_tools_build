@@ -38,7 +38,7 @@ sys.path.extend(
   ]
 )
 
-import bot_utils
+import bot_utils  # noqa: E402
 
 
 def maybe_archive_results_html(args):

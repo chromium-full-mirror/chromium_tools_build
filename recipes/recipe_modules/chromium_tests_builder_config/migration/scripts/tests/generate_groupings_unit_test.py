@@ -16,7 +16,7 @@ SCRIPTS_DIR = os.path.normpath(os.path.join(__file__, '..', '..'))
 
 sys.path.append(SCRIPTS_DIR)
 
-import generate_groupings
+import generate_groupings  # noqa: E402
 
 
 class ParseError(Exception):

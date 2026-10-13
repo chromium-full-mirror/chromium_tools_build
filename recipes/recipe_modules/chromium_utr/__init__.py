@@ -63,4 +63,4 @@ class DEPS(RecipeScriptApi):
 
 ENV_PROPERTIES = request.EnvProperties
 
-from .api import ChromiumUTRApi as API
+from .api import ChromiumUTRApi as API  # noqa: E402, F401

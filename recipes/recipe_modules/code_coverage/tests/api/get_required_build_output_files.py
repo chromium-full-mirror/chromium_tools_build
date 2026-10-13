@@ -9,9 +9,9 @@ from PB.recipe_modules.build.code_coverage.tests.api.get_required_build_output_f
   InputProperties,
 )
 
-from RECIPE_MODULES.build import chromium_swarming
+from RECIPE_MODULES.build import chromium_swarming  # noqa: F401
 from RECIPE_MODULES.build.chromium_tests import steps
-from RECIPE_MODULES.build.code_coverage import constants
+from RECIPE_MODULES.build.code_coverage import constants  # noqa: F401
 
 from dataclasses import dataclass
 

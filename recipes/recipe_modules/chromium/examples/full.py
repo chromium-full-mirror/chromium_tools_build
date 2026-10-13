@@ -8,7 +8,7 @@ import re
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc  # noqa: F401
 
 from dataclasses import dataclass
 
@@ -74,7 +74,7 @@ def RunSteps(api: DEPS):
   for c in api.properties.get('chromium_configs', []):
     api.chromium.apply_config(c)
 
-  assert api.chromium.build_properties == None
+  assert api.chromium.build_properties == None  # noqa: E711
 
   with api.chromium.chromium_layout():
     builder_id = api.chromium.get_builder_id()

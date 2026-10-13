@@ -12,7 +12,7 @@ from functools import reduce
 import itertools
 import re
 import time
-import traceback
+import traceback  # noqa: F401
 
 from google.protobuf import timestamp_pb2
 from recipe_engine import recipe_api
@@ -29,7 +29,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import (
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.attr_utils import attrib, mapping, sequence, attrs
-from RECIPE_MODULES.build.filter import api as filter_api
+from RECIPE_MODULES.build.filter import api as filter_api  # noqa: F401
 from RECIPE_MODULES.depot_tools import bot_update
 from RECIPE_MODULES.build.chromium_checkout import checkout_result
 
@@ -872,7 +872,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       for t in tests
       # Skylab test has different runner script and dependencies. A skylab
       # test should not appear in isolated_tests.
-      if t.runs_on_skylab and not t in isolated_tests and t.is_enabled
+      if t.runs_on_skylab and t not in isolated_tests and t.is_enabled
     ]
 
     name_suffix = ' (with patch)' if self.m.tryserver.is_tryserver else ''

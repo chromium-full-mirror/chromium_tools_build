@@ -8,23 +8,23 @@ from PB.recipe_modules.build.code_coverage import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   chromium,
   chromium_checkout,
   gn,
   profiles,
   siso,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   gclient,
   git,
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   archive,
   buildbucket,
   context,
@@ -39,7 +39,7 @@ from RECIPE_MODULES.recipe_engine import (
   step,
   swarming,
 )
-from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.infra import zip as zip_module  # noqa: E402
 
 
 @dataclass
@@ -69,5 +69,5 @@ class DEPS(RecipeScriptApi):
   swarming: swarming.API
 
 
-from .api import CodeCoverageApi as API
-from .test_api import CodeCoverageTestApi as TEST_API
+from .api import CodeCoverageApi as API  # noqa: E402, F401
+from .test_api import CodeCoverageTestApi as TEST_API  # noqa: E402, F401

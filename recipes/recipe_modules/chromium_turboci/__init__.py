@@ -25,4 +25,4 @@ class DEPS(RecipeScriptApi):
   uuid: uuid.API
 
 
-from .api import ChromiumTurbociApi as API
+from .api import ChromiumTurbociApi as API  # noqa: E402, F401

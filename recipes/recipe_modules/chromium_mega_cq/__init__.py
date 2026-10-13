@@ -48,4 +48,4 @@ class DEPS(RecipeScriptApi):
   time: time.API
 
 
-from .api import ChromiumMegaCqApi as API
+from .api import ChromiumMegaCqApi as API  # noqa: E402, F401

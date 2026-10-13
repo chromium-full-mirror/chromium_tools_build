@@ -835,7 +835,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     with self.m.context(cwd=build_dir):
       checker_script = self.resource('trybot_failed_expectations_checker.py')
 
-      TEST_DATA = lambda: self.m.json.test_api.output(
+      TEST_DATA = lambda: self.m.json.test_api.output(  # noqa: E731
         {
           'success': True,
           'failed_messages': [],

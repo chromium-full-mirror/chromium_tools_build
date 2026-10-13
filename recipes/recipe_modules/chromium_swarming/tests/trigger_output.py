@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import json
+import json  # noqa: F401
 
 from dataclasses import dataclass
 
@@ -34,8 +34,8 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from recipe_engine import post_process  # noqa: E402
+from recipe_engine.recipe_api import Property  # noqa: E402
 
 PROPERTIES = {
   'task_to_retry': Property(default=None, kind=dict),

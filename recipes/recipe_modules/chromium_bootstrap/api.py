@@ -125,7 +125,7 @@ class ChromiumBootstrapApi(recipe_api.RecipeApi):
 
     if missing_repos:
       checked_out_repos = set()
-      for revision in manifest.values():  # pylint: disable=no-member
+      for revision in manifest.values():
         repo = revision['repository']
         if repo.endswith('.git'):
           repo = repo[: -len('.git')]

@@ -67,11 +67,11 @@ class TEST_DEPS(RecipeTestApi):
   test_utils: test_utils.TEST_API
 
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
+from recipe_engine.recipe_api import Property  # noqa: E402
+from recipe_engine import post_process  # noqa: E402
 
-from RECIPE_MODULES.build import chromium_swarming
-from RECIPE_MODULES.build.chromium_tests.steps import ResultDB
+from RECIPE_MODULES.build import chromium_swarming  # noqa: E402
+from RECIPE_MODULES.build.chromium_tests.steps import ResultDB  # noqa: E402
 
 PROPERTIES = {
   'platforms': Property(default=('win',)),

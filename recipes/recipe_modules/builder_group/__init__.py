@@ -16,5 +16,5 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
 
 
-from .api import BuilderGroupApi as API
-from .test_api import ChromiumTestApi as TEST_API
+from .api import BuilderGroupApi as API  # noqa: E402, F401
+from .test_api import ChromiumTestApi as TEST_API  # noqa: E402, F401

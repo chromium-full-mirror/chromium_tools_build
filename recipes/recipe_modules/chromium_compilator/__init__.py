@@ -7,10 +7,10 @@ PROPERTIES = properties.InputProperties
 # found in the LICENSE file.
 
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   chromium,
   chromium_checkout,
   chromium_rts,
@@ -24,8 +24,8 @@ from RECIPE_MODULES.build import (
   isolate,
   test_utils,
 )
-from RECIPE_MODULES.depot_tools import tryserver
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.depot_tools import tryserver  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cas,
   context,
@@ -76,4 +76,4 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import ChromiumCompilatorApi as API
+from .api import ChromiumCompilatorApi as API  # noqa: E402, F401

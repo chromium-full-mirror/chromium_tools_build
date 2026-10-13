@@ -472,7 +472,7 @@ def GenTests(api: TEST_DEPS):
     api.properties(mock_javascript_lcov_path=False),
     api.post_check(
       lambda check, steps: check(
-        steps['process javascript coverage (overall)'].output_properties[
+        steps['process javascript coverage (overall)'].output_properties[  # noqa: E712
           'process_coverage_data_failure'
         ]
         == True
@@ -866,7 +866,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       lambda check, steps: check(
-        steps[
+        steps[  # noqa: E712
           'process clang code coverage data for overall test coverage.'
           'generate metadata for overall test coverage in 7 tests'
         ].output_properties['process_coverage_data_failure']
@@ -906,7 +906,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       lambda check, steps: check(
-        steps[
+        steps[  # noqa: E712
           'process clang code coverage data for overall test coverage.'
           'generate metadata for overall test coverage in 7 tests'
         ].output_properties['process_coverage_data_failure']
@@ -1148,7 +1148,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       lambda check, steps: check(
-        steps[
+        steps[  # noqa: E712
           'process java coverage (overall).Generate Java coverage metadata'
         ].output_properties['process_coverage_data_failure']
         == True
@@ -1182,7 +1182,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       lambda check, steps: check(
-        steps[
+        steps[  # noqa: E712
           'process java coverage (overall).Generate Java coverage metadata'
         ].output_properties['process_coverage_data_failure']
         == True

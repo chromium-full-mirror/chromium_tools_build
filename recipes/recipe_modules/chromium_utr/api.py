@@ -113,7 +113,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       compiling_builder_config,
       is_cog,
     )
-    if result != None:
+    if result != None:  # noqa: E711
       return result
 
     # TODO(https://crbug.com/374367787): Support getting the revision with cog
@@ -444,7 +444,7 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
     """
 
     def get_imports(args):
-      return [l.strip() for l in args.splitlines() if l.startswith('import(')]
+      return [l.strip() for l in args.splitlines() if l.startswith('import(')]  # noqa: E741
 
     builder_gn_args = self.m.chromium.mb_lookup(
       source_dir,
@@ -1073,7 +1073,6 @@ class ChromiumUTRApi(recipe_api.RecipeApi):
       return '*' in filter_arg or ':' in filter_arg
 
     # avoid circular import
-    # pylint: disable=import-outside-toplevel
     from RECIPE_MODULES.build.chromium_tests.steps import (
       SwarmingIsolatedScriptTest,
     )

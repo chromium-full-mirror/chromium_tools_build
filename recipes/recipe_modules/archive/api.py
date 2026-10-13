@@ -18,7 +18,7 @@ from PB.recipe_modules.build.archive.properties import (
   ArchiveData,
   InputProperties,
 )
-from PB.recipe_modules.build.ssci.properties import GeneratedSBOM
+from PB.recipe_modules.build.ssci.properties import GeneratedSBOM  # noqa: F401
 
 from recipe_engine import recipe_api
 from recipe_engine.config_types import Path
@@ -1364,7 +1364,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       for filename in sorted(expanded_files):
         tmp_file_path = self.m.path.join(temp_dir, filename)
         tmp_file_dir = self.m.path.dirname(tmp_file_path)
-        if not str(tmp_file_dir) in created:
+        if str(tmp_file_dir) not in created:
           self.m.file.ensure_directory(
             'Create temp dir %s' % os.path.dirname(filename), tmp_file_dir
           )

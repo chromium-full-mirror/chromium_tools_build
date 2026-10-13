@@ -64,9 +64,9 @@ class TEST_DEPS(RecipeTestApi):
   swarming: swarming.TEST_API
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402
 
 
 def RunSteps(api: DEPS):

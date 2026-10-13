@@ -17,7 +17,7 @@ SCRIPTS_DIR = os.path.normpath(f'{__file__}/../..')
 
 sys.path.append(SCRIPTS_DIR)
 
-import buildozer_wrapper
+import buildozer_wrapper  # noqa: E402
 
 
 class BuildozerWrapperUnitTest(TestCase):

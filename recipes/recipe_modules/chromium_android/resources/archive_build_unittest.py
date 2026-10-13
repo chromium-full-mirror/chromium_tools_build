@@ -76,7 +76,7 @@ class ArchiveTest(unittest.TestCase):
     os.makedirs(extract_dir)
     zip_file = zipfile.ZipFile(zip_file_path)
     if hasattr(zip_file, 'extractall'):
-      zip_file.extractall(extract_dir)  # pylint: disable=E1101
+      zip_file.extractall(extract_dir)
 
       # List of extract_dir-relative files.
       extracted_files = []

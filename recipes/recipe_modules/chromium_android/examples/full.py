@@ -181,7 +181,6 @@ def RunSteps(api: DEPS):
     )
 
   if failure:
-    # pylint: disable=raising-bad-type
     raise failure
 
 

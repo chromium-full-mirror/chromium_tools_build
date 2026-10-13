@@ -8,16 +8,16 @@ from PB.recipe_modules.build.chromium_3pp import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import chromium_checkout
-from RECIPE_MODULES.depot_tools import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import chromium_checkout  # noqa: E402
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   gclient,
   git,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   bcid_reporter,
   context,
   path,
@@ -25,7 +25,7 @@ from RECIPE_MODULES.recipe_engine import (
   runtime,
   step,
 )
-from RECIPE_MODULES.infra import support_3pp
+from RECIPE_MODULES.infra import support_3pp  # noqa: E402
 
 
 @dataclass
@@ -43,4 +43,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import Chromium3ppApi as API
+from .api import Chromium3ppApi as API  # noqa: E402, F401

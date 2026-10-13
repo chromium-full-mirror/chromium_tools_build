@@ -1984,7 +1984,7 @@ class SwarmingApi(recipe_api.RecipeApi):
     else:
       subtasks = [(':%d:%d' % (task.shards, i), i) for i in shard_indices]
     self._task_test_data_id_offset += len(subtasks)
-    tid = lambda i: (
+    tid = lambda i: (  # noqa: E731
       '1%02d00' % (i + 100 * (self._task_test_data_id_offset - len(subtasks)))
     )
 

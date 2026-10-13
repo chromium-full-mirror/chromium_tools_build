@@ -71,7 +71,6 @@ from RECIPE_MODULES.build.test_utils import util
 # The actual implementation of abstract base classes ensures that everything is
 # overridden when attempting to instantiate a class, so trying to make this
 # pylint clean isn't worth the effort.
-# pylint: disable=abstract-method
 
 RESULTS_URL = 'https://chromeperf.appspot.com'
 
@@ -1527,7 +1526,7 @@ class ExperimentalTestSpec(TestWrapperSpec):
   experiment_percentage = attrib(int)
 
   @classmethod
-  def create(cls, test_spec, experiment_percentage):  # pylint: disable=line-too-long,arguments-differ
+  def create(cls, test_spec, experiment_percentage):
     """Create an ExperimentalTestSpec.
 
     Arguments:
@@ -1874,7 +1873,7 @@ class ScriptTest(LocalTest):
 
     resultdb = self._prep_local_rdb(source_dir)
 
-    step_test_data = lambda: (
+    step_test_data = lambda: (  # noqa: E731
       self.api.m.json.test_api.output({'valid': True, 'failures': []})
       + self.api.m.raw_io.test_api.stream_output_text(
         'rdb-stream: included "invocations/test-name" in '
@@ -1994,7 +1993,7 @@ class LocalGTestTest(LocalTest):
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
-    test_options = self.test_options.for_running(suffix, tests_to_retry)  # pylint: disable=no-member
+    test_options = self.test_options.for_running(suffix, tests_to_retry)
     args = test_options.add_args(self.spec.args, self.option_flags)
 
     if tests_to_retry:
@@ -2005,7 +2004,7 @@ class LocalGTestTest(LocalTest):
       add_json_log=False, leak_to=resultdb.result_file
     )
 
-    step_test_data = lambda: (
+    step_test_data = lambda: (  # noqa: E731
       self.api.m.test_utils.test_api.canned_gtest_output(True)
       + self.api.m.raw_io.test_api.stream_output_text(
         'rdb-stream: included "invocations/some-inv-name" in '
@@ -2169,8 +2168,6 @@ class SwarmingTestSpec(TestSpec):
     * wait_for_capacity - Whether to wait for capacity to appear if *none* is
       immediately present. Waits up to the expiration.
   """
-
-  # pylint: disable=abstract-method
 
   cipd_packages = attrib(sequence[chromium_swarming.CipdPackage], default=())
   containment_type = attrib(str, default=None)
@@ -3093,7 +3090,7 @@ class LocalIsolatedScriptTest(LocalTest):
     tests_to_retry = self._tests_to_retry(suffix)
     # pylint apparently gets confused by a property in a base class where the
     # setter is overridden
-    test_options = self.test_options.for_running(suffix, tests_to_retry)  # pylint: disable=no-member
+    test_options = self.test_options.for_running(suffix, tests_to_retry)
     pre_args = []
     if self.relative_cwd:
       pre_args += ['--relative-cwd', self.relative_cwd]
@@ -3108,7 +3105,7 @@ class LocalIsolatedScriptTest(LocalTest):
     json_results_file = self.api.m.json.output(leak_to=temp)
     args.extend(['--isolated-script-test-output', json_results_file])
 
-    step_test_data = lambda: (
+    step_test_data = lambda: (  # noqa: E731
       self.api.m.json.test_api.output({'valid': True, 'failures': []})
       + self.api.m.raw_io.test_api.stream_output_text(
         'rdb-stream: included "invocations/test-name" in '
@@ -3569,7 +3566,7 @@ class SkylabTest(AbstractSkylabTest, Test):
     for t in self.test_runner_builds[suffix]:
       # If any attempt runner in the shard has a deterministic result,
       # consider the shard done.
-      if not t.status in (common_pb2.FAILURE, common_pb2.SUCCESS):
+      if t.status not in (common_pb2.FAILURE, common_pb2.SUCCESS):
         return False
     return True
 
@@ -3642,7 +3639,7 @@ class SkylabTest(AbstractSkylabTest, Test):
         self.api.m.test_utils.remove_retry_shards(suffix), []
       ):
         # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
-        if not tr.status in [common_pb2.SUCCESS] and tr.shard >= 0:
+        if tr.status not in [common_pb2.SUCCESS] and tr.shard >= 0:
           retry_shards.append(tr.shard)
     self.api.m.skylab.schedule_suite(
       self,
@@ -3729,7 +3726,7 @@ class SkylabTest(AbstractSkylabTest, Test):
         )
 
       if any(
-        not s.status in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
+        s.status not in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
         for s in shard_steps
       ):
         self._raise_failed_nested_step(

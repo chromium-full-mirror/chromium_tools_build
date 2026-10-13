@@ -610,7 +610,7 @@ class Generator:
     kwargs_to_forward = set(
       k
       for k in attr.fields_dict(steps.SkylabTestSpec)
-      if not k in ['test_args', 'resultdb']
+      if k not in ['test_args', 'resultdb']
     )
     common_skylab_kwargs = {
       k: v for k, v in raw_test_spec.items() if k in kwargs_to_forward

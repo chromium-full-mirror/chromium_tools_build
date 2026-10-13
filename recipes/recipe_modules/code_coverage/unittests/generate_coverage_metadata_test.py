@@ -17,7 +17,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import generate_coverage_metadata as generator
+import generate_coverage_metadata as generator  # noqa: E402
 
 
 class GenerateCoverageMetadataTest(unittest.TestCase):

@@ -957,7 +957,7 @@ def GenTests(api: TEST_DEPS):
       check(
         not any(
           l.startswith('shard #0')
-          for l in steps_dict[base_unittests_retry].links
+          for l in steps_dict[base_unittests_retry].links  # noqa: E741
         )
       )
 
@@ -965,7 +965,7 @@ def GenTests(api: TEST_DEPS):
       check(
         any(
           l.startswith('shard #1')
-          for l in steps_dict[base_unittests_retry].links
+          for l in steps_dict[base_unittests_retry].links  # noqa: E741
         )
       )
 

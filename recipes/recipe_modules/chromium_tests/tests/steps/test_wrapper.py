@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build.attr_utils import attrib, attrs
+from RECIPE_MODULES.build.attr_utils import attrib, attrs  # noqa: F401
 from RECIPE_MODULES.build.chromium_tests import steps
 
 from dataclasses import dataclass

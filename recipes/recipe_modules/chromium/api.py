@@ -7,10 +7,10 @@ from __future__ import annotations
 import collections
 import collections.abc
 import contextlib
-from collections.abc import Iterable
+from collections.abc import Iterable  # noqa: F401
 import functools
 import hashlib
-import os
+import os  # noqa: F401
 import re
 import textwrap
 
@@ -475,7 +475,7 @@ class ChromiumApi(recipe_api.RecipeApi):
         [1/1] CXX a.o
         filename:row:col: error: error info
     """)
-    step_test_data = lambda: (
+    step_test_data = lambda: (  # noqa: E731
       self.m.json.test_api.output(example_json, name='ninja_info')
       + self.m.raw_io.test_api.output_text(
         example_failure_output, name='failure_summary'
@@ -633,7 +633,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     # Any actual work we do here indicates that the dependency graph in GN is
     # misconfigured somehow, which is bad and should break the build.
     noop_step_name = (name or 'compile') + ' confirm no-op'
-    noop_step_test_data = lambda: self.m.raw_io.test_api.stream_output_text(
+    noop_step_test_data = lambda: self.m.raw_io.test_api.stream_output_text(  # noqa: E731
       ninja_no_work
     )
 
@@ -1558,7 +1558,7 @@ class ChromiumApi(recipe_api.RecipeApi):
       'compile_targets': [],
       'test_targets': [],
     }
-    step_test_data = lambda: (
+    step_test_data = lambda: (  # noqa: E731
       self.m.json.test_api.output(test_analyze_output)
       + self.m.json.test_api.output({}, name='failure_summary')
     )
@@ -1727,7 +1727,7 @@ class ChromiumApi(recipe_api.RecipeApi):
 
     mb_args = ['--json-output', self.m.json.output(name="failure_summary")]
 
-    step_test_data = lambda: self.m.json.test_api.output(
+    step_test_data = lambda: self.m.json.test_api.output(  # noqa: E731
       {}, name='failure_summary'
     )
 

@@ -46,9 +46,9 @@ class TEST_DEPS(RecipeTestApi):
   siso: siso.TEST_API
 
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
-import textwrap
+from recipe_engine.recipe_api import Property  # noqa: E402, F401
+from recipe_engine import post_process  # noqa: E402
+import textwrap  # noqa: E402
 
 
 def RunSteps(api: DEPS):

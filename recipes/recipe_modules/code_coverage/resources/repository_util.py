@@ -102,7 +102,6 @@ def _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_content):
     if not path.endswith('/'):
       path += '/'
     src_checkout_paths.append(path)
-  # pylint: disable=unnecessary-lambda
   src_checkout_paths.sort(key=lambda x: len(x), reverse=True)
   return src_checkout_paths
 

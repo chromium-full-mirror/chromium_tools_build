@@ -46,4 +46,4 @@ class DEPS(RecipeScriptApi):
   siso: siso.API
 
 
-from .api import ChromiumBuildPerfApi as API
+from .api import ChromiumBuildPerfApi as API  # noqa: E402, F401

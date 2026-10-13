@@ -13,7 +13,7 @@ from __future__ import annotations
 import subprocess
 import sys
 import json
-import re
+import re  # noqa: F401
 import logging
 
 logging.basicConfig(level=0)

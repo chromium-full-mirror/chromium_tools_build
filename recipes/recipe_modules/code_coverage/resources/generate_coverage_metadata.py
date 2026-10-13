@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import argparse
 import collections
-import copy
+import copy  # noqa: F401
 import json
 import logging
 import os
@@ -17,7 +17,7 @@ import psutil
 import stat
 import subprocess
 import sys
-import tempfile
+import tempfile  # noqa: F401
 import time
 import zlib
 

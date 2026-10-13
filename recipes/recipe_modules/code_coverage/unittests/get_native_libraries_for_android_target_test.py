@@ -16,7 +16,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import get_native_libraries_for_android_target
+import get_native_libraries_for_android_target  # noqa: E402
 
 
 class GetNativeLibrariesForAndroidTargetTest(unittest.TestCase):

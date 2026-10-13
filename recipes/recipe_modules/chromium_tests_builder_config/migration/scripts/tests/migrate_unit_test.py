@@ -13,7 +13,7 @@ SCRIPTS_DIR = os.path.normpath(os.path.join(__file__, '..', '..'))
 
 sys.path.append(SCRIPTS_DIR)
 
-import migrate
+import migrate  # noqa: E402
 
 
 class MigrateUnitTest(unittest.TestCase):

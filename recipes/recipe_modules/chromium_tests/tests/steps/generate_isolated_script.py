@@ -13,7 +13,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.go.chromium.org.luci.analysis.proto.v1 import test_history  # noqa: F401
 
 from dataclasses import dataclass
 

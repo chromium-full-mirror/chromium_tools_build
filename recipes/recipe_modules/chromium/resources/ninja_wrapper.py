@@ -41,15 +41,15 @@ from gevent import monkey
 
 monkey.patch_all()
 
-import argparse
-import collections
-import gevent
-import json
-import os
-import re
-import subprocess
-import sys
-import time
+import argparse  # noqa: E402
+import collections  # noqa: E402
+import gevent  # noqa: E402
+import json  # noqa: E402
+import os  # noqa: E402
+import re  # noqa: E402
+import subprocess  # noqa: E402
+import sys  # noqa: E402
+import time  # noqa: E402, F401
 
 _COLLECT_DEPENDENCIES_RULES = ['CXX', 'CC']
 

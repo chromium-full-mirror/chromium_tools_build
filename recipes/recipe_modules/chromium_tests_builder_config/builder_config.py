@@ -242,11 +242,11 @@ class BuilderConfig:
       if not builder_ids:
         raise BuilderConfigException('No builder IDs specified')
       for b in itertools.chain(builder_ids, builder_ids_in_scope_for_testing):
-        if not b.group in builder_db.builders_by_group:
+        if b.group not in builder_db.builders_by_group:
           raise BuilderConfigException(
             "No configuration present for group '{}'".format(b.group)
           )
-        if not b in builder_db:
+        if b not in builder_db:
           raise BuilderConfigException(
             "No configuration present for builder '{}' in group '{}'".format(
               b.builder, b.group

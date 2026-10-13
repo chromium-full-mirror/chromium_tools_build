@@ -41,4 +41,4 @@ class DEPS(RecipeScriptApi):
   properties: properties.API
 
 
-from .api import ChromiumTestsTargetsConfigVerifierApi as API
+from .api import ChromiumTestsTargetsConfigVerifierApi as API  # noqa: E402, F401

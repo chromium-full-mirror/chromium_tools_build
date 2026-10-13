@@ -7,7 +7,7 @@
 from __future__ import annotations
 
 import argparse
-import glob
+import glob  # noqa: F401
 import os
 import sys
 

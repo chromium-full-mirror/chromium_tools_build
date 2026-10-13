@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-import json
+import json  # noqa: F401
 import os
 import subprocess
 import sys
@@ -18,8 +18,8 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import make_report
-import reporter
+import make_report  # noqa: E402
+import reporter  # noqa: E402
 
 
 class MakeReportTest(unittest.TestCase):

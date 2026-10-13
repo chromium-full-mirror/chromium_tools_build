@@ -28,4 +28,4 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
 
 
-from .api import ChromiumReviverApi as API
+from .api import ChromiumReviverApi as API  # noqa: E402, F401

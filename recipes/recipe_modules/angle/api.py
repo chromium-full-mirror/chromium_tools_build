@@ -6,7 +6,7 @@ from __future__ import annotations
 
 from recipe_engine import recipe_api
 
-from PB.recipe_engine import result as result_pb2
+from PB.recipe_engine import result as result_pb2  # noqa: F401
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 

@@ -11,7 +11,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 import logging
-import os
+import os  # noqa: F401
 import posixpath
 
 

@@ -34,15 +34,15 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
+from recipe_engine.recipe_api import Property  # noqa: E402
+from recipe_engine import post_process  # noqa: E402
 
-from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (  # noqa: E402
   test_result as test_result_pb2,
 )
 
-from RECIPE_MODULES.build.test_utils import util
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.test_utils import util  # noqa: E402
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402
 
 PROPERTIES = {
   'per_suffix_valid': Property(default={}),

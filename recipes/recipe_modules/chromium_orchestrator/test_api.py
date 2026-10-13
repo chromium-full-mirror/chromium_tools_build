@@ -15,7 +15,7 @@ from PB.go.chromium.org.luci.led.job import job
 
 from google.protobuf import struct_pb2
 from google.protobuf import json_format
-from google.protobuf import timestamp_pb2
+from google.protobuf import timestamp_pb2  # noqa: F401
 
 from RECIPE_MODULES.build.chromium_tests.api import (
   ALL_TEST_BINARIES_ISOLATE_NAME,

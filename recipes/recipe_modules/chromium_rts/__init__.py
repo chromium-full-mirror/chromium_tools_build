@@ -36,4 +36,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import ChromiumRtsApi as API
+from .api import ChromiumRtsApi as API  # noqa: E402, F401

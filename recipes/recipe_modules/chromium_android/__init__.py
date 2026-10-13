@@ -51,6 +51,6 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import AndroidApi as API
+from .api import AndroidApi as API  # noqa: E402
 
 __all__ = ['CONFIG_CTX', 'API']

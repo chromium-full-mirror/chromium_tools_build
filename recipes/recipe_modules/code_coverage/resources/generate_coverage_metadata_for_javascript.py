@@ -10,7 +10,7 @@ https://chromium.googlesource.com/infra/infra/+/refs/heads/main/appengine/findit
 from __future__ import annotations
 
 import argparse
-import fnmatch
+import fnmatch  # noqa: F401
 import json
 import logging
 import os

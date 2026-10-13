@@ -3,7 +3,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-# pylint: disable=protected-access
 from __future__ import annotations
 
 import os
@@ -17,7 +16,7 @@ THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
-import combine_jacoco_reports as combine_reports
+import combine_jacoco_reports as combine_reports  # noqa: E402
 
 # Does not work as """ string because of newlines indent whitespace in
 # the xml parseString().

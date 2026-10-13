@@ -293,7 +293,7 @@ solutions = [
       'dimensions'
     ]
     entry = {'key': key, 'value': value}
-    if value == None:
+    if value == None:  # noqa: E711
       check(entry not in dims)
     else:
       check(entry in dims)

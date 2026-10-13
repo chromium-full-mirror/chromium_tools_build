@@ -192,7 +192,7 @@ def RunSteps(api: DEPS):
 
   # mapping ********************************************************************
   with api.assertions.assertRaises(TypeError) as caught:
-    mapping[str, 1]  # pylint: disable=pointless-statement
+    mapping[str, 1]
   message = (
     'value_constraint must be one of a type, a tuple of types, '
     'an AttributeConstraint or Ellipsis, got 1'

@@ -14,7 +14,7 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
 from RECIPE_MODULES.build.chromium_turboci.api import ChromiumTurbociApi
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec  # noqa: F401
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
@@ -22,7 +22,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.go.chromium.org.luci.analysis.proto.v1 import test_history  # noqa: F401
 from PB.turboci.data.build.v1.build_check_options import (
   BuildCheckOptions,
   Product,
@@ -34,7 +34,7 @@ from PB.turboci.data.chrome.build.v1.compile_targets_options import (
   CompileTargetsOptions,
 )
 from PB.turboci.data.test.v1.test_check_description_option import (
-  TestCheckDescriptionOption,
+  TestCheckDescriptionOption,  # noqa: F401
 )
 from PB.turboci.data.test.v1.test_check_summary_result import (
   TestCheckSummaryResult,
@@ -46,7 +46,6 @@ from PB.turboci.graph.orchestrator.v1.workplan import WorkPlan
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
-from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
   chromium,

@@ -19,8 +19,8 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import gerrit_util
-import rebase_line_number_from_bot_to_gerrit
+import gerrit_util  # noqa: E402
+import rebase_line_number_from_bot_to_gerrit  # noqa: E402
 
 
 class RebaseLineNumberFromBotToGerritTest(unittest.TestCase):

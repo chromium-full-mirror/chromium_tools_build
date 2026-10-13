@@ -5,9 +5,9 @@
 from __future__ import annotations
 
 import collections
-import json
-import logging
-import os
+import json  # noqa: F401
+import logging  # noqa: F401
+import os  # noqa: F401
 import re
 import sys
 
@@ -899,7 +899,7 @@ class CodeCoverageApi(recipe_api.RecipeApi):
           binaries, merged_profdata, test_type
         )
         return True
-      except:  # pylint: disable=bare-except
+      except:  # noqa: E722
         self.m.step.active_result.presentation.properties[
           'process_coverage_data_failure'
         ] = True

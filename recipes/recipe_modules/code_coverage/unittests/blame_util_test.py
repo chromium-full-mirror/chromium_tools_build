@@ -16,7 +16,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import blame_util
+import blame_util  # noqa: E402
 
 
 class BlameUtilTest(unittest.TestCase):

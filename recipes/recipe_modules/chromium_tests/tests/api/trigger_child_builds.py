@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import collections
+import collections  # noqa: F401
 import re
 
 from recipe_engine import post_process, recipe_api

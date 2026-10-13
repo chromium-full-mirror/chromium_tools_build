@@ -18,9 +18,9 @@ class DEPS(RecipeScriptApi):
   assertions: assertions.API
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
-from RECIPE_MODULES.build.chromium_tests.steps import SuccessReuseTest
+from RECIPE_MODULES.build.chromium_tests.steps import SuccessReuseTest  # noqa: E402
 
 
 def RunSteps(api: DEPS):

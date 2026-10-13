@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from .types import CipdPackage, MergeScript, TriggerScript
+from .types import CipdPackage, MergeScript, TriggerScript  # noqa: F401
 
 from PB.recipe_modules.build.chromium_swarming import (
   properties as properties_pb,
@@ -72,7 +72,7 @@ PROPERTIES = properties_pb.InputProperties
 # TODO(phajdan.jr): provide coverage (http://crbug.com/693058).
 DISABLE_STRICT_COVERAGE = True
 
-from .api import SwarmingTask
+from .api import SwarmingTask  # noqa: E402, F401
 
-from .api import SwarmingApi as API
-from .test_api import SwarmingTestApi as TEST_API
+from .api import SwarmingApi as API  # noqa: E402, F401
+from .test_api import SwarmingTestApi as TEST_API  # noqa: E402, F401

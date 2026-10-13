@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-from recipe_engine.post_process import DropExpectation, StepEnvContains
+from recipe_engine.post_process import DropExpectation, StepEnvContains  # noqa: F401
 
 from dataclasses import dataclass
 

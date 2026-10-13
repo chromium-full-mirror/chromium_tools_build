@@ -4,16 +4,16 @@
 
 from __future__ import annotations
 
-import collections
+import collections  # noqa: F401
 
 from recipe_engine import post_process
-from recipe_engine.post_process import Filter
+from recipe_engine.post_process import Filter  # noqa: F401
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec  # noqa: F401
 from RECIPE_MODULES.build.chromium_tests_builder_config import builder_spec
 
 from dataclasses import dataclass

@@ -16,7 +16,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import get_unstripped_paths
+import get_unstripped_paths  # noqa: E402
 
 
 class GetUnstrippedPathsTest(unittest.TestCase):

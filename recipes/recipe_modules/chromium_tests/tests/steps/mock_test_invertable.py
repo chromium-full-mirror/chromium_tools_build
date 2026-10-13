@@ -21,8 +21,8 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from recipe_engine.post_process import DropExpectation
-from RECIPE_MODULES.build.chromium_tests import steps
+from recipe_engine.post_process import DropExpectation  # noqa: E402
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402
 
 
 def RunSteps(api: DEPS):

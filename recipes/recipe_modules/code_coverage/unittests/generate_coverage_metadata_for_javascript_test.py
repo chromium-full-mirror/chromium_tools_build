@@ -16,8 +16,8 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import generate_coverage_metadata_for_javascript as generator
-import repository_util
+import generate_coverage_metadata_for_javascript as generator  # noqa: E402
+import repository_util  # noqa: E402
 
 
 class GenerateCoverageMetadataForJavaScriptTest(unittest.TestCase):

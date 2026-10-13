@@ -9,7 +9,7 @@ from recipe_engine.post_process import DropExpectation
 from PB.recipe_modules.build.code_coverage.tests.api.get_chromium_fuzz_coverage import (
   InputProperties,
 )
-from RECIPE_MODULES.build.chromium_tests import steps
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: F401
 from RECIPE_MODULES.build.code_coverage import constants
 
 from dataclasses import dataclass

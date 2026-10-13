@@ -4,7 +4,7 @@
 
 from __future__ import annotations
 
-import collections
+import collections  # noqa: F401
 
 from recipe_engine.post_process import DropExpectation, StepSuccess
 

@@ -9,16 +9,16 @@ from recipe_engine import turboci
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec  # noqa: F401
 from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
 
-from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb  # noqa: F401
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as resultdb_common
 from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.go.chromium.org.luci.analysis.proto.v1 import test_history  # noqa: F401
 from PB.recipe_modules.build.chromium_compilator.properties import (
   InputProperties,
 )

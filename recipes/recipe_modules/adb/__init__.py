@@ -22,5 +22,5 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import AdbApi as API
-from .test_api import AdbTestApi as TEST_API
+from .api import AdbApi as API  # noqa: E402, F401
+from .test_api import AdbTestApi as TEST_API  # noqa: E402, F401

@@ -8,10 +8,10 @@ from PB.recipe_modules.build.chromium_orchestrator import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   builder_group,
   chromium,
   chromium_bootstrap,
@@ -27,12 +27,12 @@ from RECIPE_MODULES.build import (
   repro_instructions,
   test_utils,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   gclient,
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cas,
   cipd,
@@ -85,5 +85,5 @@ class DEPS(RecipeScriptApi):
   test_utils: test_utils.API
 
 
-from .api import ChromiumOrchestratorApi as API
-from .test_api import ChromiumOrchestratorApi as TEST_API
+from .api import ChromiumOrchestratorApi as API  # noqa: E402, F401
+from .test_api import ChromiumOrchestratorApi as TEST_API  # noqa: E402, F401

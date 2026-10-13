@@ -11,7 +11,7 @@ from recipe_engine.engine_types import ResourceCost
 from PB.recipe_engine.result import RawResult
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
-  BatchResponse,
+  BatchResponse,  # noqa: F401
 )
 
 

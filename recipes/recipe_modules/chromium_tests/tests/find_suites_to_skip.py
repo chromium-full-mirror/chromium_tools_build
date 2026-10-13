@@ -6,7 +6,7 @@
 from __future__ import annotations
 
 from recipe_engine import post_process
-from recipe_engine.config import List
+from recipe_engine.config import List  # noqa: F401
 from recipe_engine.recipe_api import Property
 
 from google.protobuf import timestamp_pb2

@@ -16,4 +16,4 @@ class DEPS(RecipeScriptApi):
   url: url.API
 
 
-from .api import ChromiumDashApi as API
+from .api import ChromiumDashApi as API  # noqa: E402, F401

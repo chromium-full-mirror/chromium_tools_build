@@ -17,8 +17,8 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import generate_coverage_metadata_for_java as generator
-import repository_util
+import generate_coverage_metadata_for_java as generator  # noqa: E402
+import repository_util  # noqa: E402
 
 
 class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
@@ -325,7 +325,7 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
     self, mock_get_file_revisions, mock_os_path_isfile
   ):
     mock_get_file_revisions.return_value = self.FILE_REVISIONS
-    mock_os_path_isfile = True
+    mock_os_path_isfile = True  # noqa: F841
     root = ElementTree.fromstring(self.JACOCO_REPORT)
 
     expected_output = {
@@ -448,7 +448,7 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
     self, mock_get_file_revisions, mock_os_path_isfile
   ):
     mock_get_file_revisions.return_value = self.FILE_REVISIONS
-    mock_os_path_isfile = True
+    mock_os_path_isfile = True  # noqa: F841
     root = ElementTree.fromstring(
       self.JACOCO_REPORT_WITH_CONTIGUOUS_LINE_NUMBERS
     )
@@ -579,7 +579,7 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
     self, mock_get_file_revisions, mock_os_path_isfile
   ):
     mock_get_file_revisions.return_value = self.FILE_REVISIONS
-    mock_os_path_isfile = True
+    mock_os_path_isfile = True  # noqa: F841
     root = ElementTree.fromstring(self.JACOCO_REPORT_NO_LINE_INSTRUMENTED)
 
     expected_output = {'files': []}
@@ -593,7 +593,7 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
   def test_generate_json_coverage_metadata_for_per_cl(
     self, mock_os_path_isfile
   ):
-    mock_os_path_isfile = True
+    mock_os_path_isfile = True  # noqa: F841
     root = ElementTree.fromstring(self.JACOCO_REPORT)
 
     expected_output = {
@@ -623,7 +623,7 @@ class GenerateCoverageMetadataForJavaTest(unittest.TestCase):
   def test_generate_json_coverage_metadata_for_per_cl_line_removed(
     self, mock_os_path_isfile
   ):
-    mock_os_path_isfile = True
+    mock_os_path_isfile = True  # noqa: F841
     root = ElementTree.fromstring(self.JACOCO_REPORT)
     diff_mapping_line_removed = {'dir/file.java': {}}
 

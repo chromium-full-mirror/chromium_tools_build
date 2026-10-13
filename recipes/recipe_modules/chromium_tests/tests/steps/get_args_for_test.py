@@ -34,9 +34,9 @@ class TEST_DEPS(RecipeTestApi):
   tryserver: tryserver.TEST_API
 
 
-from recipe_engine import post_process
+from recipe_engine import post_process  # noqa: E402
 
-from RECIPE_MODULES.build.chromium_tests import generators
+from RECIPE_MODULES.build.chromium_tests import generators  # noqa: E402
 
 
 def RunSteps(api: DEPS):

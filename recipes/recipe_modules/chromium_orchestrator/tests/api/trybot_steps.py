@@ -14,7 +14,7 @@ from PB.recipe_modules.build.chromium_orchestrator.properties import (
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.depot_tools.tryserver import api as tryserver
-from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec
+from RECIPE_MODULES.build.chromium_tests_builder_config import try_spec  # noqa: F401
 from RECIPE_MODULES.build.chromium_orchestrator.api import (
   COMPILATOR_SWARMING_TASK_COLLECT_STEP,
 )
@@ -27,7 +27,7 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb as rdb_pb2
 from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
-from PB.go.chromium.org.luci.analysis.proto.v1 import test_history
+from PB.go.chromium.org.luci.analysis.proto.v1 import test_history  # noqa: F401
 
 from dataclasses import dataclass
 

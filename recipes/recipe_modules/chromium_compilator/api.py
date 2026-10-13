@@ -10,7 +10,7 @@ from recipe_engine.config_types import Path
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 from RECIPE_MODULES.build.chromium_tests import api as chromium_tests
-from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES
+from RECIPE_MODULES.build.code_coverage.api import MAX_CANDIDATE_FILES  # noqa: F401
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
@@ -30,7 +30,6 @@ class ChromiumCompilatorApi(recipe_api.RecipeApi):
       return self._compilator_steps_impl(properties)
     finally:
       if self.m.runtime.in_global_shutdown:
-        # pylint: disable=lost-exception
         # Compilator builds can experience a variety of exceptions when its
         # swarming tasks are killed, depending on where in the recipe it was
         # killed.

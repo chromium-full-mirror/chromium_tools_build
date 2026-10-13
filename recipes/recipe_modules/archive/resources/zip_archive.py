@@ -23,7 +23,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, '..', '..', '..', '..', 'scripts'))
 )
 
-from common import chromium_utils
+from common import chromium_utils  # noqa: E402
 
 
 def main(argv):

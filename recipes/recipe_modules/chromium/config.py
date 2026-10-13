@@ -11,7 +11,6 @@ from recipe_engine.config import Dict, List, Single, Static, Set, BadConf
 
 # Because of the way that we use decorators, pylint can't figure out the proper
 # type signature of functions annotated with the @config_ctx decorator.
-# pylint: disable=E1123
 
 HOST_PLATFORMS = ('linux', 'win', 'mac')
 TARGET_PLATFORMS = HOST_PLATFORMS + ('ios', 'android', 'chromeos', 'fuchsia')
@@ -43,7 +42,7 @@ def BaseConfig(
   CROS_BOARDS_WITH_QEMU_IMAGES,
   TEST_ONLY,
 ):
-  equal_fn = lambda tup: '%s=%s' % (tup[0], pipes.quote(str(tup[1])))
+  equal_fn = lambda tup: '%s=%s' % (tup[0], pipes.quote(str(tup[1])))  # noqa: E731
   return ConfigGroup(
     compile_py=ConfigGroup(
       default_targets=Set(str),

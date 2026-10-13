@@ -8,11 +8,11 @@ from PB.recipe_modules.build.chromium_polymorphic import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import chromium_tests_builder_config
-from RECIPE_MODULES.recipe_engine import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import chromium_tests_builder_config  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   properties,
   step,
@@ -27,5 +27,5 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import ChromiumPolymorphicApi as API
-from .test_api import ChromiumPolymorphicTestApi as TEST_API
+from .api import ChromiumPolymorphicApi as API  # noqa: E402, F401
+from .test_api import ChromiumPolymorphicTestApi as TEST_API  # noqa: E402, F401

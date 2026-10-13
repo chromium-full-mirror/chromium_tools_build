@@ -27,8 +27,8 @@ import argparse
 import json
 import logging
 import os
-import pathlib
-import shutil
+import pathlib  # noqa: F401
+import shutil  # noqa: F401
 import subprocess
 import sys
 import tempfile

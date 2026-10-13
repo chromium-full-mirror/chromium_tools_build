@@ -96,7 +96,7 @@ def GenTests(api: TEST_DEPS):
       api.empty_test_data(),
     )
 
-  for platform in ('linux', 'win'):
+  for platform in ('linux', 'win'):  # noqa: F402
     yield api.test(
       'affected spec file {}'.format(platform),
       api.platform(platform, 64),

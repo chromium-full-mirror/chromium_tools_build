@@ -282,7 +282,6 @@ def RunSteps(api: DEPS):
     )
   )
   with api.assertions.assertRaises(ValueError) as caught:
-    # pylint: disable=pointless-statement
     builder_config_with_mismatched_values.execution_mode
   api.assertions.assertIn('Inconsistent value', str(caught.exception))
 

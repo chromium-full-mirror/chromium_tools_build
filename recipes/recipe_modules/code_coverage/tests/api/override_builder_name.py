@@ -8,7 +8,7 @@ import re
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc  # noqa: F401
 from RECIPE_MODULES.build.chromium_tests import steps
 
 from dataclasses import dataclass

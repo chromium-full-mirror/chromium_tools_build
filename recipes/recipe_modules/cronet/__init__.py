@@ -42,4 +42,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import CronetApi as API
+from .api import CronetApi as API  # noqa: E402, F401

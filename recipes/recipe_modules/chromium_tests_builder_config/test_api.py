@@ -499,7 +499,7 @@ class ChromiumTestsBuilderConfigApi(recipe_test_api.RecipeTestApi):
       try_db = kwargs.pop('try_db', None) or TryDatabase.create({})
 
     else:
-      assert not 'try_db' in kwargs, (
+      assert 'try_db' not in kwargs, (
         'Cannot specify try_db without specifying builder_db'
       )
       builder_db = builders.BUILDERS
@@ -523,7 +523,6 @@ class ChromiumTestsBuilderConfigApi(recipe_test_api.RecipeTestApi):
         self.m.platform(
           # For some reason, pylint doesn't think BuilderConfig has these
           # attributes
-          # pylint: disable=no-member
           builder_config.simulation_platform or 'linux',
           builder_config.chromium_config_kwargs.get('TARGET_BITS', 64),
         ),

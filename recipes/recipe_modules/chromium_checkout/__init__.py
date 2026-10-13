@@ -8,21 +8,21 @@ from PB.recipe_modules.build.chromium_checkout import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   chromium,
   chromium_bootstrap,
   repro_instructions,
   siso,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   gclient,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   context,
   cv,
@@ -59,5 +59,5 @@ class DEPS(RecipeScriptApi):
   siso: siso.API
 
 
-from .api import ChromiumCheckoutApi as API
-from .test_api import ChromiumCheckoutTestApi as TEST_API
+from .api import ChromiumCheckoutApi as API  # noqa: E402, F401
+from .test_api import ChromiumCheckoutTestApi as TEST_API  # noqa: E402, F401

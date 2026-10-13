@@ -5,9 +5,9 @@
 
 from __future__ import annotations
 
-import json
+import json  # noqa: F401
 import os
-import subprocess
+import subprocess  # noqa: F401
 import sys
 import unittest
 
@@ -19,7 +19,7 @@ sys.path.insert(
   0, os.path.abspath(os.path.join(_THIS_DIR, os.pardir, 'resources'))
 )
 
-import write_paths_to_instrument
+import write_paths_to_instrument  # noqa: E402
 
 
 class WritePathsTest(unittest.TestCase):

@@ -8,10 +8,10 @@ from PB.recipe_modules.build.chromium_tests import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   archive,
   builder_group,
   chromium,
@@ -39,7 +39,7 @@ from RECIPE_MODULES.build import (
   symupload,
   test_utils,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   depot_tools,
   gclient,
@@ -47,8 +47,8 @@ from RECIPE_MODULES.depot_tools import (
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import resultdb as engine_resultdb
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import resultdb as engine_resultdb  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   bcid_reporter,
   buildbucket,
   cas,
@@ -68,7 +68,7 @@ from RECIPE_MODULES.recipe_engine import (
   swarming,
   time,
 )
-from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.infra import zip as zip_module  # noqa: E402
 
 
 @dataclass
@@ -135,5 +135,5 @@ assert not hasattr(DEPS, "chromium_tests_builder_config")
 
 
 # These can introduce a circular dependency, so import them last.
-from .api import ChromiumTestsApi as API
-from .test_api import ChromiumTestsApi as TEST_API
+from .api import ChromiumTestsApi as API  # noqa: E402, F401
+from .test_api import ChromiumTestsApi as TEST_API  # noqa: E402, F401

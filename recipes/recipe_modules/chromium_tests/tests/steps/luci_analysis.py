@@ -33,10 +33,7 @@ PROPERTIES = {
   'weak_flaky_failures': Property(kind=set),
 }
 
-from recipe_engine.recipe_api import Property
-from recipe_engine import post_process
-
-from RECIPE_MODULES.build.chromium_tests import steps
+from recipe_engine.recipe_api import Property  # noqa: E402
 
 
 def RunSteps(api: DEPS, known_flaky_failures, weak_flaky_failures):

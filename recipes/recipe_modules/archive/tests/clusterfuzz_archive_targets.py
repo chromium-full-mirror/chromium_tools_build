@@ -8,7 +8,7 @@ import datetime
 import json
 
 from recipe_engine.post_process import (
-  DoesNotRun,
+  DoesNotRun,  # noqa: F401
   DropExpectation,
   LogEquals,
   MustRun,

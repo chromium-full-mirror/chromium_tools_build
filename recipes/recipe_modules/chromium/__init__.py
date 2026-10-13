@@ -9,12 +9,12 @@ from PB.recipe_modules.build.chromium import properties
 PROPERTIES = properties.InputProperties
 
 # Forward symbols for other modules to import
-from .config import config_ctx as CONFIG_CTX
+from .config import config_ctx as CONFIG_CTX  # noqa: E402
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   builder_group,
   gn,
   ninjalog,
@@ -22,7 +22,7 @@ from RECIPE_MODULES.build import (
   siso,
   xcode,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   bot_update,
   depot_tools,
   gclient,
@@ -30,7 +30,7 @@ from RECIPE_MODULES.depot_tools import (
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cipd,
   commit_position,
@@ -81,7 +81,7 @@ class DEPS(RecipeScriptApi):
 
 
 # These introduce circular imports, so import them last.
-from .api import ChromiumApi as API
-from .test_api import ChromiumTestApi as TEST_API
+from .api import ChromiumApi as API  # noqa: E402
+from .test_api import ChromiumTestApi as TEST_API  # noqa: E402
 
 __all__ = ['CONFIG_CTX', 'API', 'TEST_API']

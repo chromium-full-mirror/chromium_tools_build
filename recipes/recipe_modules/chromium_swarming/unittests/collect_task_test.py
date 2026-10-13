@@ -18,7 +18,7 @@ THIS_DIR = os.path.dirname(__file__)
 
 RESOURCES_DIR = os.path.abspath(os.path.join(THIS_DIR, '..', 'resources'))
 sys.path.insert(0, RESOURCES_DIR)
-import collect_task
+import collect_task  # noqa: E402
 
 
 class CollectTaskTest(unittest.TestCase):

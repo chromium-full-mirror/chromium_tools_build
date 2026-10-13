@@ -8,23 +8,23 @@ from PB.recipe_modules.build.archive import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
   chromium,
   gn,
   squashfs,
   ssci,
   tar,
 )
-from RECIPE_MODULES.depot_tools import (
+from RECIPE_MODULES.depot_tools import (  # noqa: E402
   depot_tools,
   gitiles,
   gsutil,
   tryserver,
 )
-from RECIPE_MODULES.recipe_engine import (
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   bcid_reporter,
   buildbucket,
   cipd,
@@ -41,7 +41,7 @@ from RECIPE_MODULES.recipe_engine import (
   step,
   time,
 )
-from RECIPE_MODULES.infra import zip as zip_module
+from RECIPE_MODULES.infra import zip as zip_module  # noqa: E402
 
 
 @dataclass
@@ -73,5 +73,5 @@ class DEPS(RecipeScriptApi):
   tar: tar.API
 
 
-from .api import ArchiveApi as API
-from .test_api import ArchiveApi as TEST_API
+from .api import ArchiveApi as API  # noqa: E402, F401
+from .test_api import ArchiveApi as TEST_API  # noqa: E402, F401

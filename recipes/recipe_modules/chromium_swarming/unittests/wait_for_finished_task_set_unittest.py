@@ -18,7 +18,7 @@ import mock
 THIS_DIR = os.path.dirname(__file__)
 
 sys.path.insert(0, os.path.abspath(os.path.join(THIS_DIR, '..', 'resources')))
-import wait_for_finished_task_set
+import wait_for_finished_task_set  # noqa: E402
 
 
 class TasksToCollectTest(unittest.TestCase):

@@ -9,7 +9,7 @@ import argparse
 import collections
 import json
 import os
-import re
+import re  # noqa: F401
 import shutil
 import subprocess
 import sys
@@ -84,7 +84,6 @@ def _execute_buildozer(
 
     with open(input_file_path) as stdin, open(output_file_path, 'w') as stdout:
       # buildozer has non-standard exit code, we have check logic afterwards
-      # pylint: disable=subprocess-run-check
       result = subprocess.run(
         [buildozer_binary, '-f', commands_file_path],
         text=True,

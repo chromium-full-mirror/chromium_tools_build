@@ -80,7 +80,7 @@ def _get_library_paths(chromium_output_dir, isolate_target):
     raw_isolated_paths = json.load(f).get('variables', {}).get('files', [])
     all_isolated_paths = [os.path.normpath(path) for path in raw_isolated_paths]
 
-  is_wanted = lambda path: (
+  is_wanted = lambda path: (  # noqa: E731
     path.startswith('lib.unstripped/') and path.endswith('.so')
   )
 

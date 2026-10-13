@@ -13,14 +13,14 @@ import unittest
 import zlib
 
 import mock
-from mock import mock_open
+from mock import mock_open  # noqa: F401
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(
   0, os.path.abspath(os.path.join(THIS_DIR, os.pardir, 'resources'))
 )
 
-import merge_metadata_files
+import merge_metadata_files  # noqa: E402
 
 _CORRECT_METADATA = {
   'files': [

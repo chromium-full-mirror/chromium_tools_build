@@ -184,7 +184,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     # Can be either SUCCESS or FAILURE/INFRA_FAILURE result
     # SUCCESS means that there's no swarming tests to trigger
-    if maybe_raw_result != None:
+    if maybe_raw_result != None:  # noqa: E711
       return maybe_raw_result
 
     # TODO(crbug.com/330782554) - chromium_checkout.checkout_dir should be
@@ -391,7 +391,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       set(t.target_name for t in failing_test_suites)
     )
 
-    if comp_output.override_deps != None:
+    if comp_output.override_deps != None:  # noqa: E711
       compilator_properties['deps_revision_overrides'] = dict(
         comp_output.override_deps
       )
@@ -411,7 +411,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     )
 
     # FAILURE/INFRA_FAILURE result
-    if maybe_raw_result != None:
+    if maybe_raw_result != None:  # noqa: E711
       self.handle_failed_with_patch_tests(tests, failing_test_suites)
       return maybe_raw_result
 

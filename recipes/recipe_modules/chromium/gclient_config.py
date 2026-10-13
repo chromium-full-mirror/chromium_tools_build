@@ -8,7 +8,7 @@ from RECIPE_MODULES.depot_tools.gclient import CONFIG_CTX
 from RECIPE_MODULES.depot_tools.gclient import api as gclient_api
 from RECIPE_MODULES.depot_tools.gclient.config import (
   ChromiumGitURL,
-  ChromeInternalGitURL,
+  ChromeInternalGitURL,  # noqa: F401
 )
 
 

@@ -511,4 +511,4 @@ class FieldMapping(collections.abc.Mapping):
     return sum(1 for a in self._non_none_attrs())
 
 
-from .api import AttrUtilsApi as API
+from .api import AttrUtilsApi as API  # noqa: E402, F401

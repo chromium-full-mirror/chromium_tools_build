@@ -46,14 +46,14 @@ class TEST_DEPS(RecipeTestApi):
   properties: properties.TEST_API
 
 
-from recipe_engine import post_process
-from recipe_engine.recipe_api import Property
+from recipe_engine import post_process  # noqa: E402
+from recipe_engine.recipe_api import Property  # noqa: E402
 
-from RECIPE_MODULES.build import chromium_swarming
-from RECIPE_MODULES.build.chromium_tests import steps
-from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
+from RECIPE_MODULES.build import chromium_swarming  # noqa: E402, F401
+from RECIPE_MODULES.build.chromium_tests import steps  # noqa: E402, F401
+from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc  # noqa: E402
 
-from PB.recipe_modules.build.chromium_tests.properties import InputProperties
+from PB.recipe_modules.build.chromium_tests.properties import InputProperties  # noqa: E402, F401
 
 DUMMY_BUILDERS = ctbc.BuilderDatabase.create(
   {
@@ -175,7 +175,7 @@ def GenTests(api: TEST_DEPS):
       'builder cache.check if empty', api.file.listdir(['foo', 'bar'])
     ),
     api.post_check(
-      lambda check, steps: check(
+      lambda check, steps: check(  # noqa: F811
         'builder cache is present' in steps['builder cache'].step_text
       )
     ),
@@ -195,7 +195,7 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data('builder cache.check if empty', api.file.listdir([])),
     api.post_check(
-      lambda check, steps: check(
+      lambda check, steps: check(  # noqa: F811
         'builder cache is absent' in steps['builder cache'].step_text
       )
     ),

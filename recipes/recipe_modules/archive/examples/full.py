@@ -166,7 +166,7 @@ def GenTests(api: TEST_DEPS):
     'got_revision': TEST_HASH_MAIN,
     'got_revision_cp': TEST_COMMIT_POSITON_MAIN,
   }
-  for platform, build_files in (
+  for platform, build_files in (  # noqa: F402
     ('win', ['chrome', 'icu.dat', 'lib', 'file.obj']),
     ('mac', ['chrome', 'icu.dat', 'pdfsqueeze']),
     ('linux', ['chrome', 'icu.dat', 'lib.host']),

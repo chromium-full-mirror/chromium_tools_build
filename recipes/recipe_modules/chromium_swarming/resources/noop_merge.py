@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-import argparse
+import argparse  # noqa: F401
 import json
 import shutil
 import sys

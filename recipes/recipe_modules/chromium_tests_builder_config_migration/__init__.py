@@ -28,5 +28,5 @@ class DEPS(RecipeScriptApi):
 # properties proto defined in this module
 
 # Forward symbols that might need to be imported
-from .api import BlockerCategory
-from .api import ChromiumTestsBuilderConfigMigrationApi as API
+from .api import BlockerCategory  # noqa: E402, F401
+from .api import ChromiumTestsBuilderConfigMigrationApi as API  # noqa: E402, F401

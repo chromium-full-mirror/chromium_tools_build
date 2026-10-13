@@ -8,12 +8,12 @@ from PB.recipe_modules.build.avd_packager import properties
 
 PROPERTIES = properties.InputProperties
 
-from dataclasses import dataclass
+from dataclasses import dataclass  # noqa: E402
 
-from recipe_engine.recipe_api import RecipeScriptApi
-from RECIPE_MODULES.build import chromium_checkout
-from RECIPE_MODULES.depot_tools import gclient
-from RECIPE_MODULES.recipe_engine import (
+from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
+from RECIPE_MODULES.build import chromium_checkout  # noqa: E402
+from RECIPE_MODULES.depot_tools import gclient  # noqa: E402
+from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   buildbucket,
   cipd,
   context,
@@ -35,4 +35,4 @@ class DEPS(RecipeScriptApi):
   step: step.API
 
 
-from .api import AvdPackagerApi as API
+from .api import AvdPackagerApi as API  # noqa: E402, F401
