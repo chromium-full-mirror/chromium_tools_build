@@ -377,13 +377,13 @@ def RunSteps(api: DEPS, properties):
       assert properties.upload_bucket, 'upload_bucket property is required'
 
     if properties.collect_fuzz_coverage:
+      corpora_dir = api.path.mkdtemp()
+      profdata_dir = api.path.mkdtemp()
+      total_profdata_path = api.path.mkdtemp() / 'total_fuzz_coverage.profdata'
+      # Matches `REPORT_DIR` in `tools/code_coverage/run_all_fuzzers.py`.
+      report_dir = source_dir / 'out' / 'report'
       try:
-        corpora_dir = source_dir / 'current-corpora-from-clusterfuzz'
-        profdata_dir = source_dir / 'out' / 'profdata-output-dir'
-        api.file.rmtree('ensure corpora directory blank', corpora_dir)
-        api.file.ensure_directory('make corpora directory', corpora_dir)
-        api.file.rmtree('ensure profdata directory blank', profdata_dir)
-        api.file.ensure_directory('make profdata directory', profdata_dir)
+        api.file.rmtree('ensure report directory blank', report_dir)
         download_cmd = [
           'python3',
           'tools/code_coverage/download_fuzz_corpora.py',
@@ -449,17 +449,16 @@ def RunSteps(api: DEPS, properties):
             'read successful targets', targets_file
           )
           for target in successful_targets:
-            profdata_path = profdata_dir / f'{target}.profdata'
+            target_profdata_path = profdata_dir / f'{target}.profdata'
             api.code_coverage.get_chromium_fuzz_coverage(
               source_dir,
               build_dir,
-              profdata_path,
+              target_profdata_path,
               {target},
               overall=False,
               use_cache=True,
             )
 
-        profdata_path = source_dir / 'total_fuzz_coverage.profdata'
         llvm_profdata_path = api.profiles.llvm_profdata_exec
         api.step(
           'merge all fuzzers',
@@ -469,18 +468,20 @@ def RunSteps(api: DEPS, properties):
             '--profdata-dir',
             profdata_dir,
             '--outfile',
-            profdata_path,
+            total_profdata_path,
             '--llvm-profdata',
             llvm_profdata_path,
           ],
         )
 
         api.code_coverage.get_chromium_fuzz_coverage(
-          source_dir, build_dir, profdata_path, targets, use_cache=True
+          source_dir, build_dir, total_profdata_path, targets, use_cache=True
         )
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
         raise
+      finally:
+        api.file.rmtree('clean up report directory', report_dir)
 
     else:
       # copy data deps outside the build directory
@@ -716,7 +717,13 @@ def GenTests(api: TEST_DEPS):
       test += api.post_process(post_process.MustRun, 'gsutil upload')
     if is_coverage:
       test += api.post_process(
+        post_process.MustRun, 'ensure report directory blank'
+      )
+      test += api.post_process(
         post_process.MustRun, 'process fuzz coverage (overall)'
+      )
+      test += api.post_process(
+        post_process.MustRun, 'clean up report directory'
       )
       retcode = 0
       if coverage_metadata_failure:
@@ -985,10 +992,6 @@ def GenTests(api: TEST_DEPS):
     api.platform.name('linux'),
     generate_test(is_coverage=True, drop_expectation=False),
     api.post_check(
-      post_process.MustRun,
-      'ensure corpora directory blank',
-    ),
-    api.post_check(
       post_process.StepCommandContains,
       'run all fuzzers',
       ['RECIPE_REPO[build]/recipes/withxvfb.py'],
@@ -1029,10 +1032,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform.name('mac'),
     generate_test(is_coverage=True, drop_expectation=False),
-    api.post_check(
-      post_process.MustRun,
-      'ensure corpora directory blank',
-    ),
     api.post_check(
       post_process.StepCommandDoesNotContain,
       'run all fuzzers',
@@ -1144,10 +1143,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform.name('win'),
     generate_test(is_coverage=True, drop_expectation=False),
-    api.post_check(
-      post_process.MustRun,
-      'ensure corpora directory blank',
-    ),
     api.post_check(
       post_process.StepCommandDoesNotContain,
       'run all fuzzers',
