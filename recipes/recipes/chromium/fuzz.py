@@ -218,7 +218,7 @@ def RunSteps(api: DEPS, properties):
   should_clobber = (
     api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver
   )
-  update_result = api.chromium_checkout.ensure_checkout()
+  update_result = api.chromium_checkout.ensure_checkout(set_output_commit=True)
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
   api.profiles.source_dir = source_dir

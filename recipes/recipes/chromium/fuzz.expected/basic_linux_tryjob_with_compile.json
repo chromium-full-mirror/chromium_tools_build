@@ -520,6 +520,13 @@
   },
   {
     "cmd": [],
+    "name": "set_output_gitiles_commit",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/buildbucket/output_gitiles_commit@{\"host\": \"fake.org\", \"id\": \"acd0dbe7aa79f567dca274c02470e1319f739b36\", \"position\": 170242, \"project\": \"src\", \"ref\": \"refs/heads/main\"}@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "set rdb sources"
   },
   {
