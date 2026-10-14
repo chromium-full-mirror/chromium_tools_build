@@ -22,7 +22,7 @@ from RECIPE_MODULES.build import (
   code_coverage,
   test_utils,
 )
-from RECIPE_MODULES.recipe_engine import raw_io
+from RECIPE_MODULES.recipe_engine import buildbucket, raw_io
 
 
 @dataclass
@@ -39,6 +39,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  buildbucket: buildbucket.TEST_API
   chromium: chromium.TEST_API
   chromium_polymorphic: chromium_polymorphic.TEST_API
   chromium_tests: chromium_tests.TEST_API
@@ -360,5 +361,12 @@ def GenTests(api: TEST_DEPS):
       },
     ),
     api.post_process(post_process.MustRunRE, '.*coverage data.*'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'gerrit_changes_rejected',
+    api.buildbucket.try_build(),
+    api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )

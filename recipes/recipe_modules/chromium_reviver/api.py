@@ -15,6 +15,11 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 
 class ChromiumReviverApi(recipe_api.RecipeApi):
   def run(self):
+    if self.m.buildbucket.build.input.gerrit_changes:
+      self.m.step.empty(
+        'Reviver builders do not support custom patches.',
+        status=self.m.step.FAILURE,
+      )
     builder_id, builder_config = (
       self.m.chromium_polymorphic.lookup_builder_config()
     )

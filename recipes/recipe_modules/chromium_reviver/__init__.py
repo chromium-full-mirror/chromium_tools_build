@@ -15,7 +15,7 @@ from RECIPE_MODULES.build import (
   chromium_tests,
   code_coverage,
 )
-from RECIPE_MODULES.recipe_engine import buildbucket
+from RECIPE_MODULES.recipe_engine import buildbucket, step
 
 
 @dataclass
@@ -26,6 +26,7 @@ class DEPS(RecipeScriptApi):
   chromium_tests: chromium_tests.API
   code_coverage: code_coverage.API
   buildbucket: buildbucket.API
+  step: step.API
 
 
 from .api import ChromiumReviverApi as API  # noqa: E402, F401
