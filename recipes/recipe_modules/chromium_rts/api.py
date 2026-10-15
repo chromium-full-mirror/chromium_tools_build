@@ -100,11 +100,23 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       return
 
     try:
-      filter_file_dir = self.filter_file_dir(build_dir)
+      valid_targets = []
+      if tests:
+        banned_suites = self._get_banned_suites()
+        if banned_suites is None:
+          return
+        targets = {
+          self._get_isolate_target(t)
+          for t in tests
+          if t.is_enabled and t.canonical_name not in banned_suites
+        }
+        valid_targets = sorted(targets - banned_suites)
+
       model_dir = self._fetch_chromium_rts_model()
       if not model_dir or self._rts_disabled:
         return
 
+      filter_file_dir = self.filter_file_dir(build_dir)
       exe_name = 'rts-chromium'
       if self.m.platform.is_win:
         exe_name += '.exe'
@@ -127,8 +139,28 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         'HEAD~',
         '-gen-inverse',
       ]
+      if valid_targets:
+        cmd.extend(
+          [
+            '-expected-targets-path',
+            self.m.raw_io.input_text('\n'.join(valid_targets)),
+          ]
+        )
 
-      self.m.step('generate chromium-rts filter files', cmd)
+      step_result = self.m.step(
+        'generate chromium-rts filter files',
+        cmd,
+        stderr=self.m.raw_io.output_text(add_output_log=True, name='stderr'),
+      )
+
+      if step_result.stderr:
+        warnings = [
+          line
+          for line in step_result.stderr.splitlines()
+          if 'unable to generate filter file for' in line
+        ]
+        if warnings:
+          step_result.presentation.step_text = '\n'.join(warnings)
     except Exception as e:
       self._disable_rts_with_reason(
         e,

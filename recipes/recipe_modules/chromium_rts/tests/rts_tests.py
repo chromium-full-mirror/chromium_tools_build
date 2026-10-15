@@ -18,6 +18,7 @@ from RECIPE_MODULES.recipe_engine import (
   path,
   platform,
   properties,
+  raw_io,
 )
 
 
@@ -31,6 +32,7 @@ class DEPS(RecipeScriptApi):
   path: path.API
   platform: platform.API
   properties: properties.API
+  raw_io: raw_io.API
 
 
 @dataclass
@@ -40,6 +42,7 @@ class TEST_DEPS(RecipeTestApi):
   path: path.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
 
 
 def RunSteps(api: DEPS):
@@ -53,6 +56,12 @@ def RunSteps(api: DEPS):
     api.path.start_dir,
     api.path.cleanup_dir,
     affected_files=api.properties.get('affected_files', []),
+    tests=[
+      MockTestSpec.create(name=t, runs_on_swarming=True).get_test(
+        api.chromium_tests
+      )
+      for t in api.properties.get('targets', [])
+    ],
   )
   mock_test = MockTestSpec.create(
     name='blink_web_tests', runs_on_swarming=True
@@ -160,6 +169,11 @@ def GenTests(api: TEST_DEPS):
         '-out',
         '[CLEANUP]/gen/rts',
       ],
+    ),
+    api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'generate chromium-rts filter files',
+      ['-expected-targets-path'],
     ),
     api.post_process(post_process.DropExpectation),
   )
@@ -494,6 +508,62 @@ def GenTests(api: TEST_DEPS):
       'read rts_banned_suites.json',
       'exception',
       ['Traceback'],
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'rts_enabled_with_targets',
+    api.chromium.try_build(
+      builder='linux-rel',
+      experiments=['chromium_rts.filter_file_analysis'],
+    ),
+    api.properties(
+      targets=['blink_web_tests', 'blink_python_tests', 'missing_target']
+    ),
+    api.step_data(
+      'generate chromium-rts filter files',
+      api.raw_io.stream_output_text(
+        'unable to generate filter file for "missing_target" because its '
+        'tests do not report test location metadata',
+        stream='stderr',
+      ),
+    ),
+    api.post_process(
+      post_process.MustRun, 'generate chromium-rts filter files'
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'generate chromium-rts filter files',
+      [
+        '-expected-targets-path',
+        'blink_web_tests\nmissing_target',
+      ],
+    ),
+    api.post_process(
+      post_process.StepTextContains,
+      'generate chromium-rts filter files',
+      [
+        'unable to generate filter file for "missing_target"',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'rts_generate_filter_files_banned_suites_failure',
+    api.chromium.try_build(
+      builder='linux-rel',
+      experiments=['chromium_rts.filter_file_analysis'],
+    ),
+    api.properties(targets=['blink_web_tests']),
+    api.step_data('read rts_banned_suites.json', retcode=1),
+    api.post_process(post_process.MustRun, 'read rts_banned_suites.json'),
+    api.post_process(post_process.StepFailure, 'read rts_banned_suites.json'),
+    api.post_process(post_process.DoesNotRun, 'install RTS model'),
+    api.post_process(
+      post_process.DoesNotRun, 'generate chromium-rts filter files'
     ),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.DropExpectation),
