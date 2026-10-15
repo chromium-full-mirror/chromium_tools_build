@@ -994,6 +994,31 @@ class TestGTestJSONParserTests(unittest.TestCase):
       tempfile.gettempdir(),
     )
 
+  def testProcessJSONFileUTF8(self):
+    parser = gtest_utils.GTestJSONParser()
+    json_path = parser.PrepareJSONFile(None)
+    with open(json_path, 'wb') as f:
+      # U+2060 (WORD JOINER) encodes to 0xE2 0x81 0xA0 in UTF-8, where 0x81 is
+      # undefined in Windows cp1252.
+      f.write(
+        json.dumps(
+          {
+            'disabled_tests': [],
+            'global_tags': [],
+            'per_iteration_data': [
+              {
+                'Test.One': [
+                  {'status': 'SUCCESS', 'output_snippet': 'Card \u2060 1234'}
+                ]
+              }
+            ],
+          },
+          ensure_ascii=False,
+        ).encode('utf-8')
+      )
+    parser.ProcessJSONFile(tempfile.gettempdir())
+    self.assertEqual(['Test.One'], parser.PassedTests())
+
   def testCompressList(self):
     CompressList = gtest_utils.CompressList
     self.assertEqual(['foo'], CompressList([1, 2, 3, 4], 0, 'foo'))

@@ -577,9 +577,11 @@ class GTestJSONParser:
     if not self.json_file_path:
       return
 
-    with open(self.json_file_path) as json_file:
+    with open(
+      self.json_file_path, encoding='utf-8', errors='replace'
+    ) as json_file:
+      json_output = json_file.read()
       try:
-        json_output = json_file.read()
         json_data = json.loads(json_output)
       except ValueError:
         # Only signal parsing error if the file is non-empty. Empty file
