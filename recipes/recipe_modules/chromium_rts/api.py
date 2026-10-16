@@ -13,6 +13,7 @@ from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 from . import evaluation
 
+RTS_COMPLEMENT_VARIANT = 'rts_complement'
 TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 _DEFAULT_TARGET_CHANGE_RECALL = 0.95
@@ -344,7 +345,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       build_dir, command_lines, tests, banned_suites, inverted=True
     )
     if rts_complement_command_lines:
-      variants['rts_complement'] = rts_complement_command_lines
+      variants[RTS_COMPLEMENT_VARIANT] = rts_complement_command_lines
 
     return variants
 
@@ -396,6 +397,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     rts_command_line = command_line_variants['rts'].get(target, [])
     if rts_command_line:
       test.raw_cmd = rts_command_line
+      if not self._overwritten_tests:
+        self.m.buildbucket.add_tags_to_current_build(
+          self.m.buildbucket.tags(rts_was_used='true')
+        )
       self._overwritten_tests.add(test.name)
 
   def append_test_step_text(
