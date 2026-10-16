@@ -480,14 +480,6 @@ def publish_tarball(api: DEPS):
         'full',
       )
 
-      # Trigger a tarball build now that the full tarball has been uploaded.
-      defer(
-        api.scheduler.emit_trigger,
-        api.scheduler.BuildbucketTrigger(properties={'version': version}),
-        project='infra',
-        jobs=['Build From Tarball'],
-      )
-
     if not published_test_tarball(version, ls_result):
       defer(
         export_tarball,

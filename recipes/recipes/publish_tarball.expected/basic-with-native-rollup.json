@@ -762,60 +762,6 @@
   },
   {
     "cmd": [
-      "prpc",
-      "call",
-      "-format=json",
-      "luci-scheduler.appspot.com",
-      "scheduler.Scheduler.EmitTriggers"
-    ],
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "project:cron"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "luci-scheduler.EmitTriggers",
-    "stdin": "{\"batches\": [{\"jobs\": [{\"job\": \"Build From Tarball\", \"project\": \"infra\"}], \"trigger\": {\"buildbucket\": {\"properties\": {\"version\": \"145.0.7632.38\"}, \"tags\": [\"parent_buildername:builder\", \"user_agent:recipe\"]}, \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\", \"title\": \"builder/0\", \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"}}], \"timestamp\": 1337000001500000}",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@input@{@@@",
-      "@@@STEP_LOG_LINE@input@    \"batches\": [@@@",
-      "@@@STEP_LOG_LINE@input@        {@@@",
-      "@@@STEP_LOG_LINE@input@            \"jobs\": [@@@",
-      "@@@STEP_LOG_LINE@input@                {@@@",
-      "@@@STEP_LOG_LINE@input@                    \"job\": \"Build From Tarball\",@@@",
-      "@@@STEP_LOG_LINE@input@                    \"project\": \"infra\"@@@",
-      "@@@STEP_LOG_LINE@input@                }@@@",
-      "@@@STEP_LOG_LINE@input@            ],@@@",
-      "@@@STEP_LOG_LINE@input@            \"trigger\": {@@@",
-      "@@@STEP_LOG_LINE@input@                \"buildbucket\": {@@@",
-      "@@@STEP_LOG_LINE@input@                    \"properties\": {@@@",
-      "@@@STEP_LOG_LINE@input@                        \"version\": \"145.0.7632.38\"@@@",
-      "@@@STEP_LOG_LINE@input@                    },@@@",
-      "@@@STEP_LOG_LINE@input@                    \"tags\": [@@@",
-      "@@@STEP_LOG_LINE@input@                        \"parent_buildername:builder\",@@@",
-      "@@@STEP_LOG_LINE@input@                        \"user_agent:recipe\"@@@",
-      "@@@STEP_LOG_LINE@input@                    ]@@@",
-      "@@@STEP_LOG_LINE@input@                },@@@",
-      "@@@STEP_LOG_LINE@input@                \"id\": \"6a0a73b0-070b-492b-9135-9f26a2a00001\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"title\": \"builder/0\",@@@",
-      "@@@STEP_LOG_LINE@input@                \"url\": \"https://cr-buildbucket.appspot.com/build/8945511751514863184\"@@@",
-      "@@@STEP_LOG_LINE@input@            }@@@",
-      "@@@STEP_LOG_LINE@input@        }@@@",
-      "@@@STEP_LOG_LINE@input@    ],@@@",
-      "@@@STEP_LOG_LINE@input@    \"timestamp\": 1337000001500000@@@",
-      "@@@STEP_LOG_LINE@input@}@@@",
-      "@@@STEP_LOG_END@input@@@"
-    ]
-  },
-  {
-    "cmd": [
       "python3",
       "RECIPE_MODULE[build::chromium]/resources/export_tarball.py",
       "--test-data",
