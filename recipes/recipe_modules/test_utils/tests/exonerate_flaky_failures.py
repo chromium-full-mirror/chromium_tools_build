@@ -378,6 +378,67 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       CheckStepInput, 'exonerate unrelated test failures', 'LUCI Analysis'
     ),
+    api.post_process(
+      CheckStepInput,
+      'query LUCI Analysis for stability.rpc call',
+      '"project": "chromium"',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'chrome project queries chrome LUCI Analysis',
+    api.chromium.generic_build(
+      project='chrome',
+      builder_group='fake-group',
+      builder='fake-builder',
+    ),
+    api.override_step_data(
+      'collect tasks (with patch).failed_test results',
+      stdout=api.raw_io.output_text(
+        api.test_utils.rdb_results(
+          'failed_test', failing_tests=['testA', 'testB']
+        )
+      ),
+    ),
+    api.properties(
+      known_luci_analysis_flakes_expectations={
+        'failed_test': ['testA', 'testB'],
+      },
+      **{
+        '$build/test_utils': {
+          'should_exonerate_flaky_failures': True,
+        },
+      },
+    ),
+    api.override_step_data(
+      'query LUCI Analysis for stability.rpc call',
+      stdout=api.json.output(
+        api.luci_analysis.generate_stability_response(
+          [
+            api.luci_analysis.generate_stability_analysis(
+              test_id='ninja://failed_test/testA',
+              failure_rate_is_met=False,
+              flake_rate_is_met=True,
+              run_flaky_verdicts_1wd=1,
+              run_flaky_verdicts_12h=1,
+            ),
+            api.luci_analysis.generate_stability_analysis(
+              test_id='ninja://failed_test/testB',
+              failure_rate_is_met=False,
+              flake_rate_is_met=True,
+              run_flaky_verdicts_1wd=1,
+              run_flaky_verdicts_12h=1,
+            ),
+          ]
+        )
+      ),
+    ),
+    api.post_process(
+      CheckStepInput,
+      'query LUCI Analysis for stability.rpc call',
+      '"project": "chrome"',
+    ),
     api.post_process(post_process.DropExpectation),
   )
 

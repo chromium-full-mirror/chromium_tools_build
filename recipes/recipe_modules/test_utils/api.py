@@ -721,8 +721,14 @@ class TestUtilsApi(recipe_api.RecipeApi):
     stability_analysis_protos = []
     query_stability_rate_step_error_msg = None
     try:
+      project = (
+        'chrome'
+        if self.m.buildbucket.build.builder.project == 'chrome'
+        else 'chromium'
+      )
       stability_analysis_protos, _ = self.m.luci_analysis.query_stability(
-        test_variants_to_query
+        test_variants_to_query,
+        project=project,
       )
     except self.m.step.StepFailure as f:
       # Don't fail the build if something's wrong with LUCI Analysis.
