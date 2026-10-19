@@ -1,0 +1,15 @@
+// Copyright 2026 The Chromium Authors
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+syntax = "proto3";
+package recipes.build.chrome_build.build_perf;
+
+// Input properties shared by the build perf recipes (build_perf_siso and
+// build_perf_developer).
+message InputProperties {
+  // Run an extra clean build with -missing_deps=error ("... with missing-deps
+  // check"), for continuous benchmarking of the check before enabling it by
+  // default. See crbug.com/346429448.
+  bool enable_missing_deps_check = 1;
+}

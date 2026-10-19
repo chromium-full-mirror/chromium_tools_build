@@ -9,6 +9,7 @@ from recipe_engine import post_process
 from recipe_engine.config_types import Path
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipes.build.chrome_build import build_perf as build_perf_pb
 from RECIPE_MODULES.build import chromium_types
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
 
@@ -79,10 +80,14 @@ class TEST_DEPS(RecipeTestApi):
   git: git.TEST_API
   path: path.TEST_API
   platform: platform.TEST_API
+  properties: properties.TEST_API
   raw_io: raw_io.TEST_API
   reclient: reclient.TEST_API
   siso: siso.TEST_API
   step: step.TEST_API
+
+
+PROPERTIES = build_perf_pb.InputProperties
 
 
 def _raise_raw_result_on_failure(api: DEPS, raw_result):
@@ -97,7 +102,13 @@ def _get_builder_id(api: DEPS):
   )
 
 
-def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target: str):
+def _clean_builds(
+  api: DEPS,
+  source_dir: Path,
+  build_dir: Path,
+  target: str,
+  enable_missing_deps_check: bool,
+):
   # Do not run clean build for CI benchmarking since it's too slow for
   # small -remote_jobs value.
   if api.siso.project.startswith("rbe-chromium-trusted"):
@@ -105,7 +116,14 @@ def _clean_builds(api: DEPS, source_dir: Path, build_dir: Path, target: str):
 
   with api.step.nest('Clean builds'):
     # Build target: all
-    _run_clean_builds(api, source_dir, build_dir, target, phase='builtin')
+    _run_clean_builds(
+      api,
+      source_dir,
+      build_dir,
+      target,
+      phase='builtin',
+      enable_missing_deps_check=enable_missing_deps_check,
+    )
 
 
 def _incremental_build_with_one_hour_changes(
@@ -178,6 +196,7 @@ def _run_clean_builds(
   target,
   phase,
   step_name_suffix=None,
+  enable_missing_deps_check=False,
 ):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
@@ -227,10 +246,10 @@ def _run_clean_builds(
       raise_on_failure=False,
     )
 
-  # Enable missing-deps check as an additional step on Linux and Mac hosts for
-  # continuous benchmarking before enabling by default.
-  # See crbug.com/346429448.
-  if api.platform.is_linux or api.platform.is_mac:
+  # Missing-deps check as an additional step for continuous benchmarking
+  # before enabling by default. Opt-in via the enable_missing_deps_check
+  # property. See crbug.com/346429448.
+  if enable_missing_deps_check:
     api.chromium_build_perf.recreate_build_dir(
       source_dir, build_dir, phase=phase
     )
@@ -246,7 +265,7 @@ def _run_clean_builds(
     )
 
 
-def RunSteps(api: DEPS):
+def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
   solution_path = api.path.cache_dir / 'builder'
   api.file.ensure_directory('init cache if not exists', solution_path)
@@ -271,7 +290,13 @@ def RunSteps(api: DEPS):
   api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
   target = 'all'
-  _clean_builds(api, source_dir, build_dir, target)
+  _clean_builds(
+    api,
+    source_dir,
+    build_dir,
+    target,
+    enable_missing_deps_check=props.enable_missing_deps_check,
+  )
 
   _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
 
@@ -301,9 +326,34 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
+    api.properties(
+      build_perf_pb.InputProperties(enable_missing_deps_check=True)
+    ),
     api.siso.properties(),
     api.reclient.properties(),
     api.code_coverage(use_clang_coverage=True),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'full_linux_without_missing_deps_check',
+    api.chromium.ci_build(**builder),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_ci_builder(
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+        ),
+        **builder,
+      ).assemble()
+    ),
+    api.siso.properties(),
+    api.reclient.properties(),
+    api.post_process(
+      post_process.DoesNotRun,
+      'Clean builds.Build all with remote cache with Siso with '
+      'missing-deps check',
+    ),
     api.post_process(post_process.DropExpectation),
   )
 
