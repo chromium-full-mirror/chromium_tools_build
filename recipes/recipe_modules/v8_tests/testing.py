@@ -144,6 +144,10 @@ TEST_CONFIGS = freeze(
       ],
       'test_args': ['--random-gc-stress'],
     },
+    'intl': {
+      'name': 'Intl',
+      'tests': ['intl'],
+    },
     'jetstream3': {
       'tool': 'run-jetstream3',
       'isolated_target': 'jetstream3',

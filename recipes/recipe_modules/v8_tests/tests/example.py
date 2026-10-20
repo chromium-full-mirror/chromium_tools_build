@@ -154,3 +154,29 @@ def GenTests(api: TEST_DEPS):
     api.post_process(DropExpectation),
     status='SUCCESS',
   )
+
+  intl_test_spec = json.dumps(
+    {
+      "tests": [
+        {"name": "intl"},
+      ],
+    },
+    indent=2,
+  )
+  intl_parent_test_spec = api.v8_tests.example_parent_test_spec_properties(
+    'v8_foobar_rel_ng_triggered', intl_test_spec
+  )
+  intl_swarm_hashes = api.v8_tests._make_dummy_swarm_hashes(['intl'])
+
+  yield api.test(
+    'intl',
+    api.buildbucket.try_build(),
+    api.properties(swarm_hashes=intl_swarm_hashes, **intl_parent_test_spec),
+    api.post_process(
+      LogContains,
+      'trigger tests.[trigger] Intl on Ubuntu-16.04',
+      'json.input',
+      ['"intl"'],
+    ),
+    api.post_process(DropExpectation),
+  )
