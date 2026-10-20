@@ -130,7 +130,11 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
     self._set_paths(update_result.checkout_dir, update_result.source_root.path)
 
   def get_files_affected_by_patch(
-    self, relative_to=None, cwd=None, report_via_property=False
+    self,
+    relative_to=None,
+    cwd=None,
+    report_via_property=False,
+    ignore_stacked_changes=False,
   ):
     """Returns list of POSIX paths of files affected by patch for "analyze".
 
@@ -153,6 +157,7 @@ class ChromiumCheckoutApi(recipe_api.RecipeApi):
         report_files_via_property=(
           'affected_files' if report_via_property else None
         ),
+        ignore_stacked_changes=ignore_stacked_changes,
       )
     return self.format_affected_file_paths(files, relative_to=relative_to)
 

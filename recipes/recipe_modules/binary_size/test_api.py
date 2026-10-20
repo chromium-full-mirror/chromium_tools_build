@@ -46,53 +46,50 @@ class BinarySizeTestApi(recipe_test_api.RecipeTestApi):
       footer_json['Fuchsia-Binary-Size'] = ['Totally worth it for Fuchsia.']
     commit_log_overrides = []
     if override_commit_log:
-      recent_upload_commit_log = {
-        'message': 'Upload message\n\nCr-Commit-Position: refs/heads/main@{{#{}}}\n'.format(
-          recent_upload_cp or constants.TEST_RECENT_UPLOAD_CP
-        )
-      }
-      recent_upload_footer = {
-        'Cr-Commit-Position': [
-          'refs/heads/main@{{#{}}}'.format(
-            recent_upload_cp or constants.TEST_RECENT_UPLOAD_CP
-          )
-        ]
-      }
+      if patch_parent_cp:
+        patch_parent_commit_log = {
+          'message': 'Parent message\n\nCr-Commit-Position: '
+          'refs/heads/main@{{#{}}}\n'.format(patch_parent_cp)
+        }
+        patch_parent_footer = {
+          'Cr-Commit-Position': [
+            'refs/heads/main@{{#{}}}'.format(patch_parent_cp)
+          ]
+        }
+      else:
+        patch_parent_commit_log = {'message': 'Parent message\n\n'}
+        patch_parent_footer = {}
+
       commit_log_overrides = [
         self.override_step_data(
-          'Commit log for uploaded revision',
-          self.m.json.output(recent_upload_commit_log),
+          'Commit log for patch\'s parent revision',
+          self.m.json.output(patch_parent_commit_log),
         ),
         self.override_step_data(
-          'parse description (2)', self.m.json.output(recent_upload_footer)
+          'parse description (2)', self.m.json.output(patch_parent_footer)
         ),
       ]
-
-      patch_parent_commit_log = {
-        'message': 'Parent message\n\nCr-Commit-Position: '
-        'refs/heads/main@{{#{}}}\n'.format(
-          patch_parent_cp or constants.TEST_PATCH_PARENT_CP
+      if patch_parent_cp and recent_upload_cp:
+        recent_upload_commit_log = {
+          'message': 'Upload message\n\nCr-Commit-Position: '
+          'refs/heads/main@{{#{}}}\n'.format(recent_upload_cp)
+        }
+        recent_upload_footer = {
+          'Cr-Commit-Position': [
+            'refs/heads/main@{{#{}}}'.format(recent_upload_cp)
+          ]
+        }
+        commit_log_overrides.extend(
+          [
+            self.override_step_data(
+              'Commit log for uploaded revision',
+              self.m.json.output(recent_upload_commit_log),
+            ),
+            self.override_step_data(
+              'parse description (3)', self.m.json.output(recent_upload_footer)
+            ),
+          ]
         )
-      }
-      patch_parent_footer = {
-        'Cr-Commit-Position': [
-          'refs/heads/main@{{#{}}}'.format(
-            patch_parent_cp or constants.TEST_PATCH_PARENT_CP
-          )
-        ]
-      }
-
-      commit_log_overrides.extend(
-        [
-          self.override_step_data(
-            'Commit log for patch\'s parent(x1) revision',
-            self.m.json.output(patch_parent_commit_log),
-          ),
-          self.override_step_data(
-            'parse description (3)', self.m.json.output(patch_parent_footer)
-          ),
-        ]
-      )
 
     return sum(
       [
@@ -118,49 +115,6 @@ class BinarySizeTestApi(recipe_test_api.RecipeTestApi):
       + commit_log_overrides,
       self.empty_test_data(),
     )
-
-  def override_cp_for_parents(self, count, add_final_parent=True):
-    no_cp_commit_log = {
-      'message': 'Parent message\n\n',
-      'parents': ['parentx2hash'],
-    }
-    with_cp_commit_log = {
-      'message': 'Parent message\n\nCr-Commit-Position: '
-      'refs/heads/main@{{#{}}}\n'.format(constants.TEST_PATCH_PARENT_CP)
-    }
-    with_cp_footer = {
-      'Cr-Commit-Position': [
-        'refs/heads/main@{{#{}}}'.format(constants.TEST_PATCH_PARENT_CP)
-      ]
-    }
-    commit_log_overrides = []
-    for i in range(1, count + 1):
-      commit_log_overrides.extend(
-        [
-          self.override_step_data(
-            f'Commit log for patch\'s parent(x{i}) revision',
-            self.m.json.output(no_cp_commit_log),
-          ),
-          self.override_step_data(
-            f'parse description ({i + 2})', self.m.json.output({})
-          ),
-        ]
-      )
-    if add_final_parent:
-      commit_log_overrides.extend(
-        [
-          # Add step override data for parent*count cl so that it has a CP.
-          self.override_step_data(
-            f'Commit log for patch\'s parent(x{count + 1}) revision',
-            self.m.json.output(with_cp_commit_log),
-          ),
-          self.override_step_data(
-            f'parse description ({count + 3})',
-            self.m.json.output(with_cp_footer),
-          ),
-        ]
-      )
-    return sum(commit_log_overrides, self.empty_test_data())
 
   def on_significant_binary_package_restructure(self):
     # Simulates manual clearing of the LATEST file.

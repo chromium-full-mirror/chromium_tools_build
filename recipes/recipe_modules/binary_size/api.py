@@ -99,38 +99,32 @@ class BinarySizeApi(recipe_api.RecipeApi):
       return constants.LEGACY_SIZE_CONFIG_JSON
     return constants.DEFAULT_SIZE_CONFIG_JSON
 
-  def get_first_committed_ancestor_position(
-    self, url, revision, step_name_suffix=None, ancestor_index=1
-  ):
-    """Gets the commit position of a committed ancestor of a patch.
+  def _get_commit_position(self, url, revision, for_uploaded_rev):
+    """Gets the commit position of a revision.
 
     Args:
       url: URL of the repo, e.g. https://chromium.googlesource.com/v8/v8
       revision: The git SHA1 of the revision.
-      step_name_suffix: Suffix to use in the step name.
-      ancestor_index: The number of ancestors we've traversed.
+      for_uploaded_rev: Whether this is for the uploaded revision or the
+        patch's parent revision.
 
     Returns:
       An integer representing the commit position, or None if not found.
     """
-    # Limit to 10 links up the chain, if we still haven't found a committed CL,
-    # there must be something wrong.
-    if ancestor_index > 10:
-      return None
-    if not step_name_suffix:
-      step_name_suffix = f'patch\'s parent(x{ancestor_index}) revision'
-    commit_details = self.m.gitiles.commit_log(
-      url, revision, step_name='Commit log for {}'.format(step_name_suffix)
-    )
+    if for_uploaded_rev:
+      suffix = 'uploaded revision'
+    else:
+      suffix = 'patch\'s parent revision'
+    commit_message = self.m.gitiles.commit_log(
+      url, revision, step_name='Commit log for {}'.format(suffix)
+    )['message']
     cp_footer = self.m.tryserver.get_footer(
-      constants.COMMIT_POSITION_FOOTER_KEY, patch_text=commit_details['message']
+      constants.COMMIT_POSITION_FOOTER_KEY, patch_text=commit_message
     )
     # A patch's parent may be another CL that hasn't landed yet, so there's
-    # no commit position footer yet. If so, go one more link up the chain.
+    # no commit position footer yet.
     if not cp_footer:
-      return self.get_first_committed_ancestor_position(
-        url, commit_details['parents'][0], ancestor_index=ancestor_index + 1
-      )
+      return None
     return int(self.m.commit_position.parse(cp_footer[0])[1])
 
   def android_binary_size(self, **kwargs):
@@ -275,6 +269,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         self.m.chromium_checkout.default_checkout_dir
       )
       gs_zip_path = None
+      is_stacked = False
       checkout_kwargs = {'set_output_commit': True}
       if not try_gs_analysis:
         update_result = self.m.chromium_checkout.ensure_checkout(
@@ -282,9 +277,15 @@ class BinarySizeApi(recipe_api.RecipeApi):
         )
       else:
         patch_parent_revision = revision_info['commit']['parents'][0]['commit']
-        gs_zip_path, recent_upload_revision = (
-          self._get_recent_tot_analysis_path(patch_parent_revision)
+        url = self.m.gclient.c.solutions[0].url
+        patch_cp = self._get_commit_position(
+          url, patch_parent_revision, for_uploaded_rev=False
         )
+        is_stacked = not patch_cp
+        if not is_stacked:
+          gs_zip_path, recent_upload_revision = (
+            self._get_recent_tot_analysis_path(patch_cp)
+          )
         if gs_zip_path:
           self.m.gclient.c.solutions[0].revision = recent_upload_revision
 
@@ -313,7 +314,9 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
       self._clear_failed_expectation_files(build_dir)
 
-      affected_files = self.m.chromium_checkout.get_files_affected_by_patch()
+      affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
+        ignore_stacked_changes=is_stacked
+      )
       # README.chromium files are implicit inputs to about:credits which affects binary size.
       # Ensure binary size analysis runs whenever any README.chromium is modified.
       additional_exclusions = {
@@ -364,7 +367,22 @@ class BinarySizeApi(recipe_api.RecipeApi):
         )
       else:
         with self.m.context(cwd=checkout_dir):
-          self.m.bot_update.deapply_patch(update_result)
+          if is_stacked:
+            first_solution_name = self.m.gclient.c.solutions[0].name
+            self.m.bot_update.resolve_fixed_revision(
+              update_result, first_solution_name
+            )
+            repo_url = self.m.tryserver.gerrit_change_repo_url
+            target_ref = self.m.tryserver.gerrit_change_target_ref
+            patch_refs = [f'{repo_url}@{target_ref}:{patch_parent_revision}']
+            self.m.bot_update.ensure_checkout(
+              suffix='(without patch)',
+              patch_refs=patch_refs,
+              no_fetch_tags=True,
+              update_presentation=False,
+            )
+          else:
+            self.m.bot_update.deapply_patch(update_result)
 
         with self.m.context(cwd=source_dir):
           suffix = ' (without patch)'
@@ -589,11 +607,11 @@ class BinarySizeApi(recipe_api.RecipeApi):
     cmd += ['--isolated-script-test-output', staging_dir / 'size_results.json']
     self.m.step(name='Generate commit size analysis files', cmd=cmd)
 
-  def _get_recent_tot_analysis_path(self, patch_parent_revision):
+  def _get_recent_tot_analysis_path(self, patch_cp):
     """Get recent size analysis results path and latest revision.
 
     Args:
-      patch_parent_revision: String, parent revision of patch.
+      patch_cp: int, commit position of parent revision of patch.
 
     Returns:
       (results_path: string, latest_revision: string) or (None, None) if no
@@ -639,13 +657,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
     # recently uploaded revision. We can't use the uploaded results
     # in that case.
     url = self.m.gclient.c.solutions[0].url
-    uploaded_cp = self.get_first_committed_ancestor_position(
-      url, latest_upload_revision, step_name_suffix='uploaded revision'
+    uploaded_cp = self._get_commit_position(
+      url, latest_upload_revision, for_uploaded_rev=True
     )
-    patch_cp = self.get_first_committed_ancestor_position(
-      url, patch_parent_revision
-    )
-    if not patch_cp or patch_cp > uploaded_cp:
+    if not patch_cp or not uploaded_cp or patch_cp > uploaded_cp:
       return None, None
 
     return gs_zip_path, latest_upload_revision

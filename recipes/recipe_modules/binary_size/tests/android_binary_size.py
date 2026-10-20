@@ -110,7 +110,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'patch_fixes_build',
-    api.binary_size.build(),
+    api.binary_size.build(recent_upload_cp=None, override_commit_log=True),
     api.override_step_data('compile (without patch)', retcode=1),
     api.time.seed(constants.TEST_TIME + 7230),
     api.post_process(
@@ -240,7 +240,11 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'normal_significant_binary_package_restructure',
-    api.binary_size.build('normal build + significant package restructure'),
+    api.binary_size.build(
+      'normal build + significant package restructure',
+      recent_upload_cp=None,
+      override_commit_log=True,
+    ),
     api.binary_size.on_significant_binary_package_restructure(),
     api.post_check(has_expected_supersize_link),
     api.post_check(has_expected_binary_size_url),
@@ -435,7 +439,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'invalid_latest_file',
-    api.binary_size.build(),
+    api.binary_size.build(recent_upload_cp=None, override_commit_log=True),
     api.time.seed(constants.TEST_TIME + 7230),
     api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
     api.post_process(post_process.MustRun, 'compile (without patch)'),
@@ -458,22 +462,24 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'patch_parent_no_cp',
-    api.binary_size.build(override_commit_log=True),
-    api.binary_size.override_cp_for_parents(count=1),
-    api.post_process(post_process.MustRun, 'gsutil Downloading zip'),
-    api.post_process(post_process.DoesNotRun, 'compile (without patch)'),
-    api.post_check(has_expected_supersize_link),
-    api.post_check(has_expected_binary_size_url),
-    api.post_check(final_step_is_not_nested),
-    api.post_process(post_process.StepSuccess, constants.RESULTS_STEP_NAME),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-    'patch_parent_no_cp_max_limit',
-    api.binary_size.build(override_commit_log=True),
-    api.binary_size.override_cp_for_parents(count=10, add_final_parent=False),
+    api.binary_size.build(
+      recent_upload_cp=12345, patch_parent_cp=None, override_commit_log=True
+    ),
     api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
+    api.post_process(post_process.MustRun, 'bot_update - (without patch)'),
+    api.post_process(
+      post_process.StepCommandContains,
+      'bot_update - (without patch)',
+      [
+        '--patch_ref',
+        'https://chromium.googlesource.com/chromium/src@refs/heads/main:deadveggie12345',
+      ],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'git diff to analyze patch',
+      ['FETCH_HEAD~', 'FETCH_HEAD'],
+    ),
     api.post_process(post_process.MustRun, 'compile (without patch)'),
     api.post_check(has_expected_supersize_link),
     api.post_check(has_expected_binary_size_url),
