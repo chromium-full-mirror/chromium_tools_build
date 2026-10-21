@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import re
 import textwrap
 
@@ -35,6 +36,7 @@ from RECIPE_MODULES.recipe_engine import (
   platform,
   properties,
   step,
+  time,
 )
 
 
@@ -55,6 +57,7 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   step: step.API
+  time: time.API
 
 
 @dataclass
@@ -122,6 +125,7 @@ def RunSteps(api: DEPS):
     'CGO_ENABLED': '1',
     'CGO_CFLAGS': f'-I{seccomp_dir}/include',
     'CGO_LDFLAGS': f'-L{seccomp_dir}/lib -lseccomp',
+    'GODEBUG': 'http2client=0',
   }
   env_prefixes = {
     'PKG_CONFIG_PATH': [seccomp_dir / 'lib' / 'pkgconfig'],
@@ -134,29 +138,24 @@ def RunSteps(api: DEPS):
   ):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
-    api.step(
-      'override broken go modules',
-      [
-        'go',
-        'work',
-        'edit',
-        '-replace',
-        'go.opentelemetry.io/collector/exporter/exportertest=go.opentelemetry.io/collector/exporter/exportertest@v0.157.0',
-      ],
-    )
-    api.step(
-      'generate go kzip',
-      [
-        kythe_bin,
-        '--corpus',
-        'chromium.googlesource.com/build//main',
-        '--use_default_corpus_for_stdlib=true',
-        '--use_default_corpus_for_deps=true',
-        '--output',
-        kzip_loc,
-      ]
-      + targets,
-    )
+
+    @api.time.exponential_retry(retries=2, delay=datetime.timedelta(seconds=5))
+    def _generate_go_kzip():
+      api.step(
+        'generate go kzip',
+        [
+          kythe_bin,
+          '--corpus',
+          'chromium.googlesource.com/build//main',
+          '--use_default_corpus_for_stdlib=true',
+          '--use_default_corpus_for_deps=true',
+          '--output',
+          kzip_loc,
+        ]
+        + targets,
+      )
+
+    _generate_go_kzip()
 
   api.gsutil.upload(
     name='upload kythe index pack',
@@ -219,6 +218,7 @@ def GenTests(api: TEST_DEPS):
               )''')
       ),
     ),
+    api.step_data('generate go kzip', retcode=1),
     api.post_process(
       StepCommandContains,
       'ensure_installed (3)',

@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import datetime
 import re
 import textwrap
 
@@ -30,6 +31,7 @@ from RECIPE_MODULES.recipe_engine import (
   properties,
   raw_io,
   step,
+  time,
 )
 
 
@@ -49,6 +51,7 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   step: step.API
+  time: time.API
   json: json.API
   raw_io: raw_io.API
 
@@ -141,7 +144,13 @@ def RunSteps(api: DEPS):
   # KYTHE_ROOT_DIRECTORY makes sub modules relpath to build repo root.
   with (
     api.golang(version=go_version),
-    api.context(cwd=checkout_dir, env={'KYTHE_ROOT_DIRECTORY': checkout_dir}),
+    api.context(
+      cwd=checkout_dir,
+      env={
+        'GODEBUG': 'http2client=0',
+        'KYTHE_ROOT_DIRECTORY': checkout_dir,
+      },
+    ),
   ):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
@@ -167,24 +176,26 @@ def RunSteps(api: DEPS):
         'go.chromium.org/chromiumos/infra/proto/go@v0.0.0-20250623190020-bff867fc0474=./infra/go/src/go.chromium.org/chromiumos/infra/proto/go',
         '-replace',
         'go.chromium.org/luci@v0.0.0-20260326213659-7c3f2951dea9=./infra/go/src/go.chromium.org/luci',
-        '-replace',
-        'github.com/testcontainers/testcontainers-go/modules/compose=github.com/testcontainers/testcontainers-go/modules/compose@v0.34.0',
       ],
     )
 
-    api.step(
-      'generate go kzip',
-      [
-        kythe_bin,
-        '--corpus',
-        'chromium.googlesource.com/infra/infra_superproject//main',
-        '--use_default_corpus_for_stdlib=true',
-        '--use_default_corpus_for_deps=true',
-        '--output',
-        public_go_kzip_loc,
-      ]
-      + targets,
-    )
+    @api.time.exponential_retry(retries=2, delay=datetime.timedelta(seconds=5))
+    def _generate_go_kzip():
+      api.step(
+        'generate go kzip',
+        [
+          kythe_bin,
+          '--corpus',
+          'chromium.googlesource.com/infra/infra_superproject//main',
+          '--use_default_corpus_for_stdlib=true',
+          '--use_default_corpus_for_deps=true',
+          '--output',
+          public_go_kzip_loc,
+        ]
+        + targets,
+      )
+
+    _generate_go_kzip()
 
   kzips_to_merge = [public_go_kzip_loc]
 
@@ -236,26 +247,34 @@ def RunSteps(api: DEPS):
       api.context(
         cwd=internal_mod_dir,
         env={
+          'GODEBUG': 'http2client=0',
           'GOWORK': 'off',
           'KYTHE_ROOT_DIRECTORY': checkout_dir,
         },
       ),
     ):
-      api.step(
-        'generate internal go kzip',
-        [
-          kythe_bin,
-          '--corpus',
-          'chromium.googlesource.com/infra/infra_superproject//main',
-          '--use_default_corpus_for_stdlib=true',
-          '--use_default_corpus_for_deps=true',
-          '--rules',
-          api.raw_io.input_text(vnames_config_json, suffix='.json'),
-          '--output',
-          internal_go_kzip_loc,
-          internal_target,
-        ],
+
+      @api.time.exponential_retry(
+        retries=2, delay=datetime.timedelta(seconds=5)
       )
+      def _generate_internal_go_kzip():
+        api.step(
+          'generate internal go kzip',
+          [
+            kythe_bin,
+            '--corpus',
+            'chromium.googlesource.com/infra/infra_superproject//main',
+            '--use_default_corpus_for_stdlib=true',
+            '--use_default_corpus_for_deps=true',
+            '--rules',
+            api.raw_io.input_text(vnames_config_json, suffix='.json'),
+            '--output',
+            internal_go_kzip_loc,
+            internal_target,
+          ],
+        )
+
+      _generate_internal_go_kzip()
     kzips_to_merge.append(internal_go_kzip_loc)
 
   try:
@@ -688,6 +707,7 @@ def GenTests(api: TEST_DEPS):
               ''')
       ),
     ),
+    api.step_data('generate go kzip', retcode=1),
     api.post_process(
       StepCommandContains,
       'ensure_installed (2)',
