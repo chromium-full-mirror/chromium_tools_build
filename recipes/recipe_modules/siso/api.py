@@ -547,11 +547,15 @@ class SisoApi(recipe_api.RecipeApi):
     return self.m.step(step_name, cmd)
 
   @property
+  def output_local_strategy(self) -> str:
+    return self._props.output_local_strategy
+
+  @property
   def without_bytes(self) -> bool:
     """Return True if Siso build does not downlaod remote execution outptus
     by default.
     """
-    return self._props.output_local_strategy == 'minimum'
+    return self.output_local_strategy == 'minimum'
 
   def check_version(self, source_dir: Path):
     """Print Siso version info"""

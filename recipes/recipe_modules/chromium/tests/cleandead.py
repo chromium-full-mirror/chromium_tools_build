@@ -61,3 +61,23 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'siso_output_local_strategy',
+    api.siso.properties(output_local_strategy='greedy'),
+    api.post_check(
+      post_process.StepCommandRE,
+      step_name,
+      [
+        '.*/siso',
+        'ninja',
+        '--output_local_strategy',
+        'greedy',
+        '-C',
+        '.*',
+        '-t',
+        'cleandead',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )

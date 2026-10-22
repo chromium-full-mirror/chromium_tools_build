@@ -877,6 +877,13 @@ class ChromiumApi(recipe_api.RecipeApi):
     command = [str(self._default_ninja_path(source_dir))]
     if self.m.siso.enabled:
       command = [str(self.m.siso.siso_path(source_dir)), 'ninja']
+      # TODO(crbug.com/576369882): Remove once siso -t cleandead preserves
+      # non-local entries in .siso_fs_state regardless of output_local_strategy.
+      if self.m.siso.output_local_strategy:
+        command += [
+          '--output_local_strategy',
+          self.m.siso.output_local_strategy,
+        ]
     command += ['-C', build_dir, '-t', 'cleandead']
     with self.m.context(env=ninja_env, cwd=source_dir):
       self.m.step(name='cleandead', cmd=command)
