@@ -993,47 +993,49 @@ def RunCommand(
 
     try:
       in_byte = proc.stdout.read(1)
-      in_line = io.StringIO()
+      in_line = io.BytesIO()
       while in_byte:
         # Capture all characters except \r.
         if in_byte != b'\r':
-          in_line.write(in_byte.decode())
+          in_line.write(in_byte)
 
         # Write and flush on newline.
         if in_byte == b'\n':
+          line = in_line.getvalue().decode('utf-8', errors='replace')
           if log_event:
             log_event.set()
           if parser_func:
-            parser_func(in_line.getvalue().strip())
+            parser_func(line.strip())
 
           if filter_obj:
-            filtered_line = filter_obj.FilterLine(in_line.getvalue())
+            filtered_line = filter_obj.FilterLine(line)
             if filtered_line is not None:
               writefh.write(filtered_line)
           else:
-            writefh.write(in_line.getvalue())
-          in_line = io.StringIO()
+            writefh.write(line)
+          in_line = io.BytesIO()
         if debug and proc.poll() is not None:
           print('Child process has terminated')
         in_byte = proc.stdout.read(1)
 
       print(threading.currentThread(), 'ProcessRead: proc.stdout finished.')
 
-      if log_event and in_line.getvalue():
+      line = in_line.getvalue().decode('utf-8', errors='replace')
+      if log_event and line:
         log_event.set()
 
       # Write remaining data and flush on EOF.
       if parser_func:
-        parser_func(in_line.getvalue().strip())
+        parser_func(line.strip())
 
       if filter_obj:
-        if in_line.getvalue():
-          filtered_line = filter_obj.FilterDone(in_line.getvalue())
+        if line:
+          filtered_line = filter_obj.FilterDone(line)
           if filtered_line is not None:
             writefh.write(filtered_line)
       else:
-        if in_line.getvalue():
-          writefh.write(in_line.getvalue())
+        if line:
+          writefh.write(line)
     finally:
       print(threading.currentThread(), 'ProcessRead: cleaning up.')
 

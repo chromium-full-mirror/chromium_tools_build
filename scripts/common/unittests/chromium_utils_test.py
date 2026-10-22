@@ -63,6 +63,22 @@ class TestRunCommand(unittest.TestCase):
     self.assertEqual(0, retval)
     self.assertEqual(['1', '2', ''], parser.lines)
 
+  def testRunCommandUtf8(self):
+    mycmd = synthesizeCmd(
+      ['import sys; sys.stdout.buffer.write("╭─test\\n".encode("utf-8"))']
+    )
+    parser = FakeParser()
+    filter_obj = FakeFilterObj()
+    retval = chromium_utils.RunCommand(
+      mycmd,
+      print_cmd=False,
+      parser_func=parser.ProcessLine,
+      filter_obj=filter_obj,
+    )
+    self.assertEqual(0, retval)
+    self.assertEqual(['╭─test', ''], parser.lines)
+    self.assertEqual(['╭─test\n'], filter_obj.lines)
+
   def testRunCommandFilter(self):
     mycmd = synthesizeCmd(['print("1\\n2")'])
     filter_obj = FakeFilterObj()
