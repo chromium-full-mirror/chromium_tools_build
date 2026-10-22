@@ -30,6 +30,7 @@ from RECIPE_MODULES.recipe_engine import (
   defer,
   file,
   led,
+  milo,
   path,
   properties,
   raw_io,
@@ -49,6 +50,7 @@ class DEPS(RecipeScriptApi):
   file: file.API
   git: git.API
   led: led.API
+  milo: milo.API
   path: path.API
   properties: properties.API
   raw_io: raw_io.API
@@ -135,6 +137,29 @@ def checkout(api: DEPS, branch, repo_root, commit):
       ref = cmd.stdout.strip().split("\n")[-1]
 
     api.git("checkout", "--force", ref)
+    blamelist_repos = [
+      ("platform/superproject/master", "HEAD"),
+      ("platform/art", "HEAD:art"),
+      ("platform/libcore", "HEAD:libcore"),
+    ]
+    revs = api.git(
+      "rev-parse",
+      *[rev for _, rev in blamelist_repos],
+      stdout=api.raw_io.output_text(),
+      step_test_data=lambda: api.raw_io.test_api.stream_output_text(
+        "\n".join([ref, "a" * 40, "b" * 40])
+      ),
+    ).stdout.splitlines()
+    api.milo.show_blamelist_for(
+      [
+        common_pb2.GitilesCommit(
+          host=urlparse(repo_root).netloc,
+          project=project,
+          id=rev,
+        )
+        for (project, _), rev in zip(blamelist_repos, revs)
+      ]
+    )
     api.git("clean", "-ffxd", "-e", "out", "-e", "vm")
     api.git("show")
     api.step(
@@ -589,7 +614,7 @@ def _run_steps(api: DEPS, props):
 def GenTests(api: TEST_DEPS):
   art_repo = 'https://googleplex-android.googlesource.com/platform/art'
   art_revision = '2d2b87e5f9c872902d8508f6377470a4a6fa87e1'
-  random_commit_for_test = '42424242'
+  random_commit_for_test = '42424242' * 5
 
   yield api.test(
     'host-x86_64-default_opts',

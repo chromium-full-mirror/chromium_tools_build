@@ -65,13 +65,36 @@
       "git",
       "checkout",
       "--force",
-      "42424242"
+      "4242424242424242424242424242424242424242"
     ],
     "cwd": "[CACHE]/src",
     "infra_step": true,
     "name": "checkout.git checkout",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "git",
+      "rev-parse",
+      "HEAD",
+      "HEAD:art",
+      "HEAD:libcore"
+    ],
+    "cwd": "[CACHE]/src",
+    "infra_step": true,
+    "name": "checkout.git rev-parse",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "checkout.set blamelist pins",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/milo/blamelist_pins@[{\"host\": \"googleplex-android.googlesource.com\", \"id\": \"4242424242424242424242424242424242424242\", \"project\": \"platform/superproject/master\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"project\": \"platform/art\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"project\": \"platform/libcore\"}]@@@"
     ]
   },
   {
