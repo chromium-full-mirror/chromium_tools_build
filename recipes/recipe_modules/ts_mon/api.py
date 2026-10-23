@@ -130,7 +130,7 @@ class TSMonApi(recipe_api.RecipeApi):
           'vpython3',
           '-vpython-spec',
           self._send_ts_mon_pkg_path.joinpath(
-            'infra', 'tools', 'send_ts_mon_values', 'standalone.vpython3'
+            'infra', 'tools', 'send_ts_mon_values', 'standalone.vpython.toml'
           ),
           '-m',
           'infra.tools.send_ts_mon_values',
