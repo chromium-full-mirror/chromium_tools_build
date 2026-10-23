@@ -128,7 +128,7 @@ def RunSteps(
   api.file.ensure_directory('mkdirs builder/lw', checkout_dir / 'lw')
   args = [
     '-vpython-spec',
-    '.vpython3',
+    'vpython.toml',
     '-m',
     'infra.services.lkgr_finder',
     '--project=%s' % project,
