@@ -202,7 +202,7 @@ def validate_config(c, actual_host_platform):
       # host -> potential target platforms
       'win': ('win',),
       'mac': ('mac', 'ios'),
-      'linux': ('linux', 'chromeos', 'android', 'fuchsia', 'mac', 'win'),
+      'linux': ('linux', 'chromeos', 'android', 'fuchsia', 'ios', 'mac', 'win'),
     }.get(c.HOST_PLATFORM)
 
     if not potential_platforms:  # pragma: no cover
