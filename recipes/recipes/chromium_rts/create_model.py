@@ -249,61 +249,47 @@ def install_rts_executables(api: DEPS):
 
 def pick_executable_version(api: DEPS) -> str:
   """Returns the CIPD version of rts-executable CIPD packages to use.
-  Waits until the latest Windows revision is available on all platforms.
+  Picks the newest git_revision tag shared by the latest package across all
+  platforms, waiting and retrying if no common tag exists yet.
   """
-  # Find the git_revision of the latest windows-amd64 package.
-  # Using the git revision guarantees that packages for all platforms are built
-  # from the same source code.
-  # Use Windows because it seems to be slower to update than Mac now,
-  # so its latest version is more likely to exist on all platforms.
-  descr = api.cipd.describe(
-    RTS_EXEC_CIPD_PREFIX + 'windows-amd64',
-    'latest',
-    test_data_tags=['git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001'],
-  )
-
-  # Pick any git_revision.
-  # It doesn't matter which one if they produced the same instance hash.
-  ver = None
-  for t in descr.tags:
-    if t.tag.startswith('git_revision:'):
-      ver = t.tag
-      break
-
-  if not ver:
-    raise api.step.StepFailure(
-      'git_revision tag not found in windows-amd64 latest'
-    )
-
   max_attempts = 10
   sleep_seconds = 60
 
   for attempt in range(max_attempts):
-    # Check if this specific version exists on all other platforms.
-    all_present = True
-    for plat in PLATFORMS:
-      if plat == 'windows-amd64':
-        continue
-      try:
-        api.cipd.describe(
-          RTS_EXEC_CIPD_PREFIX + plat,
-          ver,
-          test_data_tags=[
-            'git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001'
-          ],
+    common_revisions = None
+    ordered_revisions = []
+    for platform_name in PLATFORMS:
+      description = api.cipd.describe(
+        RTS_EXEC_CIPD_PREFIX + platform_name,
+        'latest',
+        test_data_tags=[
+          'git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001'
+        ],
+      )
+      platform_revisions = [
+        tag.tag
+        for tag in description.tags
+        if tag.tag.startswith('git_revision:')
+      ]
+      if not platform_revisions:
+        raise api.step.StepFailure(
+          f'git_revision tag not found in {platform_name} latest'
         )
-      except api.step.StepFailure:
-        all_present = False
-        break
+      if common_revisions is None:
+        ordered_revisions = platform_revisions
+        common_revisions = set(platform_revisions)
+      else:
+        common_revisions &= set(platform_revisions)
 
-    if all_present:
-      return ver
+    for revision in ordered_revisions:
+      if revision in common_revisions:
+        return revision
 
     if attempt < max_attempts - 1:
       api.time.sleep(sleep_seconds)
 
   raise api.step.StepFailure(
-    'Timed out waiting for version %s to appear on all platforms' % ver
+    'Timed out waiting for a common git_revision tag to appear on all platforms'
   )
 
 
@@ -451,35 +437,36 @@ def GenTests(api: TEST_DEPS):
     api.test('missing_git_revision', status='FAILURE')
     + linux_amd64
     + api.step_data(
-      'cipd describe chromium/rts/rts-chromium/windows-amd64',
-      api.json.output(
-        {
-          'result': {
-            'pin': {
-              'instance_id': 'resolved-instance_id-of-latest----------',
-              'package': 'chromium/rts/rts-chromium/windows-amd64',
-            },
-            'refs': [
-              {
-                'instance_id': 'resolved-instance_id-of-latest----------',
-                'modified_by': 'user:44-blablbla@developer.gserviceaccount.com',
-                'modified_ts': 1446574210,
-                'ref': 'latest',
-              }
-            ],
-            'registered_by': 'user:44-blablbla@developer.gserviceaccount.com',
-            'registered_ts': 1446574210,
-            'tags': [
-              {
-                'registered_by': 'user:44-blablbla@developer.gserviceaccount.com',
-                'registered_ts': 1446574210,
-                'tag': 'some_other_tag',
-              }
-            ],
-          }
-        }
+      'cipd describe chromium/rts/rts-chromium/linux-amd64',
+      api.cipd.example_describe(
+        'chromium/rts/rts-chromium/linux-amd64',
+        test_data_tags=['some_other:tag'],
       ),
     )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('lagging_platform_recovery')
+    + linux_amd64
+    + api.step_data(
+      'cipd describe chromium/rts/rts-chromium/linux-arm64',
+      api.cipd.example_describe(
+        'chromium/rts/rts-chromium/linux-arm64',
+        test_data_tags=['git_revision:old_unshared_rev'],
+      ),
+    )
+    + api.step_data(
+      'cipd describe chromium/rts/rts-chromium/linux-amd64 (2)',
+      api.cipd.example_describe(
+        'chromium/rts/rts-chromium/linux-amd64',
+        test_data_tags=[
+          'git_revision:new_unshared_rev',
+          'git_revision:c1ee0e03d15281730ebedf1f7151474f7a523001',
+        ],
+      ),
+    )
+    + api.post_process(post_process.StepSuccess, 'install RTS executables')
     + api.post_process(post_process.DropExpectation)
   )
 
@@ -487,6 +474,10 @@ def GenTests(api: TEST_DEPS):
   for i in range(10):
     suffix = f' ({i + 1})' if i > 0 else ''
     timeout_test += api.step_data(
-      f'cipd describe chromium/rts/rts-chromium/linux-amd64{suffix}', retcode=1
+      f'cipd describe chromium/rts/rts-chromium/linux-arm64{suffix}',
+      api.cipd.example_describe(
+        'chromium/rts/rts-chromium/linux-arm64',
+        test_data_tags=['git_revision:different_rev'],
+      ),
     )
   yield timeout_test + api.post_process(post_process.DropExpectation)
