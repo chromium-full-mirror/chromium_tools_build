@@ -694,7 +694,7 @@
   {
     "cmd": [
       "vpython3",
-      "--vpython-spec=.vpython3",
+      "--vpython-spec=vpython.toml",
       "-m",
       "partybot",
       "[CACHE]/builder",

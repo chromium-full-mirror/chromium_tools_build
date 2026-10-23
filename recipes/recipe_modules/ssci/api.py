@@ -507,7 +507,7 @@ class SsciAPI(recipe_api.RecipeApi):
               "run partybot to collect 3P deps",
               [
                 "vpython3",
-                "--vpython-spec=.vpython3",
+                "--vpython-spec=vpython.toml",
                 "-m",
                 "partybot",
                 self.m.path.dirname(src_dir),
