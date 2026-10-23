@@ -15,14 +15,6 @@ _BQ_TABLE_NAME = 'chromium-build-stats.public.build_stats'
 
 
 class ChromiumBuildPerfApi(recipe_api.RecipeApi):
-  def build_with_ninja(self, source_dir: Path, *args, **kwargs):
-    """Run a build with Ninja. See _build()."""
-    with (
-      self.m.siso.disable(),
-      self.m.reclient.process('build with ninja', None, source_dir),
-    ):
-      return self._build(source_dir, *args, **kwargs)
-
   def build_with_siso(self, *args, **kwargs):
     """Run a build with Siso. See _build()."""
     return self._build(*args, **kwargs)
@@ -65,19 +57,15 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     step_name = 'Build ' + target
     env = {}
     siso_args = list(siso_args or [])
-    extra_ninja_args = []
     if siso_experiments:
       env['SISO_EXPERIMENTS'] = ','.join(siso_experiments)
     if not use_rbe:
       step_name += ' without remote execution'
     elif with_remote_cache:
       step_name += ' with remote cache'
-      extra_ninja_args += ['-j', self.m.reclient.jobs]
     else:
       step_name += ' without remote cache'
-      env['RBE_remote_accept_cache'] = "false"
       siso_args += ['-re_cache_enable_read=false']
-      extra_ninja_args += ['-j', self.m.reclient.jobs]
     if step_name_suffix:
       step_name += step_name_suffix
     timeout = 60 * 60 * 2  # 2h
@@ -91,7 +79,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
           timeout=timeout,
           siso_args=siso_args,
           resource_usage_output_file=resource_usage_output_file,
-          extra_ninja_args=extra_ninja_args,
         )
       finally:
         # b/323976014: Clean up temp dirs for iOS simulators.
@@ -128,11 +115,6 @@ class ChromiumBuildPerfApi(recipe_api.RecipeApi):
     if tmp_siso_deps_path:
       self.m.file.move(
         'restore %s' % siso_deps_path, tmp_siso_deps_path, siso_deps_path
-      )
-    if remove_deps_cache:
-      self.m.file.rmtree(
-        'rmtree %s' % self.m.reclient.deps_cache_path,
-        self.m.reclient.deps_cache_path,
       )
 
   def checkout(self, source_dir: Path, build_dir: Path, revision):

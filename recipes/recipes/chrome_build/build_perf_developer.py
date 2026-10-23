@@ -32,7 +32,6 @@ from RECIPE_MODULES.build import (
   chromium_tests,
   chromium_tests_builder_config,
   gn,
-  reclient,
   siso,
 )
 from RECIPE_MODULES.depot_tools import gclient, git
@@ -66,7 +65,6 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   raw_io: raw_io.API
-  reclient: reclient.API
   siso: siso.API
   step: step.API
 
@@ -80,7 +78,6 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
-  reclient: reclient.TEST_API
   siso: siso.TEST_API
   step: step.TEST_API
 
@@ -134,18 +131,6 @@ def _incremental_build_with_one_day_changes(
 
     build_dir_parent = default_build_dir.parent
 
-    ##  Ninja+Reclient
-    # b/498283357 - Stop Reclient workloads speculatively.
-    # api.chromium_build_perf.recreate_build_dir(
-    #     source_dir, default_build_dir, phase='ninja')
-    # raw_result = api.chromium_build_perf.build_with_ninja(
-    #     source_dir,
-    #     default_build_dir,
-    #     target,
-    #     with_remote_cache=True,
-    #     step_name_suffix=' at current revision (warmup)')
-    # _raise_raw_result_on_failure(api, raw_result)
-
     ## Siso build
     siso_build_dir = build_dir_parent / 'siso'
     api.chromium_build_perf.recreate_build_dir(
@@ -165,18 +150,6 @@ def _incremental_build_with_one_day_changes(
     api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
 
     # Run a warm up build for local build dir.
-    ## Ninja+Reclient
-    # b/498283357 - Stop Reclient workloads speculatively.
-    # api.chromium_build_perf.recreate_build_dir(
-    #     source_dir, default_build_dir, phase='ninja', remove_deps_cache=True)
-    # raw_result = api.chromium_build_perf.build_with_ninja(
-    #     source_dir,
-    #     default_build_dir,
-    #     target,
-    #     with_remote_cache=True,
-    #     step_name_suffix=' at base revision (warmup)')
-    # _raise_raw_result_on_failure(api, raw_result)
-
     ## Siso
     api.chromium_build_perf.recreate_build_dir(
       source_dir, siso_build_dir, phase='siso_native', remove_deps_cache=True
@@ -192,12 +165,6 @@ def _incremental_build_with_one_day_changes(
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
-
-    ## Ninja+Reclient
-    # b/498283357 - Stop Reclient workloads speculatively.
-    # raw_result = api.chromium_build_perf.build_with_ninja(
-    #     source_dir, default_build_dir, target, with_remote_cache=True)
-    # _raise_raw_result_on_failure(api, raw_result)
 
     ## Siso
     raw_result = api.chromium_build_perf.build_with_siso(
@@ -286,10 +253,7 @@ def _incremental_builds_with_patch(
 
     build_dir_parent = default_build_dir.parent
 
-    # Set up build dirs for Ninja/Siso builds.
-    api.chromium_build_perf.recreate_build_dir(
-      source_dir, default_build_dir, phase='ninja', remove_deps_cache=True
-    )
+    # Set up build dir for Siso builds.
     api.chromium_build_perf.recreate_build_dir(
       source_dir,
       build_dir_parent / 'siso',
@@ -312,16 +276,6 @@ def _incremental_builds_with_patch(
         with_remote_cache = False
         step_name_suffix = ''
 
-      # Ninja+Reclient
-      # b/498283357 - Stop Reclient workloads speculatively.
-      # raw_result = api.chromium_build_perf.build_with_ninja(
-      #     source_dir,
-      #     default_build_dir,
-      #     target,
-      #     with_remote_cache=with_remote_cache,
-      #     step_name_suffix=step_name_suffix)
-      # _raise_raw_result_on_failure(api, raw_result)
-
       # Siso
       siso_build_dir = build_dir_parent / 'siso'
       raw_result = api.chromium_build_perf.build_with_siso(
@@ -343,20 +297,6 @@ def _clean_builds(
 ):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
-    # Ninja+Reclient builds.
-    # b/498283357 - Stop Reclient workloads speculatively.
-    # phase = 'ninja'
-    # api.chromium_build_perf.recreate_build_dir(
-    #     source_dir, build_dir, phase=phase, remove_deps_cache=True)
-    # result = api.chromium_build_perf.build_with_ninja(
-    #     source_dir, build_dir, target, with_remote_cache=False)
-    # _raise_raw_result_on_failure(api, result)
-
-    # api.chromium_build_perf.recreate_build_dir(
-    #     source_dir, build_dir, phase=phase)
-    # result = api.chromium_build_perf.build_with_ninja(
-    #     source_dir, build_dir, target, with_remote_cache=True)
-
     # Siso builds.
     phase = 'siso_native'
     step_name_suffix = ' with Siso in native mode'
@@ -428,7 +368,6 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
     builder_id, use_try_db=False
   )
   api.chromium_tests.configure_build(builder_config)
-  api.reclient.download_reclient(api.gclient.c.solutions[0])
   update_result = api.chromium_checkout.ensure_checkout()
   source_dir = update_result.source_root.path
   build_dir = api.chromium.default_build_dir(source_dir)
@@ -443,28 +382,19 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   if builder_config.android_config:
     target = 'chrome_public_apk'
 
-  # Enable Reclient racing feature.
-  # The parameters should be same with the ones in reclent_helper.py.
-  # https://crsrc.org/d/reclient_helper.py;l=220;drc=1077fbe08a1c03ef7f7fa8eb925edd18688357ae
-  env = {
-    'RBE_exec_strategy': 'racing',
-    'RBE_local_resource_fraction': '0.2',
-    'RBE_racing_bias': '0.95',
-  }
-  with api.context(env=env):
-    # Clean builds.
-    _clean_builds(
-      api,
-      source_dir,
-      build_dir,
-      target,
-      enable_missing_deps_check=props.enable_missing_deps_check,
-    )
+  # Clean builds.
+  _clean_builds(
+    api,
+    source_dir,
+    build_dir,
+    target,
+    enable_missing_deps_check=props.enable_missing_deps_check,
+  )
 
-    # Incremental build with 1-day of changes. a.k.a morning build.
-    _incremental_build_with_one_day_changes(api, source_dir, build_dir, target)
+  # Incremental build with 1-day of changes. a.k.a morning build.
+  _incremental_build_with_one_day_changes(api, source_dir, build_dir, target)
 
-    _incremental_builds_with_patch(api, source_dir, build_dir, target)
+  _incremental_builds_with_patch(api, source_dir, build_dir, target)
 
   # Remove the out dir to reduce the builder cache size.
   api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
@@ -511,7 +441,6 @@ def GenTests(api: TEST_DEPS):
     api.properties(
       build_perf_pb.InputProperties(enable_missing_deps_check=True)
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     _buildbucket_search_results(),
     api.post_process(post_process.DropExpectation),
@@ -529,7 +458,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     _buildbucket_search_results(),
     api.post_process(
@@ -552,7 +480,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     api.buildbucket.simulated_batch_search_output(
       builds_service_pb.BatchResponse(
@@ -575,7 +502,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     api.post_process(post_process.DropExpectation),
   )
@@ -592,7 +518,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     api.step_data(
       'Incremental builds with patch.git log', api.raw_io.stream_output_text('')
@@ -614,7 +539,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     _buildbucket_search_results(),
     api.post_process(post_process.DropExpectation),
@@ -632,7 +556,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     api.step_data(
       'Clean builds.Build chrome without remote cache with Siso in native mode',

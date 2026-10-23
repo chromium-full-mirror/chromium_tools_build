@@ -11,7 +11,6 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from RECIPE_MODULES.build import (
   builder_group,
   chromium,
-  reclient,
   siso,
 )
 from RECIPE_MODULES.depot_tools import gclient
@@ -42,7 +41,6 @@ class DEPS(RecipeScriptApi):
   raw_io: raw_io.API
   step: step.API
   time: time.API
-  reclient: reclient.API
   siso: siso.API
 
 

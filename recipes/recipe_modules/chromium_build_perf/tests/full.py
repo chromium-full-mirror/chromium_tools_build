@@ -19,7 +19,6 @@ from RECIPE_MODULES.build import (
   chromium_build_perf,
   chromium_tests,
   chromium_tests_builder_config,
-  reclient,
   siso,
 )
 from RECIPE_MODULES.recipe_engine import (
@@ -41,7 +40,6 @@ class DEPS(RecipeScriptApi):
   file: file.API
   path: path.API
   platform: platform.API
-  reclient: reclient.API
   siso: siso.API
 
 
@@ -50,7 +48,6 @@ class TEST_DEPS(RecipeTestApi):
   chromium: chromium.TEST_API
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   platform: platform.TEST_API
-  reclient: reclient.TEST_API
   siso: siso.TEST_API
 
 
@@ -65,12 +62,6 @@ def RunSteps(api: DEPS):
   source_dir = api.path.cache_dir / 'builder/src'
   build_dir = api.chromium.default_build_dir(source_dir)
 
-  api.chromium_build_perf.build_with_ninja(
-    source_dir, build_dir, 'all', with_remote_cache=True
-  )
-  api.chromium_build_perf.build_with_ninja(
-    source_dir, build_dir, 'all', with_remote_cache=False
-  )
   api.chromium_build_perf.build_with_siso(
     source_dir, build_dir, 'all', with_remote_cache=True
   )
@@ -93,12 +84,6 @@ def RunSteps(api: DEPS):
     'all',
     with_remote_cache=True,
     siso_args=['-missing_deps=error'],
-  )
-  api.chromium_build_perf.build_with_ninja(
-    source_dir,
-    build_dir,
-    'all',
-    with_remote_cache=False,
     step_name_suffix=' suffix',
   )
   api.file.write_raw('write .siso_deps', build_dir / '.siso_deps', 'siso deps')
@@ -146,7 +131,6 @@ def GenTests(api: TEST_DEPS):
         **builder,
       ).assemble()
     ),
-    api.reclient.properties(),
     api.siso.properties(),
     api.post_process(post_process.DropExpectation),
   )
@@ -167,7 +151,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.platform.name('mac'),
-    api.reclient.properties(),
     api.siso.properties(),
     api.post_process(post_process.DropExpectation),
   )

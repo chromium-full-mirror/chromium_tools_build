@@ -28,7 +28,6 @@ from RECIPE_MODULES.build import (
   code_coverage,
   gn,
   profiles,
-  reclient,
   siso,
 )
 from RECIPE_MODULES.depot_tools import gclient, git
@@ -64,7 +63,6 @@ class DEPS(RecipeScriptApi):
   profiles: profiles.API
   properties: properties.API
   raw_io: raw_io.API
-  reclient: reclient.API
   siso: siso.API
   step: step.API
 
@@ -82,7 +80,6 @@ class TEST_DEPS(RecipeTestApi):
   platform: platform.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
-  reclient: reclient.TEST_API
   siso: siso.TEST_API
   step: step.TEST_API
 
@@ -330,7 +327,6 @@ def GenTests(api: TEST_DEPS):
       build_perf_pb.InputProperties(enable_missing_deps_check=True)
     ),
     api.siso.properties(),
-    api.reclient.properties(),
     api.code_coverage(use_clang_coverage=True),
     api.post_process(post_process.DropExpectation),
   )
@@ -348,7 +344,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.siso.properties(),
-    api.reclient.properties(),
     api.post_process(
       post_process.DoesNotRun,
       'Clean builds.Build all with remote cache with Siso with '
@@ -371,7 +366,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.siso.properties(),
-    api.reclient.properties(),
     api.code_coverage(use_clang_coverage=True),
     api.post_process(post_process.DropExpectation),
   )
@@ -390,7 +384,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.siso.properties(),
-    api.reclient.properties(),
     api.code_coverage(use_clang_coverage=True),
     api.post_process(post_process.DropExpectation),
   )
@@ -408,7 +401,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.siso.properties(project="rbe-chromium-trusted"),
-    api.reclient.properties(),
     api.code_coverage(use_clang_coverage=True),
     api.post_process(
       post_process.DoesNotRun, 'Clean builds.Build all without remote cache'
@@ -432,7 +424,6 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.siso.properties(),
-    api.reclient.properties(),
     api.step_data('Clean builds.Build all without remote cache', retcode=1),
     api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
