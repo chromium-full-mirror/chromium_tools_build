@@ -1194,7 +1194,7 @@ class AbstractSkylabTest(AbstractTest):
 
   @property
   @abc.abstractmethod
-  def test_runner_builds(self) -> dict[str, TestRunner]:
+  def test_runner_builds(self) -> dict[str, list[list[TestRunner]]]:
     raise NotImplementedError()  # pragma: no cover
 
   @property
@@ -3556,17 +3556,19 @@ class SkylabTest(AbstractSkylabTest, Test):
     return self._ctp_build_ids
 
   @property
-  def test_runner_builds(self) -> dict[str, TestRunner]:
+  def test_runner_builds(self) -> dict[str, list[list[TestRunner]]]:
     return self._test_runner_builds
 
   def did_complete(self, suffix) -> bool:
     # Return false to trigger retry if any shard has infra failure.
     if not self.test_runner_builds.get(suffix):
       return False
-    for t in self.test_runner_builds[suffix]:
+    for shard in self.test_runner_builds[suffix]:
       # If any attempt runner in the shard has a deterministic result,
       # consider the shard done.
-      if t.status not in (common_pb2.FAILURE, common_pb2.SUCCESS):
+      if not any(
+        t.status in (common_pb2.FAILURE, common_pb2.SUCCESS) for t in shard
+      ):
         return False
     return True
 
@@ -3635,12 +3637,12 @@ class SkylabTest(AbstractSkylabTest, Test):
               individual_test.test_name.removeprefix(self.test_id_prefix or '')
             )
     else:
-      for tr in self.test_runner_builds.get(
+      for shard in self.test_runner_builds.get(
         self.api.m.test_utils.remove_retry_shards(suffix), []
       ):
         # TODO(b/364830287): Change back to not status in [SUCCESS, FAILURE]
-        if tr.status not in [common_pb2.SUCCESS] and tr.shard >= 0:
-          retry_shards.append(tr.shard)
+        if not any(tr.status == common_pb2.SUCCESS for tr in shard):
+          retry_shards.append(shard[0].shard)
     self.api.m.skylab.schedule_suite(
       self,
       suffix,
@@ -3685,6 +3687,8 @@ class SkylabTest(AbstractSkylabTest, Test):
 
       if rdb_results.unexpected_failing_tests:
         step.status = self.api.m.step.FAILURE
+      else:
+        step.status = self.api.m.step.SUCCESS
       self._present_rdb_results(step, rdb_results, as_nested_step=True)
 
       # RDB may not collect all failures from test runners. E.g.
@@ -3692,29 +3696,28 @@ class SkylabTest(AbstractSkylabTest, Test):
       # to RDB. So iterate all shards and raise an exception
       # if any shard did not reach a deterministic success or
       # failure.
-      shard_steps = []
-      test_runners = sorted(
-        self.test_runner_builds.get(suffix, []), key=lambda x: x.shard
-      )
-      for tr in test_runners:
-        with self.api.m.step.nest(
-          f'shard: #{tr.shard}' if tr.shard >= 0 else f'shard: #{tr.name}',
-          status='last',
-        ) as shard_step:
-          if tr.status == common_pb2.FAILURE:
-            shard_step.status = self.api.m.step.FAILURE
-          elif tr.status != common_pb2.SUCCESS:
-            shard_step.status = self.api.m.step.EXCEPTION
-          if tr.url:
-            shard_step.links['test results'] = f'{tr.url}/test-results'
-          if tr.log_url:
-            shard_step.links['test log'] = tr.log_url
-          if tr.log_dir:
-            shard_step.links['all logs (including system logs)'] = tr.log_dir
-          shard_step.links['help doc'] = (
-            'http://go/cros-testing-for-chrome-help'
-          )
-          shard_steps.append(shard_step)
+      for shard in self.test_runner_builds.get(suffix, []):
+        for tr in shard:
+          shard_step_name = f'shard: #{tr.shard}'
+          if tr.attempt > 0:
+            shard_step_name += f' (retry {tr.attempt})'
+          with self.api.m.step.nest(
+            shard_step_name,
+            status='last',
+          ) as shard_step:
+            if tr.status == common_pb2.FAILURE:
+              shard_step.status = self.api.m.step.FAILURE
+            elif tr.status != common_pb2.SUCCESS:
+              shard_step.status = self.api.m.step.EXCEPTION
+            if tr.url:
+              shard_step.links['test results'] = f'{tr.url}/test-results'
+            if tr.log_url:
+              shard_step.links['test log'] = tr.log_url
+            if tr.log_dir:
+              shard_step.links['all logs (including system logs)'] = tr.log_dir
+            shard_step.links['help doc'] = (
+              'http://go/cros-testing-for-chrome-help'
+            )
 
       if not rdb_results.total_tests_ran:
         self._raise_failed_nested_step(
@@ -3725,10 +3728,7 @@ class SkylabTest(AbstractSkylabTest, Test):
           'Check the CTP build for details.',
         )
 
-      if any(
-        s.status not in [self.api.m.step.SUCCESS, self.api.m.step.FAILURE]
-        for s in shard_steps
-      ):
+      if not self.did_complete(suffix):
         self._raise_failed_nested_step(
           suffix,
           step,

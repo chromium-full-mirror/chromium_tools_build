@@ -18,11 +18,11 @@ import os
 import re
 import subprocess
 import sys
+import time
 import zlib
 
 import requests
 from google.protobuf import json_format
-from collections import namedtuple
 
 # Buildbucket v2 API
 BUILDBUCKET_RPC = 'https://beefy-dot-cr-buildbucket.appspot.com/prpc'
@@ -34,8 +34,6 @@ BUILDBUCKET_SEARCH_ENDPOINT = (
   BUILDBUCKET_RPC + '/buildbucket.v2.Builds/SearchBuilds'
 )
 CONTAINER_METADATA_LOC = 'metadata/containers.jsonpb'
-
-Shard = namedtuple('Shard', ['tr_attempt', 'shard'])
 
 
 def get_oauth_token(json_creds=None):
@@ -52,17 +50,36 @@ def get_oauth_token(json_creds=None):
   return token
 
 
-def _call_buildbucket(bb_request_data, json_creds, end_point):
+def _call_buildbucket(bb_request_data, json_creds, end_point, retries=3):
   headers = {'content-type': 'application/json', 'accept': 'application/json'}
   token = get_oauth_token(json_creds)
   headers['authorization'] = 'Bearer %s' % token
-  r = requests.post(end_point, data=bb_request_data, headers=headers)
-  if r.status_code != requests.codes.ok:
-    logging.warning('Fetch failed (%s %s)\n%s', r.status_code, r.reason, r.text)
-    r.raise_for_status()
-    return None
-  content = r.content.decode('utf-8')
-  return json.loads(content[content.find('\n') + 1 :])
+  for attempt in range(retries):
+    try:
+      r = requests.post(
+        end_point, data=bb_request_data, headers=headers, timeout=60
+      )
+      if r.status_code == requests.codes.ok:
+        content = r.content.decode('utf-8')
+        return json.loads(content[content.find('\n') + 1 :])
+      logging.warning(
+        'Fetch failed (attempt %d/%d: %s %s)\n%s',
+        attempt + 1,
+        retries,
+        r.status_code,
+        r.reason,
+        r.text,
+      )
+      if attempt == retries - 1 or r.status_code < 500:
+        r.raise_for_status()
+    except requests.RequestException as e:
+      logging.warning(
+        'Request exception (attempt %d/%d): %s', attempt + 1, retries, e
+      )
+      if attempt == retries - 1:
+        raise
+    time.sleep(2**attempt)
+  return None
 
 
 def _extract_cros_test_log_url(task_url, child_builds):
@@ -91,7 +108,7 @@ def _list_child_trs_status(ctp_bbid, json_creds):
     },
     'pageSize': 1000,
     'mask': {
-      'fields': 'id,tags,steps,output.status',
+      'fields': 'id,status,tags,steps,output.status',
     },
   }
   return _call_buildbucket(
@@ -127,11 +144,34 @@ def _fix_test_runner_status(task_result):
   return "SUCCESS"
 
 
-def _populate_suite_request_for_autotest(opts, test_suite, shard_idx):
+def _status_from_child_build(tr):
+  if tr.get('status') not in ('SUCCESS', 'FAILURE'):
+    return 'INFRA_FAILURE'
+  has_tests = False
+  for s in tr.get('steps', []):
+    name = s.get('name', '')
+    if not name.startswith('Results|'):
+      continue
+    sub = name[len('Results|') :]
+    if sub.startswith('Provision of '):
+      if s.get('status') != 'SUCCESS':
+        return 'INFRA_FAILURE'
+      continue
+    if sub == 'tauto.tast.chrome-from-gcs' or sub.startswith(
+      'tauto.tast.chrome-from-gcs '
+    ):
+      continue
+    has_tests = True
+  if not has_tests:
+    return 'INFRA_FAILURE'
+  return tr['status']
+
+
+def _populate_suite_request_for_autotest(opts, test_suite):
   test_args = opts.test_arg[:]
   test_args.append(['lacros_gcs_path', opts.lacros_gcs_path])
-  test_args.append(['total_shards', str(opts.total_shards)])
-  test_args.append(['shard_index', str(shard_idx)])
+  test_args.append(['total_shards', '1'])
+  test_args.append(['shard_index', '0'])
   test_args.append(['is_cft', 'True'])
 
   autotest_name = opts.autotest_name.replace('tauto.', '')
@@ -307,18 +347,17 @@ def schedule_skylab_tests(opts):
 
   v2req = ctpv2.CTPv2Request()
   if opts.autotest_name:
-    for i in opts.shard_indexes or range(opts.total_shards):
-      req = v2req.requests.add()
-      _populate_req_common(opts, req, False)
+    if opts.total_shards > 1 or any(s != 0 for s in (opts.shard_indexes or [])):
+      raise ValueError('Multiple shards are not supported for autotest.')
+    req = v2req.requests.add()
+    _populate_req_common(opts, req, False)
 
-      req.suite_request.test_suite.name = (
-        f'{opts.chromium_suite_name}-shard-{i}'
-      )
-      autotest_name = _populate_suite_request_for_autotest(
-        opts, req.suite_request.test_suite, i
-      )
-      test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
-      test_case.value = autotest_name
+    req.suite_request.test_suite.name = f'{opts.chromium_suite_name}-shard-0'
+    autotest_name = _populate_suite_request_for_autotest(
+      opts, req.suite_request.test_suite
+    )
+    test_case = req.suite_request.test_suite.test_case_ids.test_case_ids.add()
+    test_case.value = autotest_name
   else:
     req = v2req.requests.add()
     _populate_req_common(opts, req, True)
@@ -401,6 +440,84 @@ def schedule_skylab_tests(opts):
     logging.info('ctp_build_id: %s', resp['id'])
 
 
+def _infra_failure_attempt(ctp_build_id, shard, attempt):
+  return {
+    'url': f'https://ci.chromium.org/b/{ctp_build_id}',
+    'shard': shard,
+    'attempt': attempt,
+    'log_url': '',
+    'status': 'INFRA_FAILURE',
+  }
+
+
+def _attempt_from_child_build(tr, shard, attempt, child_builds):
+  tr_id = str(tr['id'])
+  task_url = f'https://ci.chromium.org/b/{tr_id}'
+  res = {
+    'url': task_url,
+    'shard': shard,
+    'attempt': attempt,
+    'log_url': _extract_cros_test_log_url(task_url, child_builds) or '',
+    'status': _status_from_child_build(tr),
+  }
+  if any(
+    s.get('name', '').startswith('Results|tast.') for s in tr.get('steps', [])
+  ):
+    res['log_dir'] = (
+      'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+      f'invocations/build-{tr_id}?treeQuery=cros-test'
+    )
+  return res
+
+
+def _attempt_from_proto(attempt, shard, child_builds):
+  cros_test_log_url = _extract_cros_test_log_url(attempt.task_url, child_builds)
+  testhaus_url = attempt.log_data.testhaus_url
+  if testhaus_url and 'tests.chromeos.goog' in testhaus_url:
+    separator = '&' if '?' in testhaus_url else '?'
+    testhaus_url += f'{separator}treeQuery=cros-test'
+
+  res = {
+    'url': attempt.task_url,
+    'shard': shard,
+    'attempt': attempt.attempt,
+    'log_url': cros_test_log_url or '',
+    'status': _fix_test_runner_status(attempt),
+  }
+  if any(tc.name.startswith('tast.') for tc in attempt.test_cases):
+    res['log_dir'] = testhaus_url
+  return res
+
+
+def _iter_scheduled_attempts(ctp_resp):
+  for s in ctp_resp.get('steps', []):
+    step_name = s.get('name', '')
+    if '|Schedule tasks|' not in step_name or '-shard-' not in step_name:
+      continue
+    shards_found = re.findall(r'-shard-(\d+)', step_name)
+    if not shards_found:
+      continue
+    shard = int(shards_found[-1])
+    m_retry = re.search(r'-retry-(\d+)', step_name)
+    attempt = int(m_retry.group(1)) if m_retry else 0
+    m_bid = re.search(r'/b(\d+)', s.get('summaryMarkdown', ''))
+    child_id = m_bid.group(1) if m_bid else None
+    yield shard, attempt, child_id
+
+
+def _iter_proto_attempts(tagged_resp):
+  for name, exec_resp in tagged_resp.items():
+    is_autotest = '-shard-' in name
+    for consolidated_result in exec_resp.consolidated_results:
+      for attempt in consolidated_result.attempts:
+        if is_autotest:
+          shard = 0
+        else:
+          m = re.search(r'-shard-(\d+)', attempt.name)
+          shard = int(m.group(1)) if m else 0
+        yield shard, attempt.attempt, attempt
+
+
 def read_ctp_results(opts):
   from chromite.api.gen.test_platform.steps import execution_pb2
 
@@ -408,7 +525,7 @@ def read_ctp_results(opts):
     {
       'id': opts.ctp_build_id,
       "mask": {
-        "fields": "output.properties",
+        "fields": "status,steps,output.properties",
       },
     }
   )
@@ -419,123 +536,48 @@ def read_ctp_results(opts):
   compressed_proto = (
     resp.get('output', {}).get('properties', {}).get('compressed_responses')
   )
-  if not compressed_proto:
+  if compressed_proto:
+    wire_format = zlib.decompress(base64.b64decode(compressed_proto))
+    ctp_resp = execution_pb2.ExecuteResponses.FromString(wire_format)
+    logging.info("CTP Responses:\n%s", ctp_resp)
+    tagged_resp = ctp_resp.tagged_responses
+  else:
     logging.error('Could not find results in build\'s output properties.')
-    return
-  wire_format = zlib.decompress(base64.b64decode(compressed_proto))
-  ctp_resp = execution_pb2.ExecuteResponses.FromString(wire_format)
-  logging.info("CTP Responses:\n%s", ctp_resp)
-  tagged_resp = ctp_resp.tagged_responses
+    tagged_resp = {}
 
-  task_results = {}
-  for name, exec_resp in tagged_resp.items():
-    for consolidated_result in exec_resp.consolidated_results:
-      if len(consolidated_result.attempts) == 0:
-        if '-shard-' in name:  # Legacy autotest
-          shard = int(name.split('-shard-')[1])
-        else:
-          shard = None
-        task_results[name] = Shard(None, shard)
-        continue
-      for attempt in consolidated_result.attempts:
-        shard = None
-        if '-shard-' in name:  # Legacy autotest
-          shard = int(name.split('-shard-')[1])
-          k = name
-        else:
-          try:
-            shard = int(attempt.name.split('-shard-')[1])
-          except:  # noqa: E722
-            pass
-          k = attempt.name
-        is_infra_failure = _fix_test_runner_status(attempt) == 'INFRA_FAILURE'
-        if k not in task_results or (
-          attempt.attempt > task_results[k].tr_attempt.attempt
-          and not is_infra_failure
-        ):
-          task_results[k] = Shard(attempt, shard)
-
-  child_builds = {}
   search_resp = _list_child_trs_status(opts.ctp_build_id, opts.json_creds)
-  for b in search_resp.get('builds', []):
-    build_id = str(b.get('id'))
-    child_builds[build_id] = b
+  child_builds = {str(b.get('id')): b for b in search_resp.get('builds', [])}
 
-  res = {}
-  for k, task_result in task_results.items():
-    if not task_result.tr_attempt:
-      res[k] = {
-        'url': '',
-        'shard': task_result.shard,
-        'log_url': '',
-        'status': 'INFRA_FAILURE',
-      }
-      continue
-    cros_test_log_url = _extract_cros_test_log_url(
-      task_result.tr_attempt.task_url, child_builds
+  # Keyed by (shard, attempt) -> Attempt dict.
+  attempts = {}
+
+  # 1. Base layer: every scheduled attempt in CTP 'Schedule tasks' steps.
+  for shard, attempt, child_id in _iter_scheduled_attempts(resp):
+    tr = child_builds.get(child_id)
+    if tr:
+      attempts[(shard, attempt)] = _attempt_from_child_build(
+        tr, shard, attempt, child_builds
+      )
+    else:
+      attempts[(shard, attempt)] = _infra_failure_attempt(
+        opts.ctp_build_id, shard, attempt
+      )
+
+  # 2. Override with consolidated_results proto when available.
+  for shard, attempt, proto_attempt in _iter_proto_attempts(tagged_resp):
+    attempts[(shard, attempt)] = _attempt_from_proto(
+      proto_attempt, shard, child_builds
     )
-    testhaus_url = task_result.tr_attempt.log_data.testhaus_url
-    if testhaus_url and 'tests.chromeos.goog' in testhaus_url:
-      separator = '&' if '?' in testhaus_url else '?'
-      testhaus_url += f'{separator}treeQuery=cros-test'
 
-    res[k] = {
-      'url': task_result.tr_attempt.task_url,
-      'shard': task_result.shard,
-      'log_url': cros_test_log_url or '',
-      'status': _fix_test_runner_status(task_result.tr_attempt),
-    }
+  # 3. Fallback if CTP failed before scheduling any tasks.
+  if not attempts:
+    attempts[(0, 0)] = _infra_failure_attempt(opts.ctp_build_id, 0, 0)
 
-    is_tast = False
-    for tc in task_result.tr_attempt.test_cases:
-      if tc.name.startswith('tast.'):
-        is_tast = True
-        break
-    if is_tast:
-      res[k]['log_dir'] = testhaus_url
-
-  # Canceled test_runners will not present anything in cros_test_platform's
-  # output properties.
-  # List all child test_runners to populate canceled builders as INFRA_FAILURE.
-  # If cancellation occurs on retry test_runner, ignore and preserve the
-  # initial attempt result.
-  # Only canceled builder happening at initial attempt for each shard will
-  # present INFRA_FAILURE.
-  # INFRA_FAILURE will cause any check of whether suite is complete or not to
-  # be false, causing suite failures.
-  # Additionally, incomplete result may launch a retry_invalid_shard step, the
-  # outer recipe will launch a CTP with 10 minutes timeout, making the builder
-  # to timeout.
-  for tr in child_builds.values():
-    if tr.get('output', {}).get('status') not in (
-      'CANCELED',
-      'INFRA_FAILURE',
-    ):
-      continue
-    name = None
-    for tr_tag in tr.get('tags', []):
-      if tr_tag['key'] == 'display_name':
-        name = tr_tag['value']
-
-    if not name or '-retry-' in name:
-      continue
-    if '-shard-' not in name:
-      continue
-
-    tr_shard = int(name.split('-shard-')[-1])
-    has_result = False
-    for v in res.values():
-      if v['shard'] == tr_shard:
-        has_result = True
-    if has_result:
-      continue
-
-    res[f'cancelled-{tr_shard}'] = {
-      'url': f"https://ci.chromium.org/b/{tr['id']}",
-      'shard': tr_shard,
-      'log_url': None,
-      'status': 'INFRA_FAILURE',
-    }
+  # Group by shard in sorted (shard, attempt) order.
+  shards = {}
+  for (shard, _), attempt_data in sorted(attempts.items()):
+    shards.setdefault(shard, []).append(attempt_data)
+  res = list(shards.values())
 
   if opts.json_outfile:
     with open(opts.json_outfile, 'w', encoding='utf-8') as json_file:

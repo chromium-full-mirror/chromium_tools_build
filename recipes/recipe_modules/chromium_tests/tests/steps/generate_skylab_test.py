@@ -333,11 +333,14 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'some shards had failed before run tests',
-    boilerplate('chrome-test-builds', shards=2),
+    boilerplate('chrome-test-builds'),
     api.skylab.mock_wait_on_suites(
       'basic_EVE_TOT',
       2,
-      runner_builds=[(901, common_pb2.FAILURE), (902, common_pb2.SUCCESS)],
+      runner_builds=[
+        [(901, common_pb2.FAILURE), (902, common_pb2.INFRA_FAILURE)],
+        [(903, common_pb2.SUCCESS)],
+      ],
     ),
     api.override_step_data(
       'basic_EVE_TOT results',
@@ -350,6 +353,9 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.post_process(post_process.StepFailure, 'basic_EVE_TOT.shard: #0'),
+    api.post_process(
+      post_process.StepException, 'basic_EVE_TOT.shard: #0 (retry 1)'
+    ),
     api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
     api.post_process(post_process.StepFailure, 'basic_EVE_TOT'),
     api.expect_status('FAILURE'),
@@ -358,27 +364,28 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'some shards infra failure and retry succeeded',
-    boilerplate('chrome-test-builds', shards=3),
+    boilerplate('chrome-test-builds', shards=1),
     api.skylab.mock_wait_on_suites(
       'basic_EVE_TOT',
-      3,
+      1,
       runner_builds=[
-        (901, common_pb2.SUCCESS),
-        (902, common_pb2.SUCCESS),
         (903, common_pb2.INFRA_FAILURE),
       ],
     ),
     api.override_step_data(
       'basic_EVE_TOT (retry shards).read_ctp_response',
       api.json.output(
-        {
-          'some test 2': {
-            'url': 'http://runner-link/904',
-            'shard': 2,
-            'log_url': 'https://runner-log-link',
-            'status': common_pb2.Status.Name(common_pb2.SUCCESS),
-          }
-        }
+        [
+          [
+            {
+              'url': 'http://runner-link/904',
+              'shard': 0,
+              'attempt': 0,
+              'log_url': 'https://runner-log-link',
+              'status': common_pb2.Status.Name(common_pb2.SUCCESS),
+            }
+          ]
+        ]
       ),
     ),
     api.override_step_data(
@@ -396,18 +403,16 @@ def GenTests(api: TEST_DEPS):
         api.test_utils.rdb_results('basic_EVE_TOT', passing_tests=['Test.Two'])
       ),
     ),
-    # Only retried shard 2.
+    # Only retried shard 0.
     api.post_process(
       post_process.StepCommandContains,
       'test_pre_run (retry shards).basic_EVE_TOT (retry shards).schedule',
-      ['--shard-indexes', '2'],
+      ['--shard-indexes', '0'],
     ),
     # Only retry the infra failed test runner build 903 and pass.
-    api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #0'),
-    api.post_process(post_process.StepSuccess, 'basic_EVE_TOT.shard: #1'),
-    api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #2'),
+    api.post_process(post_process.StepException, 'basic_EVE_TOT.shard: #0'),
     api.post_process(
-      post_process.StepSuccess, 'basic_EVE_TOT (retry shards).shard: #2'
+      post_process.StepSuccess, 'basic_EVE_TOT (retry shards).shard: #0'
     ),
     api.post_process(post_process.DropExpectation),
   )
@@ -431,14 +436,17 @@ def GenTests(api: TEST_DEPS):
     api.override_step_data(
       'basic_EVE_TOT (retry shards).read_ctp_response',
       api.json.output(
-        {
-          'some test 2': {
-            'url': 'http://runner-link/904',
-            'shard': 2,
-            'log_url': 'https://runner-log-link',
-            'status': common_pb2.Status.Name(common_pb2.SUCCESS),
-          }
-        }
+        [
+          [
+            {
+              'url': 'http://runner-link/904',
+              'shard': 2,
+              'attempt': 0,
+              'log_url': 'https://runner-log-link',
+              'status': common_pb2.Status.Name(common_pb2.SUCCESS),
+            }
+          ]
+        ]
       ),
     ),
     api.override_step_data(
@@ -627,16 +635,52 @@ def GenTests(api: TEST_DEPS):
     'Skylab outage',
     boilerplate('chrome-test-builds'),
     api.override_step_data(
-      'basic_EVE_TOT.read_ctp_response', api.json.output({})
+      'basic_EVE_TOT.read_ctp_response', api.json.output([])
     ),
     api.override_step_data(
-      'basic_EVE_TOT (retry shards).read_ctp_response', api.json.output({})
+      'basic_EVE_TOT (retry shards).read_ctp_response', api.json.output([])
     ),
     api.post_process(post_process.StepException, 'basic_EVE_TOT'),
     api.post_process(
       post_process.SummaryMarkdown,
       '1 Test Suite(s) failed.\n\n**basic_EVE_TOT** '
       'did not complete, likely due to an infra bug.',
+    ),
+    api.post_process(post_process.DropExpectation),
+    api.expect_status('INFRA_FAILURE'),
+  )
+
+  yield api.test(
+    'read_ctp_response failed with partial RDB results',
+    boilerplate('chrome-test-builds'),
+    api.override_step_data(
+      'basic_EVE_TOT.read_ctp_response', api.json.output([]), retcode=1
+    ),
+    api.override_step_data(
+      'basic_EVE_TOT (retry shards).read_ctp_response',
+      api.json.output([]),
+      retcode=1,
+    ),
+    api.override_step_data(
+      'basic_EVE_TOT results',
+      stdout=api.raw_io.output_text(
+        api.test_utils.rdb_results('basic_EVE_TOT', passing_tests=['Test.One'])
+      ),
+    ),
+    api.override_step_data(
+      'basic_EVE_TOT results (2)',
+      stdout=api.raw_io.output_text(
+        api.test_utils.rdb_results('basic_EVE_TOT', passing_tests=['Test.One'])
+      ),
+    ),
+    api.post_process(
+      post_process.StepException, 'basic_EVE_TOT.read_ctp_response'
+    ),
+    api.post_process(post_process.StepException, 'basic_EVE_TOT'),
+    api.post_process(
+      post_process.StepTextContains,
+      'basic_EVE_TOT',
+      ['Some shards were unsuccessful.'],
     ),
     api.post_process(post_process.DropExpectation),
     api.expect_status('INFRA_FAILURE'),

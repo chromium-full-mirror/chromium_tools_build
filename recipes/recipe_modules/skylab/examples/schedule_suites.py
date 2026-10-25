@@ -172,11 +172,9 @@ REQUESTS = [
     autotest_name='chromium_Telemetry',
   ),
   gen_skylab_test(
-    # TODO(b/430180607): Remove no longer useful sharding args.
     'sharded_ctp_req',
     dut_pool='cross_device_multi_cb',
     max_run_sec=TAST_MAX_RUN_SEC,
-    shards=SHARD_COUNT,
   ),
   gen_skylab_test(
     'm109_gpu_tests',
@@ -512,19 +510,22 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'multiple_shards_trigger',
-    api.properties(requests=REQUESTS),
-    api.step_data(
-      'schedule skylab test.' + REQUESTS[0].name + '.schedule', retcode=1
+    api.properties(
+      requests=[
+        gen_skylab_test(
+          'sharded_ctp_req',
+          dut_pool='cross_device_multi_cb',
+          max_run_sec=TAST_MAX_RUN_SEC,
+          shards=SHARD_COUNT,
+        )
+      ]
     ),
-    api.post_process(post_process.StepFailure, 'schedule skylab test'),
     api.post_process(
-      post_process.MustRun,
-      'schedule skylab test.{0}.schedule'.format(REQUESTS[4].name),
+      post_process.StepFailure, 'schedule skylab test.sharded_ctp_req'
     ),
     api.post_process(
-      post_process.StepCommandContains,
-      'schedule skylab test.' + REQUESTS[4].name + '.schedule',
-      ['--total-shards', '2'],
+      post_process.SummaryMarkdown,
+      'Multiple shards are not supported for autotest.',
     ),
     api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
@@ -998,11 +999,11 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'retry shards',
-    api.properties(requests=REQUESTS[:1], retry_shards=[2]),
+    api.properties(requests=REQUESTS[:1], retry_shards=[0]),
     api.post_process(
       post_process.StepCommandContains,
       'schedule skylab test.' + REQUESTS[0].name + '.schedule',
-      ['--shard-indexes', '2'],
+      ['--shard-indexes', '0'],
     ),
     api.skylab.mock_wait_on_suites('find test runner build', 1),
     api.post_process(post_process.DropExpectation),
@@ -1429,6 +1430,21 @@ def GenTests(api: TEST_DEPS):
         '--ctp-bucket',
         'public-bucket',
       ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'read_ctp_response_failure',
+    api.properties(requests=REQUESTS[:1]),
+    api.step_data(
+      'find test runner build.read_ctp_response',
+      api.json.output([]),
+      retcode=1,
+    ),
+    api.post_process(
+      post_process.StepException,
+      'find test runner build.read_ctp_response',
     ),
     api.post_process(post_process.DropExpectation),
   )

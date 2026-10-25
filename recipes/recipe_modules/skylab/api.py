@@ -392,6 +392,10 @@ class SkylabApi(recipe_api.RecipeApi):
         test.lacros_gcs_path, 'skylab_runtime_deps.tar.zst'
       )
       if test.spec.autotest_name:
+        if test.spec.shards > 1 or any(s != 0 for s in (retry_shards or [])):
+          raise recipe_api.StepFailure(
+            'Multiple shards are not supported for autotest.'
+          )
         cmd.extend(['--lacros-gcs-path', lacros_gcs_path])
 
         # TODO(crbug.com/1233676): Support chromium perf tests.
@@ -554,29 +558,38 @@ class SkylabApi(recipe_api.RecipeApi):
     step_result = self.m.step(
       'read_ctp_response',
       cmd,
-      stdout=self.m.raw_io.output(),
-      stderr=self.m.raw_io.output(),
       raise_on_failure=False,
       step_test_data=lambda: self.m.json.test_api.output(
-        {
-          f'{test.spec.name}-tfc-shard-0': {
-            'url': 'https://ci.chromium.org/p/chromeos/builders/test_runner/'
-            f'test_runner/b{test.ctp_build_ids[suffix]}0',
-            'shard': None,
-            'log_url': 'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
-            '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
-            'log_dir': 'https://tests.chromeos.goog/p/chromeos/logs/unified/'
-            'invocations/build-8702874632118866193?treeQuery=cros-test',
-            'status': 'SUCCESS',
-          }
-        }
+        [
+          [
+            {
+              'url': 'https://ci.chromium.org/p/chromeos/builders/test_runner/'
+              f'test_runner/b{test.ctp_build_ids[suffix]}0',
+              'shard': 0,
+              'attempt': 0,
+              'log_url': 'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
+              '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
+              'log_dir': 'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+              'invocations/build-8702874632118866193?treeQuery=cros-test',
+              'status': 'SUCCESS',
+            }
+          ]
+        ]
       ),
     )
-    if hasattr(step_result, 'json') and step_result.json.output:
-      for key, test_runner in step_result.json.output.items():
-        if test_runner:
-          tr = TestRunner.create(test, name=key, **test_runner)
-          test.test_runner_builds.setdefault(suffix, []).append(tr)
+    if (
+      step_result.retcode == 0
+      and hasattr(step_result, 'json')
+      and step_result.json.output
+    ):
+      for shard in step_result.json.output:
+        attempts = [
+          TestRunner.create(test, **attempt) for attempt in shard if attempt
+        ]
+        if attempts:
+          test.test_runner_builds.setdefault(suffix, []).append(attempts)
+    else:
+      step_result.presentation.status = self.m.step.EXCEPTION
 
   def gen_rdb_config(self, test, cros_img):
     """Generate the resultDB config for SkylabTest.

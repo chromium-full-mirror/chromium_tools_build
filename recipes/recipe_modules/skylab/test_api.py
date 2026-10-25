@@ -30,20 +30,28 @@ class SkylabTestApi(recipe_test_api.RecipeTestApi):
       runner_builds = [
         [(900 + i), common_pb2.SUCCESS] for i in range(total_shards)
       ]
-    res = {}
-    for i, (build_id, status) in enumerate(runner_builds):
-      res[f'some test {i}'] = {
-        'url': (
-          'https://ci.chromium.org/p/chromeos/builders/test_runner/'
-          f'test_runner/b{build_id}'
-        ),
-        'shard': i,
-        'log_url': 'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
-        '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
-        'log_dir': 'https://tests.chromeos.goog/p/chromeos/logs/unified/'
-        'invocations/build-8702874632118866193?treeQuery=cros-test',
-        'status': common_pb2.Status.Name(status),
-      }
+    res = []
+    for i, shard_attempts in enumerate(runner_builds):
+      if not isinstance(shard_attempts[0], (list, tuple)):
+        shard_attempts = [shard_attempts]
+      shard = []
+      for attempt_idx, (build_id, status) in enumerate(shard_attempts):
+        shard.append(
+          {
+            'url': (
+              'https://ci.chromium.org/p/chromeos/builders/test_runner/'
+              f'test_runner/b{build_id}'
+            ),
+            'shard': i,
+            'attempt': attempt_idx,
+            'log_url': 'https://logs.chromium.org/logs/chromeos/buildbucket/cr-buildbucket/'
+            '8702874632118866193/+/u/cros_test_runner/u/step/15/log/6',
+            'log_dir': 'https://tests.chromeos.goog/p/chromeos/logs/unified/'
+            'invocations/build-8702874632118866193?treeQuery=cros-test',
+            'status': common_pb2.Status.Name(status),
+          }
+        )
+      res.append(shard)
     return sum(
       [
         self.override_step_data(
