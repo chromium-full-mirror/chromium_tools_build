@@ -23,11 +23,15 @@ from dataclasses import dataclass  # noqa: E402
 from recipe_engine.recipe_api import RecipeScriptApi  # noqa: E402
 from recipe_engine.recipe_test_api import RecipeTestApi  # noqa: E402
 
-from RECIPE_MODULES.build import chromium, chromium_checkout  # noqa: E402
-from RECIPE_MODULES.depot_tools import gclient, git, tryserver  # noqa: E402
+from RECIPE_MODULES.build import (  # noqa: E402
+  chromium,
+  chromium_checkout,
+  chromium_tests,
+  chromium_tests_builder_config,
+)
+from RECIPE_MODULES.depot_tools import gclient  # noqa: E402
 from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   context,
-  led,
   properties,
   step,
   swarming,
@@ -38,18 +42,19 @@ from RECIPE_MODULES.recipe_engine import (  # noqa: E402
 class DEPS(RecipeScriptApi):
   chromium: chromium.API
   chromium_checkout: chromium_checkout.API
+  chromium_tests: chromium_tests.API
+  chromium_tests_builder_config: chromium_tests_builder_config.API
   context: context.API
   gclient: gclient.API
-  git: git.API
-  led: led.API
   properties: properties.API
   step: step.API
   swarming: swarming.API
-  tryserver: tryserver.API
 
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
+  chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   properties: properties.TEST_API
   step: step.TEST_API
 
@@ -58,7 +63,6 @@ VALIDATORS = proto_validation.Registry()
 
 
 def RunSteps(api: DEPS, properties):
-  assert api.led.launched_by_led or not api.tryserver.is_tryserver
   assert api.swarming.current_server in (
     'https://chromium-swarm.appspot.com',
     'https://chrome-swarming.appspot.com',
@@ -71,7 +75,11 @@ def RunSteps(api: DEPS, properties):
       status=common_pb.INFRA_FAILURE, summary_markdown='\n'.join(summary)
     )
 
-  api.gclient.set_config('chromium_skip_wpr_archives_download')
+  if '$build/chromium_tests_builder_config' in api.properties:
+    _, builder_config = api.chromium_tests_builder_config.lookup_builder()
+    api.chromium_tests.configure_build(builder_config)
+  else:
+    api.gclient.set_config('chromium_skip_wpr_archives_download')
   update_result = api.chromium_checkout.ensure_checkout()
   api.gclient.runhooks()
 
@@ -130,6 +138,37 @@ def GenTests(api: TEST_DEPS):
         '.*some/script.py',
         '--some-arg',
       ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'happy_path_try',
+    api.chromium.try_build(
+      builder_group='fake-group',
+      builder='fake-builder',
+    ),
+    api.chromium_tests_builder_config.properties(
+      api.chromium_tests_builder_config.properties_assembler_for_ci_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      ).assemble()
+    ),
+    api.properties.environ(
+      swarming_pb.EnvProperties(
+        SWARMING_SERVER='https://chromium-swarm.appspot.com'
+      )
+    ),
+    api.properties(
+      InputProperties(
+        scripts=[
+          ScriptInvocation(
+            step_name='run script',
+            script='some/script.py',
+            args=['--some-arg'],
+          )
+        ]
+      )
     ),
     api.post_process(post_process.DropExpectation),
   )
