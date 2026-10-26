@@ -7,12 +7,12 @@ from __future__ import annotations
 
 DEFAULT_ANALYZE_TARGETS = [
   '//chrome/android:chrome_and_webview_32_minimal_apks',
-  '//chrome/android:chrome_and_webview_64_minimal_apks',
+  '//chrome/android:chrome_public_minimal_apks',
   '//tools/binary_size:binary_size_trybot_py',
 ]
 DEFAULT_COMPILE_TARGETS = [
   'chrome_and_webview_32_minimal_apks',
-  'chrome_and_webview_64_minimal_apks',
+  'chrome_public_minimal_apks',
 ]
 
 # Paths are relative to Chromium output directory.
