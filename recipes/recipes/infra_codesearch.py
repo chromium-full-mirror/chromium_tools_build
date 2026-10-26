@@ -155,19 +155,12 @@ def RunSteps(api: DEPS):
     # Without go.work we have to loop multiple directories and merge kzips.
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
 
-    # Manually patch co-dependent Bazel remote API versions to resolve an upstream
-    # packaging bug in remote-apis-sdks where a newer SDK version compiles against
-    # an outdated remote-apis dependency lacking the new SpliceBlob method.
     api.step(
       'patch go.work workspace dependencies',
       [
         'go',
         'work',
         'edit',
-        '-replace',
-        'github.com/bazelbuild/remote-apis-sdks=github.com/bazelbuild/remote-apis-sdks@v0.0.0-20251007172043-4cdfee7bdc2d',
-        '-replace',
-        'github.com/bazelbuild/remote-apis=github.com/bazelbuild/remote-apis@v0.0.0-20240926071355-6777112ef7de',
         '-replace',
         'cloud.google.com/go/kms/apiv1/kmspb=cloud.google.com/go/kms@v1.31.0',
         '-replace',
