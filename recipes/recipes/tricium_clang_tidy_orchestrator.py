@@ -135,6 +135,7 @@ def _fixup_path(file_path):
   # show up when running clang-tidy on changes in their respective gerrit
   # instances where the prefix needs to be stripped.
   third_party_paths_to_strip = [
+    'third_party/angle/',
     'third_party/dawn/',
     'third_party/boringssl/src/',
   ]
