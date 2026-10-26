@@ -335,7 +335,6 @@ def _gn_gen_builds(
     'pdf_is_standalone=true',
     'pdf_use_partition_alloc=%s' % gn_bool[partition_alloc],
     'pdf_use_skia=%s' % gn_bool[skia],
-    'use_reclient=false',
     'use_remoteexec=true',
     'use_siso=true',
   ]
