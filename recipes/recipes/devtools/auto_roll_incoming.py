@@ -6,7 +6,11 @@
 Recipe for rolling incoming changes in DevTools.
 """
 
-from recipe_engine.post_process import DropExpectation, MustRun
+from recipe_engine.post_process import (
+  DropExpectation,
+  LogDoesNotContain,
+  MustRun,
+)
 import json
 
 from dataclasses import dataclass
@@ -39,6 +43,7 @@ CONFIG = {
   "excludes": [
     "extensions/cxx_debugging/third_party/lldb-eval/src",
     "extensions/cxx_debugging/third_party/llvm/src",
+    "node_modules",
     "scripts/ai_assistance/suite/outputs",
     "test/ai_evals/eval_data",
     "third_party/chrome/chrome-linux",
@@ -84,10 +89,28 @@ def RunSteps(api: DEPS):
 
 def GenTests(api: TEST_DEPS):
 
-  def dummy_deps(*keys):
-    return "deps = " + json.dumps(
-      {dep_name: 'https://googlesource.org/deps/s.git@123' for dep_name in keys}
-    )
+  def dummy_deps(*keys, **extra_deps):
+    deps = {
+      dep_name: 'https://googlesource.org/deps/s.git@123' for dep_name in keys
+    }
+    deps.update(extra_deps)
+    return "deps = " + json.dumps(deps)
+
+  # The node_modules archive (https://crrev.com/c/8620435) is a GCS dep that
+  # only exists in devtools-frontend. GCS deps without a counterpart in
+  # Chromium's DEPS cannot be rolled, so the roller must skip it.
+  node_modules_dep = {
+    "dep_type": "gcs",
+    "bucket": "chromium-nodejs",
+    "objects": [
+      {
+        "object_name": "devtools-frontend/deadbeef",
+        "sha256sum": "deadbeef",
+        "size_bytes": 1,
+        "generation": 1,
+      },
+    ],
+  }
 
   yield (
     api.test('default')
@@ -110,5 +133,28 @@ def GenTests(api: TEST_DEPS):
       MustRun,
       'Scripted rolls.Update Puppeteer Replay deps.Run Puppeteer Replay script',
     )
+    + api.post_process(DropExpectation)
+  )
+
+  yield (
+    api.test('skip_gcs_dep_without_chromium_counterpart')
+    + api.override_step_data(
+      'Find updated deps.Read devtools-frontend/DEPS',
+      api.file.read_text(
+        dummy_deps(
+          *[e for e in CONFIG["excludes"] if e != "node_modules"],
+          node_modules=node_modules_dep,
+        )
+      ),
+    )
+    + api.path.exists(api.path.cleanup_dir.joinpath('roll_output.json'))
+    + api.override_step_data(
+      'Scripted rolls.Update Browser Protocol & CfT deps.Read roll output',
+      api.file.read_json({"old_revision": "123", "new_revision": "456"}),
+    )
+    + api.post_process(
+      LogDoesNotContain, 'Find updated deps', 'filtered deps', ['node_modules']
+    )
+    + api.post_process(MustRun, 'Update trusted deps.gerrit changes')
     + api.post_process(DropExpectation)
   )
