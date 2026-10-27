@@ -981,6 +981,88 @@
     "name": "compile confirm no-op"
   },
   {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "rmglob",
+      "[CACHE]/builder/src/out/1826-some-ci-bot",
+      "lib*__library.so",
+      "--hidden"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "remove staged fuzzer libraries"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "glob",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/lib.unstripped",
+      "lib*__library.so"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "find unstripped fuzzer libraries",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@glob@[CACHE]/builder/src/out/1826-some-ci-bot/lib.unstripped/libtarget1__library.so@@@",
+      "@@@STEP_LOG_LINE@glob@[CACHE]/builder/src/out/1826-some-ci-bot/lib.unstripped/libtarget2__library.so@@@",
+      "@@@STEP_LOG_END@glob@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/llvm-strip",
+      "--only-keep-debug",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/lib.unstripped/libtarget1__library.so",
+      "[CACHE]/builder/src/out/1826-some-ci-bot/lib.unstripped/libtarget2__library.so"
+    ],
+    "cwd": "[CACHE]/builder/src",
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "keep only debug info in unstripped fuzzer libraries"
+  },
+  {
     "cmd": [],
     "name": "collect all runtime dependencies",
     "~followup_annotations": [

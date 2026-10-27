@@ -516,6 +516,36 @@ def RunSteps(api: DEPS, properties):
       if api.tryserver.is_tryserver:
         return
 
+      if api.chromium.c.TARGET_PLATFORM == 'android':
+        # These stripped staging copies are already bundled in the APKs, and
+        # schema v0 archives the whole build directory. Delete them so they
+        # are not archived twice and so ClusterFuzz symbolization, which
+        # matches libraries by filename, does not pick them over the
+        # `lib.unstripped/` copies.
+        api.file.rmglob(
+          'remove staged fuzzer libraries',
+          build_dir,
+          'lib*__library.so',
+          # Must stay non-recursive: a recursive glob would also delete the
+          # `lib.unstripped/` copies that are needed for symbolization.
+          recursive=False,
+        )
+
+        # Save space in the resulting zip. On Android these libraries are only
+        # used for symbolization, which works with the debug-only output of
+        # `--only-keep-debug`.
+        unstripped_libraries = api.file.glob_paths(
+          'find unstripped fuzzer libraries',
+          build_dir / 'lib.unstripped',
+          'lib*__library.so',
+        )
+        llvm_strip = api.profiles.llvm_exec_path('llvm-strip')
+        for library_batch in batched(unstripped_libraries):
+          api.step(
+            'keep only debug info in unstripped fuzzer libraries',
+            [llvm_strip, '--only-keep-debug', *library_batch],
+          )
+
       archive_root = build_dir
 
       with api.step.nest('collect all runtime dependencies') as step_result:
@@ -564,7 +594,6 @@ def RunSteps(api: DEPS, properties):
 
 
 def GenTests(api: TEST_DEPS):
-
   def generate_test(
     is_try=False,
     is_coverage=False,
@@ -820,6 +849,12 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform.name('linux'),
     api.post_process(post_process.MustRun, 'clobber'),
+    api.post_check(post_process.DoesNotRun, 'remove staged fuzzer libraries'),
+    api.post_check(post_process.DoesNotRun, 'find unstripped fuzzer libraries'),
+    api.post_check(
+      post_process.DoesNotRun,
+      'keep only debug info in unstripped fuzzer libraries',
+    ),
     generate_test(),
   )
 
@@ -947,6 +982,10 @@ def GenTests(api: TEST_DEPS):
       stdout=api.raw_io.output_text('fuzzer.exe\ntarget1\ntarget2'),
     ),
     api.step_data(
+      'find unstripped fuzzer libraries',
+      api.file.glob_paths(['libtarget1__library.so', 'libtarget2__library.so']),
+    ),
+    api.step_data(
       'collect all runtime dependencies.'
       'get runtime dependencies with pattern *',
       stdout=api.raw_io.output_text(
@@ -971,6 +1010,208 @@ def GenTests(api: TEST_DEPS):
       'list gn targets',
       ['//foo:target1__library'],
     ),
+  )
+
+  # Build directory for the 'android-desktop-x64-libfuzzer-asan' builder used
+  # by android_ci_build().
+  android_build_dir = '[CACHE]/builder/src/out/df83-android-desktop'
+
+  def android_ci_build():
+    return (
+      api.chromium_tests_builder_config.ci_build(
+        builder_group='chromium.fuzz',
+        builder='android-desktop-x64-libfuzzer-asan',
+        builder_db=ctbc.BuilderDatabase.create(
+          {
+            'chromium.fuzz': {
+              'android-desktop-x64-libfuzzer-asan': ctbc.BuilderSpec.create(
+                chromium_config='chromium',
+                gclient_config='chromium',
+                chromium_config_kwargs={
+                  'TARGET_PLATFORM': 'android',
+                },
+              ),
+            },
+          }
+        ),
+      )
+      + api.platform.name('linux')
+      + api.properties(
+        upload_bucket='chromium-browser-libfuzzer',
+        archive_path='linux-release-android-desktop-x64-asan/'
+        'libfuzzer-linux-release',
+      )
+      + api.step_data(
+        'calculate all_fuzzers',
+        stdout=api.raw_io.output_text(
+          '//foo:target1__library\n//foo:target2__library\n'
+        ),
+      )
+      + api.step_data(
+        'calculate no_clusterfuzz', stdout=api.raw_io.output_text('')
+      )
+      + api.step_data(
+        'list gn targets',
+        stdout=api.raw_io.output_text('target1\ntarget2'),
+      )
+    )
+
+  yield api.test(
+    'android_strip_unstripped_libraries',
+    android_ci_build(),
+    api.step_data(
+      'find unstripped fuzzer libraries',
+      api.file.glob_paths(['libtarget1__library.so', 'libtarget2__library.so']),
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'remove staged fuzzer libraries',
+      ['rmglob', android_build_dir, 'lib*__library.so'],
+    ),
+    api.post_check(
+      post_process.StepCommandContains,
+      'find unstripped fuzzer libraries',
+      [f'{android_build_dir}/lib.unstripped', 'lib*__library.so'],
+    ),
+    api.post_check(
+      post_process.StepCommandEquals,
+      'keep only debug info in unstripped fuzzer libraries',
+      [
+        '[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/'
+        'llvm-strip',
+        '--only-keep-debug',
+        f'{android_build_dir}/lib.unstripped/libtarget1__library.so',
+        f'{android_build_dir}/lib.unstripped/libtarget2__library.so',
+      ],
+    ),
+    api.post_check(
+      post_process.MustRunInOrder,
+      'remove staged fuzzer libraries',
+      'find unstripped fuzzer libraries',
+      'keep only debug info in unstripped fuzzer libraries',
+      'zipping',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'android_strip_unstripped_libraries_many_libraries',
+    android_ci_build(),
+    api.step_data(
+      'find unstripped fuzzer libraries',
+      api.file.glob_paths(
+        [f'libtarget{i:03}__library.so' for i in range(BATCH_SIZE + 1)]
+      ),
+    ),
+    api.post_check(
+      post_process.MustRun,
+      'keep only debug info in unstripped fuzzer libraries',
+    ),
+    api.post_check(
+      post_process.MustRun,
+      'keep only debug info in unstripped fuzzer libraries (2)',
+    ),
+    api.post_check(
+      post_process.DoesNotRun,
+      'keep only debug info in unstripped fuzzer libraries (3)',
+    ),
+    api.post_check(
+      lambda check, steps: check(
+        len(steps['keep only debug info in unstripped fuzzer libraries'].cmd)
+        == 2 + BATCH_SIZE
+      )
+    ),
+    api.post_check(
+      post_process.StepCommandEquals,
+      'keep only debug info in unstripped fuzzer libraries (2)',
+      [
+        '[CACHE]/builder/src/third_party/llvm-build/Release+Asserts/bin/'
+        'llvm-strip',
+        '--only-keep-debug',
+        f'{android_build_dir}/lib.unstripped/'
+        f'libtarget{BATCH_SIZE:03}__library.so',
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'android_no_unstripped_libraries',
+    android_ci_build(),
+    api.step_data(
+      'find unstripped fuzzer libraries',
+      api.file.glob_paths([]),
+    ),
+    api.post_check(post_process.MustRun, 'remove staged fuzzer libraries'),
+    api.post_check(post_process.MustRun, 'find unstripped fuzzer libraries'),
+    api.post_check(
+      post_process.DoesNotRun,
+      'keep only debug info in unstripped fuzzer libraries',
+    ),
+    api.post_check(post_process.MustRun, 'zipping'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'android_tryjob_does_not_strip',
+    api.chromium_tests_builder_config.try_build(
+      builder_group='tryserver.chromium.fuzz',
+      builder='some-try-bot',
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+              chromium_config_kwargs={
+                'TARGET_PLATFORM': 'android',
+              },
+            ),
+          },
+        }
+      ),
+      try_db=ctbc.TryDatabase.create(
+        {
+          'tryserver.chromium.fuzz': {
+            'some-try-bot': ctbc.TrySpec.create_for_single_mirror(
+              'chromium.fuzz',
+              'some-ci-bot',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.step_data(
+      'calculate all_fuzzers',
+      stdout=api.raw_io.output_text('//foo:target1__library\n'),
+    ),
+    api.step_data(
+      'calculate no_clusterfuzz',
+      stdout=api.raw_io.output_text(''),
+    ),
+    api.filter.analyze_output(
+      status='Found dependency',
+      test_targets=[],
+      compile_targets=['//foo:target1__library'],
+    ),
+    api.step_data(
+      'list gn targets',
+      stdout=api.raw_io.output_text('target1'),
+    ),
+    api.post_check(
+      post_process.DoesNotRun,
+      'remove staged fuzzer libraries',
+    ),
+    api.post_check(
+      post_process.DoesNotRun,
+      'find unstripped fuzzer libraries',
+    ),
+    api.post_check(
+      post_process.DoesNotRun,
+      'keep only debug info in unstripped fuzzer libraries',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
