@@ -3,14 +3,13 @@
 # found in the LICENSE file.
 
 from contextlib import contextmanager  # noqa: F401
-from recipe_engine.post_process import DropExpectation, MustRun
 
 from dataclasses import dataclass
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
-from RECIPE_MODULES.build import builder_group, reclient
+from RECIPE_MODULES.build import builder_group
 from RECIPE_MODULES.depot_tools import bot_update, depot_tools, gclient
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
@@ -40,7 +39,6 @@ class DEPS(RecipeScriptApi):
   path: path.API
   platform: platform.API
   properties: properties.API
-  reclient: reclient.API
   step: step.API
   swarming: swarming.API
 
@@ -57,7 +55,6 @@ class TEST_DEPS(RecipeTestApi):
   path: path.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
-  reclient: reclient.TEST_API
   step: step.TEST_API
   swarming: swarming.TEST_API
 
@@ -117,7 +114,6 @@ def ExecBuildSteps(api: DEPS, source_dir, env):
 def AnnotatedStepsSteps(
   api: DEPS, got_revision, source_dir, compiled_sources_path
 ):
-  use_reclient = api.reclient.instance
   # Default environment; required by all builders.
   env = {
     'BETWEEN_BUILDERS': str(compiled_sources_path),
@@ -130,14 +126,7 @@ def AnnotatedStepsSteps(
     'BUILDBOT_SLAVE_TYPE': api.properties['slavetype'],
     'PYTHONPATH': str(api.repo_resource('scripts')),
   }
-  if use_reclient:
-    env.update({'USE_RECLIENT': '1'})
-    with api.reclient.process(
-      'compile', '', source_dir, deps_cache_by_step=False
-    ):
-      ExecBuildSteps(api, source_dir, env)
-  else:
-    ExecBuildSteps(api, source_dir, env)
+  ExecBuildSteps(api, source_dir, env)
 
 
 def UploadFilesToCAS(api: DEPS, files):
@@ -360,26 +349,4 @@ def GenTests(api: TEST_DEPS):
       swarming_collection_step_name, api.swarming.collect([died_result])
     ),
     api.expect_status('INFRA_FAILURE'),
-  )
-
-  yield api.test(
-    'reclient_linux',
-    api.platform('linux', 64),
-    api.builder_group.for_current('client.nacl'),
-    api.buildbucket.ci_build(
-      builder='nacl-precise_64-newlib-x86_64-pnacl',
-      git_repo=git_repo,
-      revision='a' * 40,
-      build_number=1234,
-    ),
-    api.properties(slavetype='BuilderTester'),
-    api.properties(
-      **{
-        '$build/reclient': {
-          'instance': 'fake-reclient-instance',
-        }
-      },
-    ),
-    api.post_process(MustRun, 'preprocess for reclient'),
-    api.post_process(DropExpectation),
   )
