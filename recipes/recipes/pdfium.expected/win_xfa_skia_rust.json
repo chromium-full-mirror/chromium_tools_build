@@ -286,13 +286,13 @@
       "rdb",
       "stream",
       "-test-id-prefix",
-      "ninja://:pdfium_embeddertests/",
+      "ninja://:pdfium_unittests/",
       "-var",
       "builder:win_xfa_skia_rust",
       "-var",
-      "test_suite:pdfium_embeddertests_skia",
+      "test_suite:pdfium_unittests_fontations",
       "-tag",
-      "step_name:embeddertests (skia)",
+      "step_name:unittests (fontations)",
       "--",
       "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
       "gtest_json",
@@ -301,8 +301,8 @@
       "-result-file",
       "[CLEANUP]\\tmp_tmp_2",
       "--",
-      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\pdfium_embeddertests.exe",
-      "--use-renderer=skia",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\pdfium_unittests.exe",
+      "--fontations",
       "--gtest_output=json:[CLEANUP]\\tmp_tmp_2"
     ],
     "cwd": "[CACHE]\\builder\\pdfium",
@@ -318,7 +318,86 @@
         "hostname": "rdbhost"
       }
     },
+    "name": "unittests (fontations)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://:pdfium_embeddertests/",
+      "-var",
+      "builder:win_xfa_skia_rust",
+      "-var",
+      "test_suite:pdfium_embeddertests_skia",
+      "-tag",
+      "step_name:embeddertests (skia)",
+      "--",
+      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
+      "gtest_json",
+      "-artifact-directory",
+      "[CLEANUP]",
+      "-result-file",
+      "[CLEANUP]\\tmp_tmp_3",
+      "--",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\pdfium_embeddertests.exe",
+      "--use-renderer=skia",
+      "--gtest_output=json:[CLEANUP]\\tmp_tmp_3"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
     "name": "embeddertests (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://:pdfium_embeddertests/",
+      "-var",
+      "builder:win_xfa_skia_rust",
+      "-var",
+      "test_suite:pdfium_embeddertests_fontations_skia",
+      "-tag",
+      "step_name:embeddertests (fontations) (skia)",
+      "--",
+      "[CACHE]\\builder\\pdfium\\tools\\resultdb\\result_adapter.exe",
+      "gtest_json",
+      "-artifact-directory",
+      "[CLEANUP]",
+      "-result-file",
+      "[CLEANUP]\\tmp_tmp_4",
+      "--",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\pdfium_embeddertests.exe",
+      "--fontations",
+      "--use-renderer=skia",
+      "--gtest_output=json:[CLEANUP]\\tmp_tmp_4"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "embeddertests (fontations) (skia)"
   },
   {
     "cmd": [
@@ -638,6 +717,51 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_pixel_tests/",
+      "-var",
+      "builder:win_xfa_skia_rust",
+      "-var",
+      "test_suite:pixel_fontations_skia",
+      "-tag",
+      "step_name:pixel tests (fontations) (skia)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_pixel_tests.py",
+      "--build-dir",
+      "out\\debug_skia_rust_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os win partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite fontations symbol_level 1 use_siso true v8 true xfa true xfa_runtime enabled",
+      "--fontations",
+      "--use-renderer=skia"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "pixel tests (fontations) (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_corpus_tests/",
       "-var",
       "builder:win_xfa_skia_rust",
@@ -811,6 +935,51 @@
       }
     },
     "name": "corpus tests (xfa disabled) (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_corpus_tests/",
+      "-var",
+      "builder:win_xfa_skia_rust",
+      "-var",
+      "test_suite:corpus_fontations_skia",
+      "-tag",
+      "step_name:corpus tests (fontations) (skia)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]\\builder\\pdfium\\testing\\tools\\run_corpus_tests.py",
+      "--build-dir",
+      "out\\debug_skia_rust_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]\\builder\\pdfium\\out\\debug_skia_rust_xfa_v8\\gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os win partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite fontations symbol_level 1 use_siso true v8 true xfa true xfa_runtime enabled",
+      "--fontations",
+      "--use-renderer=skia"
+    ],
+    "cwd": "[CACHE]\\builder\\pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "corpus tests (fontations) (skia)"
   },
   {
     "name": "$result"

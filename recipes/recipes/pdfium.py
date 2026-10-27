@@ -247,6 +247,7 @@ class _TestRequest:
 
   step_name: str
   command: str
+  allow_failure: bool = False
 
 
 def _checkout_step(api: DEPS, target_os, rust, skia, v8):
@@ -474,7 +475,9 @@ def _request_all_javascript_tests(test_runner, xfa):
     test_runner.request_javascript_tests(_XfaDisabledOption)
 
 
-def _request_all_pixel_tests(test_runner, skia, v8, xfa, fontations):
+def _request_all_pixel_tests(
+  test_runner, skia, v8, xfa, fontations, fontations_allow_failure=False
+):
   test_runner.request_pixel_tests(_DefaultOption)
   test_runner.request_pixel_tests(_OneshotOption)
 
@@ -492,10 +495,14 @@ def _request_all_pixel_tests(test_runner, skia, v8, xfa, fontations):
       test_runner.request_pixel_tests(_XfaDisabledOption)
 
   if fontations:
-    test_runner.request_pixel_tests(_FontationsOption)
+    test_runner.request_pixel_tests(
+      _FontationsOption, allow_failure=fontations_allow_failure
+    )
 
 
-def _request_all_corpus_tests(test_runner, skia, v8, xfa, fontations):
+def _request_all_corpus_tests(
+  test_runner, skia, v8, xfa, fontations, fontations_allow_failure=False
+):
   test_runner.request_corpus_tests(_DefaultOption)
   test_runner.request_corpus_tests(_OneshotOption)
 
@@ -513,7 +520,9 @@ def _request_all_corpus_tests(test_runner, skia, v8, xfa, fontations):
       test_runner.request_corpus_tests(_XfaDisabledOption)
 
   if fontations:
-    test_runner.request_corpus_tests(_FontationsOption)
+    test_runner.request_corpus_tests(
+      _FontationsOption, allow_failure=fontations_allow_failure
+    )
 
 
 def _run_tests(
@@ -569,19 +578,24 @@ def _run_tests(
     swarming,
   )
 
-  use_fontations = rust and not skia
+  use_fontations = rust
+  fontations_allow_failure = rust and skia
 
   # pdfium_unittests:
   if _UNITTESTS_TARGET in test_targets:
     test_runner.request_unit_tests(fontations=False)
     if use_fontations:
-      test_runner.request_unit_tests(fontations=True)
+      test_runner.request_unit_tests(
+        fontations=True, allow_failure=fontations_allow_failure
+      )
 
   # pdfium_embeddertests:
   if _EMBEDDERTESTS_TARGET in test_targets:
     test_runner.request_embedder_tests(fontations=False)
     if use_fontations:
-      test_runner.request_embedder_tests(fontations=True)
+      test_runner.request_embedder_tests(
+        fontations=True, allow_failure=fontations_allow_failure
+      )
 
   if _TEST_RUNNER_PY_TARGET in test_targets:
     # run_javascript_tests.py:
@@ -589,10 +603,14 @@ def _run_tests(
       _request_all_javascript_tests(test_runner, xfa)
 
     # run_pixel_tests.py:
-    _request_all_pixel_tests(test_runner, skia, v8, xfa, use_fontations)
+    _request_all_pixel_tests(
+      test_runner, skia, v8, xfa, use_fontations, fontations_allow_failure
+    )
 
     # run_corpus_tests.py:
-    _request_all_corpus_tests(test_runner, skia, v8, xfa, use_fontations)
+    _request_all_corpus_tests(
+      test_runner, skia, v8, xfa, use_fontations, fontations_allow_failure
+    )
 
   test_runner.run_tests()
 
@@ -827,19 +845,26 @@ class _Swarming:
         # Let the caller handle any expired tasks.
         expired_test_requests.append(request.test_request)
       else:
-        self._report_task_result(result)
+        self._report_task_result(result, request.test_request)
 
       del self.requests[request.name]
 
     assert forward_progress
     return True, expired_test_requests
 
-  def _report_task_result(self, result):
+  def _report_task_result(self, result, test_request):
     if result.state != TaskState.COMPLETED:
       result.analyze()
 
     status = self.api.step.SUCCESS if result.success else self.api.step.FAILURE
-    self.api.step.empty(result.name, status=status, log_text=result.output)
+    step_result = self.api.step.empty(
+      result.name,
+      status=status,
+      log_text=result.output,
+      raise_on_failure=not test_request.allow_failure,
+    )
+    if test_request.allow_failure and not result.success:
+      step_result.presentation.status = self.api.step.WARNING
 
 
 def _validate_renderers(context_name, renderers):
@@ -954,7 +979,7 @@ class _TestRunner:
 
     return env
 
-  def request_unit_tests(self, fontations):
+  def request_unit_tests(self, fontations, allow_failure=False):
     test_name = 'unittests'
     args = []
     test_suite_suffix = ''
@@ -969,9 +994,10 @@ class _TestRunner:
       target=('', 'pdfium_unittests'),
       args=args,
       test_suite_suffix=test_suite_suffix or None,
+      allow_failure=allow_failure,
     )
 
-  def request_embedder_tests(self, fontations):
+  def request_embedder_tests(self, fontations, allow_failure=False):
     for renderer in self.embedder_test_renderers:
       if renderer not in _DEFAULT_RENDERERS:
         continue
@@ -997,18 +1023,25 @@ class _TestRunner:
         target=('', 'pdfium_embeddertests'),
         args=args,
         test_suite_suffix=test_suite_suffix or None,
+        allow_failure=allow_failure,
       )
 
   def request_javascript_tests(self, option):
     self._request_python_tests(_JAVASCRIPT_TEST_TYPE, option)
 
-  def request_pixel_tests(self, option):
-    self._request_python_tests(_PIXEL_TEST_TYPE, option)
+  def request_pixel_tests(self, option, allow_failure=False):
+    self._request_python_tests(
+      _PIXEL_TEST_TYPE, option, allow_failure=allow_failure
+    )
 
-  def request_corpus_tests(self, option):
-    self._request_python_tests(_CORPUS_TEST_TYPE, option, remote=True)
+  def request_corpus_tests(self, option, allow_failure=False):
+    self._request_python_tests(
+      _CORPUS_TEST_TYPE, option, remote=True, allow_failure=allow_failure
+    )
 
-  def _request_python_tests(self, test_type, option, remote=False):
+  def _request_python_tests(
+    self, test_type, option, remote=False, allow_failure=False
+  ):
     for renderer in self.python_test_renderers:
       if renderer not in option.renderers:
         continue
@@ -1031,10 +1064,17 @@ class _TestRunner:
         ),
         test_suite_suffix=test_suite_suffix,
         remote=remote,
+        allow_failure=allow_failure,
       )
 
   def _request_gtest(
-    self, step_name, *, target, args=None, test_suite_suffix=None
+    self,
+    step_name,
+    *,
+    target,
+    args=None,
+    test_suite_suffix=None,
+    allow_failure=False,
   ):
     target_path, target_name = target
 
@@ -1057,11 +1097,20 @@ class _TestRunner:
       base_tags=tags,
     )
     self.local_requests.append(
-      _TestRequest(step_name=step_name, command=command)
+      _TestRequest(
+        step_name=step_name, command=command, allow_failure=allow_failure
+      )
     )
 
   def _request_test_runner_py(
-    self, step_name, *, test_type, args, test_suite_suffix, remote
+    self,
+    step_name,
+    *,
+    test_type,
+    args,
+    test_suite_suffix,
+    remote,
+    allow_failure=False,
   ):
     test_path = self._join_root_dir(
       'testing', 'tools', f'run_{test_type}_tests.py'
@@ -1081,7 +1130,9 @@ class _TestRunner:
       base_variant=variant,
       base_tags=tags,
     )
-    request = _TestRequest(step_name=step_name, command=command)
+    request = _TestRequest(
+      step_name=step_name, command=command, allow_failure=allow_failure
+    )
     if remote and self.swarming:
       self.swarming.request_task(request, env=self.env)
     else:
@@ -1100,7 +1151,14 @@ class _TestRunner:
           if self.local_requests:
             with self.api.context(cwd=self.source_dir, env=self.env):
               for request in self.local_requests:
-                defer(self.api.step, request.step_name, request.command)
+                if request.allow_failure:
+                  step_result = self.api.step(
+                    request.step_name, request.command, raise_on_failure=False
+                  )
+                  if step_result.presentation.status == self.api.step.FAILURE:
+                    step_result.presentation.status = self.api.step.WARNING
+                else:
+                  defer(self.api.step, request.step_name, request.command)
             self.local_requests.clear()
 
           if collecting:
@@ -2295,6 +2353,117 @@ def GenTests(api: TEST_DEPS):
     _gen_ci_build(api, 'linux'),
     api.step_data('pixel tests (xfa disabled)', retcode=1),
     api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+    'fail-pixel-tests-fontations-rust',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, rust=True),
+    _gen_ci_build(api, 'linux_xfa_rust'),
+    api.step_data('pixel tests (fontations)', retcode=1),
+    api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+    'fail-pixel-tests-fontations-rust-skia',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, rust=True, skia=True),
+    _gen_ci_build(api, 'linux_xfa_skia_rust'),
+    api.step_data('pixel tests (fontations) (skia)', retcode=1),
+    api.post_process(
+      post_process.StepWarning, 'pixel tests (fontations) (skia)'
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'fail-corpus-tests-fontations-rust-skia',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(
+      api,
+      xfa=True,
+      rust=True,
+      skia=True,
+      swarming={
+        'dimensions': {
+          'pool': 'luci.flex.ci',
+        },
+      },
+    ),
+    _gen_ci_build(api, 'linux_xfa_skia_rust'),
+    api.step_data(
+      'collect tasks',
+      api.swarming.collect(
+        [
+          {
+            'output': 'pass',
+            'results': {
+              'exit_code': '0',
+              'name': 'corpus tests (skia)',
+              'state': 'COMPLETED',
+              'task_id': '0',
+            },
+          },
+          {
+            'output': 'pass',
+            'results': {
+              'exit_code': '0',
+              'name': 'corpus tests (oneshot rendering enabled) (skia)',
+              'state': 'COMPLETED',
+              'task_id': '1',
+            },
+          },
+          {
+            'output': 'pass',
+            'results': {
+              'exit_code': '0',
+              'name': 'corpus tests (javascript disabled) (skia)',
+              'state': 'COMPLETED',
+              'task_id': '2',
+            },
+          },
+          {
+            'output': 'pass',
+            'results': {
+              'exit_code': '0',
+              'name': 'corpus tests (xfa disabled) (skia)',
+              'state': 'COMPLETED',
+              'task_id': '3',
+            },
+          },
+          {
+            'output': 'diff!',
+            'results': {
+              'exit_code': '1',
+              'name': 'corpus tests (fontations) (skia)',
+              'state': 'COMPLETED',
+              'task_id': '4',
+            },
+          },
+        ]
+      ),
+    ),
+    api.post_process(
+      post_process.StepWarning, 'corpus tests (fontations) (skia)'
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'fail-unittests-fontations-rust-skia',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True, rust=True, skia=True),
+    _gen_ci_build(api, 'linux_xfa_skia_rust'),
+    api.step_data('unittests (fontations)', retcode=1),
+    api.post_process(post_process.StepWarning, 'unittests (fontations)'),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
