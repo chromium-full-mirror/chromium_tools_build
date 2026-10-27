@@ -228,6 +228,10 @@ def _populate_req_common(opts, req, cft_ash_chrome_provision):
     sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
     sw_kv.key = 'ash_chrome_build_output_dir'
     sw_kv.value = opts.ash_chrome_build_output_dir
+  if opts.strip and cft_ash_chrome_provision:
+    sw_kv = schedule_targets.sw_target.legacy_sw.key_values.add()
+    sw_kv.key = 'ash_chrome_strip'
+    sw_kv.value = 'true'
   if opts.pool == 'DUT_POOL_QUOTA':
     if _if_require_large_bot(opts.ash_chrome_gcs_path) or _if_require_large_bot(
       opts.lacros_gcs_path
