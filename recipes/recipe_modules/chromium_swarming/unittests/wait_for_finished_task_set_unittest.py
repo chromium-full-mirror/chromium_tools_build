@@ -42,11 +42,13 @@ class TasksToCollectTest(unittest.TestCase):
     self.assertEqual(tasks.unfinished_tasks, ['a', 'b', 'c'])
     self.assertEqual(tasks.finished_task_sets, [])
 
-    tasks.process_result({'states': ['PENDING', 'PENDING', 'COMPLETED']}, 3)
+    tasks.process_result(
+      {'states': ['PENDING', 'PENDING', 'COMPLETED']}, ['a', 'b', 'c']
+    )
     self.assertEqual(tasks.unfinished_tasks, ['a', 'b'])
     self.assertEqual(tasks.finished_task_sets, [])
 
-    tasks.process_result({'states': ['COMPLETED', 'COMPLETED']}, 2)
+    tasks.process_result({'states': ['COMPLETED', 'COMPLETED']}, ['a', 'b'])
     self.assertEqual(tasks.unfinished_tasks, [])
     self.assertEqual(tasks.finished_task_sets, [['a', 'b', 'c']])
 
@@ -64,6 +66,30 @@ class TasksToCollectTest(unittest.TestCase):
           ['7task', '8task', '9task'],
         ],
       )
+
+  def test_multiple_batches_process_result(self):
+    with mock.patch.object(wait_for_finished_task_set, 'TASK_BATCH_SIZE', 4):
+      tasks = wait_for_finished_task_set.TasksToCollect(
+        [
+          ['a', 'b', 'c', 'd', 'e'],
+          ['f', 'g'],
+        ]
+      )
+      batches = tasks.task_batches
+      self.assertEqual(batches, [['a', 'b', 'c', 'd'], ['e', 'f', 'g']])
+
+      # Batch 0 finishes 'a', which removes 'a' from self.unfinished_tasks.
+      tasks.process_result(
+        {'states': ['COMPLETED', 'RUNNING', 'PENDING', 'RUNNING']},
+        batches[0],
+      )
+      # Batch 1 must still map its states to ['e', 'f', 'g'], not ['b', 'c', 'd'].
+      tasks.process_result(
+        {'states': ['RUNNING', 'COMPLETED', 'COMPLETED']},
+        batches[1],
+      )
+      self.assertEqual(tasks.unfinished_tasks, ['b', 'c', 'd', 'e'])
+      self.assertEqual(tasks.finished_task_sets, [['f', 'g']])
 
   def test_multiple_sets(self):
     tasks = wait_for_finished_task_set.TasksToCollect(
@@ -91,7 +117,7 @@ class TasksToCollectTest(unittest.TestCase):
           'RUNNING',
         ]
       },
-      6,
+      ['a', 'b', 'c', 'd', 'e', 'f'],
     )
     self.assertEqual(tasks.unfinished_tasks, ['a', 'c', 'e', 'f'])
     self.assertEqual(tasks.finished_task_sets, [['d']])
@@ -107,12 +133,12 @@ class TasksToCollectTest(unittest.TestCase):
           'COMPLETED',
         ]
       },
-      4,
+      ['a', 'c', 'e', 'f'],
     )
     self.assertEqual(tasks.unfinished_tasks, ['a'])
     self.assertEqual(tasks.finished_task_sets, [['d'], ['e', 'f']])
 
-    tasks.process_result({'states': ['COMPLETED']}, 1)
+    tasks.process_result({'states': ['COMPLETED']}, ['a'])
     self.assertEqual(tasks.unfinished_tasks, [])
     self.assertEqual(
       tasks.finished_task_sets, [['a', 'b', 'c'], ['d'], ['e', 'f']]
@@ -136,8 +162,6 @@ class WaitForFinishedTaskSetTest(unittest.TestCase):
             None,
             '--swarming-server',
             'blah',
-            '--swarming-py-path',
-            '/path/to/swarming.py',
             '--output-json',
             '/path/to/out.json',
             '--input-json',
@@ -180,6 +204,28 @@ class WaitForFinishedTaskSetTest(unittest.TestCase):
     # Shouldn't ever be called, just here so that if it gets called accidentally
     # the tests don't take forever.
     sleep_mock.assert_not_called()
+
+  @mock.patch.object(subprocess, 'Popen')
+  @mock.patch.object(time, 'sleep')
+  def test_integration_multiple_batches(self, sleep_mock, popen_mock):
+    with mock.patch.object(wait_for_finished_task_set, 'TASK_BATCH_SIZE', 2):
+      popen_mock.side_effect = [
+        self.FakeProcess(json.dumps({'states': ['COMPLETED', 'RUNNING']})),
+        self.FakeProcess(json.dumps({'states': ['PENDING', 'COMPLETED']})),
+      ]
+      retcode, out_json = wait_for_finished_task_set.real_main(
+        wait_for_finished_task_set.TasksToCollect(
+          [
+            ['a', 'b', 'c'],
+            ['d'],
+          ]
+        ),
+        0,
+        'https://swarming-server',
+      )
+      self.assertEqual(retcode, 0)
+      self.assertEqual(out_json, {'attempts': 0, 'sets': [['d']]})
+      sleep_mock.assert_not_called()
 
   @mock.patch.object(time, 'sleep')
   @mock.patch.object(subprocess, 'Popen')

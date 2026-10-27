@@ -69,11 +69,11 @@ class TasksToCollect:
     """The swarming prpc json needed to collect task states."""
     return json.dumps({"task_id": task_batch})
 
-  def process_result(self, result, num_tasks):
+  def process_result(self, result, task_batch):
     """Handles the result of getting swarming task task_sets."""
-    assert len(result['states']) == num_tasks
+    assert len(result['states']) == len(task_batch)
 
-    for task_id, state in zip(self.unfinished_tasks, result['states']):
+    for task_id, state in zip(task_batch, result['states']):
       if state not in ('PENDING', 'RUNNING'):
         self.finished_tasks.add(task_id)
 
@@ -152,7 +152,7 @@ def real_main(tasks, attempts, swarming_server):
         )
         return 1, None
 
-      tasks.process_result(json.loads(out), len(task_batch))
+      tasks.process_result(json.loads(out), task_batch)
 
     if tasks.finished_task_sets:
       break
