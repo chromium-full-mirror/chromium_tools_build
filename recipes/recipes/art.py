@@ -243,22 +243,34 @@ def _archive_target_build(
   build_top_dir,
   output_directories=None,
 ):
-  tar_path = build_top_dir.joinpath('out', 'target_build.tar')
+  # The target build contains device-absolute symlinks (e.g. pointing to
+  # /apex/...) which do not exist on the host and cause `cas archive` to fail
+  # when trying to materialize targets outside the exec root. Pack all symlinks
+  # into a small tar archive and pass only regular files to `cas archive` so
+  # build artifacts are deduplicated in CAS without modifying symlinks on disk.
+  dirs = list(output_directories or ['out'])
+  symlinks_tar = build_top_dir.joinpath('out', 'symlinks.tar')
   api.step(
-    'pack target build',
+    'pack target build symlinks',
     [
-      'tar',
-      '-C',
-      build_top_dir,
-      '-cf',
-      tar_path,
+      'bash',
+      '-c',
+      'find -H "${@:2}" -type l -print0 | tar --null -T - -cf "$1"',
+      '--',
+      symlinks_tar,
     ]
-    + list(output_directories or ['out']),
+    + dirs,
   )
+  files = api.step(
+    'list target build files',
+    ['find', '-H', *dirs, '-type', 'f'],
+    stdout=api.raw_io.output_text(),
+  ).stdout.splitlines()
+  cas_paths = {symlinks_tar} | {build_top_dir.joinpath(p) for p in files}
   digest = api.cas.archive(
     'archive target build to CAS',
     build_top_dir,
-    tar_path,
+    *sorted(cas_paths),
   )
   export_step = api.step.empty('export cas_digest')
   export_step.presentation.properties['cas_digest'] = digest
@@ -496,13 +508,13 @@ def _run_steps(api: DEPS, props):
       build_top_dir,
     )
     api.step(
-      'extract target build',
+      'extract target build symlinks',
       [
         'tar',
         '-C',
         build_top_dir,
         '-xf',
-        build_top_dir.joinpath('out', 'target_build.tar'),
+        build_top_dir.joinpath('out', 'symlinks.tar'),
       ],
     )
   elif props.device:
@@ -985,6 +997,13 @@ def GenTests(api: TEST_DEPS):
       'checkout.find super-project commit',
       stdout=api.raw_io.output_text(random_commit_for_test),
     ),
+    api.step_data(
+      'list target build files',
+      stdout=api.raw_io.output_text(
+        'out/target/product/arm_krait/system/bin/dalvikvm\n'
+        'out/host/linux-x86/bin/adb\n'
+      ),
+    ),
     api.properties(
       device="angler-armv7",
       build_only=True,
@@ -1255,7 +1274,7 @@ def GenTests(api: TEST_DEPS):
       post_process.MustRun,
       'wait for GCE target build',
       'download target build from CAS',
-      'extract target build',
+      'extract target build symlinks',
     ),
     api.post_process(
       post_process.DoesNotRun,

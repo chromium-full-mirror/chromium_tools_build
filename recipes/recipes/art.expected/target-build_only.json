@@ -594,11 +594,11 @@
   },
   {
     "cmd": [
-      "tar",
-      "-C",
-      "[CACHE]/src",
-      "-cf",
-      "[CACHE]/src/out/target_build.tar",
+      "bash",
+      "-c",
+      "find -H \"${@:2}\" -type l -print0 | tar --null -T - -cf \"$1\"",
+      "--",
+      "[CACHE]/src/out/symlinks.tar",
       "out/target/product/arm_krait/system",
       "out/target/product/arm_krait/data",
       "out/target/product/arm_krait/linkerconfig",
@@ -622,7 +622,38 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "pack target build"
+    "name": "pack target build symlinks"
+  },
+  {
+    "cmd": [
+      "find",
+      "-H",
+      "out/target/product/arm_krait/system",
+      "out/target/product/arm_krait/data",
+      "out/target/product/arm_krait/linkerconfig",
+      "out/target/product/arm_krait/symbols",
+      "out/target/common/obj/JAVA_LIBRARIES",
+      "out/host/linux-x86/bin",
+      "out/host/linux-x86/lib64",
+      "out/host/linux-x86/framework",
+      "out/host/linux-x86/etc",
+      "-type",
+      "f"
+    ],
+    "cwd": "[CACHE]/src",
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "list target build files"
   },
   {
     "cmd": [
@@ -744,7 +775,7 @@
       "-dump-digest",
       "/path/to/tmp/",
       "-paths-json",
-      "[[\"[CACHE]/src\", \"out/target_build.tar\"]]"
+      "[[\"[CACHE]/src\", \"out/host/linux-x86/bin/adb\"], [\"[CACHE]/src\", \"out/symlinks.tar\"], [\"[CACHE]/src\", \"out/target/product/arm_krait/system/bin/dalvikvm\"]]"
     ],
     "cwd": "[CACHE]/src",
     "infra_step": true,
