@@ -232,6 +232,73 @@
   },
   {
     "cmd": [
+      "git",
+      "-c",
+      "core.quotePath=false",
+      "diff",
+      "--cached",
+      "--name-only"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "git diff to analyze patch",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@files@foo.cc@@@",
+      "@@@STEP_LOG_END@files@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_REPO[depot_tools]/gn.py",
+      "--root=[CACHE]/builder/pdfium",
+      "analyze",
+      "//out/debug_v8",
+      "{\"additional_compile_targets\": [\"//:pdfium_all\"], \"files\": [\"//foo.cc\"], \"test_targets\": [\"//:pdfium_unittests\", \"//:pdfium_embeddertests\", \"//testing/tools:test_runner_py\"]}",
+      "/path/to/tmp/json"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "gn analyze",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"compile_targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"//:pdfium_all\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ],@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"status\": \"Found dependency\",@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"test_targets\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"//:pdfium_unittests\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"//:pdfium_embeddertests\",@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"//testing/tools:test_runner_py\"@@@",
+      "@@@STEP_LOG_LINE@json.output@  ]@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
       "[CACHE]/builder/pdfium/third_party/siso/siso",
       "help",
       "ninja"

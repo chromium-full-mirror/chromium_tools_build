@@ -27,6 +27,7 @@ from RECIPE_MODULES.recipe_engine import (  # noqa: E402
   context,
   defer,
   file,
+  json,
   path,
   platform,
   properties,
@@ -50,6 +51,7 @@ class DEPS(RecipeScriptApi):
   file: file.API
   gclient: gclient.API
   gsutil: gsutil.API
+  json: json.API
   osx_sdk: osx_sdk.API
   path: path.API
   platform: platform.API
@@ -70,12 +72,14 @@ class TEST_DEPS(RecipeTestApi):
   context: context.TEST_API
   file: file.TEST_API
   gclient: gclient.TEST_API
+  json: json.TEST_API
   path: path.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
   siso: siso.TEST_API
   step: step.TEST_API
   swarming: swarming.TEST_API
+  tryserver: tryserver.TEST_API
 
 
 from dataclasses import dataclass  # noqa: E402
@@ -108,6 +112,12 @@ PROPERTIES = {
   'v8': Property(default=True, kind=bool),
   'xfa': Property(default=False, kind=bool),
 }
+
+# GN target labels.
+_ALL_TARGET = '//:pdfium_all'
+_UNITTESTS_TARGET = '//:pdfium_unittests'
+_EMBEDDERTESTS_TARGET = '//:pdfium_embeddertests'
+_TEST_RUNNER_PY_TARGET = '//testing/tools:test_runner_py'
 
 # test_runner.py test types.
 _CORPUS_TEST_TYPE = 'corpus'
@@ -383,10 +393,74 @@ def _gn_gen_builds(
   return _gold_build_config(args)
 
 
-def _build_steps(api: DEPS, source_root, out_dir):
+def _analyze_targets(
+  api: DEPS, source_root, out_dir, compile_targets, test_targets
+):
+  if not api.tryserver.is_tryserver:
+    # Always build on CI builders.
+    return compile_targets, test_targets
+
+  with api.context(cwd=source_root):
+    files = api.tryserver.get_files_affected_by_patch('')
+    if 'DEPS' in files:
+      # Always build if //DEPS changed. This is a conservative measure to ensure
+      # GN does not accidentally let a meaningful change skip CQ.
+      return compile_targets, test_targets
+
+    analyze_input = {
+      'files': [f'//{f}' for f in files],
+      'test_targets': test_targets,
+      'additional_compile_targets': compile_targets,
+    }
+    test_output = {
+      'compile_targets': compile_targets,
+      'status': 'Found dependency',
+      'test_targets': test_targets,
+    }
+    step_result = api.step(
+      'gn analyze',
+      PYTHON_CMD
+      + [
+        api.depot_tools.gn_py_path,
+        '--root=' + str(source_root),
+        'analyze',
+        '//out/' + out_dir,
+        api.json.input(analyze_input),
+        api.json.output(),
+      ],
+      step_test_data=lambda: api.json.test_api.output(test_output),
+    )
+    output = step_result.json.output
+    if 'error' in output:
+      error_msg = f'Error: {output["error"]}'
+      if 'invalid_targets' in output:
+        error_msg += f' ({", ".join(output["invalid_targets"])})'
+      step_result.presentation.step_text = error_msg
+      step_result.presentation.status = api.step.FAILURE
+      raise api.step.StepFailure(error_msg)
+
+    status = output.get('status')
+    if status == 'No dependency':
+      step_result.presentation.step_text = 'No compile necessary'
+      return [], []
+    if status in ('Found dependency', 'Found dependency (all)'):
+      return output['compile_targets'], output['test_targets']
+
+    error_msg = f'Unexpected status: {status}'
+    step_result.presentation.step_text = error_msg
+    step_result.presentation.status = api.step.FAILURE
+    raise api.step.StepFailure(error_msg)
+
+
+def _build_steps(api: DEPS, source_root, out_dir, compile_targets):
   debug_path = source_root.joinpath('out', out_dir)
   ninja_cmd = ['ninja', '-C', debug_path]
-  ninja_cmd.append('pdfium_all')
+  # Two separate removeprefix() calls to do the following transforms:
+  #  - '//:pdfium_all' to 'pdfium_all'
+  #  - '//path/to:foo' to 'path/to:foo'
+  ninja_cmd.extend(
+    target.removeprefix('//').removeprefix(':') for target in compile_targets
+  )
 
   with api.siso.context():
     api.siso.run_ninja(source_root, ninja_cmd, name='compile with siso')
@@ -457,6 +531,7 @@ def _run_tests(
   renderers,
   swarming,
   agg,
+  test_targets,
 ):
   """Runs the tests and uploads the results to Gold."""
   resultdb = _ResultDb(
@@ -497,24 +572,27 @@ def _run_tests(
   use_fontations = rust and not skia
 
   # pdfium_unittests:
-  test_runner.request_unit_tests(fontations=False)
-  if use_fontations:
-    test_runner.request_unit_tests(fontations=True)
+  if _UNITTESTS_TARGET in test_targets:
+    test_runner.request_unit_tests(fontations=False)
+    if use_fontations:
+      test_runner.request_unit_tests(fontations=True)
 
   # pdfium_embeddertests:
-  test_runner.request_embedder_tests(fontations=False)
-  if use_fontations:
-    test_runner.request_embedder_tests(fontations=True)
+  if _EMBEDDERTESTS_TARGET in test_targets:
+    test_runner.request_embedder_tests(fontations=False)
+    if use_fontations:
+      test_runner.request_embedder_tests(fontations=True)
 
-  # run_javascript_tests.py:
-  if v8:
-    _request_all_javascript_tests(test_runner, xfa)
+  if _TEST_RUNNER_PY_TARGET in test_targets:
+    # run_javascript_tests.py:
+    if v8:
+      _request_all_javascript_tests(test_runner, xfa)
 
-  # run_pixel_tests.py:
-  _request_all_pixel_tests(test_runner, skia, v8, xfa, use_fontations)
+    # run_pixel_tests.py:
+    _request_all_pixel_tests(test_runner, skia, v8, xfa, use_fontations)
 
-  # run_corpus_tests.py:
-  _request_all_corpus_tests(test_runner, skia, v8, xfa, use_fontations)
+    # run_corpus_tests.py:
+    _request_all_corpus_tests(test_runner, skia, v8, xfa, use_fontations)
 
   test_runner.run_tests()
 
@@ -1012,12 +1090,12 @@ class _TestRunner:
   def run_tests(self):
     """Runs previously requested tests."""
     try:
-      if self.swarming:
+      if self.swarming and self.swarming.requests:
         self.swarming.trigger_tasks()
 
       # Defer individual failures until the end of this block.
       with self.api.defer.context() as defer:
-        collecting = bool(self.swarming)
+        collecting = bool(self.swarming and self.swarming.requests)
         while self.local_requests or collecting:
           if self.local_requests:
             with self.api.context(cwd=self.source_dir, env=self.env):
@@ -1215,11 +1293,27 @@ def RunSteps(
       out_dir,
       agg,
     )
+    compile_targets = [_ALL_TARGET]
+    test_targets = (
+      []
+      if skip_test
+      else [
+        _UNITTESTS_TARGET,
+        _EMBEDDERTESTS_TARGET,
+        _TEST_RUNNER_PY_TARGET,
+      ]
+    )
+    compile_targets, test_targets = _analyze_targets(
+      api, source_dir, out_dir, compile_targets, test_targets
+    )
+    if not compile_targets:
+      return
+
     if not run_skia_gold:
       build_config = {}
-    _build_steps(api, source_dir, out_dir)
+    _build_steps(api, source_dir, out_dir, compile_targets)
 
-    if skip_test:
+    if not test_targets:
       return
 
     _run_tests(
@@ -1237,6 +1331,7 @@ def RunSteps(
       renderers,
       swarming,
       agg,
+      test_targets,
     )
 
 
@@ -1731,6 +1826,164 @@ def GenTests(api: TEST_DEPS):
     api.builder_group.for_current('tryserver.client.pdfium'),
     _gen_properties(api, xfa=True, memory_tool='asan'),
     _gen_try_build(api, 'linux_xfa_asan_lsan'),
+  )
+
+  yield api.test(
+    'try-linux-deps-roll',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(['DEPS']),
+    api.post_process(post_process.DoesNotRun, 'gn analyze'),
+    api.post_process(post_process.MustRun, 'compile with siso'),
+    api.post_process(post_process.MustRun, 'unittests'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'try-linux-no-dependency',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(['AUTHORS']),
+    api.step_data(
+      'gn analyze',
+      api.json.output(
+        {
+          'compile_targets': [],
+          'status': 'No dependency',
+          'test_targets': [],
+        }
+      ),
+    ),
+    api.post_process(post_process.MustRun, 'gn analyze'),
+    api.post_process(
+      post_process.StepTextEquals, 'gn analyze', 'No compile necessary'
+    ),
+    api.post_process(post_process.DoesNotRun, 'compile with siso'),
+    api.post_process(post_process.DoesNotRun, 'unittests'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'fail-gn-analyze-error',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(['BUILD.gn']),
+    api.step_data(
+      'gn analyze',
+      api.json.output(
+        {
+          'error': 'Invalid targets',
+          'invalid_targets': ['//:nonexistent'],
+        }
+      ),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.StepFailure, 'gn analyze'),
+    api.post_process(
+      post_process.StepTextEquals,
+      'gn analyze',
+      'Error: Invalid targets (//:nonexistent)',
+    ),
+    api.post_process(post_process.DoesNotRun, 'compile with siso'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'fail-gn-analyze-status',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(['BUILD.gn']),
+    api.step_data(
+      'gn analyze',
+      api.json.output(
+        {
+          'compile_targets': [],
+          'status': 'Unknown',
+          'test_targets': [],
+        }
+      ),
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.StepFailure, 'gn analyze'),
+    api.post_process(
+      post_process.StepTextEquals,
+      'gn analyze',
+      'Unexpected status: Unknown',
+    ),
+    api.post_process(post_process.DoesNotRun, 'compile with siso'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'try-linux-unittests-only',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(
+      ['core/fxcrt/widestring_unittest.cpp']
+    ),
+    api.step_data(
+      'gn analyze',
+      api.json.output(
+        {
+          'compile_targets': ['//:pdfium_unittests'],
+          'status': 'Found dependency',
+          'test_targets': ['//:pdfium_unittests'],
+        }
+      ),
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile with siso',
+      ['pdfium_unittests'],
+    ),
+    api.post_process(post_process.MustRun, 'unittests'),
+    api.post_process(post_process.DoesNotRun, 'embeddertests'),
+    api.post_process(post_process.DoesNotRun, 'javascript tests'),
+    api.post_process(post_process.DoesNotRun, 'pixel tests'),
+    api.post_process(post_process.DoesNotRun, 'corpus tests'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'try-linux-compile-only',
+    api.platform('linux', 64),
+    api.builder_group.for_current('tryserver.client.pdfium'),
+    _gen_properties(api),
+    _gen_try_build(api, 'linux'),
+    api.tryserver.get_files_affected_by_patch(
+      ['testing/fuzzers/pdf_bidi_fuzzer.cc']
+    ),
+    api.step_data(
+      'gn analyze',
+      api.json.output(
+        {
+          'compile_targets': ['//testing/fuzzers:pdf_bidi_fuzzer_src'],
+          'status': 'Found dependency',
+          'test_targets': [],
+        }
+      ),
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile with siso',
+      ['testing/fuzzers:pdf_bidi_fuzzer_src'],
+    ),
+    api.post_process(post_process.DoesNotRun, 'unittests'),
+    api.post_process(post_process.DoesNotRun, 'embeddertests'),
+    api.post_process(post_process.DoesNotRun, 'javascript tests'),
+    api.post_process(post_process.DoesNotRun, 'pixel tests'),
+    api.post_process(post_process.DoesNotRun, 'corpus tests'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
