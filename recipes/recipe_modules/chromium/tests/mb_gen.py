@@ -78,8 +78,6 @@ def RunSteps(api: DEPS):
     chromium_types.BuilderId.create_for_group('test-group', 'test builder'),
     phase='test_phase',
     isolated_targets=['base_unittests_run'],
-    android_version_code=3,
-    android_version_name='example',
     write_ide_json=api.properties.get('mb_write_ide_json', False),
   )
 

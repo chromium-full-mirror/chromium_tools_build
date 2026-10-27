@@ -98,8 +98,6 @@ def RunSteps(api: DEPS):
       build_dir,
       builder_id,
       mb_config_path=mb_config_path,
-      android_version_code=3,
-      android_version_name="example",
     )
 
     return api.chromium.compile(

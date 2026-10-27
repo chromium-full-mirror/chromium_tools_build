@@ -77,19 +77,6 @@ class TEST_DEPS(RecipeTestApi):
 BUILDERS = ctbc.BuilderDatabase.create(
   {
     'fake.group': {
-      'Test Version': ctbc.BuilderSpec.create(
-        android_config='base_config',
-        chromium_config='main_builder',
-        chromium_apply_config=['mb'],
-        chromium_config_kwargs={
-          'BUILD_CONFIG': 'Debug',
-          'TARGET_ARCH': 'arm',
-          'TARGET_BITS': 32,
-          'TARGET_PLATFORM': 'android',
-        },
-        gclient_config='chromium',
-        android_version='chrome/Version',
-      ),
       'Cronet': ctbc.BuilderSpec.create(
         chromium_config='main_builder',
         chromium_apply_config=['cronet_builder'],
@@ -467,24 +454,6 @@ def GenTests(api: TEST_DEPS):
       parent_got_revision='fake-parent-revision',
     ),
     api.post_process(post_process.DoesNotRun, 'tree truth steps'),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-    'android_version',
-    api.chromium_tests_builder_config.ci_build(
-      builder_group='fake.group', builder='Test Version', builder_db=BUILDERS
-    ),
-    api.chromium.override_version(major=123, minor=1, build=9876, patch=2),
-    api.post_process(
-      post_process.StepCommandContains,
-      'lookup GN args',
-      [
-        '--android-version-code=987600200',
-        '--android-version-name=123.1.9876.2',
-      ],
-    ),
-    api.post_process(post_process.MustRun, 'compile'),
     api.post_process(post_process.DropExpectation),
   )
 

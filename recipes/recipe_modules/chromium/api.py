@@ -1395,8 +1395,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     mb_config_path=None,
     chromium_config=None,
     phase=None,
-    android_version_code=None,
-    android_version_name=None,
     additional_args=None,
     include_instruction=False,
     additional_instructions=None,
@@ -1459,10 +1457,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     if phase is not None:
       args += ['--phase', str(phase)]
 
-    if android_version_code:
-      args += ['--android-version-code=%s' % android_version_code]
-    if android_version_name:
-      args += ['--android-version-name=%s' % android_version_name]
     # TODO(crbug.com/1060857): Remove this once swarming task templates
     # support command prefixes.
     if self.c.project_generator.use_luci_auth:
@@ -1596,8 +1590,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     recursive=False,
     chromium_config=None,
     phase=None,
-    android_version_code=None,
-    android_version_name=None,
     gn_args_location=None,
     gn_args_max_text_lines=None,
   ):
@@ -1645,8 +1637,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       mb_config_path=mb_config_path,
       chromium_config=chromium_config,
       phase=phase,
-      android_version_code=android_version_code,
-      android_version_name=android_version_name,
       additional_args=additional_args,
       stdout=self.m.raw_io.output_text(),
       step_test_data=lambda: self.m.raw_io.test_api.stream_output_text(
@@ -1677,8 +1667,6 @@ class ChromiumApi(recipe_api.RecipeApi):
     mb_config_path=None,
     isolated_targets=None,
     phase=None,
-    android_version_code=None,
-    android_version_name=None,
     gn_args_location=None,
     gn_args_max_text_lines=None,
     recursive_lookup=False,
@@ -1726,8 +1714,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       mb_config_path=mb_config_path,
       phase=phase,
       recursive=recursive_lookup,
-      android_version_code=android_version_code,
-      android_version_name=android_version_name,
       gn_args_location=gn_args_location,
       gn_args_max_text_lines=gn_args_max_text_lines,
     )
@@ -1770,8 +1756,6 @@ class ChromiumApi(recipe_api.RecipeApi):
           mb_path=mb_path,
           mb_config_path=mb_config_path,
           phase=phase,
-          android_version_code=android_version_code,
-          android_version_name=android_version_name,
           additional_args=mb_args,
           step_test_data=step_test_data,
           include_instruction=True,

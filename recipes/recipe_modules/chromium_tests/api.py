@@ -241,10 +241,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         f'https://ci.chromium.org/ui/b/{parent_build_id}'
       )
 
-  def log(self, message):
-    presentation = self.m.step.active_result.presentation
-    presentation.logs.setdefault('stdout', []).append(message)
-
   def configure_build(
     self,
     builder_config: ctbc.BuilderConfig,
@@ -737,46 +733,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     return test_runner
 
-  _ARCHITECTURE_DIGIT_MAP = {
-    ('arm', 32): 0,
-    ('arm', 64): 5,
-    ('intel', 32): 1,
-    ('intel', 64): 6,
-    ('mips', 32): 2,
-  }
-
-  def get_android_version_details(
-    self,
-    source_dir: Path,
-    version_file,
-    *,
-    log_details=False,
-  ):
-    if not version_file:
-      return None, None
-
-    version = self.m.chromium.get_version_from_file(source_dir / version_file)
-
-    chromium_config = self.m.chromium.c
-    arch_id = chromium_config.TARGET_ARCH, chromium_config.TARGET_BITS
-    arch_digit = self._ARCHITECTURE_DIGIT_MAP.get(arch_id, None)
-    assert arch_digit is not None, (
-      f'Architecture and bits ({arch_id!r})'
-      ' does not have a version digit assigned'
-    )
-
-    android_version_name = '%(MAJOR)s.%(MINOR)s.%(BUILD)s.%(PATCH)s' % version
-    android_version_code = '%d%03d%d0' % (
-      int(version['BUILD']),
-      int(version['PATCH']),
-      arch_digit,
-    )
-    if log_details:
-      self.log('version:%s' % version)
-      self.log('android_version_name:%s' % android_version_name)
-      self.log('android_version_code:%s' % android_version_code)
-    return android_version_name, android_version_code
-
   def compile_specific_targets(
     self,
     build_dir: Path,
@@ -877,12 +833,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     name_suffix = ' (with patch)' if self.m.tryserver.is_tryserver else ''
 
-    android_version_name, android_version_code = (
-      self.get_android_version_details(
-        source_dir, builder_config.android_version, log_details=True
-      )
-    )
-
     # Compile the src side deps so it is ready to be uploaded to CAS.
     # This is only useful when uploading test isolate to be executed in
     # a different srcless builder.
@@ -905,8 +855,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       mb_config_path=mb_config_path,
       mb_recursive_lookup=mb_recursive_lookup,
       mb_write_ide_json=mb_write_ide_json,
-      android_version_code=android_version_code,
-      android_version_name=android_version_name,
       include_utr_instruction=include_utr_instruction,
     )
 
@@ -1588,8 +1536,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     mb_config_path=None,
     mb_recursive_lookup=False,
     mb_write_ide_json=False,
-    android_version_code=None,
-    android_version_name=None,
     include_utr_instruction=False,
   ):
     with self.m.chromium.guard_compile(build_dir, suffix=name_suffix):
@@ -1607,8 +1553,6 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
             name='generate_build_files%s' % name_suffix,
             recursive_lookup=mb_recursive_lookup,
             write_ide_json=mb_write_ide_json,
-            android_version_code=android_version_code,
-            android_version_name=android_version_name,
           )
 
         _mb_gen()
@@ -3658,19 +3602,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     for c in parent_builder_spec.chromium_apply_config:
       self.m.chromium.apply_config(c, parent_chromium_config)
 
-    android_version_name, android_version_code = (
-      self.get_android_version_details(
-        source_dir, parent_builder_spec.android_version
-      )
-    )
     self.m.chromium.mb_lookup(
       source_dir,
       parent_builder_id,
       mb_config_path=mb_config_path,
       chromium_config=parent_chromium_config,
       phase=mb_phase,
-      android_version_name=android_version_name,
-      android_version_code=android_version_code,
       name='lookup builder GN args',
     )
 
