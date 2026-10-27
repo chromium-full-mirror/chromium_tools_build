@@ -317,6 +317,7 @@ _AddIsolatedTestSpec(
 
 _AddIsolatedTestSpec('linux-r350-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf', 'linux', 'linux-builder-perf')
+_AddIsolatedTestSpec('linux-rtx4070-perf', 'linux', 'linux-builder-perf')
 _AddIsolatedTestSpec('linux-perf-rel', 'linux', 'linux-builder-perf-rel')
 _AddIsolatedTestSpec(
   'linux-nvidia-dgx-spark-arm-perf',
