@@ -231,17 +231,16 @@ def _run_clean_builds(
   )
   _raise_raw_result_on_failure(api, raw_result)
 
-  # Enable gn check --check-generated as an additional non-fatal step on
-  # Linux target builds before enabling by default. See crbug.com/557053937.
+  # Enable gn check --check-generated as an additional non-fatal step before
+  # enabling by default. See crbug.com/557053937.
   # raise_on_failure=False keeps the step marked as a failure without failing
   # the overall build.
-  if api.chromium.c.TARGET_PLATFORM == 'linux':
-    api.gn.check(
-      build_dir,
-      check_generated=True,
-      step_name='gn check --check-generated',
-      raise_on_failure=False,
-    )
+  api.gn.check(
+    build_dir,
+    check_generated=True,
+    step_name='gn check --check-generated',
+    raise_on_failure=False,
+  )
 
   # Missing-deps check as an additional step for continuous benchmarking
   # before enabling by default. Opt-in via the enable_missing_deps_check
