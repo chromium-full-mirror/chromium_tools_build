@@ -47,9 +47,9 @@ class TEST_DEPS(RecipeTestApi):
 
 PROPERTIES = crowbar_pb.CrowbarOptions
 
-# Path to git repos (including submodules) to find Crowbar packages.
-_REPO_PATHS = [
-  'src',
+# Git repos (including submodules) to find Crowbar packages.
+_REPOS = [
+  crowbar_pb.Repo(path='src'),
 ]
 
 
@@ -57,9 +57,12 @@ def RunSteps(api: DEPS, properties):
   api.gclient.set_config('chromium')
 
   c = api.chromium_checkout.ensure_checkout()
-  for p in _REPO_PATHS:
-    repo_dir = c.checkout_dir / p
-    api.crowbar.run_in_repo(p, repo_dir, properties.crowbar_role)
+  api.crowbar.run_in_repo(
+    'chromium',
+    c.checkout_dir,
+    properties.crowbar_role,
+    repos=_REPOS,
+  )
 
 
 def GenTests(api: TEST_DEPS):
@@ -79,7 +82,7 @@ def GenTests(api: TEST_DEPS):
       api.step.sub_build(build_pb2.Build(status=common_pb.SUCCESS)),
     ),
     api.post_process(
-      post_process.StepCommandContains, 'build packages', ['foo']
+      post_process.StepCommandContains, 'build packages', ['src/foo']
     ),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.DropExpectation),
