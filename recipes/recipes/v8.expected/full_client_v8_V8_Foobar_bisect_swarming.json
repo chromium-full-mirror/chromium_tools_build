@@ -590,6 +590,7 @@
     },
     "name": "build.compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
     },
     "~followup_annotations": [
@@ -1950,6 +1951,7 @@
     },
     "name": "Bisect a0.compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
     },
     "~followup_annotations": [
@@ -3070,6 +3072,7 @@
     },
     "name": "Bisect a2.compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     },
     "~followup_annotations": [
@@ -4229,6 +4232,7 @@
     },
     "name": "Bisect a1.compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
     },
     "~followup_annotations": [

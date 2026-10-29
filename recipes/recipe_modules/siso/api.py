@@ -109,6 +109,7 @@ class SisoApi(recipe_api.RecipeApi):
     ninja_invocation_id=None,
     include_utr_instruction=False,
     builder_id=None,
+    is_bisectable=False,
     **kwargs,
   ):
     """Run the ninja command with siso.
@@ -127,6 +128,7 @@ class SisoApi(recipe_api.RecipeApi):
       include_utr_instruction: Whether or not to include UTR reproduction
         instructions
       builder_id: ID for the builder compiling the targets.
+      is_bisectable: Whether or not the step can be bisected.
 
     Returns:
       step_data.StepData of the build step.
@@ -343,6 +345,8 @@ class SisoApi(recipe_api.RecipeApi):
     try:
       with self.m.context(env=env, cwd=source_dir):
         step_result = self.m.step(name, cmd, **kwargs)
+        if is_bisectable:
+          step_result.presentation.tags['luci-bisection.is_bisectable'] = 'true'
         if ninja_invocation_id:
           step_result.presentation.tags['ninja_invocation_id'] = (
             ninja_invocation_id
@@ -353,6 +357,8 @@ class SisoApi(recipe_api.RecipeApi):
           post_step_func(step_result)
         return step_result
     except self.m.step.StepFailure as ex:
+      if is_bisectable:
+        ex.result.presentation.tags['luci-bisection.is_bisectable'] = 'true'
       if ninja_invocation_id:
         ex.result.presentation.tags['ninja_invocation_id'] = ninja_invocation_id
       # Ensure the repro instructions are attached for failing compiles

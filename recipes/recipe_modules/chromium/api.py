@@ -501,6 +501,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           ninja_invocation_id=ninja_invocation_id,
           include_utr_instruction=include_utr_instruction,
           builder_id=builder_id,
+          is_bisectable=True,
           **kwargs,
         )
       else:
@@ -523,6 +524,7 @@ class ChromiumApi(recipe_api.RecipeApi):
           ninja_step_result = self.m.step(
             name or 'compile', cmd, step_test_data=step_test_data, **kwargs
           )
+          ninja_step_result.presentation.tags[self.BISECT_STEP_TAG] = 'true'
           if ninja_invocation_id:
             ninja_step_result.presentation.tags['ninja_invocation_id'] = (
               ninja_invocation_id
@@ -532,6 +534,8 @@ class ChromiumApi(recipe_api.RecipeApi):
             get_utr_compile_instruction(self, ninja_step_result, builder_id)
     except self.m.step.StepFailure as ex:
       ninja_step_result = ex.result
+      if self.BISECT_STEP_TAG not in ninja_step_result.presentation.tags:
+        ninja_step_result.presentation.tags[self.BISECT_STEP_TAG] = 'true'
       if (
         ninja_invocation_id
         and 'ninja_invocation_id' not in ninja_step_result.presentation.tags
@@ -579,8 +583,6 @@ class ChromiumApi(recipe_api.RecipeApi):
       )
 
     finally:
-      if ninja_step_result:
-        ninja_step_result.presentation.tags[self.BISECT_STEP_TAG] = 'true'
       if include_utr_instruction and builder_id:
         self.m.repro_instructions.update_invocation_instructions()
       if not self.m.runtime.in_global_shutdown and not skip_log_upload:

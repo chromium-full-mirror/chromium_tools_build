@@ -82,6 +82,7 @@ def RunSteps(api: DEPS):
       builder_id=chromium_types.BuilderId.create_for_group(
         'builder group', 'builder name'
       ),
+      is_bisectable=True,
     )
     with api.siso.context():
       api.step('siso context', cmd=['some_process_calling_siso.py'])

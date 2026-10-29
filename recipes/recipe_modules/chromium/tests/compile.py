@@ -318,6 +318,9 @@ def GenTests(api: TEST_DEPS):
       / 'builder/src/tools/clang/scripts/process_crashreports.py'
     ),
     api.post_process(post_process.StepSuccess, 'compile'),
+    api.post_process(
+      post_process.TagEquals, 'compile', 'luci-bisection.is_bisectable', 'true'
+    ),
     api.post_process(post_process.StepSuccess, 'compile confirm no-op'),
     api.post_process(post_process.DropExpectation),
   )
@@ -485,5 +488,8 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.expect_status('INFRA_FAILURE'),
+    api.post_process(
+      post_process.TagEquals, 'compile', 'luci-bisection.is_bisectable', 'true'
+    ),
     api.post_process(post_process.DropExpectation),
   )

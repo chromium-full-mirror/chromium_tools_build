@@ -737,6 +737,7 @@
     },
     "name": "compile",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001337"
     }
   },
@@ -1463,6 +1464,7 @@
     },
     "name": "compile (2)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-00000000133d"
     }
   },
@@ -2215,6 +2217,7 @@
     },
     "name": "compile (3)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001343"
     }
   },
@@ -2993,6 +2996,7 @@
     },
     "name": "compile (4)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001349"
     }
   },
@@ -3797,6 +3801,7 @@
     },
     "name": "compile (5)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-00000000134f"
     }
   },
@@ -4627,6 +4632,7 @@
     },
     "name": "compile (6)",
     "tags": {
+      "luci-bisection.is_bisectable": "true",
       "ninja_invocation_id": "00000000-0000-0000-0000-000000001355"
     }
   },
