@@ -428,6 +428,16 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'tot_analysis_disabled',
+    api.binary_size.build(),
+    api.binary_size.properties(use_tot_analysis=False),
+    api.post_process(post_process.DoesNotRun, 'gsutil cat LATEST'),
+    api.post_process(post_process.DoesNotRun, 'gsutil Downloading zip'),
+    api.post_process(post_process.MustRun, 'compile (without patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
     'valid_latest_file_merge_conflict',
     api.binary_size.build(override_commit_log=True),
     api.override_step_data('bot_update', retcode=1),

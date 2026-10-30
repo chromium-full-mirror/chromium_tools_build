@@ -83,6 +83,10 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
     self.arm64_size_config_json = properties.arm64_size_config_json
 
+    self._use_tot_analysis = (
+      not properties.HasField('use_tot_analysis') or properties.use_tot_analysis
+    )
+
   def _get_size_config_json(self, source_dir: Path) -> str:
     """Returns the size config JSON path, relative to the output directory.
 
@@ -213,7 +217,8 @@ class BinarySizeApi(recipe_api.RecipeApi):
       analysis_warning_statuses: Dict of {status_code: int -> message: string}
         items for diff analysis statuses that should only be warnings.
       try_gs_analysis: bool, whether to try to use previously computed size
-        results from tip of tree to skip building without patch.
+        results from tip of tree to skip building without patch. Ignored when
+        the use_tot_analysis property is false.
     """
     assert self.m.tryserver.is_tryserver
 
@@ -231,6 +236,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
 
     try_gs_analysis = (
       try_gs_analysis
+      and self._use_tot_analysis
       and gclient_config == 'chromium'
       and is_trunk_builder
       and gerrit_change_project == 'chromium/src'

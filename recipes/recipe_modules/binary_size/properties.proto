@@ -25,4 +25,10 @@ message InputProperties {
 
   // Location of size config JSON for arm64, relative to Chromium output directory.
   optional string arm64_size_config_json = 5;
+
+  // Whether to reuse the most recent tip-of-tree size analysis uploaded by the
+  // android-binary-size CI builder rather than building without the patch.
+  // Defaults to true. Set to false for builders whose measured artifacts differ
+  // from android-binary-size's (e.g. android-desktop-*-binary-size).
+  optional bool use_tot_analysis = 6;
 }
