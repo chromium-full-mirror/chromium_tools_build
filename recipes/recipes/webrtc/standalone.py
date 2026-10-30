@@ -66,32 +66,28 @@ def RunSteps(api: DEPS):
   update_result = api.chromium_checkout.ensure_checkout()
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
+  build_dir = api.chromium.default_build_dir(source_dir)
+
+  targets_config = api.chromium_tests.create_targets_config(
+    builder_config,
+    update_result.properties,
+    source_dir,
+    build_dir,
+    checkout_dir=checkout_dir,
+  )
+
+  api.chromium_swarming.configure_swarming(precommit=api.tryserver.is_tryserver)
+
+  if api.webrtc.should_download_video_quality_tools(builder_id, builder_config):
+    api.webrtc.download_video_quality_tools(source_dir)
+
+  if api.webrtc.should_generate_code_coverage(builder_id, builder_config):
+    api.webrtc.setup_code_coverage_module(source_dir, build_dir)
+
+  api.chromium.ensure_toolchains(update_result.checkout_dir)
+  api.chromium.runhooks(source_dir, build_dir)
 
   for phase in builders.BUILDERS_DB[builder_id].phases:
-    build_dir = api.chromium.default_build_dir(source_dir)
-
-    targets_config = api.chromium_tests.create_targets_config(
-      builder_config,
-      update_result.properties,
-      source_dir,
-      build_dir,
-      checkout_dir=checkout_dir,
-    )
-
-    api.chromium_swarming.configure_swarming(
-      precommit=api.tryserver.is_tryserver
-    )
-
-    if api.webrtc.should_download_video_quality_tools(
-      builder_id, builder_config
-    ):
-      api.webrtc.download_video_quality_tools(source_dir)
-
-    if api.webrtc.should_generate_code_coverage(builder_id, builder_config):
-      api.webrtc.setup_code_coverage_module(source_dir, build_dir)
-
-    api.chromium.ensure_toolchains(update_result.checkout_dir)
-    api.chromium.runhooks(source_dir, build_dir)
     test_targets, compile_targets = api.webrtc.determine_compilation_targets(
       source_dir, build_dir, builder_id, targets_config, phase
     )

@@ -38,9 +38,7 @@ def _get_isolated_targets(tests):
 
 
 def _get_test_targets_from_config(targets_config, phase):
-  if phase is None:
-    return [t.target_name for t in targets_config.all_tests]
-  if phase == 'rtti_no_sctp':
+  if phase in builders.TEST_PHASES:
     return [t.target_name for t in targets_config.all_tests]
   return []
 

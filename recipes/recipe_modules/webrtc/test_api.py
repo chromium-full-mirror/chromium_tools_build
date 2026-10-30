@@ -13,6 +13,8 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import (
   test_result as test_result_pb2,
 )
 
+from . import builders
+
 _BUILDER_PREFIX = {
   'client.webrtc': 'luci_webrtc_ci',
   'client.webrtc.perf': 'luci_webrtc_perf',
@@ -137,7 +139,6 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
       )
 
     git_repo = 'https://webrtc.googlesource.com/src'
-    nb_phase = 3 if 'more_configs' in builder_name else 1
     if 'try' in builder_id.group:
       if 'fuzzer' not in builder_name:
         # The "all" and "default" rules for gn are different:
@@ -148,8 +149,8 @@ class WebRTCTestApi(recipe_test_api.RecipeTestApi):
           compile_targets = ['default']
         else:
           compile_targets = ['all']
-        for i in range(nb_phase):
-          run_tests = _run_tests(builder_id) and (nb_phase == 1 or i == 2)
+        for i, phase in enumerate(builder_config.phases):
+          run_tests = _run_tests(builder_id) and phase in builders.TEST_PHASES
           json_output = self.m.json.output(
             gn_analyze_output
             or {

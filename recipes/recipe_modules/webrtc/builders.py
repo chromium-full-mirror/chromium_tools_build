@@ -14,6 +14,9 @@ from RECIPE_MODULES.build.chromium_tests_builder_config import (
 )
 
 
+TEST_PHASES = (None, 'rtti_no_sctp')
+
+
 @attrs()
 class WebRTCBuilderSpec(builder_spec.BuilderSpec):
   perf_id = attrib(str, default=None)
@@ -345,7 +348,6 @@ _CLIENT_WEBRTC_SPEC = {
   'Win (more configs)': WebRTCBuilderSpec.create(
     phases=(
       'cxx23',
-      'dummy_audio_file_devices_no_protobuf',
       'rtti_no_sctp',
     ),
     chromium_config='webrtc_default',
@@ -1016,9 +1018,7 @@ _TRYSERVER_WEBRTC_SPEC = {
   'win_x86_more_configs': WebRTCBuilderSpec.create(
     phases=(
       'cxx23',
-      'dummy_audio_file_devices_no_protobuf',
       'rtti_no_sctp',
-      'disable_trace_events',
     ),
     chromium_config='webrtc_default',
     gclient_config='webrtc',
