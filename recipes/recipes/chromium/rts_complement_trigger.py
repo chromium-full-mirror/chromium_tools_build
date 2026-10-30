@@ -4,8 +4,10 @@
 """Launches chromium/rts_complement_runner builds for recent CQ builds.
 
 Finds the CQ builds of the allowlisted builders from the previous MTV calendar
-day that ran RTS-filtered tests and archived RTS complement command lines, and
-runs up to `MAX_CONCURRENT_BUILDS` runner builds at a time (retrying once on
+day that ran RTS-filtered tests and archived RTS complement command lines,
+skips CQ builds already covered by a passing runner build, queries
+Gerrit to prioritize submitted patchsets, and runs up to
+`MAX_CONCURRENT_BUILDS` runner builds at a time (retrying once on
 `INFRA_FAILURE`).
 
 Each runner gets its CQ orchestrator build ID (`cq_build_id`) and the CQ
@@ -36,6 +38,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
 from PB.recipes.build.chromium.rts_complement_trigger import InputProperties
 from RECIPE_MODULES.build import chromium_orchestrator
+from RECIPE_MODULES.depot_tools import gerrit
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   futures,
@@ -49,10 +52,21 @@ PROPERTIES = InputProperties
 
 BUILD_LIMIT = 5
 CQ_BUCKET = 'try'
+GERRIT_BATCH_SIZE = 100
 LOOKBACK_HOURS = 24
 MAX_CONCURRENT_BUILDS = 5
 MAX_RETRIES = 1
 MTV_TZ = datetime.timezone(datetime.timedelta(hours=-8))
+# Mirrors LUCI CV's EquivalentPatchsetRange (cv/internal/gerrit/equi.go).
+NO_CODE_CHANGE_KINDS = frozenset(
+  {
+    'NO_CHANGE',
+    'NO_CODE_CHANGE',
+    'MERGE_FIRST_PARENT_UPDATE',
+    'TRIVIAL_REBASE',
+    'TRIVIAL_REBASE_WITH_MESSAGE_UPDATE',
+  }
+)
 RTS_COMPLEMENT_VARIANT = 'rts_complement'
 SEARCH_LIMIT = 200
 RUNNER_BUILDER = 'rts-complement-runner'
@@ -76,6 +90,7 @@ class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   chromium_orchestrator: chromium_orchestrator.API
   futures: futures.API
+  gerrit: gerrit.API
   led: led.API
   step: step.API
   time: time.API
@@ -85,19 +100,12 @@ class DEPS(RecipeScriptApi):
 class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   chromium_orchestrator: chromium_orchestrator.TEST_API
+  gerrit: gerrit.TEST_API
   properties: properties.TEST_API
 
 
-def _find_cq_builds(
-  api: DEPS,
-  builders: Sequence[str],
-  lookback_hours: int,
-  search_limit: int,
-) -> dict[str, list[build_pb.Build]]:
-  """Finds the SUCCESS CQ builds of `builders` in the lookback window.
-
-  Returns `{'win-rel': [Build(id=..., ...), ...], ...}`, newest first.
-  """
+def _cq_time_range(api: DEPS, lookback_hours: int) -> common_pb.TimeRange:
+  """Returns the `[00:00 MTV - lookback_hours, 00:00 MTV)` time range."""
   end = int(
     api.time.utcnow()
     .replace(tzinfo=datetime.timezone.utc)
@@ -105,10 +113,23 @@ def _find_cq_builds(
     .replace(hour=0, minute=0, second=0, microsecond=0)
     .timestamp()
   )
-  create_time = common_pb.TimeRange(
+  return common_pb.TimeRange(
     start_time=timestamp_pb2.Timestamp(seconds=end - lookback_hours * 3600),
     end_time=timestamp_pb2.Timestamp(seconds=end),
   )
+
+
+def _find_cq_builds(
+  api: DEPS,
+  builders: Sequence[str],
+  lookback_hours: int,
+  cq_time_range: common_pb.TimeRange,
+  search_limit: int,
+) -> dict[str, list[build_pb.Build]]:
+  """Finds the SUCCESS CQ builds of `builders` in the lookback window.
+
+  Returns `{'win-rel': [Build(id=..., ...), ...], ...}`, newest first.
+  """
   tags = api.buildbucket.tags(
     user_agent='cq', cq_experimental='false', rts_was_used='true'
   )
@@ -124,7 +145,7 @@ def _find_cq_builds(
             ),
             status=common_pb.SUCCESS,
             tags=tags,
-            create_time=create_time,
+            create_time=cq_time_range,
           )
         ],
         limit=search_limit,
@@ -140,6 +161,42 @@ def _find_cq_builds(
       )
       for builder in builders
     }
+
+
+def _find_covered_cq_build_ids(
+  api: DEPS,
+  cq_time_range: common_pb.TimeRange,
+  search_limit: int,
+) -> set[int]:
+  """Returns CQ build IDs already covered by a passing runner build."""
+  # Runners are triggered after the CQ window ends, so only bound start_time.
+  create_time = common_pb.TimeRange(start_time=cq_time_range.start_time)
+  builder = dict(
+    project=api.buildbucket.build.builder.project,
+    bucket=api.buildbucket.build.builder.bucket,
+    builder=RUNNER_BUILDER,
+  )
+  runner_builds = api.buildbucket.search_with_multiple_predicates(
+    [
+      builds_service_pb.BuildPredicate(
+        builder=builder,
+        # Runners report false acceptances as data (crbug.com/565109194) rather
+        # than failing, so only SUCCESS means the complement tests ran.
+        status=common_pb.SUCCESS,
+        create_time=create_time,
+      )
+    ],
+    limit=search_limit,
+    step_name='find covered CQ builds',
+    report_build=False,
+    fields={'id', 'tags'},
+  )
+  covered_ids: set[int] = set()
+  for build in runner_builds:
+    for tag in build.tags:
+      if tag.key == 'rts_complement_cq_build_id' and tag.value.isdigit():
+        covered_ids.add(int(tag.value))
+  return covered_ids
 
 
 def _has_rts_complement(build: build_pb.Build) -> bool:
@@ -166,34 +223,106 @@ def _eligible_builds(
   return list(unique.values()), missing_complement
 
 
+def _find_submitted_build_ids(
+  api: DEPS,
+  builds: Sequence[build_pb.Build],
+) -> set[int]:
+  """Returns IDs of CQ builds whose tested patchset was submitted in Gerrit.
+
+  A build's patchset is considered submitted if its CL has status MERGED in
+  Gerrit and every revision after `build.patchset` is in
+  `NO_CODE_CHANGE_KINDS` (accounting for Gerrit's submit revision when CV
+  reuses a green build from the prior patchset).
+  """
+  changes_by_host: dict[str, list[int]] = {}
+  for b in builds:
+    cl = b.input.gerrit_changes[0]
+    changes_by_host.setdefault(cl.host, []).append(cl.change)
+
+  merged_revisions: dict[tuple[str, int], Mapping[str, Any]] = {}
+  for host, changes in changes_by_host.items():
+    unique = list(dict.fromkeys(changes))
+    # Batch queries to stay well below Gerrit's query-term and result limits.
+    for i in range(0, len(unique), GERRIT_BATCH_SIZE):
+      batch = unique[i : i + GERRIT_BATCH_SIZE]
+      for info in api.gerrit.get_changes(
+        f'https://{host}',
+        query_params=[('change', ' OR change:'.join(str(c) for c in batch))],
+        o_params=['ALL_REVISIONS'],
+        limit=len(batch),
+        name='find submitted CLs',
+      ):
+        if info.get('status') == 'MERGED':
+          merged_revisions[(host, int(info['_number']))] = (
+            info.get('revisions') or {}
+          )
+
+  submitted_ids: set[int] = set()
+  for build in builds:
+    cl = build.input.gerrit_changes[0]
+    revisions = merged_revisions.get((cl.host, cl.change))
+    if not revisions:
+      continue
+    has_later_code_change = any(
+      int(rev['_number']) > cl.patchset
+      and rev.get('kind') not in NO_CODE_CHANGE_KINDS
+      for rev in revisions.values()
+    )
+    if not has_later_code_change:
+      submitted_ids.add(build.id)
+  return submitted_ids
+
+
 def _select_cq_builds(
   api: DEPS,
   builds_by_builder: Mapping[str, Sequence[build_pb.Build]],
+  covered_ids: set[int],
   limit: int,
-) -> list[build_pb.Build]:
-  """Selects up to `limit` CQ builds with RTS complement command lines.
+) -> tuple[list[build_pb.Build], set[int]]:
+  """Selects up to `limit` uncovered CQ builds with RTS complement.
 
-  Keeps the newest build per `(host, change, patchset)` on each builder
-  and interleaves builders round-robin.
+  Keeps the newest build per `(host, change, patchset)` on each builder,
+  filters out `covered_ids`, queries Gerrit to prioritize builds whose
+  patchset was submitted (`submitted_ids`), and interleaves builders
+  round-robin.
   """
-  # TODO(crbug.com/535255761): Deduplicate already-covered CQ builds and query
-  # Gerrit to prioritize submitted patchsets.
-  queues: list[list[build_pb.Build]] = []
+  builder_queues: list[list[build_pb.Build]] = []
+  uncovered_builds: list[build_pb.Build] = []
   missing_complement: list[int] = []
+  found = 0
+  with_complement = 0
+
   for builds in builds_by_builder.values():
+    found += len(builds)
     eligible, missing = _eligible_builds(builds)
-    queues.append(eligible)
     missing_complement.extend(missing)
-  found = sum(len(builds) for builds in builds_by_builder.values())
-  active = sum(len(q) for q in queues)
-  selected = [
-    b for row in itertools.zip_longest(*queues) for b in row if b is not None
-  ][:limit]
+    with_complement += len(eligible)
+
+    uncovered = [b for b in eligible if b.id not in covered_ids]
+    builder_queues.append(uncovered)
+    uncovered_builds.extend(uncovered)
+
+  submitted_ids = _find_submitted_build_ids(api, uncovered_builds)
+  for queue in builder_queues:
+    queue.sort(key=lambda b: b.id not in submitted_ids)
+
+  round_robin = [
+    b
+    for row in itertools.zip_longest(*builder_queues)
+    for b in row
+    if b is not None
+  ]
+  selected = sorted(
+    round_robin,
+    key=lambda b: b.id not in submitted_ids,
+  )[:limit]
 
   select_step = api.step.empty(
     'select CQ builds',
     step_text=(
-      f'{found} found, {active} with RTS complement, {len(selected)} selected'
+      f'{found} found, {with_complement} with RTS complement, '
+      f'{len(uncovered_builds)} uncovered ({len(submitted_ids)} submitted), '
+      f'{len(selected)} selected'
     ),
   )
   if missing_complement:
@@ -202,7 +331,7 @@ def _select_cq_builds(
     select_step.presentation.step_text += (
       f' (missing {RTS_COMPLEMENT_VARIANT}: {missing_ids})'
     )
-  return selected
+  return selected, submitted_ids
 
 
 def _runner_properties(cq_build: build_pb.Build) -> dict[str, Any]:
@@ -217,6 +346,7 @@ def _runner_properties(cq_build: build_pb.Build) -> dict[str, Any]:
 def _run_runner(
   api: DEPS,
   cq_build: build_pb.Build,
+  submitted: bool,
 ) -> int | None:
   """Triggers, collects, and retries on infra failure one runner build."""
   with api.step.nest(f'trigger {cq_build.builder.builder} ({cq_build.id})'):
@@ -245,6 +375,7 @@ def _run_runner(
                 'hide-in-gerrit': 'pointless',
                 'skip-retry-in-gerrit': 'pointless',
                 'rts_complement_cq_build_id': str(cq_build.id),
+                'rts_complement_submitted': str(submitted).lower(),
               }
             ),
             inherit_buildsets=False,
@@ -283,10 +414,16 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
   build_limit = props.build_limit or BUILD_LIMIT
   search_limit = props.search_limit or SEARCH_LIMIT
 
+  cq_time_range = _cq_time_range(api, lookback_hours)
   builds_by_builder = _find_cq_builds(
-    api, builders, lookback_hours, search_limit
+    api, builders, lookback_hours, cq_time_range, search_limit
   )
-  cq_builds = _select_cq_builds(api, builds_by_builder, build_limit)
+  covered_ids = _find_covered_cq_build_ids(
+    api, cq_time_range, search_limit * len(builders)
+  )
+  cq_builds, submitted_ids = _select_cq_builds(
+    api, builds_by_builder, covered_ids, build_limit
+  )
   if not cq_builds:
     return result_pb.RawResult(
       status=common_pb.SUCCESS,
@@ -300,7 +437,9 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
 
   def _worker() -> None:
     for cq_build in queue:
-      results[cq_build.id] = _run_runner(api, cq_build)
+      results[cq_build.id] = _run_runner(
+        api, cq_build, cq_build.id in submitted_ids
+      )
 
   workers = [
     api.futures.spawn_immediate(_worker)
@@ -313,6 +452,7 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
     {
       'cq_build_id': str(b.id),
       'cq_builder': b.builder.builder,
+      'submitted': b.id in submitted_ids,
       'runner_build_id': str(results[b.id]),
     }
     for b in cq_builds
@@ -386,9 +526,24 @@ def GenTests(api: TEST_DEPS):
       )
     return build
 
+  def covered_runner(runner_id, cq_build_id):
+    return build_pb.Build(
+      id=runner_id,
+      tags=[
+        common_pb.StringPair(
+          key='rts_complement_cq_build_id', value=str(cq_build_id)
+        )
+      ],
+    )
+
   def search(builder, builds):
     return api.buildbucket.simulated_multi_predicates_search_results(
       builds, step_name=f'{find_step}.search {builder}'
+    )
+
+  def covered(builds):
+    return api.buildbucket.simulated_multi_predicates_search_results(
+      builds, step_name='find covered CQ builds'
     )
 
   trigger_build = api.buildbucket.ci_build(
@@ -405,6 +560,7 @@ def GenTests(api: TEST_DEPS):
         cq_build(6, change=1001, patchset=1),
         cq_build(1, change=1001, patchset=2),
         cq_build(7, change=1001, patchset=1),
+        cq_build(9, change=1009, patchset=1),
         cq_build(2, has_complement=False),
       ],
     ),
@@ -416,44 +572,85 @@ def GenTests(api: TEST_DEPS):
         cq_build(5, 'mac-rel', changes=2),
       ],
     ),
+    covered([covered_runner(900, 9)]),
+    api.override_step_data(
+      'gerrit find submitted CLs',
+      api.gerrit.get_multiple_changes_response_data(
+        [
+          api.gerrit.gerrit_change_data(
+            change_number=1001,
+            patchset=2,
+            status='MERGED',
+            revisions={
+              '1': {'_number': 2, 'kind': 'REWORK'},
+              '2': {'_number': 3, 'kind': 'NO_CODE_CHANGE'},
+              '3': {'_number': 4, 'kind': 'MERGE_FIRST_PARENT_UPDATE'},
+              '4': {'_number': 5, 'kind': 'NO_CHANGE'},
+            },
+          ),
+          api.gerrit.gerrit_change_data(change_number=1004, patchset=2),
+        ]
+      ),
+    ),
     api.buildbucket.simulated_collect_output(
       [
         api.buildbucket.ci_build_message(
           build_id=8922054662172514000, status='INFRA_FAILURE'
         )
       ],
-      step_name='trigger win-rel (6).collect (attempt 1)',
+      step_name='trigger win-rel (1).collect (attempt 1)',
     ),
     api.post_check(
       post_process.StepTextEquals,
       'select CQ builds',
-      '7 found, 4 with RTS complement, 4 selected (missing rts_complement: 2)',
+      '8 found, 5 with RTS complement, 4 uncovered (1 submitted), '
+      '4 selected (missing rts_complement: 2)',
     ),
     api.post_check(post_process.StepFailure, 'select CQ builds'),
+    api.post_check(
+      post_process.StepCommandContains,
+      'find covered CQ builds',
+      ['-n', '400'],
+    ),
     api.post_check(
       post_process.PropertyEquals,
       'launched_runners',
       [
         {
-          'cq_build_id': '6',
+          'cq_build_id': '1',
           'cq_builder': 'win-rel',
+          'submitted': True,
           'runner_build_id': '8922054662172514001',
         },
         {
           'cq_build_id': '4',
           'cq_builder': 'mac-rel',
+          'submitted': False,
           'runner_build_id': '8922054662172514002',
         },
         {
-          'cq_build_id': '1',
+          'cq_build_id': '6',
           'cq_builder': 'win-rel',
+          'submitted': False,
           'runner_build_id': '8922054662172514003',
         },
         {
           'cq_build_id': '8',
           'cq_builder': 'mac-rel',
+          'submitted': False,
           'runner_build_id': '8922054662172514004',
         },
+      ],
+    ),
+    api.post_check(
+      post_process.LogContains,
+      'trigger win-rel (1).trigger (attempt 1)',
+      'request',
+      [
+        '"key": "rts_complement_cq_build_id"',
+        '"value": "1"',
+        '"key": "rts_complement_submitted"',
+        '"value": "true"',
       ],
     ),
     api.post_check(
@@ -467,7 +664,15 @@ def GenTests(api: TEST_DEPS):
     'no_active_builds',
     trigger_build,
     api.properties(InputProperties(builders=['win-rel'])),
-    search('win-rel', [cq_build(1, has_complement=False)]),
+    search('win-rel', [cq_build(1, has_complement=False), cq_build(2)]),
+    covered([covered_runner(900, 2)]),
+    api.post_check(
+      post_process.StepTextEquals,
+      'select CQ builds',
+      '2 found, 1 with RTS complement, 0 uncovered (0 submitted), '
+      '0 selected (missing rts_complement: 1)',
+    ),
+    api.post_check(post_process.DoesNotRun, 'gerrit find submitted CLs'),
     api.post_check(post_process.DoesNotRun, 'record launched runners'),
     api.post_check(
       post_process.SummaryMarkdown,
