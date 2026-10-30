@@ -5,7 +5,7 @@ syntax = "proto3";
 
 package recipe_modules.build.siso;
 
-// NEXT ID TO USE: 19
+// NEXT ID TO USE: 20
 message InputProperties {
   // Backend config
 
@@ -73,4 +73,9 @@ message InputProperties {
 
   // Disable batch mode for `siso ninja` by setting `-batch=false`.
   bool disable_batch_mode = 17;
+
+  // Block network access for local build actions on Linux by running Siso's
+  // spawn-helper in an isolated network namespace
+  // (`--block_action_network_access`).
+  bool block_action_network_access = 19;
 }

@@ -26,6 +26,7 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
     output_local_strategy=None,
     keep_going=None,
     disable_batch_mode=None,
+    block_action_network_access=None,
   ):
     return self.m.properties(
       **{
@@ -46,6 +47,7 @@ class SisoTestApi(recipe_test_api.RecipeTestApi):
           'output_local_strategy': output_local_strategy,
           'keep_going': keep_going,
           'disable_batch_mode': disable_batch_mode,
+          'block_action_network_access': block_action_network_access,
         },
       }
     )

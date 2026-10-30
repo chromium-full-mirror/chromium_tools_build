@@ -104,6 +104,7 @@ def _compile(
     step_result = api.siso.run_ninja(
       source_dir,
       cmd,
+      block_action_network_access=True,
       stdout=api.raw_io.output(leak_to=build_log),
       resource_usage_output_file=resource_usage_output_file,
     )
@@ -266,6 +267,11 @@ def GenTests(api: TEST_DEPS):
     api.siso.properties(),
     api.post_process(
       post_process.StepCommandContains, 'compile', ['/usr/bin/time']
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile',
+      ['--block_action_network_access'],
     ),
     api.post_process(post_process.DropExpectation),
   )

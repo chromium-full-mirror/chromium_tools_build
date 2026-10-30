@@ -19,6 +19,7 @@ from RECIPE_MODULES.depot_tools import gclient, tryserver
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   path,
+  platform,
   properties,
   raw_io,
   step,
@@ -44,6 +45,7 @@ class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
   builder_group: builder_group.TEST_API
   path: path.TEST_API
+  platform: platform.TEST_API
   properties: properties.TEST_API
   raw_io: raw_io.TEST_API
   siso: siso_module.TEST_API
@@ -73,6 +75,9 @@ def RunSteps(api: DEPS):
       ninja_env=env,
       name=api.properties.get('name', 'compile'),
       siso_args=api.properties.get('siso_args'),
+      block_action_network_access=api.properties.get(
+        'block_action_network_access', False
+      ),
       resource_usage_output_file=api.properties.get(
         'resource_usage_output_file', None
       ),
@@ -542,6 +547,52 @@ def GenTests(api: TEST_DEPS):
     api.siso.properties(disable_batch_mode=True),
     api.post_process(
       post_process.StepCommandContains, 'compile', ['-batch=false']
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'block_action_network_access',
+    api.platform('linux', 64),
+    api.properties(
+      build_command=['ninja', '-C', 'out/Release'],
+    ),
+    api.siso.properties(block_action_network_access=True),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile',
+      ['--block_action_network_access'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'block_action_network_access_arg',
+    api.platform('linux', 64),
+    api.properties(
+      build_command=['ninja', '-C', 'out/Release'],
+      block_action_network_access=True,
+    ),
+    api.siso.properties(),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile',
+      ['--block_action_network_access'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'block_action_network_access_non_linux',
+    api.platform('mac', 64),
+    api.properties(
+      build_command=['ninja', '-C', 'out/Release'],
+    ),
+    api.siso.properties(block_action_network_access=True),
+    api.post_check(
+      lambda check, steps: check(
+        '--block_action_network_access' not in steps['compile'].cmd
+      )
     ),
     api.post_process(post_process.DropExpectation),
   )

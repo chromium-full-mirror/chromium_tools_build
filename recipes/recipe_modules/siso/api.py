@@ -105,6 +105,7 @@ class SisoApi(recipe_api.RecipeApi):
     siso_args=None,
     post_step_func=None,
     skip_log_upload=False,
+    block_action_network_access=False,
     resource_usage_output_file=None,
     ninja_invocation_id=None,
     include_utr_instruction=False,
@@ -122,6 +123,9 @@ class SisoApi(recipe_api.RecipeApi):
       siso_args: siso arguments.
       post_step_func: a function that runs on the step result.
       skip_log_upload: When true skip log.
+      block_action_network_access: When true, pass
+        `--block_action_network_access` on Linux to run Siso's spawn-helper in
+        an isolated network namespace.
       resource_usage_output_file: File which if provided will
         record the resource usage stats related to build step.
       ninja_invocation_id: ID of the build invocation.
@@ -233,6 +237,11 @@ class SisoApi(recipe_api.RecipeApi):
 
     if self._props.disable_batch_mode:
       cmd.extend(['-batch=false'])
+
+    if (
+      block_action_network_access or self._props.block_action_network_access
+    ) and self.m.platform.is_linux:
+      cmd.append('--block_action_network_access')
 
     if not skip_log_upload:
       cmd.append('--enable_cloud_logging')
