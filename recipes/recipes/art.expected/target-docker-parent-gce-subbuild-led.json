@@ -1,5 +1,32 @@
 [
   {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "ensure-directory",
+      "--mode",
+      "0o777",
+      "[CLEANUP]/src"
+    ],
+    "infra_step": true,
+    "luci_context": {
+      "realm": {
+        "name": "art:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "create work dir"
+  },
+  {
     "cmd": [],
     "name": "install fuchsia/third_party/qemu"
   },
@@ -15,7 +42,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -47,7 +74,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -93,7 +120,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -125,7 +152,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -171,7 +198,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -203,7 +230,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -244,7 +271,7 @@
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/7zz",
       "[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/7z"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -267,7 +294,7 @@
       "-host",
       "cr-buildbucket.appspot.com"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -332,7 +359,7 @@
       "-host",
       "cr-buildbucket.appspot.com"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -446,311 +473,6 @@
   },
   {
     "cmd": [],
-    "name": "checkout"
-  },
-  {
-    "cmd": [
-      "git",
-      "clone",
-      "https://googleplex-android.googlesource.com/platform/superproject/master",
-      "."
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git clone",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "log",
-      "--pretty=format:%H",
-      "-S2d2b87e5f9c872902d8508f6377470a4a6fa87e1",
-      "origin/master-art"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.find super-project commit",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "checkout",
-      "--force",
-      "4242424242424242424242424242424242424242"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git checkout",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "rev-parse",
-      "HEAD",
-      "HEAD:art",
-      "HEAD:libcore"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git rev-parse",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [],
-    "name": "checkout.set blamelist pins",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@SET_BUILD_PROPERTY@$recipe_engine/milo/blamelist_pins@[{\"host\": \"googleplex-android.googlesource.com\", \"id\": \"4242424242424242424242424242424242424242\", \"project\": \"platform/superproject/master\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\", \"project\": \"platform/art\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"project\": \"platform/libcore\"}]@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "clean",
-      "-ffxd",
-      "-e",
-      "out",
-      "-e",
-      "vm"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git clean",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "show"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git show",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "sed",
-      "-i",
-      "/submodule/ s:/:-:g",
-      ".gitmodules"
-    ],
-    "cwd": "[CACHE]/src",
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.patch .gitmodules",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "submodule",
-      "update",
-      "--init",
-      "--force",
-      "--depth",
-      "1",
-      "--jobs",
-      "32",
-      "--checkout"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git submodule",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "git",
-      "status",
-      "--ignore-submodules=none"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "checkout.git status",
-    "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
-    ]
-  },
-  {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "ensure-directory",
-      "--mode",
-      "0o777",
-      "[CACHE]/out"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "create out dir"
-  },
-  {
-    "cmd": [
-      "bash",
-      "-c",
-      "rm -rf \"$1\" && ln -s \"$2\" \"$1\"",
-      "--",
-      "[CACHE]/src/out",
-      "[CACHE]/out"
-    ],
-    "cwd": "[CACHE]/src",
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "symlink out dir"
-  },
-  {
-    "cmd": [],
     "name": "wait for GCE target build"
   },
   {
@@ -763,7 +485,7 @@
       "60s",
       "8922054662172514000"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -790,7 +512,7 @@
       "-host",
       "cr-buildbucket.appspot.com"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -838,6 +560,23 @@
       "@@@STEP_LOG_LINE@json.output@        },@@@",
       "@@@STEP_LOG_LINE@json.output@        \"output\": {@@@",
       "@@@STEP_LOG_LINE@json.output@          \"properties\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@            \"$recipe_engine/milo/blamelist_pins\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@              {@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"host\": \"googleplex-android.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"id\": \"4242424242424242424242424242424242424242\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"project\": \"platform/superproject/master\"@@@",
+      "@@@STEP_LOG_LINE@json.output@              },@@@",
+      "@@@STEP_LOG_LINE@json.output@              {@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"host\": \"googleplex-android.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"project\": \"platform/art\"@@@",
+      "@@@STEP_LOG_LINE@json.output@              },@@@",
+      "@@@STEP_LOG_LINE@json.output@              {@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"host\": \"googleplex-android.googlesource.com\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\",@@@",
+      "@@@STEP_LOG_LINE@json.output@                \"project\": \"platform/libcore\"@@@",
+      "@@@STEP_LOG_LINE@json.output@              }@@@",
+      "@@@STEP_LOG_LINE@json.output@            ],@@@",
       "@@@STEP_LOG_LINE@json.output@            \"cas_digest\": \"e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0\"@@@",
       "@@@STEP_LOG_LINE@json.output@          }@@@",
       "@@@STEP_LOG_LINE@json.output@        },@@@",
@@ -862,30 +601,11 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "rmtree",
-      "[CACHE]/src/out"
-    ],
-    "cwd": "[CACHE]/src",
-    "infra_step": true,
-    "luci_context": {
-      "realm": {
-        "name": "art:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "clean out"
+    "cmd": [],
+    "name": "set blamelist pins",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@$recipe_engine/milo/blamelist_pins@[{\"host\": \"googleplex-android.googlesource.com\", \"id\": \"4242424242424242424242424242424242424242\", \"project\": \"platform/superproject/master\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"project\": \"platform/libcore\"}]@@@"
+    ]
   },
   {
     "cmd": [
@@ -898,7 +618,7 @@
       "RECIPE_MODULE[recipe_engine::cas]/resources/infra.sha1",
       "/path/to/tmp/"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -934,7 +654,7 @@
       "0o777",
       "[START_DIR]/cipd_tool/infra/tools/luci/cas/33f9d887e5b8aeaaf9d65506acccfa8da2c480712e534a23a79e92c342c44bee"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -966,7 +686,7 @@
       "-json-output",
       "/path/to/tmp/json"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1005,9 +725,9 @@
       "-digest",
       "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0",
       "-dir",
-      "[CACHE]/src"
+      "[CLEANUP]/src"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "infra_step": true,
     "luci_context": {
       "realm": {
@@ -1027,11 +747,11 @@
     "cmd": [
       "tar",
       "-C",
-      "[CACHE]/src",
+      "[CLEANUP]/src",
       "-xf",
-      "[CACHE]/src/out/symlinks.tar"
+      "[CLEANUP]/src/out/symlinks.tar"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "luci_context": {
       "realm": {
         "name": "art:ci"
@@ -1048,14 +768,14 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-cleanup-device.sh"
+      "[CLEANUP]/src/art/tools/buildbot-cleanup-device.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1073,15 +793,15 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-setup-device.sh",
+      "[CLEANUP]/src/art/tools/buildbot-setup-device.sh",
       "--verbose"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1099,14 +819,14 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-sync.sh"
+      "[CLEANUP]/src/art/tools/buildbot-sync.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1133,13 +853,13 @@
       "--",
       "art/tools/run-gtests.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
       "ART_TEST_NO_SYNC": "true",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "local_auth": {},
@@ -1164,12 +884,12 @@
       "-v",
       "threadtime"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1187,14 +907,14 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-symbolize-crashes.sh"
+      "[CLEANUP]/src/art/tools/buildbot-symbolize-crashes.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1216,12 +936,12 @@
       "logcat",
       "-c"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1239,14 +959,14 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-teardown-device.sh"
+      "[CLEANUP]/src/art/tools/buildbot-teardown-device.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -1264,14 +984,14 @@
   },
   {
     "cmd": [
-      "[CACHE]/src/art/tools/buildbot-cleanup-device.sh"
+      "[CLEANUP]/src/art/tools/buildbot-cleanup-device.sh"
     ],
-    "cwd": "[CACHE]/src",
+    "cwd": "[CLEANUP]/src",
     "env": {
-      "ADB": "[CACHE]/src/prebuilts/runtime/adb",
-      "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
+      "ANDROID_BUILD_TOP": "[CLEANUP]/src",
+      "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {

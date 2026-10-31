@@ -87,7 +87,16 @@ def RunSteps(api: DEPS, props):
   if api.path.exists(art_cache):
     api.file.rmcontents('clean legacy art cache', art_cache)
 
-  with api.context(cwd=api.path.cache_dir / 'src'):
+  # Builders that delegate compilation to a GCE subbuilder download all needed
+  # files from CAS instead of maintaining a persistent checkout, so run them in
+  # cleanup_dir (which Swarming wipes after each build).
+  if props.gce_subbuilder:
+    work_dir = api.path.cleanup_dir / 'src'
+    api.file.ensure_directory('create work dir', work_dir)
+  else:
+    work_dir = api.path.cache_dir / 'src'
+
+  with api.context(cwd=work_dir):
     _run_steps(api, props)
 
 
@@ -238,6 +247,31 @@ def _wrap_test_cmd(api: DEPS, step):
   return cmd
 
 
+# Extra directories to archive for target builds when output_directories is
+# specified, so the parent builder can run tests without a git checkout.
+# TODO(dsrbecky): Move these into the builder config (main.star) once tested.
+TEMP_EXTRA_OUTPUT_DIRECTORIES = [
+  'art',
+  'build',
+  'development/scripts',
+  'device/generic/art',
+  'external/golang-protobuf',
+  'external/pogreb',
+  'external/starlark-go',
+  'libcore/expectations',
+  'prebuilts/bazel/common/proto',
+  'prebuilts/build-tools',
+  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-cxxfilt',
+  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-objdump',
+  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-symbolizer',
+  'prebuilts/go/linux-x86',
+  'prebuilts/jdk/jdk21/linux-x86',
+  'prebuilts/jdk/jdk25/linux-x86',
+  'prebuilts/runtime/adb',
+  'toolchain/pgo-profiles/sampling/afdo_profiles.mk',
+]
+
+
 def _archive_target_build(
   api: DEPS,
   build_top_dir,
@@ -248,7 +282,11 @@ def _archive_target_build(
   # when trying to materialize targets outside the exec root. Pack all symlinks
   # into a small tar archive and pass only regular files to `cas archive` so
   # build artifacts are deduplicated in CAS without modifying symlinks on disk.
-  dirs = list(output_directories or ['out'])
+  dirs = (
+    list(output_directories) + TEMP_EXTRA_OUTPUT_DIRECTORIES
+    if output_directories
+    else ['out']
+  )
   symlinks_tar = build_top_dir.joinpath('out', 'symlinks.tar')
   api.step(
     'pack target build symlinks',
@@ -470,9 +508,15 @@ def _run_steps(api: DEPS, props):
     _get_gce_subbuild(api, props, commit) if props.gce_subbuilder else None
   )
 
-  checkout(api, props.manifest_branch or 'master-art', props.repo_root, commit)
-  clobber(api)
-  setup_out(api)
+  # When using a GCE subbuilder, the subbuilder performs the checkout and build,
+  # and the parent builder downloads the build outputs and test scripts from CAS
+  # below.
+  if not gce_build_id:
+    checkout(
+      api, props.manifest_branch or 'master-art', props.repo_root, commit
+    )
+    clobber(api)
+    setup_out(api)
 
   device_test_env = env.copy()
   if props.device:
@@ -501,7 +545,14 @@ def _run_steps(api: DEPS, props):
       raise_if_unsuccessful=True,
       timeout=18000,  # 5 hours.
     )
-    api.file.rmtree('clean out', build_top_dir.joinpath('out'))
+    api.milo.show_blamelist_for(
+      [
+        dict(p)
+        for p in gce_build.output.properties[
+          '$recipe_engine/milo/blamelist_pins'
+        ]
+      ]
+    )
     api.cas.download(
       'download target build from CAS',
       gce_build.output.properties['cas_digest'],
@@ -1157,7 +1208,6 @@ def GenTests(api: TEST_DEPS):
     check(req['properties'] == {'gce_subbuilder': ''})
     check(req['gitilesCommit']['ref'] == ref)
     check(req['gitilesCommit']['id'] == commit_id)
-    check(f'-S{commit_id}' in steps['checkout.find super-project commit'].cmd)
 
   def completed_subbuild(build_id=8922054662172514000):
     build = api.buildbucket.ci_build_message(
@@ -1165,6 +1215,23 @@ def GenTests(api: TEST_DEPS):
       status='SUCCESS',
     )
     build.output.properties['cas_digest'] = cas_digest
+    build.output.properties['$recipe_engine/milo/blamelist_pins'] = [
+      {
+        'host': 'googleplex-android.googlesource.com',
+        'project': 'platform/superproject/master',
+        'id': random_commit_for_test,
+      },
+      {
+        'host': 'googleplex-android.googlesource.com',
+        'project': 'platform/art',
+        'id': art_revision,
+      },
+      {
+        'host': 'googleplex-android.googlesource.com',
+        'project': 'platform/libcore',
+        'id': 'b' * 40,
+      },
+    ]
     return build
 
   def collect_subbuild(build_id=8922054662172514000):
@@ -1196,10 +1263,6 @@ def GenTests(api: TEST_DEPS):
       git_repo=art_repo,
       revision=art_revision,
     ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
     subbuild_props(),
     collect_subbuild(),
     api.post_process(post_process.DoesNotRun, 'resolve ART HEAD'),
@@ -1219,8 +1282,7 @@ def GenTests(api: TEST_DEPS):
       git_ref='refs/heads/master-art',
       revision=superproject_revision,
     ),
-    subbuild_props(),
-    collect_subbuild(),
+    api.properties(build_only=True),
     api.post_process(
       post_process.DoesNotRun,
       'resolve ART HEAD',
@@ -1246,10 +1308,6 @@ def GenTests(api: TEST_DEPS):
         f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
       ),
     ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
     subbuild_props(),
     collect_subbuild(),
     api.post_process(post_process.MustRun, 'resolve ART HEAD'),
@@ -1263,10 +1321,6 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(build_only=True),
     collect_subbuild(),
@@ -1292,10 +1346,6 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     subbuild_props(),
     api.buildbucket.simulated_search_results(
@@ -1342,10 +1392,6 @@ def GenTests(api: TEST_DEPS):
       project='art',
       git_repo=art_repo,
       revision=art_revision,
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
       **{
