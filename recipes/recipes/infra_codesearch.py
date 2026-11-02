@@ -372,6 +372,52 @@ def RunSteps(api: DEPS):
       result.presentation.step_text = 'python kzip extraction failed, skipping'
       result.presentation.logs['exception'] = str(exc).splitlines()
 
+  try:
+    starlark_out_dir = api.path.cleanup_dir / 'starlark_extractor_output'
+    api.file.ensure_directory(
+      'create starlark_extractor_output dir', starlark_out_dir
+    )
+    starlark_extractor_script = api.codesearch.resource('starlark_extractor.py')
+    starlark_json_path = starlark_out_dir / 'starlark_metadata.json'
+    api.step(
+      'extract starlark metadata',
+      [
+        'vpython3',
+        starlark_extractor_script,
+        checkout_dir,
+        starlark_json_path,
+        '--corpus',
+        'chromium.googlesource.com/infra/infra_superproject//main',
+        '--root',
+        checkout_dir,
+      ],
+    )
+
+    exec_path = api.cipd.ensure_tool(
+      "infra/tools/kzip_builder/${platform}", "latest"
+    )
+    starlark_kzip_loc = api.path.cache_dir / f'starlark_{kzip_name}'
+    api.step(
+      'build starlark kzip',
+      [
+        exec_path,
+        '--output',
+        starlark_kzip_loc,
+        '--root',
+        checkout_dir,
+        starlark_json_path,
+      ],
+    )
+    kzips_to_merge.append(starlark_kzip_loc)
+
+  except api.step.StepFailure as exc:
+    if api.step.active_result:
+      result = api.step.active_result
+      result.presentation.step_text = (
+        'starlark kzip extraction failed, skipping'
+      )
+      result.presentation.logs['exception'] = str(exc).splitlines()
+
   if len(kzips_to_merge) > 1:
     final_kzip_loc = api.codesearch.run_kzip_merge(*kzips_to_merge)
   else:
@@ -520,6 +566,22 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(
       StepCommandContains,
+      'extract starlark metadata',
+      [
+        '--corpus',
+        'chromium.googlesource.com/infra/infra_superproject//main',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'build starlark kzip',
+      [
+        '--output',
+        '[CACHE]/starlark_1b84187dd61ba677a120a2cfab0158f20c1d6c39.kzip',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
       'merge kzips',
       [
         'merge',
@@ -602,6 +664,35 @@ def GenTests(api: TEST_DEPS):
     ),
     api.step_data(
       'extract python metadata for infra',
+      retcode=1,
+    ),
+    api.post_process(StatusSuccess),
+    api.post_process(DropExpectation),
+  )
+
+  yield api.test(
+    'starlark_extraction_failed',
+    api.buildbucket.try_build(
+      project='infra',
+      builder='generic tester',
+      git_repo='https://chromium.googlesource.com/infra/infra_superproject',
+    ),
+    api.platform('linux', 64),
+    api.path.exists(
+      api.path.cache_dir / 'infra_superproject',
+      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+    ),
+    api.step_data(
+      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      api.file.read_text(
+        textwrap.dedent('''
+              module go.chromium.org/infra
+              go 1.25.9
+              ''')
+      ),
+    ),
+    api.step_data(
+      'extract starlark metadata',
       retcode=1,
     ),
     api.post_process(StatusSuccess),
