@@ -184,6 +184,32 @@ class GenerateCoverageMetadataForJavaScriptTest(unittest.TestCase):
     self.assertEqual(len(records), 1)
     self.assertDictEqual(expected_record, records[0])
 
+  def test_to_compressed_file_record_skips_empty_files(self):
+    lcov_data = [
+      'TN:',
+      'SF:mydir/__init__.py',
+      'FNF:0',
+      'FNH:0',
+      'LF:0',
+      'LH:0',
+      'BRF:0',
+      'BRH:0',
+      'end_of_record',
+      'TN:',
+      'SF:mydir/myfile1.py',
+      'DA:1,2',
+      'end_of_record',
+    ]
+
+    records = generator._to_compressed_file_record(lcov_data)
+
+    expected_record = {
+      'path': '//mydir/myfile1.py',
+      'summaries': [{'covered': 1, 'name': 'line', 'total': 1}],
+      'lines': [{'first': 1, 'last': 1, 'count': 2}],
+    }
+    self.assertEqual([expected_record], records)
+
 
 if __name__ == '__main__':
   unittest.main()

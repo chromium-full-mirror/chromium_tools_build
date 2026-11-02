@@ -138,6 +138,11 @@ def _to_compressed_file_record(lcov_lines, sources=None, diff_mapping=None):
         line_mapping = diff_mapping[path]
         exec_count = _rebase_exec_count(exec_count, line_mapping)
       lines = _to_compressed_format(exec_count)
+      if not lines:
+        logging.info('Skip file %s as no line instrumented', path)
+        path = ''
+        exec_count = {}
+        continue
       data = {
         'path': '//' + path,
         'lines': lines,
