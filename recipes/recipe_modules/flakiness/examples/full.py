@@ -799,3 +799,153 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  ######################### WINDOWS FILTER CHAR LIMIT ##########################
+
+  win_test_spec = {
+    'fake-builder': {
+      'isolated_scripts': [
+        {
+          'test': 'win_script_tests',
+          'name': 'win_script_tests',
+          'swarming': {
+            'dimensions': {'os': 'Windows-10'},
+          },
+          'test_id_prefix': 'ninja://fake:win_script_tests/',
+        },
+      ],
+    },
+  }
+
+  win_v = _generate_variant(os='Windows-10', test_suite='win_script_tests')
+  win_vh = _generate_variant_hash(win_v)
+
+  # Each filter entry is about 2900 characters long. Two entries fit in the
+  # Windows filter char limit (6000). Three entries do not fit.
+  win_test_id_prefix = 'ninja://fake:win_script_tests/TestSuite.'
+  win_long_tests = [
+    win_test_id_prefix + name + '_' + 'x' * 2900 for name in ('a', 'b', 'c')
+  ]
+  win_too_long_test = win_test_id_prefix + 'd_' + 'x' * 7000
+
+  def _win_new_tests_data(test_ids):
+    return api.resultdb.query(
+      {
+        inv: api.resultdb.Invocation(
+          test_results=[_generate_test_result(t, win_vh) for t in test_ids]
+        ),
+      },
+      'collect tasks (with patch).win_script_tests results',
+    ) + api.resultdb.query_new_test_variants(
+      rdb_pb2.QueryNewTestVariantsResponse(
+        is_baseline_ready=True,
+        new_test_variants=[
+          rdb_pb2.QueryNewTestVariantsResponse.NewTestVariant(
+            test_id=t,
+            variant_hash=win_vh,
+          )
+          for t in test_ids
+        ],
+      ),
+      step_name=(
+        'searching_for_new_tests with ResultDB.query_new_test_variants'
+      ),
+    )
+
+  def _check_skipped_count(check, steps, count):
+    step = steps['mapping new tests to test objects']
+    skipped = step.logs['skipped_filter_too_long'].splitlines()
+    check(len(skipped) == count)
+
+  win_try_build = api.chromium_tests_builder_config.try_build(
+    builder_group='fake-try-group',
+    builder='fake-try-builder',
+    builder_db=builder_db,
+    try_db=ctbc.TryDatabase.create(
+      {
+        'fake-try-group': {
+          'fake-try-builder': ctbc.TrySpec.create_for_single_mirror(
+            builder_group='fake-group',
+            buildername='fake-builder',
+          ),
+        },
+      }
+    ),
+  )
+
+  yield api.test(
+    'e2e: windows filter char limit skips tests',
+    win_try_build,
+    api.chromium_tests.read_targets_spec('fake-group', win_test_spec),
+    api.flakiness(check_for_flakiness=True),
+    api.step_data(
+      'git diff to analyze patch (2)',
+      api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc'),
+    ),
+    _win_new_tests_data(win_long_tests),
+    api.post_process(
+      post_process.StepTextContains,
+      'mapping new tests to test objects',
+      ['1 new tests skipped: test filter too long'],
+    ),
+    api.post_process(_check_skipped_count, 1),
+    api.post_process(
+      post_process.MustRun,
+      'test new tests for flakiness.win_script_tests '
+      '(check flakiness shard #0) on Windows-10',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'e2e: windows filter char limit skips all tests',
+    win_try_build,
+    api.chromium_tests.read_targets_spec('fake-group', win_test_spec),
+    api.flakiness(check_for_flakiness=True),
+    api.step_data(
+      'git diff to analyze patch (2)',
+      api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc'),
+    ),
+    _win_new_tests_data([win_too_long_test]),
+    api.post_process(_check_skipped_count, 1),
+    api.post_process(
+      post_process.DoesNotRun,
+      'test new tests for flakiness',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  # An experimental test is wrapped in ExperimentalTest. The wrapper must
+  # use the OS of the wrapped swarming test, not the host OS.
+  win_experimental_test_spec = {
+    'fake-builder': {
+      'isolated_scripts': [
+        {
+          'test': 'win_script_tests',
+          'name': 'win_script_tests',
+          'experiment_percentage': 100,
+          'swarming': {
+            'dimensions': {'os': 'Windows-10'},
+          },
+          'test_id_prefix': 'ninja://fake:win_script_tests/',
+        },
+      ],
+    },
+  }
+
+  yield api.test(
+    'e2e: windows filter char limit skips tests of wrapped test',
+    win_try_build,
+    # The default test host is Linux.
+    api.chromium_tests.read_targets_spec(
+      'fake-group', win_experimental_test_spec
+    ),
+    api.flakiness(check_for_flakiness=True),
+    api.step_data(
+      'git diff to analyze patch (2)',
+      api.raw_io.stream_output('chrome/test.cc\ncomponents/file2.cc'),
+    ),
+    _win_new_tests_data(win_long_tests),
+    api.post_process(_check_skipped_count, 1),
+    api.post_process(post_process.DropExpectation),
+  )

@@ -233,6 +233,7 @@ class FlakinessApi(recipe_api.RecipeApi):
 
     new_tests = {}
     not_found = []
+    skipped_for_length = []
     with self.m.step.nest('mapping new tests to test objects') as p:
       p.logs['new_test_tuples'] = '\n'.join(map(join_tuple, new_test_tuples))
       for test_obj in test_objects:
@@ -251,14 +252,12 @@ class FlakinessApi(recipe_api.RecipeApi):
           legacy_filter = self._get_legacy_filter_from_test(t)
           all_test_names.append(legacy_filter if legacy_filter else t.test_name)
 
+        filter_char_limit = utils.get_filter_char_limit(
+          test_obj, self.m.platform.is_win
+        )
+
         for test in test_suite_results.all_tests:
           if (test.test_id, vh) in new_test_tuples:
-            # Test object in list of new tests already, so update the filter.
-            # Otherwise create a new one.
-            test_filter, duration_milliseconds = new_tests.setdefault(
-              test_obj, ([], 0)
-            )
-
             legacy_filter = self._get_legacy_filter_from_test(test)
             test_name_for_filter = (
               legacy_filter if legacy_filter else test.test_name
@@ -267,9 +266,25 @@ class FlakinessApi(recipe_api.RecipeApi):
             actual_group = utils.get_actual_test_group(
               test_name_for_filter, all_test_names
             )
-            for t in actual_group:
-              if t not in test_filter:
-                test_filter.append(t)
+
+            # The test filter is passed to the test over the command line.
+            # Skip the test if the filter becomes longer than the command
+            # line limit of the bot OS (8191 characters on Windows).
+            current_filter = new_tests.get(test_obj, ([], 0))[0]
+            names_to_add = [t for t in actual_group if t not in current_filter]
+            if (
+              utils.get_filter_length(current_filter + names_to_add)
+              > filter_char_limit
+            ):
+              skipped_for_length.append((test.test_id, vh))
+              continue
+
+            # Test object in list of new tests already, so update the filter.
+            # Otherwise create a new one.
+            test_filter, duration_milliseconds = new_tests.setdefault(
+              test_obj, ([], 0)
+            )
+            test_filter.extend(names_to_add)
 
             # duration_milliseconds can default to 0 for our calculations
             # because
@@ -281,6 +296,13 @@ class FlakinessApi(recipe_api.RecipeApi):
             not_found.append((test.test_id, vh))
       if not_found:
         p.logs['not_found'] = '\n'.join(map(join_tuple, not_found))
+      if skipped_for_length:
+        p.step_text = '{} new tests skipped: test filter too long'.format(
+          len(skipped_for_length)
+        )
+        p.logs['skipped_filter_too_long'] = '\n'.join(
+          map(join_tuple, skipped_for_length)
+        )
 
     return new_tests
 

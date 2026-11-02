@@ -94,6 +94,7 @@ def RunSteps(api: DEPS):
   class MockTest:
     def __init__(self, variant_hash, test_id):
       self.check_flakiness_for_new_tests = True
+      self.runs_on_swarming = False
       self.name = "suite"
       self._results = Results(
         variant_hash, [IndividualTest(test_id, test_id, 100)]

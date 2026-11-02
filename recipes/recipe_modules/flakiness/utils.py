@@ -31,6 +31,35 @@ def get_actual_test_group(test_name, all_suite_test_names):
   return [t for t in all_suite_test_names if get_base_test_name(t) == base_name]
 
 
+# The longest filter delimiter ('::' for isolated script tests).
+_MAX_FILTER_DELIMITER_LENGTH = 2
+
+
+def get_filter_char_limit(test, host_is_win):
+  """Returns the max length of the test filter for the test.
+
+  Args:
+    test: The steps.Test object.
+    host_is_win: Whether the bot that runs the recipe is a Windows bot.
+      Local tests (for example, ScriptTest) run on this bot.
+  """
+  # A test that runs on swarming (also when wrapped in a TestWrapper, for
+  # example ExperimentalTest) uses the OS of the swarming bot. Any other test
+  # runs on the host bot.
+  if test.runs_on_swarming:
+    is_win = test.dispatches_to_windows()
+  else:
+    is_win = host_is_win
+  if is_win:
+    return steps.WINDOWS_FILTER_CHAR_LIMIT
+  return steps.DEFAULT_FILTER_CHAR_LIMIT
+
+
+def get_filter_length(test_names):
+  """Returns the max length of a filter string that joins test_names."""
+  return sum(len(t) + _MAX_FILTER_DELIMITER_LENGTH for t in test_names)
+
+
 def apply_script_test_filter(test, test_filter, repeat_count):
   script_args = list(
     [

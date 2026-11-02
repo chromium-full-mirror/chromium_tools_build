@@ -103,6 +103,12 @@ INCOMPLETE_SUITE_STATUS = 'Incomplete'
 FAILURE_SUITE_STATUS = 'Failure'
 SUCCESS_SUITE_STATUS = 'Success'
 
+# Test filters are passed to the test over the command line. On Windows,
+# cmd.exe limits the command line to 8191 characters. On other OSes, the limit
+# is over 100,000 characters. The values keep a margin for the other arguments.
+WINDOWS_FILTER_CHAR_LIMIT = 6000
+DEFAULT_FILTER_CHAR_LIMIT = 90000
+
 
 def _merge_arg(args, flag, value):
   args = [a for a in args if not a.startswith(flag)]
@@ -1152,6 +1158,11 @@ class AbstractSwarmingTest(AbstractTest):
   @property
   @abc.abstractmethod
   def shards(self) -> int:
+    raise NotImplementedError()  # pragma: no cover
+
+  @abc.abstractmethod
+  def dispatches_to_windows(self) -> bool:
+    """Whether the swarming task of the test runs on a Windows bot."""
     raise NotImplementedError()  # pragma: no cover
 
   @abc.abstractmethod
@@ -2342,7 +2353,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self._raw_cmd = []
     self._relative_cwd = None
 
-  def _dispatches_to_windows(self):
+  def dispatches_to_windows(self) -> bool:
     if self.spec.dimensions:
       os = self.spec.dimensions.get('os', '')
       return os.startswith('Windows')
@@ -2634,7 +2645,11 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       # On other OSes, the max char limit is over 100,000 characters. We avoid
       # sending the filter list if we're close to the limit -- this causes all
       # tests to be run.
-      char_limit = 6000 if self._dispatches_to_windows() else 90000
+      char_limit = (
+        WINDOWS_FILTER_CHAR_LIMIT
+        if self.dispatches_to_windows()
+        else DEFAULT_FILTER_CHAR_LIMIT
+      )
       expected_filter_length = sum(len(x) for x in tests_to_retry) + len(
         tests_to_retry
       ) * len(filter_delimiter)
@@ -2674,7 +2689,7 @@ class SwarmingTest(Test, AbstractSwarmingTest):
       #
       # TODO(crbug.com/41493392): reenable the continuous mode on Windows once
       # test timeout issues are resolved.
-      if not using_pgo and not self._dispatches_to_windows():
+      if not using_pgo and not self.dispatches_to_windows():
         # Enable the continuous mode, which is set by adding %c to
         # LLVM_PROFILE_FILE, for coverage builds. The continuous mode causes the
         # instrumentation to update counters in real time instead of flushing
@@ -3337,6 +3352,9 @@ class MockTest(AbstractSwarmingTest, Test):
   def shards(self):
     assert self.runs_on_swarming
     return self.spec.shards
+
+  def dispatches_to_windows(self) -> bool:  # pragma: no cover
+    return False
 
   @property
   def retry_only_failed_tests(self) -> bool:
