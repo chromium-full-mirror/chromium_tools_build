@@ -309,7 +309,7 @@
       }
     },
     "name": "search existing GCE target build",
-    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,status,tags\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}]}}}]}",
+    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"exe,id,infra.buildbucket.agent.output.resolvedData,status,tags\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"recipe_cas\", \"value\": \"examplehash\"}]}}}]}",
     "~followup_annotations": [
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
@@ -324,7 +324,7 @@
       "@@@STEP_LOG_LINE@request@    {@@@",
       "@@@STEP_LOG_LINE@request@      \"searchBuilds\": {@@@",
       "@@@STEP_LOG_LINE@request@        \"mask\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,status,tags\"@@@",
+      "@@@STEP_LOG_LINE@request@          \"fields\": \"exe,id,infra.buildbucket.agent.output.resolvedData,status,tags\"@@@",
       "@@@STEP_LOG_LINE@request@        },@@@",
       "@@@STEP_LOG_LINE@request@        \"pageSize\": 5,@@@",
       "@@@STEP_LOG_LINE@request@        \"predicate\": {@@@",
@@ -349,7 +349,7 @@
       "@@@STEP_LOG_LINE@request@  ]@@@",
       "@@@STEP_LOG_LINE@request@}@@@",
       "@@@STEP_LOG_END@request@@@",
-      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22builder%22%3A+%7B%22project%22%3A+%22art%22%2C+%22bucket%22%3A+%22ci%22%2C+%22builder%22%3A+%22target.arm.build_only.64%22%7D%2C+%22tags%22%3A+%5B%7B%22key%22%3A+%22buildset%22%2C+%22value%22%3A+%22commit%2Fgitiles%2Fgoogleplex-android.googlesource.com%2Fplatform%2Fart%2F%2B%2F2d2b87e5f9c872902d8508f6377470a4a6fa87e1%22%7D%2C+%7B%22key%22%3A+%22recipe_cas%22%2C+%22value%22%3A+%22examplehash%22%7D%5D%7D%2C+%22pageSize%22%3A+5%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Cstatus%2Ctags%22%7D%7D@@@"
+      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22builder%22%3A+%7B%22project%22%3A+%22art%22%2C+%22bucket%22%3A+%22ci%22%2C+%22builder%22%3A+%22target.arm.build_only.64%22%7D%2C+%22tags%22%3A+%5B%7B%22key%22%3A+%22buildset%22%2C+%22value%22%3A+%22commit%2Fgitiles%2Fgoogleplex-android.googlesource.com%2Fplatform%2Fart%2F%2B%2F2d2b87e5f9c872902d8508f6377470a4a6fa87e1%22%7D%2C+%7B%22key%22%3A+%22recipe_cas%22%2C+%22value%22%3A+%22examplehash%22%7D%5D%7D%2C+%22pageSize%22%3A+5%2C+%22mask%22%3A+%7B%22fields%22%3A+%22exe%2Cid%2Cinfra.buildbucket.agent.output.resolvedData%2Cstatus%2Ctags%22%7D%7D@@@"
     ]
   },
   {

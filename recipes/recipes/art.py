@@ -339,6 +339,13 @@ def _get_art_commit(api: DEPS, repo_root):
   )
 
 
+def _get_recipe_version(build):
+  resolved = build.infra.buildbucket.agent.output.resolved_data
+  if 'kitchen-checkout' in resolved and resolved['kitchen-checkout'].cipd.specs:
+    return resolved['kitchen-checkout'].cipd.specs[0].version
+  return build.exe.cipd_version
+
+
 def _get_gce_subbuild(api: DEPS, props, commit):
   build_input = api.buildbucket.build.input
   tags = [
@@ -368,17 +375,24 @@ def _get_gce_subbuild(api: DEPS, props, commit):
   # match a try build tagged with the same commit plus a patch), so require
   # the relevant tags to match exactly.
   wanted_tags = {(t.key, t.value) for t in tags}
+  recipe_version = _get_recipe_version(api.buildbucket.build)
 
   def is_reusable(build):
-    return build.status in (
-      common_pb2.SUCCESS,
-      common_pb2.SCHEDULED,
-      common_pb2.STARTED,
-    ) and wanted_tags == {
-      (t.key, t.value)
-      for t in build.tags
-      if t.key in ('buildset', 'recipe_cas')
-    }
+    return (
+      build.status
+      in (
+        common_pb2.SUCCESS,
+        common_pb2.SCHEDULED,
+        common_pb2.STARTED,
+      )
+      and wanted_tags
+      == {
+        (t.key, t.value)
+        for t in build.tags
+        if t.key in ('buildset', 'recipe_cas')
+      }
+      and _get_recipe_version(build) == recipe_version
+    )
 
   existing = [
     b
@@ -393,7 +407,13 @@ def _get_gce_subbuild(api: DEPS, props, commit):
         include_experimental=build_input.experimental,
       ),
       limit=5,
-      fields=['id', 'status', 'tags'],
+      fields=[
+        'id',
+        'status',
+        'tags',
+        'exe',
+        'infra.buildbucket.agent.output.resolved_data',
+      ],
       step_name='search existing GCE target build',
     )
     if is_reusable(b)
@@ -406,6 +426,7 @@ def _get_gce_subbuild(api: DEPS, props, commit):
         api.buildbucket.schedule_request(
           builder=props.gce_subbuilder,
           gitiles_commit=commit,
+          exe_cipd_version=recipe_version,
           # Clear the property to prevent infinite recursion if the subbuilder
           # also has gce_subbuilder set.
           properties={'gce_subbuilder': ''},
@@ -1340,12 +1361,23 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  def _with_recipe_version(build, version):
+    build.infra.buildbucket.agent.output.resolved_data[
+      'kitchen-checkout'
+    ].cipd.specs.add(version=version)
+    return build
+
   yield api.test(
     'subbuild-reuse-exact-match',
-    api.buildbucket.ci_build(
-      project='art',
-      git_repo=art_repo,
-      revision=art_revision,
+    api.buildbucket.build(
+      _with_recipe_version(
+        api.buildbucket.ci_build_message(
+          project='art',
+          git_repo=art_repo,
+          revision=art_revision,
+        ),
+        'recipe_v2',
+      )
     ),
     subbuild_props(),
     api.buildbucket.simulated_search_results(
@@ -1368,19 +1400,31 @@ def GenTests(api: TEST_DEPS):
           status=common_pb2.FAILURE,
           tags=[commit_buildset],
         ),
-        # Exact match: reused.
-        build_pb2.Build(
-          id=8922054662172514003,
-          status=common_pb2.STARTED,
-          tags=[
-            commit_buildset,
-            common_pb2.StringPair(key='user_agent', value='recipe'),
-          ],
+        # Exact tag match, but older recipe version: must not be reused.
+        _with_recipe_version(
+          build_pb2.Build(
+            id=8922054662172514003,
+            status=common_pb2.SUCCESS,
+            tags=[commit_buildset],
+          ),
+          'recipe_v1',
+        ),
+        # Exact match (tags and recipe version): reused.
+        _with_recipe_version(
+          build_pb2.Build(
+            id=8922054662172514004,
+            status=common_pb2.STARTED,
+            tags=[
+              commit_buildset,
+              common_pb2.StringPair(key='user_agent', value='recipe'),
+            ],
+          ),
+          'recipe_v2',
         ),
       ],
       step_name='search existing GCE target build',
     ),
-    collect_subbuild(8922054662172514003),
+    collect_subbuild(8922054662172514004),
     api.post_process(post_process.DoesNotRun, 'schedule GCE target subbuild'),
     api.post_process(post_process.MustRun, 'download target build from CAS'),
     api.post_process(post_process.DropExpectation),
