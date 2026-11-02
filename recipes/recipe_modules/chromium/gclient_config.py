@@ -451,11 +451,6 @@ def use_clang_coverage(c):
   c.solutions[0].custom_vars['checkout_clang_coverage_tools'] = 'True'
 
 
-@CONFIG_CTX()
-def enable_wpr_tests(c):
-  c.solutions[0].custom_vars['checkout_wpr_archives'] = 'True'
-
-
 # Official builders are required to checkout pgo profiles.
 @CONFIG_CTX()
 def checkout_pgo_profiles(c):

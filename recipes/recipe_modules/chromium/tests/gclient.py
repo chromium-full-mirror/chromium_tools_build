@@ -79,11 +79,6 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
   yield api.test(
-    'enable_wpr_tests',
-    api.properties(apply_gclient_config='enable_wpr_tests'),
-    api.post_process(post_process.DropExpectation),
-  )
-  yield api.test(
     'chromium_skip_wpr_archives_download',
     api.properties(apply_gclient_config='chromium_skip_wpr_archives_download'),
     api.post_process(post_process.DropExpectation),
