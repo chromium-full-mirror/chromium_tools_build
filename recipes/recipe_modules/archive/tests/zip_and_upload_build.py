@@ -60,9 +60,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'linux',
-    api.properties(
-      buildername='example_buildername', gs_acl='public', platform='linux'
-    ),
+    api.properties(buildername='example_buildername', platform='linux'),
     api.post_process(
       StepCommandContains,
       'zip build',
@@ -74,8 +72,6 @@ def GenTests(api: TEST_DEPS):
         '--package-dsym-files',
         '--exclude-files',
         'example_exclude',
-        '--gs-acl',
-        'public',
         '--include-files',
         'chrome,chrome_100_percent.pak,chrome_200_percent.pak,chrome_crashpad_handler,chromedriver,default_apps,default_apps/*,icudtl.dat,libEGL.so,libGLESv2.so,libclearkeycdm.so,libclearkeycdmadapter.so,libvk_swiftshader.so,libvulkan.so.1,libvulkan_init.so,libvulkan_init_skia.so,libvulkan_interface_shared.so,libvulkan_wrapper.so,libwidevinecdm.so,libwidevinecdmadapter.so,locales,locales/*,product_logo_48.png,resources,resources/*,resources.pak,v8_context_snapshot.bin,vk_swiftshader_icd.json',
         '--strip-files',
@@ -92,9 +88,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'mac',
-    api.properties(
-      buildername='example_buildername', gs_acl='public', platform='mac'
-    ),
+    api.properties(buildername='example_buildername', platform='mac'),
     api.post_process(
       StepCommandContains,
       'zip build',
@@ -106,8 +100,6 @@ def GenTests(api: TEST_DEPS):
         '--package-dsym-files',
         '--exclude-files',
         'example_exclude',
-        '--gs-acl',
-        'public',
         '--include-files',
         'chromedriver,Google Chrome.app,Google Chrome.app/*',
         '--exclude-extra',
@@ -122,9 +114,7 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'win',
-    api.properties(
-      buildername='example_buildername', gs_acl='public', platform='win'
-    ),
+    api.properties(buildername='example_buildername', platform='win'),
     api.post_process(
       StepCommandContains,
       'zip build',
@@ -136,8 +126,6 @@ def GenTests(api: TEST_DEPS):
         '--package-dsym-files',
         '--exclude-files',
         'example_exclude',
-        '--gs-acl',
-        'public',
         '--include-files',
         'chrome.dll,chrome.exe,chrome_100_percent.pak,chrome_200_percent.pak,chrome_child.dll,chrome_elf.dll,chrome_watcher.dll,chromedriver.exe,default_apps,default_apps/*,d3dcompiler_47.dll,dxcompiler.dll,icudtl.dat,libEGL.dll,libGLESv2.dll,locales,locales/*,resources.pak,SecondaryTile.png,v8_context_snapshot.bin,vk_swiftshader.dll,vk_swiftshader_icd.json,vulkan-1.dll,WidevineCdm,WidevineCdm/*',
         '--whitelist',
@@ -155,9 +143,7 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'linux-experimental',
     api.runtime(is_experimental=True),
-    api.properties(
-      buildername='example_buildername', gs_acl='public', platform='linux'
-    ),
+    api.properties(buildername='example_buildername', platform='linux'),
     api.post_process(
       StepCommandContains,
       'zip build',
@@ -169,8 +155,6 @@ def GenTests(api: TEST_DEPS):
         '--package-dsym-files',
         '--exclude-files',
         'example_exclude',
-        '--gs-acl',
-        'public',
         '--include-files',
         'chrome,chrome_100_percent.pak,chrome_200_percent.pak,chrome_crashpad_handler,chromedriver,default_apps,default_apps/*,icudtl.dat,libEGL.so,libGLESv2.so,libclearkeycdm.so,libclearkeycdmadapter.so,libvk_swiftshader.so,libvulkan.so.1,libvulkan_init.so,libvulkan_init_skia.so,libvulkan_interface_shared.so,libvulkan_wrapper.so,libwidevinecdm.so,libwidevinecdmadapter.so,locales,locales/*,product_logo_48.png,resources,resources/*,resources.pak,v8_context_snapshot.bin,vk_swiftshader_icd.json',
         '--strip-files',

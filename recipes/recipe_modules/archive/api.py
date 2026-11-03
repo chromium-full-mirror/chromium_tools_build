@@ -84,15 +84,7 @@ class ArchiveApi(recipe_api.RecipeApi):
       '--src-dir',
       source_dir,
     ]
-    if 'build_archive_url' in self.m.properties:
-      args.extend(
-        [
-          '--use-build-url-name',
-          '--build-url',
-          self.m.properties['build_archive_url'],
-        ]
-      )
-    elif build_url:
+    if build_url:
       args.extend(['--build-url', build_url])
     if build_revision:
       args.extend(['--build_revision', build_revision])
@@ -100,8 +92,6 @@ class ArchiveApi(recipe_api.RecipeApi):
       args.append('--package-dsym-files')
     if exclude_files:
       args.extend(['--exclude-files', exclude_files])
-    if 'gs_acl' in self.m.properties:
-      args.extend(['--gs-acl', self.m.properties['gs_acl']])
     if exclude_perf_test_files and platform:
       include_bisect_file_list = manual_bisect_files.CHROME_REQUIRED_FILES.get(
         platform

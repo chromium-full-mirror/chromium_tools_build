@@ -84,14 +84,6 @@ def RunSteps(api: DEPS):
     )
     return
 
-  if 'build_archive_url' in api.properties:
-    api.archive.zip_and_upload_build(
-      step_name='zip build',
-      target=source_dir / 'Release/out',
-      source_dir=source_dir,
-    )
-    return
-
   if 'gcs_archive' in api.properties:
     api.chromium.set_config('chromium')
 
@@ -280,14 +272,6 @@ def GenTests(api: TEST_DEPS):
       no_llvm=True,
     ),
     api.override_step_data('filter archive_root', api.json.output(['chrome'])),
-  )
-
-  yield api.test(
-    'zip_and_upload_custom_location',
-    api.platform('linux', 64),
-    api.properties(
-      build_archive_url='gs://dummy-bucket/Linux Release/full-build.zip'
-    ),
   )
 
   update_properties = {
