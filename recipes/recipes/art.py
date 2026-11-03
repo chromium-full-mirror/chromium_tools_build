@@ -462,7 +462,7 @@ def _run_steps(api: DEPS, props):
     }
   )
 
-  if props.device:
+  if props.on_virtual_machine:
     qemu_path = ensure_tool(
       api=api,
       package='fuchsia/third_party/qemu/${platform}',
@@ -491,32 +491,21 @@ def _run_steps(api: DEPS, props):
       api.path.join(sevenz_path, '7z'),
     )
 
+  if props.device:
+    path_dirs = [
+      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'),
+      # Add adb to the path.
+      build_top_dir.joinpath('prebuilts', 'runtime'),
+    ]
+    if props.on_virtual_machine:
+      path_dirs.extend([sevenz_path, openssh_path, qemu_path])
+
     env.update(
       {
         'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
-        'PATH': str(
-          build_top_dir.joinpath(
-            'prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'
-          )
-        )
-        + api.path.pathsep
-        +
-        # Add adb to the path.
-        str(build_top_dir.joinpath('prebuilts', 'runtime'))
-        + api.path.pathsep
-        +
-        # Add 7z to the path.
-        str(sevenz_path)
-        + api.path.pathsep
-        +
-        # Add openssh-portable to the path.
-        str(openssh_path)
-        + api.path.pathsep
-        +
-        # Add qemu to the path.
-        str(qemu_path)
-        + api.path.pathsep
-        + '%(PATH)s',
+        'PATH': api.path.pathsep.join(
+          [*(str(p) for p in path_dirs), '%(PATH)s']
+        ),
       }
     )
     if props.product:
