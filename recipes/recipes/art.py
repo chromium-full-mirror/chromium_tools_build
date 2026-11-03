@@ -247,31 +247,6 @@ def _wrap_test_cmd(api: DEPS, step):
   return cmd
 
 
-# Extra directories to archive for target builds when output_directories is
-# specified, so the parent builder can run tests without a git checkout.
-# TODO(dsrbecky): Move these into the builder config (main.star) once tested.
-TEMP_EXTRA_OUTPUT_DIRECTORIES = [
-  'art',
-  'build',
-  'development/scripts',
-  'device/generic/art',
-  'external/golang-protobuf',
-  'external/pogreb',
-  'external/starlark-go',
-  'libcore/expectations',
-  'prebuilts/bazel/common/proto',
-  'prebuilts/build-tools',
-  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-cxxfilt',
-  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-objdump',
-  'prebuilts/clang/host/linux-x86/llvm-binutils-stable/llvm-symbolizer',
-  'prebuilts/go/linux-x86',
-  'prebuilts/jdk/jdk21/linux-x86',
-  'prebuilts/jdk/jdk25/linux-x86',
-  'prebuilts/runtime/adb',
-  'toolchain/pgo-profiles/sampling/afdo_profiles.mk',
-]
-
-
 def _archive_target_build(
   api: DEPS,
   build_top_dir,
@@ -282,11 +257,7 @@ def _archive_target_build(
   # when trying to materialize targets outside the exec root. Pack all symlinks
   # into a small tar archive and pass only regular files to `cas archive` so
   # build artifacts are deduplicated in CAS without modifying symlinks on disk.
-  dirs = (
-    list(output_directories) + TEMP_EXTRA_OUTPUT_DIRECTORIES
-    if output_directories
-    else ['out']
-  )
+  dirs = list(output_directories) if output_directories else ['out']
   symlinks_tar = build_top_dir.joinpath('out', 'symlinks.tar')
   api.step(
     'pack target build symlinks',
