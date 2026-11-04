@@ -49,7 +49,7 @@ PROPERTIES = crowbar_pb.CrowbarOptions
 
 # Git repos (including submodules) to find Crowbar packages.
 _REPOS = [
-  crowbar_pb.Repo(path='src'),
+  crowbar_pb.Repo(path='.'),
 ]
 
 
@@ -59,7 +59,7 @@ def RunSteps(api: DEPS, properties):
   c = api.chromium_checkout.ensure_checkout()
   api.crowbar.run_in_repo(
     'chromium',
-    c.checkout_dir,
+    c.source_root.path,
     properties.crowbar_role,
     repos=_REPOS,
   )
@@ -82,7 +82,7 @@ def GenTests(api: TEST_DEPS):
       api.step.sub_build(build_pb2.Build(status=common_pb.SUCCESS)),
     ),
     api.post_process(
-      post_process.StepCommandContains, 'build packages', ['src/foo']
+      post_process.StepCommandContains, 'build packages', ['foo']
     ),
     api.post_process(post_process.StatusSuccess),
     api.post_process(post_process.DropExpectation),
