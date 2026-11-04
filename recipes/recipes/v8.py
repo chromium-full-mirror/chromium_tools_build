@@ -11,6 +11,7 @@ from recipe_engine.post_process import (
   DoesNotRunRE,
   DropExpectation,
   MustRun,
+  StepCommandContains,
   StepException,
   StepFailure,  # noqa: F401
   SummaryMarkdownRE,
@@ -888,7 +889,8 @@ def GenTests(api: TEST_DEPS):
   )
 
   # As above but on the LUCI dev instance. The isolated json must not be
-  # uploaded to the production bucket.
+  # uploaded to the production bucket and scheduler jobs must be looked up
+  # on the dev scheduler instance.
   dev_build_msg = api.buildbucket.ci_build_message(
     project='v8',
     git_repo='https://chromium.googlesource.com/v8/v8',
@@ -906,8 +908,14 @@ def GenTests(api: TEST_DEPS):
     )
     + api.v8.test_spec_in_checkout('V8 Foobar builder', test_spec, 'V8 Foobar')
     + api.buildbucket.build(dev_build_msg)
+    + api.scheduler(hostname='luci-scheduler-dev.appspot.com')
     + api.post_process(MustRun, 'build.isolate tests')
     + api.post_process(DoesNotRun, 'build.gsutil upload')
+    + api.post_process(
+      StepCommandContains,
+      'trigger.get V8 jobs',
+      ['luci-scheduler-dev.appspot.com'],
+    )
     + api.post_process(DropExpectation)
   )
 

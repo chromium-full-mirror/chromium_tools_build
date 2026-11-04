@@ -264,11 +264,13 @@ class ProdTrigger(Trigger):
     return result
 
   def _get_v8_jobs(self):
+    # Query the same scheduler instance that EmitTriggers will talk to, so
+    # that job names are resolved correctly on dev instances as well.
     args = [
       'prpc',
       'call',
       '-format=json',
-      'luci-scheduler.appspot.com',
+      self.api.scheduler.host,
       'scheduler.Scheduler.GetJobs',
     ]
     input_data = {"project": "v8"}
