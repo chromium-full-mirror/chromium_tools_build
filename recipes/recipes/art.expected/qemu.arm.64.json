@@ -575,7 +575,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
@@ -601,7 +601,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
@@ -627,7 +627,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
@@ -653,7 +653,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
@@ -678,7 +678,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
@@ -704,7 +704,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
@@ -729,7 +729,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {
@@ -761,7 +761,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
@@ -787,7 +787,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
@@ -812,7 +812,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
@@ -838,7 +838,7 @@
     "env": {
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/silvermont",
+      "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
       "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:[START_DIR]/cipd_tool/infra/3pp/tools/7z/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8:[START_DIR]/cipd_tool/fuchsia/third_party/openssh-portable/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/bin:[START_DIR]/cipd_tool/fuchsia/third_party/qemu/eb92cc52a766c500e001d02f1eaa78784da47f8c96b019ce874d3e3c205b4e3c/bin:<PATH>"
     },
     "luci_context": {

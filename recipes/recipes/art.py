@@ -783,41 +783,6 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'target_angler_try',
-    api.buildbucket.try_build(
-      project='art',
-      builder='angler-armv7-ndebug',
-    ),
-    api.step_data(
-      'resolve ART HEAD',
-      stdout=api.raw_io.output_text(
-        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
-      ),
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-  )
-
-  yield api.test(
-    'target-default_opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-    api.properties(
-      device="angler-armv7",
-      build_only=False,
-      on_virtual_machine=False,
-      product="arm_krait",
-    ),
-  )
-
-  yield api.test(
     'target.arm.64',
     api.buildbucket.ci_build(
       project='art',
@@ -981,7 +946,7 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'target-opts',
+    'qemu.arm.64',
     api.buildbucket.ci_build(
       project='art',
     ),
@@ -990,9 +955,9 @@ def GenTests(api: TEST_DEPS):
       stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(
-      device="fugu",
+      device='qemu.arm.64',
       on_virtual_machine=True,
-      product="silvermont",
+      product='armv8',
       test_steps=[
         {
           'name': 'test gtest',
@@ -1014,19 +979,19 @@ def GenTests(api: TEST_DEPS):
     api.step_data(
       'list target build files',
       stdout=api.raw_io.output_text(
-        'out/target/product/arm_krait/system/bin/dalvikvm\n'
+        'out/target/product/armv8/system/bin/dalvikvm\n'
         'out/host/linux-x86/bin/adb\n'
       ),
     ),
     api.properties(
-      device="angler-armv7",
+      device='target.arm.build_only',
       build_only=True,
-      product="arm_krait",
+      product='armv8',
       output_directories=[
-        'out/target/product/arm_krait/system',
-        'out/target/product/arm_krait/data',
-        'out/target/product/arm_krait/linkerconfig',
-        'out/target/product/arm_krait/symbols',
+        'out/target/product/armv8/system',
+        'out/target/product/armv8/data',
+        'out/target/product/armv8/linkerconfig',
+        'out/target/product/armv8/symbols',
         'out/target/common/obj/JAVA_LIBRARIES',
         'out/host/linux-x86/bin',
         'out/host/linux-x86/lib64',
@@ -1037,10 +1002,10 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'target_angler_setup_failure',
+    'target-setup-failure',
     api.buildbucket.ci_build(
       project='art',
-      builder='angler-armv7-ndebug',
+      builder='target.arm.64',
     ),
     api.step_data(
       'checkout.find super-project commit',
@@ -1049,16 +1014,22 @@ def GenTests(api: TEST_DEPS):
     api.step_data('setup device', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
-      device='angler-armv7',
-      product="arm_krait",
+      device='target.arm.64',
+      product='armv8',
     ),
+    api.post_process(
+      post_process.MustRun,
+      'tear down device',
+      'device post-run cleanup',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-    'target_angler_device_pre_run_cleanup_failure',
+    'target-pre-run-cleanup-failure',
     api.buildbucket.ci_build(
       project='art',
-      builder='angler-armv7-ndebug',
+      builder='target.arm.64',
     ),
     api.step_data(
       'checkout.find super-project commit',
@@ -1067,53 +1038,37 @@ def GenTests(api: TEST_DEPS):
     api.step_data('device pre-run cleanup', retcode=1),
     api.expect_status('FAILURE'),
     api.properties(
-      device='angler-armv7',
-      product="arm_krait",
+      device='target.arm.64',
+      product='armv8',
     ),
+    api.post_process(
+      post_process.MustRun,
+      'setup device',
+      'tear down device',
+      'device post-run cleanup',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
-    'art.superproject-ci',  # tests gitiles_commit path.
+    'checkout-retry',
     api.buildbucket.ci_build(),
     api.step_data(
-      "checkout.find super-project commit",
+      'checkout.find super-project commit', stdout=api.raw_io.output_text('')
+    ),
+    api.step_data(
+      'checkout.find super-project commit (retry 1)',
+      stdout=api.raw_io.output_text(''),
+    ),
+    api.step_data(
+      'checkout.find super-project commit (retry 2)',
       stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
   )
 
   yield api.test(
-    'art.superproject-ci-retry',  # tests gitiles_commit path.
-    api.buildbucket.ci_build(),
-    api.step_data(
-      "checkout.find super-project commit", stdout=api.raw_io.output_text("")
-    ),
-    api.step_data(
-      "checkout.find super-project commit (retry 1)",
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-    api.properties(build_only=True),
-  )
-
-  yield api.test(
-    'art.superproject-ci-retry-2',  # tests gitiles_commit path.
-    api.buildbucket.ci_build(),
-    api.step_data(
-      "checkout.find super-project commit", stdout=api.raw_io.output_text("")
-    ),
-    api.step_data(
-      "checkout.find super-project commit (retry 1)",
-      stdout=api.raw_io.output_text(""),
-    ),
-    api.step_data(
-      "checkout.find super-project commit (retry 2)",
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-    api.properties(build_only=True),
-  )
-
-  yield api.test(
-    'art.superproject-try',  # tests gerrit_changes path.
+    'checkout-try',  # tests gerrit_changes path.
     api.buildbucket.try_build(),
     api.step_data(
       'resolve ART HEAD',
@@ -1129,11 +1084,11 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'art.superproject-incremental',  # repeated git checkout.
+    'checkout-incremental',  # repeated git checkout.
     api.buildbucket.ci_build(),
-    api.path.exists(api.path.cache_dir.joinpath("src/.git")),
+    api.path.exists(api.path.cache_dir.joinpath('src/.git')),
     api.step_data(
-      "checkout.find super-project commit",
+      'checkout.find super-project commit',
       stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.properties(build_only=True),
@@ -1222,7 +1177,7 @@ def GenTests(api: TEST_DEPS):
     return api.properties(**props)
 
   yield api.test(
-    'target-docker-parent-gce-subbuild',
+    'target-gce-subbuild',
     api.buildbucket.ci_build(
       project='art',
       git_repo=art_repo,
@@ -1379,13 +1334,13 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'target-docker-parent-gce-subbuild-led',
+    'target-gce-subbuild-led',
     api.buildbucket.ci_build(
       project='art',
       git_repo=art_repo,
       revision=art_revision,
     ),
-    api.properties(
+    subbuild_props(
       **{
         '$recipe_engine/led': {
           'led_run_id': 'fake-run-id',
@@ -1399,16 +1354,6 @@ def GenTests(api: TEST_DEPS):
             },
           },
         },
-        'device': 'target.arm.64',
-        'product': 'armv8',
-        'gce_subbuilder': 'target.arm.build_only.64',
-        'test_steps': [
-          {
-            'name': 'test gtest',
-            'cmd': ['art/tools/run-gtests.sh'],
-            'env': {'ART_TEST_NO_SYNC': 'true'},
-          },
-        ],
       }
     ),
     collect_subbuild(),
