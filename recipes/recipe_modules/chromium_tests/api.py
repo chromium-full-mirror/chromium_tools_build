@@ -3249,6 +3249,19 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         turboci_build_check_id, 'no compile necessary'
       )
 
+      def is_gn_file(filepath):
+        _, ext = self.m.path.splitext(filepath)
+        return ext in ('.gn', '.gni')
+
+      # When gn or gni files are modified, analyze may determine that no compile
+      # is needed, but we still want to run gn check so that header
+      # dependencies are verified.
+      if builder_config.execution_mode == ctbc.COMPILE_AND_TEST and any(
+        is_gn_file(f) for f in affected_files
+      ):
+        with self.m.context(env=self.m.chromium.get_env(source_dir)):
+          self.m.gn.check(build_dir)
+
       def is_source_file(filepath):
         # DEPS files embed include_rules, which we want to run the checkdeps
         # test for
