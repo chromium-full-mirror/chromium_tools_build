@@ -80,11 +80,13 @@ def RunSteps(api: DEPS):
     active_branches = api.v8.get_active_branches()
     assert active_branches, "No active branches found from ChromiumDash!"
 
-    api.v8.git_output('checkout', 'infra/config')
+    api.v8.git_output('checkout', 'main')
     api.v8.git_output('pull')
 
     definitions = api.v8.git_output(
-      'show', 'HEAD:definitions.star', name='Read branch definitions'
+      'show',
+      'HEAD:infra/config/definitions.star',
+      name='Read branch definitions',
     )
 
     current_branches = api.v8.infer_active_branches(definitions)

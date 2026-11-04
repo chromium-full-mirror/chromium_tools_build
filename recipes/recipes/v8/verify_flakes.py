@@ -108,8 +108,8 @@ def RunSteps(api: DEPS):
   configs = ast.literal_eval(
     api.gitiles.download_file(
       'https://chromium.googlesource.com/v8/v8',
-      'flakes/flakes.pyl',
-      branch='infra/config',
+      'infra/config/flakes/flakes.pyl',
+      branch='main',
       step_name='read flake config',
     )
   )

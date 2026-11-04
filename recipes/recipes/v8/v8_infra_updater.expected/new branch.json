@@ -148,7 +148,7 @@
     "cmd": [
       "git",
       "checkout",
-      "infra/config"
+      "main"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -189,7 +189,7 @@
     "cmd": [
       "git",
       "show",
-      "HEAD:definitions.star"
+      "HEAD:infra/config/definitions.star"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -223,7 +223,7 @@
     "cmd": [
       "git",
       "checkout",
-      "infra/config"
+      "main"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -334,7 +334,7 @@
     "cmd": [
       "git",
       "branch",
-      "--set-upstream-to=origin/infra/config"
+      "--set-upstream-to=origin/main"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -361,7 +361,7 @@
       "/path/to/tmp/json",
       "copy",
       "# This file is auto-generated. Do not edit.\nACTIVE_BRANCHES = [\n    \"12.4\",\n    \"12.3\",\n    \"12.2\",\n    \"12.1\",\n]\n",
-      "[CACHE]/builder/v8/definitions.star"
+      "[CACHE]/builder/v8/infra/config/definitions.star"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -391,7 +391,7 @@
       "lucicfg",
       "format"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/v8/infra/config",
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
         "0"
@@ -410,7 +410,7 @@
       "lucicfg",
       "main.star"
     ],
-    "cwd": "[CACHE]/builder/v8",
+    "cwd": "[CACHE]/builder/v8/infra/config",
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
         "0"

@@ -148,7 +148,7 @@
     "cmd": [
       "git",
       "checkout",
-      "infra/config"
+      "main"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {
@@ -189,7 +189,7 @@
     "cmd": [
       "git",
       "show",
-      "HEAD:definitions.star"
+      "HEAD:infra/config/definitions.star"
     ],
     "cwd": "[CACHE]/builder/v8",
     "env_suffixes": {

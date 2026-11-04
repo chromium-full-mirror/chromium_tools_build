@@ -1715,18 +1715,20 @@ class V8Api(recipe_api.RecipeApi):
 
   def update_infra_config(self, source_dir, definitions, hashtag):
     with self.m.step.nest('Update infra/config') as parent_step:
-      self.git_output('checkout', 'infra/config')
+      self.git_output('checkout', 'main')
       self.git_output('pull', ok_ret='any')
       self.git_output('branch', '-D', 'branch_cut_update', ok_ret='any')
       self.git_output('clean', '-ffd')
       self.git_output('checkout', '-b', 'branch_cut_update')
-      self.git_output('branch', '--set-upstream-to=origin/infra/config')
-      definitions_path = source_dir / 'definitions.star'
+      self.git_output('branch', '--set-upstream-to=origin/main')
+      config_dir = source_dir / 'infra' / 'config'
+      definitions_path = config_dir / 'definitions.star'
       self.m.file.write_text(
         'Write branch definitions', definitions_path, definitions
       )
-      self.m.step('Lucicfg format', ['lucicfg', 'format'])
-      self.m.step('Lucicfg generate', ['lucicfg', 'main.star'])
+      with self.m.context(cwd=config_dir):
+        self.m.step('Lucicfg format', ['lucicfg', 'format'])
+        self.m.step('Lucicfg generate', ['lucicfg', 'main.star'])
       commit_msg = f'[{hashtag}] Update active branches'
       self.git_output('commit', '-am', commit_msg)
       upload_cmd = [
