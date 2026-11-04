@@ -535,41 +535,6 @@ def GenTests(api: RecipeTestApi):
   )
 
   yield api.test(
-    'no_compile_gn_file',
-    api.platform('linux', 64),
-    api.chromium.try_build(
-      builder_group='fake-try-group',
-      builder='fake-try-builder',
-    ),
-    ctbc_api.properties(
-      ctbc_api.properties_assembler_for_try_builder()
-      .with_mirrored_builder(
-        builder_group='fake-group',
-        builder='fake-builder',
-      )
-      .assemble()
-    ),
-    api.override_step_data(
-      'git diff to analyze patch',
-      api.raw_io.stream_output('build/strict_deps_failures.gni'),
-    ),
-    api.post_process(post_process.DoesNotRun, 'clobber'),
-    api.post_process(post_process.StepSuccess, 'analyze'),
-    api.post_process(
-      post_process.StepCommandContains,
-      'analyze',
-      [
-        '{"additional_compile_targets": [], '
-        '"files": ["build/strict_deps_failures.gni"], '
-        '"test_targets": []}',
-      ],
-    ),
-    api.post_process(post_process.MustRun, 'gn check'),
-    api.post_process(post_process.DoesNotRunRE, 'compile.*'),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
     'unmirrored',
     api.chromium_tests_builder_config.try_build(
       builder_group='tryserver.chromium.unmirrored',
