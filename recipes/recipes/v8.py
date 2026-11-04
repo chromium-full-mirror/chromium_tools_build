@@ -887,6 +887,30 @@ def GenTests(api: TEST_DEPS):
     )
   )
 
+  # As above but on the LUCI dev instance. The isolated json must not be
+  # uploaded to the production bucket.
+  dev_build_msg = api.buildbucket.ci_build_message(
+    project='v8',
+    git_repo='https://chromium.googlesource.com/v8/v8',
+    builder='V8 Foobar builder',
+    build_number=571,
+    revision='deadbeef' * 5,
+  )
+  dev_build_msg.infra.buildbucket.hostname = 'cr-buildbucket-dev.appspot.com'
+  yield (
+    api.v8.test(
+      'client.v8',
+      'V8 Foobar builder',
+      'with_test_spec_dev',
+      triggers=['V8 Foobar'],
+    )
+    + api.v8.test_spec_in_checkout('V8 Foobar builder', test_spec, 'V8 Foobar')
+    + api.buildbucket.build(dev_build_msg)
+    + api.post_process(MustRun, 'build.isolate tests')
+    + api.post_process(DoesNotRun, 'build.gsutil upload')
+    + api.post_process(DropExpectation)
+  )
+
   # As above but on a tester. The additional tests passed as property from the
   # builder should be executed.
   yield (

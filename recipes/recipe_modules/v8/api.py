@@ -330,6 +330,11 @@ class V8Api(recipe_api.RecipeApi):
     """Indicate that we don't want to alter external state."""
     return self.m.properties.get('dry_run') or self.m.runtime.is_experimental
 
+  @property
+  def is_dev_server(self):
+    """Indicate that this build runs on the LUCI dev instance."""
+    return self.m.buildbucket.host == self.m.buildbucket.HOST_DEV
+
   # TODO(machenbach): Temporary convenience method to update recipe
   # dependencies.
   def update_test_configs(self, *args, **kwargs):  # pragma: no cover
@@ -801,6 +806,7 @@ class V8Api(recipe_api.RecipeApi):
       if (
         self.m.v8_tests.isolated_tests
         and not self.m.tryserver.is_tryserver
+        and not self.is_dev_server
         and self.m.properties.get('recipe') != 'v8/compilator'
       ):
         self.upload_isolated_json()
