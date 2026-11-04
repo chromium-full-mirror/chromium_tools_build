@@ -132,7 +132,7 @@ def RunSteps(api: DEPS):
       update_result = api.bot_update.ensure_checkout()
       api.gclient.runhooks()
     source_dir = update_result.source_root.path
-    buildtools_dir = update_result.checkout_dir / 'v8/buildtools'
+    buildtools_dir = source_dir / 'buildtools'
 
     # Get list of build.py build and test steps
     bot_steps = api.file.read_json(

@@ -364,7 +364,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "listdir",
-      "[CACHE]/builder/v8/buildtools/reclient_cfgs",
+      "[CACHE]/builder/emscripten-releases/buildtools/reclient_cfgs",
       "--recursive"
     ],
     "env": {
@@ -399,8 +399,8 @@
     "name": "preprocess for reclient.list reclient_cfgs dir",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/v8/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
-      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/v8/buildtools/reclient_cfgs/reproxy.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/emscripten-releases/buildtools/reclient_cfgs/chromium-browser-clang/rewrapper_windows.cfg@@@",
+      "@@@STEP_LOG_LINE@listdir@[CACHE]/builder/emscripten-releases/buildtools/reclient_cfgs/reproxy.cfg@@@",
       "@@@STEP_LOG_END@listdir@@@"
     ]
   },
@@ -644,7 +644,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/buildtools/reclient/bootstrap"
+      "[CACHE]/builder/emscripten-releases/buildtools/reclient/bootstrap"
     ],
     "env": {
       "BUILDBOT_BUCKET": "ci",
@@ -670,7 +670,7 @@
       "RBE_log_format": "reducedtext",
       "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]/builder/v8/buildtools/reclient/reproxy",
+      "RBE_re_proxy": "[CACHE]/builder/emscripten-releases/buildtools/reclient/reproxy",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
@@ -760,7 +760,7 @@
   },
   {
     "cmd": [
-      "[CACHE]/builder/v8/buildtools/reclient/bootstrap",
+      "[CACHE]/builder/emscripten-releases/buildtools/reclient/bootstrap",
       "-shutdown"
     ],
     "env": {
@@ -787,7 +787,7 @@
       "RBE_log_format": "reducedtext",
       "RBE_output_dir": "[CLEANUP]/reclient_log_tmp_1",
       "RBE_proxy_log_dir": "[CLEANUP]/reclient_log_tmp_1",
-      "RBE_re_proxy": "[CACHE]/builder/v8/buildtools/reclient/reproxy",
+      "RBE_re_proxy": "[CACHE]/builder/emscripten-releases/buildtools/reclient/reproxy",
       "RBE_server_address": "unix:///[TMP_BASE]/reproxy.sock",
       "RBE_service": "remotebuildexecution.googleapis.com:443",
       "RBE_use_application_default_credentials": "false",
