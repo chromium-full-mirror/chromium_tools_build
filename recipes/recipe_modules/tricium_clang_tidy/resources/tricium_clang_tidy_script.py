@@ -450,19 +450,6 @@ def _parse_tidy_fixes_file(
     raise _ParseError('Broken yaml: missing key %r' % key_name) from k
 
 
-def _trim_rewrapper_command(pieces: List[str]):
-  if len(pieces) > 1 and 'rewrapper' in pieces[0]:
-    # HACK: If argv[0] is rewrapper we need to trim all rewrapper flags.
-    # These are provided in the form `-flag_name=flag_value` or
-    # `-flag_name` strictly before any clang binary or flags
-    rewrapper_flag_re = re.compile(r'-\w*=?.*')
-    i = 1
-    while rewrapper_flag_re.search(pieces[i]):
-      i += 1
-    return pieces[i:]
-  return pieces
-
-
 def _run_clang_tidy(
   clang_tidy_binary: str,
   checks: Optional[str],
@@ -484,7 +471,6 @@ def _run_clang_tidy(
       '--',
     ]
     pieces = shlex.split(compile_command)
-    pieces = _trim_rewrapper_command(pieces)
     if use_cl_driver_mode:
       # Clang itself seems to skip these, and we need --driver-mode=cl before
       # any clang flags, so place it after.

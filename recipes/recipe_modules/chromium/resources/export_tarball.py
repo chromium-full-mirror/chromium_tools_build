@@ -28,7 +28,6 @@ import tarfile
 
 
 nonessential_dirs = (
-  'buildtools/reclient_cfgs/reproxy.cfg',  # file
   'third_party/blink/tools',
   'third_party/blink/web_tests',
   'third_party/devtools-frontend/src/third_party/rollup_libs',

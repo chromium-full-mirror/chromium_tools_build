@@ -202,7 +202,6 @@ def export_lite_tarball(api: DEPS, source_dir, version):
     purge_directories = [
       'build/linux/debian_bullseye_amd64-sysroot',
       'build/linux/debian_bullseye_i386-sysroot',
-      'buildtools/reclient',
       'third_party/angle/third_party/VK-GL-CTS',
       'third_party/apache-linux',
       'third_party/catapult/third_party/vinn/third_party/v8',

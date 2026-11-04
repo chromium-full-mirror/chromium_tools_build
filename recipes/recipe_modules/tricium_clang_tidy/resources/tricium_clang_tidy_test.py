@@ -131,9 +131,6 @@ class Tests(unittest.TestCase):
     input_json = json.dumps(
       [
         compile_command('/path/to/clang-cl.exe foo /Fo foo.o'),
-        compile_command(
-          '/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o'
-        ),
       ]
     )
 
@@ -149,14 +146,6 @@ class Tests(unittest.TestCase):
           file='foo.cc',
           directory='/dir/ect/ory',
           command='/path/to/clang-cl.exe foo /Fo foo.o',
-          is_clang_cl_command=True,
-        ),
-        tidy._CompileCommand(
-          target_name='foo-2.o',
-          file_abspath='/dir/ect/ory/foo.cc',
-          file='foo.cc',
-          directory='/dir/ect/ory',
-          command='/path/to/rewrapper.exe /path/to/clang-cl.exe foo /Fo foo-2.o',
           is_clang_cl_command=True,
         ),
       ],
@@ -1712,33 +1701,6 @@ class Tests(unittest.TestCase):
       cc_to_target_map={},
     )
     self.assertEqual(rdeps, [])
-
-  def test_trim_rewrapper_command(self):
-    commands = [
-      ['/path/to/clang++', 'foo', '-o', 'foo.o'],
-      [
-        '/path/to/rewrapper',
-        '-cfg=../../path/to/file.cfg',
-        '-other_rewrapper_flag',
-        '-exec_root=/a/b/c',
-        '/path/to/clang++',
-        'foo',
-        '-o',
-        'foo.o',
-      ],
-    ]
-
-    trimmed_commands = [
-      tidy._trim_rewrapper_command(command) for command in commands
-    ]
-
-    self.assertEqual(
-      trimmed_commands,
-      [
-        ['/path/to/clang++', 'foo', '-o', 'foo.o'],
-        ['/path/to/clang++', 'foo', '-o', 'foo.o'],
-      ],
-    )
 
 
 if __name__ == '__main__':
