@@ -225,8 +225,13 @@
     "cmd": [
       "find",
       "[CACHE]/builder/src/out",
+      "(",
       "-mtime",
       "+7",
+      "-o",
+      "-name",
+      "*.ninja",
+      ")",
       "-type",
       "f",
       "-delete"
