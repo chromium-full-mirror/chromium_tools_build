@@ -7,7 +7,9 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
+import tempfile
 import unittest
 
 import mock
@@ -904,6 +906,68 @@ class GenerateCoverageMetadataTest(unittest.TestCase):
 
     # Expection raised from num_threads() is caught and not further raised.
     generator._show_system_resource_usage(psutil_process)
+
+  @mock.patch('psutil.Process')
+  @mock.patch.object(generator, 'IS_WIN', True)
+  def test_get_raw_coverage_data_uses_response_file_on_windows(self, _):
+    with tempfile.TemporaryDirectory() as output_dir:
+      captured = {}
+
+      def fake_popen(cmd, stdout, stderr):
+        captured['cmd'] = cmd
+        captured['rsp_path'] = cmd[2][1:]
+        with open(captured['rsp_path']) as f:
+          captured['rsp_text'] = f.read()
+        stdout.write('{"data": [], "type": "llvm.coverage.json.export"}')
+        stdout.flush()
+        return mock.MagicMock(
+          pid=1, poll=lambda: 0, wait=lambda: 0, returncode=0
+        )
+
+      binaries = [r'C:\out\chrome.dll', r'C:\out\dir with space\fuzzer.exe']
+      with mock.patch('subprocess.Popen', side_effect=fake_popen):
+        generator._get_raw_coverage_data(
+          'merged.profdata',
+          r'C:\llvm-cov.exe',
+          r'C:\out',
+          binaries,
+          sources=None,
+          output_dir=output_dir,
+          exclusions=None,
+          arch=None,
+        )
+
+      self.assertEqual(
+        captured['cmd'],
+        [r'C:\llvm-cov.exe', 'export', f"@{captured['rsp_path']}"],
+      )
+      self.assertFalse(os.path.exists(captured['rsp_path']))
+      expected_tail = subprocess.list2cmdline(
+        [
+          '-instr-profile',
+          'merged.profdata',
+          binaries[0],
+          '-object',
+          binaries[1],
+        ]
+      )
+      self.assertTrue(captured['rsp_text'].endswith(expected_tail))
+
+  def test_parse_args_binaries_file(self):
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.json') as f:
+      json.dump(['/out/a.exe', '/out/b.exe'], f)
+      f.flush()
+      params = generator._parse_args(
+        [
+          '--build-dir=/out',
+          '--src-path=/src',
+          '--output-dir=/meta',
+          '--profdata-path=/p.profdata',
+          '--llvm-cov=/llvm-cov',
+          f'--binaries-file={f.name}',
+        ]
+      )
+    self.assertEqual(params.binaries, ['/out/a.exe', '/out/b.exe'])
 
 
 if __name__ == '__main__':

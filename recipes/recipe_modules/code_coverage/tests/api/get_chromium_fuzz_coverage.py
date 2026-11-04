@@ -13,6 +13,7 @@ from RECIPE_MODULES.build.chromium_tests import steps  # noqa: F401
 from RECIPE_MODULES.build.code_coverage import constants
 
 from dataclasses import dataclass
+import json
 
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
@@ -43,6 +44,26 @@ class TEST_DEPS(RecipeTestApi):
 
 
 PROPERTIES = InputProperties
+
+_NUM_WIN_FUZZERS = 940
+
+
+def _binaries_file_contains(check, step_odict, step_name, expected):
+  cmd = step_odict[step_name].cmd
+  check(json.loads(cmd[cmd.index('--binaries-file') + 1]) == expected)
+
+
+def _no_step_passes_fuzzers_on_argv(check, step_odict):
+  # In simulation, file placeholders render inline as one argv entry, so count
+  # entries: passing each fuzzer path separately would blow past the 32 KB
+  # Windows command-line limit.
+  max_argv_entries = 100  # Far below _NUM_WIN_FUZZERS (940).
+  for name, step in step_odict.items():
+    cmd = getattr(step, 'cmd', [])
+    check(
+      f'{name} argv does not scale with fuzzers',
+      len(cmd) < max_argv_entries,
+    )
 
 
 def RunSteps(api: DEPS, properties: InputProperties):
@@ -108,10 +129,12 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.StepCommandContains,
       'process fuzz coverage (overall).generate coverage metadata',
+      ['--exclusion-pattern', constants.EXCLUDED_FILE_REGEX],
+    ),
+    api.post_process(
+      _binaries_file_contains,
+      'process fuzz coverage (overall).generate coverage metadata',
       [
-        '--exclusion-pattern',
-        constants.EXCLUDED_FILE_REGEX,
-        '--binaries',
         '[START_DIR]/build/blink_unittest',
         '[START_DIR]/build/blink_unittest_fake_fuzzer',
         '[START_DIR]/build/centipede',
@@ -140,12 +163,12 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.StepCommandContains,
       'process fuzz coverage (fake_fuzzer).generate coverage metadata',
-      [
-        '--exclusion-pattern',
-        constants.EXCLUDED_FILE_REGEX,
-        '--binaries',
-        '[START_DIR]/build/fake_fuzzer',
-      ],
+      ['--exclusion-pattern', constants.EXCLUDED_FILE_REGEX],
+    ),
+    api.post_process(
+      _binaries_file_contains,
+      'process fuzz coverage (fake_fuzzer).generate coverage metadata',
+      ['[START_DIR]/build/fake_fuzzer'],
     ),
     api.post_process(
       post_process.MustRun,
@@ -184,10 +207,9 @@ def GenTests(api: TEST_DEPS):
       ],
     ),
     api.post_process(
-      post_process.StepCommandContains,
+      _binaries_file_contains,
       'process fuzz coverage (overall).generate coverage metadata',
       [
-        '--binaries',
         '[START_DIR]\\build\\chrome.dll',
         '[START_DIR]\\build\\fake_fuzzer.exe',
         '[START_DIR]\\build\\other_fuzzer.exe',
@@ -197,5 +219,20 @@ def GenTests(api: TEST_DEPS):
       post_process.MustRun,
       'process fuzz coverage (overall).gsutil Upload coverage artifacts',
     ),
+    api.post_process(DropExpectation),
+  )
+
+  # win-libfuzzer-coverage builds ~940 fuzzers; their full paths alone are
+  # well over the Windows command-line limit.
+  yield api.test(
+    'windows-many-fuzzers',
+    api.platform.name('win'),
+    api.properties(
+      targets=[
+        f'some_long_component_name_fuzzer_{i:04d}.exe'
+        for i in range(_NUM_WIN_FUZZERS)
+      ]
+    ),
+    api.post_process(_no_step_passes_fuzzers_on_argv),
     api.post_process(DropExpectation),
   )

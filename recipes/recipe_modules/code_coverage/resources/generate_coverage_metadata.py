@@ -17,7 +17,7 @@ import psutil
 import stat
 import subprocess
 import sys
-import tempfile  # noqa: F401
+import tempfile
 import time
 import zlib
 
@@ -456,6 +456,7 @@ def _get_raw_coverage_data(
   coverage_json_file = os.path.join(output_dir, 'coverage_raw.json')
   error_out_file = os.path.join(output_dir, 'llvm_cov.stderr.log')
   p = None
+  rsp_file_path = None
   try:
     with (
       open(coverage_json_file, 'w') as f_out,
@@ -480,6 +481,14 @@ def _get_raw_coverage_data(
       else:
         logging.warning('profdata file %s does not exist', profdata_path)
       logging.info('Target binaries count: %d', len(binaries))
+      if IS_WIN:
+        # Keep 'export' at argv[1]; llvm-cov dispatches subcommands before @rsp.
+        with tempfile.NamedTemporaryFile(
+          mode='w', suffix='.rsp', delete=False
+        ) as rsp_file:
+          rsp_file_path = rsp_file.name
+          rsp_file.write(subprocess.list2cmdline(args[2:]))
+        args = [args[0], args[1], f'@{rsp_file_path}']
       p = subprocess.Popen(args, stdout=f_out, stderr=f_error)
       llvm_cov_proc = None
       try:
@@ -499,8 +508,12 @@ def _get_raw_coverage_data(
 
   finally:
     # Wait for llvm in case the above code ran into uncaught exceptions.
+    returncode = None
     if p is not None:
       returncode = p.wait()
+    if rsp_file_path and os.path.exists(rsp_file_path):
+      os.remove(rsp_file_path)
+    if p is not None:
       with open(error_out_file) as error_f:
         stderr_content = error_f.read()
 
@@ -989,12 +1002,6 @@ def _parse_args(args):
     help='absolute path to llvm-cov executable',
   )
   parser.add_argument(
-    '--binaries',
-    nargs='+',
-    type=str,
-    help='absolute path to binaries to generate the coverage for',
-  )
-  parser.add_argument(
     '--dir-metadata-path',
     type=str,
     help='absolute path to json file mapping dirs to metadata',
@@ -1033,7 +1040,24 @@ def _parse_args(args):
     action='store_true',
     help='indicates whether we are generating fuzzing coverage',
   )
-  return parser.parse_args(args=args)
+  group = parser.add_mutually_exclusive_group(required=True)
+  group.add_argument(
+    '--binaries',
+    nargs='+',
+    type=str,
+    help='absolute path to binaries to generate the coverage for',
+  )
+  group.add_argument(
+    '--binaries-file',
+    type=str,
+    help='absolute path to json file listing binaries to generate the '
+    'coverage for',
+  )
+  params = parser.parse_args(args=args)
+  if params.binaries_file:
+    with open(params.binaries_file) as f:
+      params.binaries = json.load(f)
+  return params
 
 
 def _validate_params_for_code_coverage(params):

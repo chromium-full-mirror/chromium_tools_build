@@ -1490,8 +1490,9 @@ class CodeCoverageApi(recipe_api.RecipeApi):
         '--fuzz',
         '--exclusion-pattern',
         constants.EXCLUDED_FILE_REGEX,
-        '--binaries',
-        *sorted(binaries),
+        # A file keeps argv under the 32 KB Windows limit with 900+ fuzzers.
+        '--binaries-file',
+        self.m.json.input([str(b) for b in sorted(binaries)]),
       ]
       self.m.step('generate coverage metadata', cmd)
       self._persist_coverage_artifacts(
@@ -1530,8 +1531,13 @@ class CodeCoverageApi(recipe_api.RecipeApi):
     # Convert fuzzers back into GN target labels for consumption by `gn desc`
     # (e.g., `base64_encode_fuzzer` -> `//base:base64_encode_fuzzer`). Do not
     # get indirect references, which may not be fuzzers.
+    # Full paths overflow the 32 KB Windows command line; use a response file.
+    rsp_path = self.m.path.mkdtemp() / 'gn_refs_inputs.rsp'
+    self.m.file.write_text(
+      'write gn refs inputs', rsp_path, '\n'.join(map(str, sorted(binaries)))
+    )
     fuzzer_labels = self.m.gn.refs(
-      build_dir, sorted(binaries), all_deps=False, output_type='executable'
+      build_dir, [f'@{rsp_path}'], all_deps=False, output_type='executable'
     )
     for fuzzer_label in fuzzer_labels:
       # `elf_paths` contains all executables and shared objects that
