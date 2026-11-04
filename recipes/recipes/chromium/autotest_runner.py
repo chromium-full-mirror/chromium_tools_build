@@ -76,7 +76,7 @@ def run_tests(api: DEPS, properties: InputProperties, src_dir, build_dir):
     ),
   ):
     autotest_path = src_dir / "tools" / "autotest.py"
-    base_cmd = [autotest_path, "-C", build_dir, "--run-all"]
+    base_cmd = ["vpython3", autotest_path, "-C", build_dir, "--run-all"]
     for test in properties.tests:
       run_autotest(api, base_cmd, test)
 
@@ -125,6 +125,7 @@ def GenTests(api: RecipeTestApi):
       StepCommandRE,
       "run base/strings",
       [
+        "vpython3",
         ".*tools/autotest.py",
         "-C",
         ".*",
@@ -136,6 +137,7 @@ def GenTests(api: RecipeTestApi):
       StepCommandRE,
       "run pickle_unittest",
       [
+        "vpython3",
         ".*tools/autotest.py",
         "-C",
         ".*",
@@ -182,6 +184,7 @@ def GenTests(api: RecipeTestApi):
       StepCommandRE,
       "autotest: StringUtilTest.IsStringUTF8",
       [
+        "vpython3",
         ".*tools/autotest.py",
         "-C",
         ".*",
