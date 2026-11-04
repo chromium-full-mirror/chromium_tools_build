@@ -484,21 +484,6 @@ def _run_steps(api: DEPS, props):
         'out', 'target', 'product', props.product
       )
 
-  commit = _get_art_commit(api, props.repo_root)
-  gce_build_id = (
-    _get_gce_subbuild(api, props, commit) if props.gce_subbuilder else None
-  )
-
-  # When using a GCE subbuilder, the subbuilder performs the checkout and build,
-  # and the parent builder downloads the build outputs and test scripts from CAS
-  # below.
-  if not gce_build_id:
-    checkout(
-      api, props.manifest_branch or 'master-art', props.repo_root, commit
-    )
-    clobber(api)
-    setup_out(api)
-
   device_test_env = env.copy()
   if props.device:
     device_test_env.update(
@@ -518,56 +503,74 @@ def _run_steps(api: DEPS, props):
         + '%(PATH)s'
       }
     )
-  if gce_build_id:
-    gce_build = api.buildbucket.collect_build(
-      gce_build_id,
-      step_name='wait for GCE target build',
-      fields=['id', 'status', 'output.properties'],
-      raise_if_unsuccessful=True,
-      timeout=18000,  # 5 hours.
-    )
-    api.milo.show_blamelist_for(
-      [
-        dict(p)
-        for p in gce_build.output.properties[
-          '$recipe_engine/milo/blamelist_pins'
-        ]
-      ]
-    )
-    api.cas.download(
-      'download target build from CAS',
-      gce_build.output.properties['cas_digest'],
-      build_top_dir,
-    )
-    api.step(
-      'extract target build symlinks',
-      [
-        'tar',
-        '-C',
-        build_top_dir,
-        '-xf',
-        build_top_dir.joinpath('out', 'symlinks.tar'),
-      ],
-    )
-  elif props.device:
-    with api.context(env=env):
-      api.step(
-        'build target',
-        [art_tools.joinpath('buildbot-build.sh'), '--target', '--installclean'],
-      )
 
-    if props.build_only:
-      _archive_target_build(
-        api,
+  commit = _get_art_commit(api, props.repo_root)
+  if props.gce_subbuilder:
+    # When using a GCE subbuilder, the subbuilder performs the checkout and
+    # build, and the parent builder downloads the build outputs and test scripts
+    # from CAS.
+    with api.step.nest('build'):
+      gce_build_id = _get_gce_subbuild(api, props, commit)
+      gce_build = api.buildbucket.collect_build(
+        gce_build_id,
+        step_name='wait for GCE target build',
+        fields=['id', 'status', 'output.properties'],
+        raise_if_unsuccessful=True,
+        timeout=18000,  # 5 hours.
+      )
+      api.milo.show_blamelist_for(
+        [
+          dict(p)
+          for p in gce_build.output.properties[
+            '$recipe_engine/milo/blamelist_pins'
+          ]
+        ]
+      )
+      api.cas.download(
+        'download target build from CAS',
+        gce_build.output.properties['cas_digest'],
         build_top_dir,
-        props.output_directories,
+      )
+      api.step(
+        'extract target build symlinks',
+        [
+          'tar',
+          '-C',
+          build_top_dir,
+          '-xf',
+          build_top_dir.joinpath('out', 'symlinks.tar'),
+        ],
       )
   else:
-    with api.context(env=env):
-      api.step(
-        'build',
-        [art_tools.joinpath('buildbot-build.sh'), '--host', '--installclean'],
-      )
+    checkout(
+      api, props.manifest_branch or 'master-art', props.repo_root, commit
+    )
+    clobber(api)
+    setup_out(api)
+
+    if props.device:
+      with api.context(env=env):
+        api.step(
+          'build target',
+          [
+            art_tools.joinpath('buildbot-build.sh'),
+            '--target',
+            '--installclean',
+          ],
+        )
+
+      if props.build_only:
+        _archive_target_build(
+          api,
+          build_top_dir,
+          props.output_directories,
+        )
+    else:
+      with api.context(env=env):
+        api.step(
+          'build',
+          [art_tools.joinpath('buildbot-build.sh'), '--host', '--installclean'],
+        )
 
   if props.build_only:
     return
@@ -1184,7 +1187,9 @@ def GenTests(api: TEST_DEPS):
 
   def _check_subbuild_request(check, steps, ref, commit_id):
     """Checks the subbuild is pinned to a commit and won't recurse."""
-    req = json.loads(steps['schedule GCE target subbuild'].logs['request'])
+    req = json.loads(
+      steps['build.schedule GCE target subbuild'].logs['request']
+    )
     req = req['requests'][0]['scheduleBuild']
     check(req['properties'] == {'gce_subbuilder': ''})
     check(req['gitilesCommit']['ref'] == ref)
@@ -1218,7 +1223,7 @@ def GenTests(api: TEST_DEPS):
   def collect_subbuild(build_id=8922054662172514000):
     return api.buildbucket.simulated_collect_output(
       [completed_subbuild(build_id)],
-      step_name='wait for GCE target build',
+      step_name='build.wait for GCE target build',
     )
 
   def subbuild_props(**kwargs):
@@ -1307,9 +1312,9 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(),
     api.post_process(
       post_process.MustRun,
-      'wait for GCE target build',
-      'download target build from CAS',
-      'extract target build symlinks',
+      'build.wait for GCE target build',
+      'build.download target build from CAS',
+      'build.extract target build symlinks',
     ),
     api.post_process(
       post_process.DoesNotRun,
@@ -1382,11 +1387,15 @@ def GenTests(api: TEST_DEPS):
           'recipe_v2',
         ),
       ],
-      step_name='search existing GCE target build',
+      step_name='build.search existing GCE target build',
     ),
     collect_subbuild(8922054662172514004),
-    api.post_process(post_process.DoesNotRun, 'schedule GCE target subbuild'),
-    api.post_process(post_process.MustRun, 'download target build from CAS'),
+    api.post_process(
+      post_process.DoesNotRun, 'build.schedule GCE target subbuild'
+    ),
+    api.post_process(
+      post_process.MustRun, 'build.download target build from CAS'
+    ),
     api.post_process(post_process.DropExpectation),
   )
 

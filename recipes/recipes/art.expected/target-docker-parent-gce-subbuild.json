@@ -27,6 +27,10 @@
     "name": "create work dir"
   },
   {
+    "cmd": [],
+    "name": "build"
+  },
+  {
     "cmd": [
       "bb",
       "batch",
@@ -47,9 +51,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "search existing GCE target build",
+    "name": "build.search existing GCE target build",
     "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"exe,id,infra.buildbucket.agent.output.resolvedData,status,tags\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}]}}}]}",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -108,9 +113,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "schedule GCE target subbuild",
+    "name": "build.schedule GCE target subbuild",
     "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"gce_subbuilder\": \"\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -200,7 +206,10 @@
   },
   {
     "cmd": [],
-    "name": "wait for GCE target build"
+    "name": "build.wait for GCE target build",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -226,10 +235,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "wait for GCE target build.wait",
+    "name": "build.wait for GCE target build.wait",
     "timeout": 18000,
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -253,10 +262,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "wait for GCE target build.get",
+    "name": "build.wait for GCE target build.get",
     "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"id,output.properties,status\", \"id\": \"8922054662172514000\"}}]}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
       "@@@STEP_LOG_LINE@json.output@    {@@@",
@@ -329,8 +338,9 @@
   },
   {
     "cmd": [],
-    "name": "set blamelist pins",
+    "name": "build.set blamelist pins",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@SET_BUILD_PROPERTY@$recipe_engine/milo/blamelist_pins@[{\"host\": \"googleplex-android.googlesource.com\", \"id\": \"4242424242424242424242424242424242424242\", \"project\": \"platform/superproject/master\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\"}, {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb\", \"project\": \"platform/libcore\"}]@@@"
     ]
   },
@@ -359,15 +369,19 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "read infra revision",
+    "name": "build.read infra revision",
     "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
       "@@@STEP_LOG_LINE@infra.sha1@git_revision:mock_infra_git_revision@@@",
       "@@@STEP_LOG_END@infra.sha1@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "install infra/tools/luci/cas"
+    "name": "build.install infra/tools/luci/cas",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -395,9 +409,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra/tools/luci/cas.ensure package directory",
+    "name": "build.install infra/tools/luci/cas.ensure package directory",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@"
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
@@ -427,9 +441,9 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "install infra/tools/luci/cas.ensure_installed",
+    "name": "build.install infra/tools/luci/cas.ensure_installed",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
       "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
       "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
@@ -468,7 +482,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "download target build from CAS"
+    "name": "build.download target build from CAS",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -491,7 +508,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "extract target build symlinks"
+    "name": "build.extract target build symlinks",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
