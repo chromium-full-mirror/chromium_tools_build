@@ -196,12 +196,6 @@ def checkout(api: DEPS, branch, repo_root, commit):
           api.git("cherry-pick", "FETCH_HEAD")
 
 
-def clobber(api: DEPS):
-  # buildbot sets 'clobber' to the empty string which is falsey, check with 'in'
-  if 'clobber' in api.properties:
-    api.file.rmtree('clobber', api.context.cwd.joinpath('out'))
-
-
 # Calls api.cipd.ensure_tool, then modifies the path returned by the call to
 # join the subdir.
 def ensure_tool(api: DEPS, package, version, subdir=""):
@@ -545,7 +539,6 @@ def _run_steps(api: DEPS, props):
     checkout(
       api, props.manifest_branch or 'master-art', props.repo_root, commit
     )
-    clobber(api)
     setup_out(api)
 
     if props.device:
@@ -786,20 +779,6 @@ def GenTests(api: TEST_DEPS):
           ],
         },
       ],
-    ),
-  )
-
-  yield api.test(
-    'host-x86_64-opts',
-    api.buildbucket.ci_build(
-      project='art',
-    ),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-    api.properties(
-      clobber='',
     ),
   )
 
