@@ -199,6 +199,7 @@ class Generator:
         builder_group
         buildername
         buildnumber
+        ci_system
         got_cr_revision
         got_revision
         got_src_revision
@@ -236,6 +237,14 @@ class Generator:
 
     # Perform substitution of known variables.
     build = self._chromium_tests_api.m.buildbucket.build
+    # The values for ci_system are chosen to be compatible with Skia Gold's
+    # values defined in
+    # https://skia.googlesource.com/buildbot/+/refs/heads/main/golden/k8s-instances/chrome/chrome-ingestion.json5#33
+    ci_system = None
+    if build.builder.project.startswith('chrome'):
+      ci_system = 'buildbucket-internal'
+    elif build.builder.project.startswith('chromium'):
+      ci_system = 'buildbucket'
     cl = (build.input.gerrit_changes or [None])[0]
     patch_host = None
     if cl:
@@ -259,6 +268,7 @@ class Generator:
       'builder_group': self._chromium_tests_api.m.builder_group.for_current,
       'buildername': build.builder.builder,
       'buildnumber': build.number,
+      'ci_system': ci_system,
       # This is only set on Chromium when using ANGLE as a component. We
       # use the parent revision when available.
       'got_angle_revision': (

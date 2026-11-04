@@ -387,3 +387,54 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'ci_system public buildbucket',
+    api.chromium.try_build(
+      project='chromium',
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${ci_system}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['buildbucket'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'ci_system internal buildbucket',
+    api.chromium.try_build(
+      project='chrome',
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${ci_system}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['buildbucket-internal'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'ci_system other buildbucket',
+    api.chromium.try_build(
+      project='other',
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      single_spec={
+        'args': ['${ci_system}'],
+        'test': 'base_unittests',
+      },
+      expected_args=['None'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
