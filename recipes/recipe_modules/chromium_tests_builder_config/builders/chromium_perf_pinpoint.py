@@ -166,6 +166,11 @@ _AddBuildSpec(
   'android_arm64_high_end-builder-perf-pgo', 'android', target_bits=64
 )
 _AddBuildSpec(
+  'android_arm64_high_end-builder-perf-pgo-fieldtrial',
+  'android',
+  target_bits=64,
+)
+_AddBuildSpec(
   'android_arm64_high_end-builder-perf-pgo-heapdump', 'android', target_bits=64
 )
 
@@ -342,6 +347,11 @@ _AddPinpointTestSpec(
   'android-pixel6-perf-pgo',
   'android',
   'android_arm64_high_end-builder-perf-pgo',
+)
+_AddPinpointTestSpec(
+  'android-pixel10_webview-perf-pgo-fieldtrial',
+  'android',
+  'android_arm64_high_end-builder-perf-pgo-fieldtrial',
 )
 _AddPinpointTestSpec(
   'android-pixel10_webview-perf-pgo-heapdump',

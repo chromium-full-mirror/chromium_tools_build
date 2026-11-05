@@ -68,6 +68,10 @@ _PINPOINT_MAPPING = {
     'chromium.perf.pinpoint',
     'android_arm64_high_end-builder-perf-pgo',
   ),
+  'Android arm64 High End Compile Perf PGO Fieldtrial': (
+    'chromium.perf.pinpoint',
+    'android_arm64_high_end-builder-perf-pgo-fieldtrial',
+  ),
   'Android arm64 High End Compile Perf PGO Heapdump': (
     'chromium.perf.pinpoint',
     'android_arm64_high_end-builder-perf-pgo-heapdump',
