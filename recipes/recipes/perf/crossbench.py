@@ -14,7 +14,7 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import code_coverage
-from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil
+from RECIPE_MODULES.depot_tools import bot_update, gclient, gsutil, osx_sdk
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
@@ -41,6 +41,7 @@ class DEPS(RecipeScriptApi):
   file: file.API
   gclient: gclient.API
   gsutil: gsutil.API
+  osx_sdk: osx_sdk.API
   path: path.API
   platform: platform.API
   resultdb: resultdb.API
@@ -86,7 +87,7 @@ def RunSteps(api: DEPS):
 
   cas_archive = api.path.mkdtemp(_CAS_DIR_PREFIX)
   lcov_file = cas_archive / 'lcov.info'
-  with api.defer.context() as defer:
+  with api.osx_sdk('mac'), api.defer.context() as defer:
     try:
       # TODO(crbug.com/384926023): Unit tests are not ready to run on Windows
       # in CQ.
