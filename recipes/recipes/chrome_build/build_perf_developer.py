@@ -327,13 +327,16 @@ def _clean_builds(
     # Enable gn check --check-generated as an additional non-fatal step before
     # enabling by default. See crbug.com/557053937.
     # raise_on_failure=False keeps the step marked as a failure without failing
-    # the overall build.
-    api.gn.check(
-      build_dir,
-      check_generated=True,
-      step_name='gn check --check-generated',
-      raise_on_failure=False,
-    )
+    # the overall build. get_env() sets FORCE_MAC_TOOLCHAIN, which gn needs
+    # to use the hermetic Xcode on Mac.
+    # TODO(crbug.com/581653605): Use a chromium API for gn check.
+    with api.context(env=api.chromium.get_env(source_dir)):
+      api.gn.check(
+        build_dir,
+        check_generated=True,
+        step_name='gn check --check-generated',
+        raise_on_failure=False,
+      )
 
     # Missing-deps check as an additional step for continuous benchmarking
     # before enabling by default. Opt-in via the enable_missing_deps_check
