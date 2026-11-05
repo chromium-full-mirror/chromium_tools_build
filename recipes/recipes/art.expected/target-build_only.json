@@ -315,7 +315,7 @@
       "ADB": "[CACHE]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CACHE]/src",
       "ANDROID_PRODUCT_OUT": "[CACHE]/src/out/target/product/armv8",
-      "PATH": "[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CACHE]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CACHE]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {

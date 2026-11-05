@@ -534,7 +534,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -560,7 +560,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -585,7 +585,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -618,7 +618,7 @@
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
       "ART_TEST_NO_SYNC": "true",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "local_auth": {},
@@ -648,7 +648,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -673,7 +673,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -700,7 +700,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -725,7 +725,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {
@@ -750,7 +750,7 @@
       "ADB": "[CLEANUP]/src/prebuilts/runtime/adb",
       "ANDROID_BUILD_TOP": "[CLEANUP]/src",
       "ANDROID_PRODUCT_OUT": "[CLEANUP]/src/out/target/product/armv8",
-      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/jdk/jdk17/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
+      "PATH": "[CLEANUP]/src/out/host/linux-x86/bin:[CLEANUP]/src/prebuilts/runtime:<PATH>"
     },
     "luci_context": {
       "realm": {

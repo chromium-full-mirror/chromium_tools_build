@@ -209,7 +209,7 @@
     "cwd": "[CACHE]/src",
     "env": {
       "ANDROID_BUILD_TOP": "[CACHE]/src",
-      "PATH": "[CACHE]/src/out/host/linux-x86/bin:[CACHE]/src/prebuilts/jdk/jdk17/linux-x86/bin:<PATH>"
+      "PATH": "[CACHE]/src/out/host/linux-x86/bin:<PATH>"
     },
     "name": "build"
   },

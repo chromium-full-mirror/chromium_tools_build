@@ -419,10 +419,6 @@ def _run_steps(api: DEPS, props):
       'ANDROID_BUILD_TOP': build_top_dir,
       'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
       + api.path.pathsep
-      + str(
-        build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin')
-      )
-      + api.path.pathsep
       + '%(PATH)s',
     }
   )
@@ -458,7 +454,6 @@ def _run_steps(api: DEPS, props):
 
   if props.device:
     path_dirs = [
-      build_top_dir.joinpath('prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'),
       # Add adb to the path.
       build_top_dir.joinpath('prebuilts', 'runtime'),
     ]
@@ -483,12 +478,6 @@ def _run_steps(api: DEPS, props):
     device_test_env.update(
       {
         'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
-        + api.path.pathsep
-        + str(
-          build_top_dir.joinpath(
-            'prebuilts', 'jdk', 'jdk17', 'linux-x86', 'bin'
-          )
-        )
         + api.path.pathsep
         +
         # Add adb in the path.
