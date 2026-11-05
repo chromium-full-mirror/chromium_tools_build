@@ -1230,6 +1230,11 @@ class V8Api(recipe_api.RecipeApi):
     ):
       return
 
+    # Bisection relies on isolate hashes uploaded by production builders,
+    # which don't exist on the dev instance.
+    if self.is_dev_server:
+      return
+
     # Only bisect over failures not flakes. Rerun only the fastest test.
     try:
       failure = min(test_results.failures, key=lambda r: r.duration)

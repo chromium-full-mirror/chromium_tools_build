@@ -726,6 +726,36 @@ def GenTests(api: TEST_DEPS):
     + api.time.step(120)
   )
 
+  # As above but on the LUCI dev instance, where bisection is disabled as
+  # no isolate hashes are available.
+  dev_tester_build_msg = api.buildbucket.ci_build_message(
+    project='v8',
+    git_repo='https://chromium.googlesource.com/v8/v8',
+    builder='V8 Foobar',
+    build_number=571,
+    revision='deadbeef' * 5,
+  )
+  dev_tester_build_msg.infra.buildbucket.hostname = (
+    'cr-buildbucket-dev.appspot.com'
+  )
+  yield (
+    api.v8.test(
+      'client.v8',
+      'V8 Foobar',
+      'bisect_tester_swarming_dev',
+      parent_buildername='V8 Foobar - builder',
+      parent_bot_config=linux_bot_config,
+      parent_test_spec=test_spec,
+      status='FAILURE',
+    )
+    + api.buildbucket.build(dev_tester_build_msg)
+    + api.v8_tests.fail('Check')
+    + api.time.step(120)
+    + api.post_process(MustRun, 'Check')
+    + api.post_process(DoesNotRunRE, r'Bisect.*')
+    + api.post_process(DropExpectation)
+  )
+
   # Disable bisection due to a recurring failure. Steps:
   # Bisect a0 -> failures.
   yield (
