@@ -5,10 +5,8 @@
 
 Launched by chromium/rts_complement_trigger, one build per CQ build. It works
 like chromium/orchestrator without the compile: instead of triggering a
-compilator build, it reads the CQ build (cq_build_id) and the outputs of its
-with patch compilator build (compilator_build_id). The builder config is the
-one the CQ build used, the trigger copies it from that compilator build to this
-build's $build/chromium_tests_builder_config.
+compilator build, it reads the CQ build (cq_build_id), resolves its with-patch
+SUCCESS compilator child build, and reads that compilator build's outputs.
 
 Reuses chromium_orchestrator.configure_build() and
 chromium_orchestrator.process_sub_build().
@@ -26,6 +24,9 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb
+from PB.recipe_modules.build.chromium_orchestrator import (
+  properties as orchestrator_pb,
+)
 from PB.recipes.build.chromium.rts_complement_runner import InputProperties
 from RECIPE_MODULES.build import (
   chromium,
@@ -122,10 +123,11 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
     cq_build = api.buildbucket.get(
       props.cq_build_id,
       step_name='read CQ build',
-      fields={'id', 'builder', 'output.properties'},
+      fields={'id', 'builder'},
     )
+    # The compilator builder name comes from the CQ builder's properties.
     compilator_build = api.buildbucket.get(
-      props.compilator_build_id,
+      api.chromium_orchestrator.find_compilator_build_id(cq_build),
       step_name='read compilator build',
       fields={
         'id',
@@ -176,8 +178,13 @@ def GenTests(api: TEST_DEPS):
         )
         .assemble()
       )
+      + api.properties(InputProperties(cq_build_id=1000))
       + api.properties(
-        InputProperties(cq_build_id=1000, compilator_build_id=2000)
+        **{
+          '$build/chromium_orchestrator': orchestrator_pb.InputProperties(
+            compilator='win-rel-compilator'
+          )
+        }
       )
     )
 
@@ -210,9 +217,10 @@ def GenTests(api: TEST_DEPS):
       ),
     )
     build.output.properties.update(output_properties)
-    return api.buildbucket.simulated_get(
-      build, step_name='read compilator build'
-    )
+    return api.buildbucket.simulated_search_results(
+      [build_pb.Build(id=2000, status=common_pb.SUCCESS)],
+      step_name='find compilator build',
+    ) + api.buildbucket.simulated_get(build, step_name='read compilator build')
 
   yield api.test(
     'basic',
@@ -237,6 +245,18 @@ def GenTests(api: TEST_DEPS):
     compilator_build(include_swarming_props=False),
     api.post_check(post_process.DoesNotRun, 'create complement tests (stub)'),
     api.post_check(post_process.SummaryMarkdown, 'compilator summary'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'missing_compilator',
+    runner_build(),
+    cq_build(),
+    api.buildbucket.simulated_search_results(
+      [], step_name='find compilator build'
+    ),
+    api.post_check(post_process.DoesNotRun, 'read compilator build'),
+    api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 

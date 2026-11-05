@@ -7,9 +7,9 @@ syntax = "proto3";
 package recipes.build.chromium.rts_complement_runner;
 
 message InputProperties {
+  reserved 2;
+  reserved "compilator_build_id";
+
   // The CQ orchestrator build whose RTS skipped tests are run.
   int64 cq_build_id = 1;
-
-  // The with patch compilator build of that CQ build.
-  int64 compilator_build_id = 2;
 }

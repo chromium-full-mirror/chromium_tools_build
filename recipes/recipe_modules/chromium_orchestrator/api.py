@@ -12,6 +12,9 @@ from recipe_engine.config_types import Path
 from recipe_engine.engine_types import thaw
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb2
+from PB.go.chromium.org.luci.buildbucket.proto import (
+  builds_service as builds_service_pb2,
+)
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
@@ -497,6 +500,42 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     self.m.chromium.apply_config('trybot_flavor')
     return builder_id, builder_config
+
+  def find_compilator_build_id(
+    self, orchestrator_build: build_pb2.Build
+  ) -> int:
+    """Returns the ID of an orchestrator build's with-patch compilator build.
+
+    The with-patch compilator is the earliest compilator child build, since
+    test_patch() triggers it before any without-patch compilator. Raises
+    InfraFailure if it is missing or did not succeed.
+    """
+    if not self.compilator:
+      raise self.m.step.InfraFailure('Missing compilator input')
+    builds = self.m.buildbucket.search(
+      builds_service_pb2.BuildPredicate(
+        # _trigger_compilator() schedules it in the orchestrator's bucket.
+        builder=dict(
+          project=orchestrator_build.builder.project,
+          bucket=orchestrator_build.builder.bucket,
+          builder=self.compilator,
+        ),
+        child_of=orchestrator_build.id,
+      ),
+      step_name='find compilator build',
+      fields={'id', 'create_time', 'status'},
+    )
+    if not builds:
+      raise self.m.step.InfraFailure(
+        f'No {self.compilator} build found for build {orchestrator_build.id}'
+      )
+    build = min(builds, key=lambda b: (b.create_time.ToNanoseconds(), -b.id))
+    if build.status != common_pb.SUCCESS:
+      raise self.m.step.InfraFailure(
+        f'With-patch {self.compilator} build {build.id} for build'
+        f' {orchestrator_build.id} did not succeed'
+      )
+    return build.id
 
   _EXPERIMENTS_TO_FORWARD = {
     'chromium.enable_cleandead',
