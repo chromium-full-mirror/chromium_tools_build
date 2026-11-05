@@ -7,8 +7,14 @@ from __future__ import annotations
 import json
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.lucictx import sections as sections_pb2
 from PB.recipe_engine import result as result_pb2
-from recipe_engine.post_process import DropExpectation, LogContains, StepFailure
+from recipe_engine.post_process import (
+  DoesNotRun,
+  DropExpectation,
+  LogContains,
+  StepFailure,
+)
 
 from dataclasses import dataclass
 
@@ -18,6 +24,7 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import v8_tests
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
+  context,
   json as json_module,
   path,
   properties,
@@ -40,6 +47,7 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
+  context: context.TEST_API
   json: json_module.TEST_API
   properties: properties.TEST_API
   swarming: swarming.TEST_API
@@ -99,6 +107,25 @@ def GenTests(api: TEST_DEPS):
       'trigger tests.[trigger] Test262 on Ubuntu-16.04',
       'json.input',
       ['"--extra-flags=--flag",'],
+    ),
+    api.post_process(DropExpectation),
+  )
+
+  # Builders without ResultDB integration (e.g. on the dev infrastructure)
+  # must neither wrap the test command with rdb nor include invocations.
+  yield api.test(
+    'resultdb_disabled',
+    api.buildbucket.try_build(project='v8'),
+    api.context.luci_context(resultdb=sections_pb2.ResultDB()),
+    api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+    api.post_process(
+      api.swarming.check_triggered_request,
+      'trigger tests.[trigger] Check on Ubuntu-16.04',
+      lambda check, req: check(not req.resultdb.enable),
+      lambda check, req: check('rdb' not in req[0].command),
+    ),
+    api.post_process(
+      DoesNotRun, 'trigger tests.resultdb.update_included_invocations'
     ),
     api.post_process(DropExpectation),
   )

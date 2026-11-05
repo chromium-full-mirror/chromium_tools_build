@@ -279,7 +279,10 @@ class BaseTest:
     task = self.api.chromium_swarming.task(
       cas_input_root=cas_digest, raw_cmd=raw_cmd, **kwargs
     )
-    if self.api.v8_tests.resultdb:
+    # Only integrate with ResultDB if the current build has an invocation,
+    # i.e. ResultDB is enabled for the builder. This is e.g. not the case on
+    # the dev infrastructure.
+    if self.api.resultdb.enabled:
       request = task.request.with_resultdb()
       wrapperd_cmd = self.api.v8_tests.resultdb.wrap(
         self.api,
@@ -525,10 +528,11 @@ def _trigger_swarming_task(api, task, test_step_config):
 
   api.chromium_swarming.trigger_task(task)
 
-  # Remove 'invocations/' because it is added again in include_invocations.
-  api.resultdb.include_invocations(
-    [i[len('invocations/') :] for i in task.get_invocation_names()]
-  )
+  if api.resultdb.enabled:
+    # Remove 'invocations/' because it is added again in include_invocations.
+    api.resultdb.include_invocations(
+      [i[len('invocations/') :] for i in task.get_invocation_names()]
+    )
 
 
 def override_swarming_attrs(task, task_slice, attrs):
