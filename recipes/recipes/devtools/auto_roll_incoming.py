@@ -51,6 +51,7 @@ CONFIG = {
     "third_party/chrome/chrome-mac-x64",
     "third_party/chrome/chrome-win",
     "third_party/cmake",
+    "third_party/emscripten-releases",
     "third_party/esbuild",
   ],
   "show_commit_log": False,
