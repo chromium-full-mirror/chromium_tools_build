@@ -25,6 +25,9 @@ _TIME_CMD = '/usr/bin/time'
 _MAX_COMPILE_FAILURES = 'Max-Compile-Failures'
 _MISSING_DEPS = 'Missing-Deps'
 
+_WEIGHTS_CIPD_PACKAGE = 'build/siso/experimental/weights'
+_DEFAULT_WEIGHTS_VERSION = 'version:stage1-v3-reordered-rules'
+
 # Resource usage format for time command.
 # See also the documents of time and getrusage:
 # https://www.man7.org/linux/man-pages/man1/time.1.html#:~:text=U%0A%20%20%20%20%20%20%20%20%20%20%20sys%20%25S-,The%20format%20string,-The%20format%20is
@@ -575,6 +578,18 @@ class SisoApi(recipe_api.RecipeApi):
   def check_version(self, source_dir: Path):
     """Print Siso version info"""
     self.m.step('check siso version', [self.siso_path(source_dir), 'version'])
+
+  def ensure_weights(
+    self, target_platform: str, version: str = _DEFAULT_WEIGHTS_VERSION
+  ) -> Path:
+    """Download the experimental Siso step weights CIPD package and return the
+    platform-specific weights file path.
+    """
+    weights_dir = self.m.path.cache_dir / 'siso_weights'
+    ensure_file = self.m.cipd.EnsureFile()
+    ensure_file.add_package(_WEIGHTS_CIPD_PACKAGE, version)
+    self.m.cipd.ensure(weights_dir, ensure_file, name='ensure siso weights')
+    return weights_dir / f'weights_{target_platform}.json.gz'
 
   def siso_path(self, source_dir: Path):
     """Retrieve siso path without executions."""

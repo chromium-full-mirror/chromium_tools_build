@@ -69,6 +69,8 @@ def RunSteps(api: DEPS):
       api.path.join('out', 'Release', 'siso_metrics.json')
     )
     api.siso.check_version(source_dir)
+    if ensure_weights_platform := api.properties.get('ensure_weights_platform'):
+      api.siso.ensure_weights(ensure_weights_platform)
     api.siso.run_ninja(
       source_dir,
       ninja_command=api.properties.get('build_command'),
@@ -633,6 +635,28 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       lambda check, steps: check('-namespace' not in steps['compile'].cmd)
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'ensure_weights',
+    api.properties(
+      build_command=['ninja', '-C', 'out/Release'],
+      ensure_weights_platform='linux',
+    ),
+    api.siso.properties(),
+    api.post_process(
+      post_process.StepCommandContains,
+      'ensure siso weights',
+      [
+        'cipd',
+        'ensure',
+        '-root',
+        '[CACHE]/siso_weights',
+        '-ensure-file',
+        'build/siso/experimental/weights version:stage1-v3-reordered-rules',
+      ],
     ),
     api.post_process(post_process.DropExpectation),
   )

@@ -105,6 +105,7 @@ def _clean_builds(
   build_dir: Path,
   target: str,
   enable_missing_deps_check: bool,
+  weights_file: Path | None = None,
 ):
   # Do not run clean build for CI benchmarking since it's too slow for
   # small -remote_jobs value.
@@ -120,6 +121,7 @@ def _clean_builds(
       target,
       phase='builtin',
       enable_missing_deps_check=enable_missing_deps_check,
+      weights_file=weights_file,
     )
 
 
@@ -128,6 +130,7 @@ def _incremental_build_with_one_hour_changes(
   source_dir: Path,
   default_build_dir: Path,
   target,
+  weights_file: Path | None = None,
 ):
   """Steps to run an incremental build with 1-hour of changes
   to simulate CI/CQ builder's incremental builds.
@@ -176,6 +179,22 @@ def _incremental_build_with_one_hour_changes(
     )
     _raise_raw_result_on_failure(api, raw_result)
 
+    weights_build_dir = default_build_dir.parent / 'siso_weights'
+    if weights_file:
+      api.chromium_build_perf.recreate_build_dir(
+        source_dir, weights_build_dir, phase='builtin', remove_deps_cache=True
+      )
+      api.chromium_build_perf.build_with_siso(
+        source_dir,
+        weights_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=(
+          " with Siso with step-weights at base revision (warmup)"
+        ),
+        siso_args=[f'-weights_file={weights_file}'],
+      )
+
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
@@ -184,6 +203,16 @@ def _incremental_build_with_one_hour_changes(
       source_dir, default_build_dir, target, with_remote_cache=True
     )
     _raise_raw_result_on_failure(api, raw_result)
+
+    if weights_file:
+      api.chromium_build_perf.build_with_siso(
+        source_dir,
+        weights_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=' with Siso with step-weights',
+        siso_args=[f'-weights_file={weights_file}'],
+      )
 
 
 def _run_clean_builds(
@@ -194,6 +223,7 @@ def _run_clean_builds(
   phase,
   step_name_suffix=None,
   enable_missing_deps_check=False,
+  weights_file: Path | None = None,
 ):
   # First build without remote cache.
   api.chromium_build_perf.recreate_build_dir(
@@ -263,6 +293,31 @@ def _run_clean_builds(
       siso_args=['-missing_deps=error'],
     )
 
+  if weights_file:
+    api.chromium_build_perf.recreate_build_dir(
+      source_dir, build_dir, phase=phase, remove_deps_cache=True
+    )
+    api.chromium_build_perf.build_with_siso(
+      source_dir,
+      build_dir,
+      target,
+      with_remote_cache=False,
+      step_name_suffix=" with Siso with step-weights",
+      siso_args=[f"-weights_file={weights_file}"],
+    )
+
+    api.chromium_build_perf.recreate_build_dir(
+      source_dir, build_dir, phase=phase
+    )
+    api.chromium_build_perf.build_with_siso(
+      source_dir,
+      build_dir,
+      target,
+      with_remote_cache=True,
+      step_name_suffix=" with Siso with step-weights",
+      siso_args=[f"-weights_file={weights_file}"],
+    )
+
 
 def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
@@ -288,6 +343,10 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
 
   api.step('check siso version', [api.siso.siso_path(source_dir), 'version'])
 
+  weights_file = None
+  if props.enable_step_weights:
+    weights_file = api.siso.ensure_weights(api.chromium.c.TARGET_PLATFORM)
+
   target = 'all'
   _clean_builds(
     api,
@@ -295,9 +354,12 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
     build_dir,
     target,
     enable_missing_deps_check=props.enable_missing_deps_check,
+    weights_file=weights_file,
   )
 
-  _incremental_build_with_one_hour_changes(api, source_dir, build_dir, target)
+  _incremental_build_with_one_hour_changes(
+    api, source_dir, build_dir, target, weights_file=weights_file
+  )
 
   # Remove the out dir to reduce the builder cache size.
   out_dir = build_dir.parent
@@ -326,10 +388,29 @@ def GenTests(api: TEST_DEPS):
       ).assemble()
     ),
     api.properties(
-      build_perf_pb.InputProperties(enable_missing_deps_check=True)
+      build_perf_pb.InputProperties(
+        enable_missing_deps_check=True,
+        enable_step_weights=True,
+      )
     ),
     api.siso.properties(),
     api.code_coverage(use_clang_coverage=True),
+    api.post_process(
+      post_process.StepCommandContains,
+      "Clean builds.Build all without remote cache with Siso with step-weights",
+      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      "Clean builds.Build all with remote cache with Siso with step-weights",
+      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      "Incremental build with 1-hour of changes.Build all with remote cache "
+      "with Siso with step-weights",
+      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+    ),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -350,6 +431,19 @@ def GenTests(api: TEST_DEPS):
       post_process.DoesNotRun,
       'Clean builds.Build all with remote cache with Siso with '
       'missing-deps check',
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      "Clean builds.Build all without remote cache with Siso with step-weights",
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      "Clean builds.Build all with remote cache with Siso with step-weights",
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      "Incremental build with 1-hour of changes.Build all with remote cache "
+      "with Siso with step-weights",
     ),
     api.post_process(post_process.DropExpectation),
   )
