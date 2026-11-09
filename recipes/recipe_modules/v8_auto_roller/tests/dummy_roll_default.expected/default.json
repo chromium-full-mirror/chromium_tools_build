@@ -544,6 +544,8 @@
       "dummy:123",
       "--cc",
       "nobody",
+      "--reviewers",
+      "reviewer@example.com",
       "--dry-run"
     ],
     "cwd": "[CACHE]/builder/dummy",

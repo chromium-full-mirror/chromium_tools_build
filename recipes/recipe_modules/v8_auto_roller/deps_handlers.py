@@ -61,10 +61,12 @@ class UntrustedRollHandler(DEPSRollHandler):
   def name(self):
     return 'reviewed'
 
+  def reviewers(self):
+    return self.config.get('manual_roll_reviewers')
+
   def commit_msg_lines(self, changes):
-    return commons.commit_msg_lines_w_reviewes(
+    return commons.manual_review_commit_msg_lines(
       super().commit_msg_lines(changes),
-      self.config.get('manual_roll_reviewers'),
     )
 
 

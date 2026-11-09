@@ -42,6 +42,7 @@ class RollHandler(ABC):
             upload_flags=self.upload_flags(),
             commit_msg_lines=commit_msg_lines,
             add=self.add_new_files,
+            reviewers=self.reviewers(),
           )
           if cl_link:
             step.links['CL'] = cl_link
@@ -76,6 +77,9 @@ class RollHandler(ABC):
   def upload_flags(self):
     return ['--dry-run']
 
+  def reviewers(self):
+    return []
+
   @abstractmethod
   def commit_msg_lines(self, changes):
     pass  # pragma: no cover
@@ -108,3 +112,6 @@ class DummyRollHandler(RollHandler):
 
   def commit_msg_footers(self):
     return ['', 'Key: dummy']
+
+  def reviewers(self):
+    return ['reviewer@example.com']

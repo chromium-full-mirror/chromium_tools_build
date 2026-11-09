@@ -93,14 +93,16 @@ class Test262ImportHandler(RollHandler):
       step_name, script, args, stdout=self.api.raw_io.output_text()
     ).stdout.splitlines()
 
+  def reviewers(self):
+    return self.config.get('manual_roll_reviewers')
+
   def commit_msg_lines(self, _):
-    return commons.commit_msg_lines_w_reviewes(
+    return commons.manual_review_commit_msg_lines(
       [
         self.import_range,
         commons.roll_origin_line(self.api),
         'no-export: true',
       ],
-      self.config.get('manual_roll_reviewers'),
     )
 
   def upload_flags(self):

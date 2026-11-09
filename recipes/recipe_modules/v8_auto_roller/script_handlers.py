@@ -107,6 +107,9 @@ class ScriptedRollHandler(RollHandler):
   def get_subject(self):
     return f'Roll {self.key}'
 
+  def reviewers(self):
+    return self.config.get('manual_roll_reviewers')
+
   def commit_msg_lines(self, _):
     message = self.script.message
     if self.output_file and self.api.path.exists(self.output_file):
@@ -114,9 +117,8 @@ class ScriptedRollHandler(RollHandler):
         'Read roll output', self.output_file
       )
       message = message.format(**output_properties)
-    return commons.commit_msg_lines_w_reviewes(
+    return commons.manual_review_commit_msg_lines(
       [message, commons.roll_origin_line(self.api)],
-      self.config.get('manual_roll_reviewers'),
     )
 
   def summary(self):

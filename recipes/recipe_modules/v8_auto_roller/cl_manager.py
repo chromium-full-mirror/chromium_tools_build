@@ -21,7 +21,9 @@ class CLManager:
     self.gerrit_base_url = gerrit_base_url
     self.cc = cc
 
-  def upload_cl(self, subject, upload_flags, commit_msg_lines, add=False):
+  def upload_cl(
+    self, subject, upload_flags, commit_msg_lines, add=False, reviewers=None
+  ):
     """
     Verify that the local checkout is dirty, commit changes and upload a CL with
     the given subject and reviewers. If the local checkout is not dirty, we do
@@ -72,6 +74,8 @@ class CLManager:
         upload_args += ['-b', self.bugs]
       if self.cc is not None:
         upload_args += ['--cc', self.cc]
+      if reviewers:
+        upload_args += ['--reviewers', ','.join(reviewers)]
 
       upload_args.extend(upload_flags)
       step_result = self.api.git(

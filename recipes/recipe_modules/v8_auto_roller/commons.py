@@ -7,18 +7,13 @@ from __future__ import annotations
 import re  # noqa: F401
 
 
-def commit_msg_lines_w_reviewes(commit_msg_lines, reviewers):
-  lines = [
+def manual_review_commit_msg_lines(commit_msg_lines):
+  return [
     (
       'This roll requires a manual review. See http://go/reviewed-rolls for '
       'guidance.'
     )
   ] + commit_msg_lines
-
-  if reviewers:
-    lines.append(f'R={",".join(reviewers)}')
-
-  return lines
 
 
 def roll_origin_line(api):
