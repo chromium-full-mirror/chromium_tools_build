@@ -434,6 +434,8 @@ def _clean_builds(
         siso_args=[f"-weights_file={weights_file}"],
       )
 
+    api.file.rmtree(f"rmtree {build_dir}", build_dir)
+
 
 def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   # Set up a named cache so runhooks doesn't redownload everything on each run.
@@ -466,27 +468,30 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   if builder_config.android_config:
     target = 'chrome_public_apk'
 
-  # Clean builds.
-  _clean_builds(
-    api,
-    source_dir,
-    build_dir,
-    target,
-    enable_missing_deps_check=props.enable_missing_deps_check,
-    weights_file=weights_file,
-  )
+  out_dir = build_dir.parent
+  api.file.rmtree(f"rmtree {out_dir}", out_dir)
+  try:
+    # Clean builds.
+    _clean_builds(
+      api,
+      source_dir,
+      build_dir,
+      target,
+      enable_missing_deps_check=props.enable_missing_deps_check,
+      weights_file=weights_file,
+    )
 
-  # Incremental build with 1-day of changes. a.k.a morning build.
-  _incremental_build_with_one_day_changes(
-    api, source_dir, build_dir, target, weights_file=weights_file
-  )
+    # Incremental build with 1-day of changes. a.k.a morning build.
+    _incremental_build_with_one_day_changes(
+      api, source_dir, build_dir, target, weights_file=weights_file
+    )
 
-  _incremental_builds_with_patch(
-    api, source_dir, build_dir, target, weights_file=weights_file
-  )
-
-  # Remove the out dir to reduce the builder cache size.
-  api.file.rmtree('rmtree %s' % str(build_dir), str(build_dir))
+    _incremental_builds_with_patch(
+      api, source_dir, build_dir, target, weights_file=weights_file
+    )
+  finally:
+    # Remove the out dir to reduce the builder cache size.
+    api.file.rmtree(f"rmtree {out_dir}", out_dir)
 
 
 def GenTests(api: TEST_DEPS):
@@ -698,5 +703,9 @@ def GenTests(api: TEST_DEPS):
       retcode=1,
     ),
     api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.MustRun,
+      "rmtree [CACHE]/builder/src/out (2)",
+    ),
     api.post_process(post_process.DropExpectation),
   )

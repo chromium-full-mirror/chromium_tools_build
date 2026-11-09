@@ -179,22 +179,6 @@ def _incremental_build_with_one_hour_changes(
     )
     _raise_raw_result_on_failure(api, raw_result)
 
-    weights_build_dir = default_build_dir.parent / 'siso_weights'
-    if weights_file:
-      api.chromium_build_perf.recreate_build_dir(
-        source_dir, weights_build_dir, phase='builtin', remove_deps_cache=True
-      )
-      api.chromium_build_perf.build_with_siso(
-        source_dir,
-        weights_build_dir,
-        target,
-        with_remote_cache=True,
-        step_name_suffix=(
-          " with Siso with step-weights at base revision (warmup)"
-        ),
-        siso_args=[f'-weights_file={weights_file}'],
-      )
-
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
@@ -205,13 +189,29 @@ def _incremental_build_with_one_hour_changes(
     _raise_raw_result_on_failure(api, raw_result)
 
     if weights_file:
+      api.chromium_build_perf.checkout(source_dir, default_build_dir, base_rev)
+      api.chromium_build_perf.recreate_build_dir(
+        source_dir, default_build_dir, phase="builtin", remove_deps_cache=True
+      )
       api.chromium_build_perf.build_with_siso(
         source_dir,
-        weights_build_dir,
+        default_build_dir,
         target,
         with_remote_cache=True,
-        step_name_suffix=' with Siso with step-weights',
-        siso_args=[f'-weights_file={weights_file}'],
+        step_name_suffix=(
+          " with Siso with step-weights at base revision (warmup)"
+        ),
+        siso_args=[f"-weights_file={weights_file}"],
+      )
+
+      api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
+      api.chromium_build_perf.build_with_siso(
+        source_dir,
+        default_build_dir,
+        target,
+        with_remote_cache=True,
+        step_name_suffix=" with Siso with step-weights",
+        siso_args=[f"-weights_file={weights_file}"],
       )
 
 
@@ -347,23 +347,25 @@ def RunSteps(api: DEPS, props: build_perf_pb.InputProperties):
   if props.enable_step_weights:
     weights_file = api.siso.ensure_weights(api.chromium.c.TARGET_PLATFORM)
 
-  target = 'all'
-  _clean_builds(
-    api,
-    source_dir,
-    build_dir,
-    target,
-    enable_missing_deps_check=props.enable_missing_deps_check,
-    weights_file=weights_file,
-  )
-
-  _incremental_build_with_one_hour_changes(
-    api, source_dir, build_dir, target, weights_file=weights_file
-  )
-
-  # Remove the out dir to reduce the builder cache size.
   out_dir = build_dir.parent
-  api.file.rmtree('rmtree %s' % str(out_dir), str(out_dir))
+  api.file.rmtree(f"rmtree {out_dir}", out_dir)
+  try:
+    target = "all"
+    _clean_builds(
+      api,
+      source_dir,
+      build_dir,
+      target,
+      enable_missing_deps_check=props.enable_missing_deps_check,
+      weights_file=weights_file,
+    )
+
+    _incremental_build_with_one_hour_changes(
+      api, source_dir, build_dir, target, weights_file=weights_file
+    )
+  finally:
+    # Remove the out dir to reduce the builder cache size.
+    api.file.rmtree(f"rmtree {out_dir}", out_dir)
 
 
 def GenTests(api: TEST_DEPS):
@@ -408,8 +410,23 @@ def GenTests(api: TEST_DEPS):
     api.post_process(
       post_process.StepCommandContains,
       "Incremental build with 1-hour of changes.Build all with remote cache "
+      "with Siso with step-weights at base revision (warmup)",
+      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      "Incremental build with 1-hour of changes.Build all with remote cache "
       "with Siso with step-weights",
       ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      "Incremental build with 1-hour of changes.rmtree "
+      "[CACHE]/builder/src/out/siso_weights",
+    ),
+    api.post_process(
+      post_process.MustRun,
+      "rmtree [CACHE]/builder/src/out (2)",
     ),
     api.post_process(post_process.DropExpectation),
   )
@@ -522,5 +539,9 @@ def GenTests(api: TEST_DEPS):
     api.siso.properties(),
     api.step_data('Clean builds.Build all without remote cache', retcode=1),
     api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.MustRun,
+      "rmtree [CACHE]/builder/src/out (2)",
+    ),
     api.post_process(post_process.DropExpectation),
   )
