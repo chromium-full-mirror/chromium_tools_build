@@ -84,11 +84,14 @@ def RunSteps(api: DEPS):
     soln.custom_vars['checkout_internal'] = True
   api.gclient.c = c
 
-  with api.context(cwd=api.path.cache_dir):
+  builder_dir = api.path.cache_dir / 'builder'
+  api.file.ensure_directory('ensure builder dir', builder_dir)
+
+  with api.context(cwd=builder_dir):
     result = api.bot_update.ensure_checkout()
     kzip_name = '%s.kzip' % result.properties['got_revision']
 
-  checkout_dir = api.path.cache_dir / 'infra_superproject'
+  checkout_dir = builder_dir / 'infra_superproject'
 
   # Hardcode the active Go modules inside the superproject. We do this because
   # recursive globbing (walking the entire tree) takes extremely long
@@ -441,24 +444,27 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.dirs_exist(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject/infra',
-      api.path.cache_dir / 'infra_superproject/recipes-py',
-      api.path.cache_dir / 'infra_superproject/.git',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir / 'builder/infra_superproject/infra',
+      api.path.cache_dir / 'builder/infra_superproject/recipes-py',
+      api.path.cache_dir / 'builder/infra_superproject/.git',
     ),
     api.path.exists(
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
-      api.path.cache_dir / 'infra_superproject/infra/go/src/infra/go.mod',
-      api.path.cache_dir / 'infra_superproject/infra/infra/config/recipes.cfg',
-      api.path.cache_dir / 'infra_superproject/infra/recipes/recipes.py',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject/infra/go/src/infra/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject/infra/infra/config/recipes.cfg',
+      api.path.cache_dir
+      / 'builder/infra_superproject/infra/recipes/recipes.py',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/chromiumos/config/go
@@ -467,7 +473,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/chromiumos/infra/proto/go
@@ -476,7 +482,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/luci
@@ -489,7 +495,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -542,9 +548,9 @@ def GenTests(api: TEST_DEPS):
       'fetch recipe deps for infra',
       [
         'vpython3',
-        '[CACHE]/infra_superproject/infra/recipes/recipes.py',
+        '[CACHE]/builder/infra_superproject/infra/recipes/recipes.py',
         '-O',
-        'recipe_engine=[CACHE]/infra_superproject/recipes-py',
+        'recipe_engine=[CACHE]/builder/infra_superproject/recipes-py',
         'fetch',
       ],
     ),
@@ -602,20 +608,21 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.dirs_exist(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject/infra',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir / 'builder/infra_superproject/infra',
     ),
     api.path.exists(
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       api.path.cache_dir
-      / 'infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
-      api.path.cache_dir / 'infra_superproject/infra/go/src/infra/go.mod',
+      / 'builder/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject/infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/config/go/src/go.chromium.org/chromiumos/config/go/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/chromiumos/config/go
@@ -624,7 +631,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/chromiumos/infra/proto/go/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/chromiumos/infra/proto/go
@@ -633,7 +640,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/go.chromium.org/luci/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/luci
@@ -646,7 +653,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -679,11 +686,13 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -721,11 +730,13 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               go 1.26.1
@@ -750,11 +761,13 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -779,11 +792,13 @@ def GenTests(api: TEST_DEPS):
     ),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -811,14 +826,16 @@ def GenTests(api: TEST_DEPS):
     + api.properties(internal=True),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
       api.path.cache_dir
-      / 'infra_superproject'
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
       / 'infra_internal/go/src/infra_internal/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -827,7 +844,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module infra_internal
@@ -880,11 +897,13 @@ def GenTests(api: TEST_DEPS):
     + api.properties(internal=True),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -906,14 +925,16 @@ def GenTests(api: TEST_DEPS):
     + api.properties(internal=True),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
       api.path.cache_dir
-      / 'infra_superproject'
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
       / 'infra_internal/go/src/infra_internal/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -922,7 +943,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               go 1.25.0
@@ -944,14 +965,16 @@ def GenTests(api: TEST_DEPS):
     + api.properties(internal=True),
     api.platform('linux', 64),
     api.path.exists(
-      api.path.cache_dir / 'infra_superproject',
-      api.path.cache_dir / 'infra_superproject' / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir / 'builder/infra_superproject',
       api.path.cache_dir
-      / 'infra_superproject'
+      / 'builder/infra_superproject'
+      / 'infra/go/src/infra/go.mod',
+      api.path.cache_dir
+      / 'builder/infra_superproject'
       / 'infra_internal/go/src/infra_internal/go.mod',
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra/go/src/infra/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra/go/src/infra/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/infra
@@ -960,7 +983,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
+      'read [CACHE]/builder/infra_superproject/infra_internal/go/src/infra_internal/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module infra_internal

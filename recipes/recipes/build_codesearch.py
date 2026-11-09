@@ -83,12 +83,15 @@ def RunSteps(api: DEPS):
   soln.revision = 'HEAD'
   api.gclient.c = c
 
-  with api.context(cwd=api.path.cache_dir):
+  checkout_dir = api.path.cache_dir / 'builder'
+  api.file.ensure_directory('ensure builder dir', checkout_dir)
+
+  with api.context(cwd=checkout_dir):
     result = api.bot_update.ensure_checkout()
     kzip_name = '%s.kzip' % result.properties['got_revision']
 
-  build_dir = api.path.cache_dir / 'build'
-  kzip_loc = api.path.cache_dir / kzip_name
+  build_dir = checkout_dir / 'build'
+  kzip_loc = checkout_dir / kzip_name
   go_mod_files = api.file.glob_paths(
     'find go.mod files',
     build_dir,
@@ -174,13 +177,13 @@ def GenTests(api: TEST_DEPS):
       git_repo='https://chromium.googlesource.com/build',
     ),
     api.platform('linux', 64),
-    api.path.exists(api.path.cache_dir / 'build'),
+    api.path.exists(api.path.cache_dir / 'builder' / 'build'),
     api.step_data(
       'find go.mod files',
       api.file.glob_paths(['siso/go.mod', 'kajiya/go.mod', 'bench/go.mod']),
     ),
     api.step_data(
-      'read [CACHE]/build/bench/go.mod',
+      'read [CACHE]/builder/build/bench/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/build/bench
@@ -193,7 +196,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/build/siso/go.mod',
+      'read [CACHE]/builder/build/siso/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/build/siso
@@ -206,7 +209,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/build/kajiya/go.mod',
+      'read [CACHE]/builder/build/kajiya/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/build/kajiya
@@ -259,7 +262,7 @@ def GenTests(api: TEST_DEPS):
       git_repo='https://chromium.googlesource.com/build',
     ),
     api.platform('linux', 64),
-    api.path.exists(api.path.cache_dir / 'build'),
+    api.path.exists(api.path.cache_dir / 'builder' / 'build'),
     api.step_data(
       'find go.mod files',
       api.file.glob_paths(
@@ -269,7 +272,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/build/siso/go.mod',
+      'read [CACHE]/builder/build/siso/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               go 1.26.1
@@ -293,7 +296,7 @@ def GenTests(api: TEST_DEPS):
       git_repo='https://chromium.googlesource.com/build',
     ),
     api.platform('linux', 64),
-    api.path.exists(api.path.cache_dir / 'build'),
+    api.path.exists(api.path.cache_dir / 'builder' / 'build'),
     api.step_data(
       'find go.mod files',
       api.file.glob_paths(
@@ -303,7 +306,7 @@ def GenTests(api: TEST_DEPS):
       ),
     ),
     api.step_data(
-      'read [CACHE]/build/siso/go.mod',
+      'read [CACHE]/builder/build/siso/go.mod',
       api.file.read_text(
         textwrap.dedent('''
               module go.chromium.org/build/kajiya
