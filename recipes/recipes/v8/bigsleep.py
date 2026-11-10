@@ -45,7 +45,6 @@ def RunSteps(api: DEPS):
   bot_config = {
     'chromium_apply_config': ['default_compiler', 'gn'],
     'v8_config_kwargs': {
-      'BUILD_CONFIG': 'Debug',
       'TARGET_ARCH': 'intel',
       'TARGET_BITS': 64,
       'TARGET_PLATFORM': 'linux',
@@ -53,7 +52,7 @@ def RunSteps(api: DEPS):
   }
   api.v8.apply_bot_config(bot_config)
 
-  gn_args = [
+  common_gn_args = [
     'is_asan=true',
     'is_component_build=false',
     'symbol_level=2',
@@ -63,19 +62,40 @@ def RunSteps(api: DEPS):
     'v8_enable_backtrace=true',
     'v8_enable_fast_mksnapshot=true',
     'v8_enable_memory_corruption_api=true',
+  ]
+  debug_gn_args = common_gn_args + [
     'v8_enable_slow_dchecks=false',
     'v8_optimized_debug=false',
   ]
-  api.chromium.c.gn_args.extend(gn_args)
+  release_gn_args = common_gn_args + [
+    'dcheck_always_on=false',
+  ]
 
   update_result = api.v8.checkout()
   source_dir = update_result.source_root.path
-  build_dir = api.v8.build_dir(source_dir)
-  api.v8.runhooks(source_dir, build_dir)
-  api.chromium.run_gn(
-    source_dir, build_dir, extra_args=['--export-compile-commands']
-  )
-  api.chromium.compile(source_dir, build_dir)
+  debug_build_dir = source_dir / 'out' / 'debug'
+  release_build_dir = source_dir / 'out' / 'release'
+  api.v8.runhooks(source_dir, debug_build_dir)
+
+  def configure_chromium(build_config, gn_args):
+    api.chromium.set_config(
+      'v8',
+      BUILD_CONFIG=build_config,
+      **bot_config['v8_config_kwargs'],
+    )
+    for c in bot_config['chromium_apply_config']:
+      api.chromium.apply_config(c)
+    api.chromium.c.gn_args.extend(gn_args)
+
+  with api.step.nest('debug build'):
+    configure_chromium('Debug', debug_gn_args)
+    api.chromium.run_gn(source_dir, debug_build_dir)
+    api.chromium.compile(source_dir, debug_build_dir, targets=['d8'])
+
+  with api.step.nest('release build'):
+    configure_chromium('Release', release_gn_args)
+    api.chromium.run_gn(source_dir, release_build_dir)
+    api.chromium.compile(source_dir, release_build_dir, targets=['d8'])
 
   snapshot_file = api.path.cleanup_dir.joinpath('snapshot.tgz')
   api.v8.vpython(
@@ -84,8 +104,10 @@ def RunSteps(api: DEPS):
     args=[
       '--v8_dir',
       source_dir,
-      '--build_dir',
-      build_dir,
+      '--debug_build_dir',
+      debug_build_dir,
+      '--release_build_dir',
+      release_build_dir,
       '--output_file',
       snapshot_file,
     ],
@@ -143,11 +165,21 @@ def GenTests(api: TEST_DEPS):
     + api.v8.check_in_any_arg(
       'gsutil copy', 'bigsleep/linux/x64/debug/latest.tgz'
     )
-    + api.v8.check_in_any_arg('gn', 'is_asan=true')
-    + api.v8.check_in_any_arg('gn', 'is_debug=true')
-    + api.v8.check_in_any_arg('gn', 'target_cpu="x64"')
-    + api.v8.check_in_any_arg('gn', '--export-compile-commands')
-    + api.post_process(MustRun, 'gn', 'compile', 'create snapshot')
+    + api.v8.check_in_any_arg('debug build.gn', 'is_asan=true')
+    + api.v8.check_in_any_arg('debug build.gn', 'is_debug=true')
+    + api.v8.check_in_any_arg('debug build.gn', 'target_cpu="x64"')
+    + api.v8.check_in_any_arg('release build.gn', 'is_debug=false')
+    + api.v8.check_in_any_arg('release build.gn', 'dcheck_always_on=false')
+    + api.v8.check_in_any_arg('create snapshot', '--debug_build_dir')
+    + api.v8.check_in_any_arg('create snapshot', '--release_build_dir')
+    + api.post_process(
+      MustRun,
+      'debug build.gn',
+      'debug build.compile',
+      'release build.gn',
+      'release build.compile',
+      'create snapshot',
+    )
     + api.post_process(DropExpectation)
   )
 
