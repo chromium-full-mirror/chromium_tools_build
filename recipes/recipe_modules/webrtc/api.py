@@ -338,19 +338,25 @@ class WebRTCApi(recipe_api.RecipeApi):
     # trybots). This should only be run on a single bot or the archive will be
     # overwritten (and it's a multi-arch build so one is enough).
     build_script = source_dir / 'tools_webrtc/android/build_aar.py'
-    args = ['--verbose']
-    if self.m.tryserver.is_tryserver:
-      # To benefit from incremental builds for speed.
-      args.append('--build-dir=out/android-archive')
-
-    cmd = ['vpython3', '-u', build_script] + args
+    build_dir = source_dir / 'out/android-archive'
+    cmd = [
+      'vpython3',
+      '-u',
+      build_script,
+      '--verbose',
+      '--build-dir',
+      build_dir,
+      '--use-remoteexec',
+    ]
 
     with self.m.context(cwd=source_dir):
-      build_dir = source_dir / 'andriod-archive'
-      cmd += ['--build-dir', build_dir, '--use-remoteexec']
-      with self.m.siso.context():
-        self.m.step('build android archive', cmd)
-      self.m.file.rmtree('Remove android archive dir', build_dir)
+      with self.m.chromium.guard_compile(
+        build_dir, suffix=' (android archive)'
+      ):
+        with self.m.siso.context():
+          self.m.step('build android archive', cmd)
+      if not self.m.tryserver.is_tryserver:
+        self.m.file.rmtree('Remove android archive dir', build_dir)
 
     if not self.m.tryserver.is_tryserver:
       self.m.gsutil.upload(
