@@ -1171,7 +1171,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\.vpython3",
+      "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\vpython.toml",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1189,11 +1189,11 @@
     },
     "name": "read vpython file",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@.vpython3@wheel: <@@@",
-      "@@@STEP_LOG_LINE@.vpython3@              name: \"infra/other/package\"@@@",
-      "@@@STEP_LOG_LINE@.vpython3@              version: \"package_version\"@@@",
-      "@@@STEP_LOG_LINE@.vpython3@                             >@@@",
-      "@@@STEP_LOG_END@.vpython3@@@"
+      "@@@STEP_LOG_LINE@vpython.toml@wheel: <@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@              name: \"infra/other/package\"@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@              version: \"package_version\"@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@                             >@@@",
+      "@@@STEP_LOG_END@vpython.toml@@@"
     ]
   },
   {
@@ -1219,17 +1219,17 @@
       "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 115, in RunSteps",
       "    compile_failure = _RunStepsChromium(api)",
       "                      ^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 179, in _RunStepsChromium",
-      "    version = _GetCelabVersionFromVPython(api, test_root / '.vpython3')",
-      "              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 184, in _RunStepsChromium",
+      "    version = _GetCelabVersionFromVPython(api, vpython_spec)",
+      "              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
       "  File \"RECIPE_REPO[build]/recipes/recipes/celab.py\", line 164, in _GetCelabVersionFromVPython",
       "    raise ValueError('Couldn\\'t find CELab version in vpython file: %s' % path)",
-      "ValueError: Couldn't find CELab version in vpython file: [CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\.vpython3"
+      "ValueError: Couldn't find CELab version in vpython file: [CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\vpython.toml"
     ]
   },
   {
     "failure": {
-      "humanReason": "Uncaught Exception: ValueError(\"Couldn't find CELab version in vpython file: [CACHE]\\\\builder\\\\src\\\\chrome\\\\test\\\\enterprise\\\\e2e\\\\.vpython3\")"
+      "humanReason": "Uncaught Exception: ValueError(\"Couldn't find CELab version in vpython file: [CACHE]\\\\builder\\\\src\\\\chrome\\\\test\\\\enterprise\\\\e2e\\\\vpython.toml\")"
     },
     "name": "$result"
   }

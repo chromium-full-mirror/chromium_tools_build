@@ -1171,7 +1171,7 @@
       "--json-output",
       "/path/to/tmp/json",
       "copy",
-      "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\.vpython3",
+      "[CACHE]\\builder\\src\\chrome\\test\\enterprise\\e2e\\vpython.toml",
       "/path/to/tmp/"
     ],
     "infra_step": true,
@@ -1189,11 +1189,11 @@
     },
     "name": "read vpython file",
     "~followup_annotations": [
-      "@@@STEP_LOG_LINE@.vpython3@wheel: <@@@",
-      "@@@STEP_LOG_LINE@.vpython3@              name: \"infra/celab/celab/windows-amd64\"@@@",
-      "@@@STEP_LOG_LINE@.vpython3@              version: \"celab_package_version\"@@@",
-      "@@@STEP_LOG_LINE@.vpython3@                             >@@@",
-      "@@@STEP_LOG_END@.vpython3@@@"
+      "@@@STEP_LOG_LINE@vpython.toml@wheel: <@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@              name: \"infra/celab/celab/windows-amd64\"@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@              version: \"celab_package_version\"@@@",
+      "@@@STEP_LOG_LINE@vpython.toml@                             >@@@",
+      "@@@STEP_LOG_END@vpython.toml@@@"
     ]
   },
   {
