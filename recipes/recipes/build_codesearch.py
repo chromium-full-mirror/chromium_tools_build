@@ -140,6 +140,8 @@ def RunSteps(api: DEPS):
     api.context(cwd=build_dir, env=base_env, env_prefixes=env_prefixes),
   ):
     # Without go.work we have to loop multiple directories and merge kzips.
+    api.file.remove('remove existing go.work', build_dir / 'go.work')
+    api.file.remove('remove existing go.work.sum', build_dir / 'go.work.sum')
     api.step('init go modules', ['go', 'work', 'init'] + targets_dir)
 
     @api.time.exponential_retry(retries=2, delay=datetime.timedelta(seconds=5))
