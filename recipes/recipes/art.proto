@@ -39,13 +39,11 @@ message InputProperties {
   map<string, string> test_env = 17;
 
   // Optional build_only subbuilder that compiles on behalf of this build
-  // (e.g. "target.arm.build_only.64"). The subbuild is always pinned to a
+  // (e.g. "target.arm.build_only"). The subbuild is always pinned to a
   // commit (ART HEAD if the build has none), and this property is cleared in
   // the subbuild request to prevent recursion.
-  // Ignored (incompatible) unless the 'art.superproject' experiment is set,
-  // since the repo checkout can not be pinned to a commit.
   string gce_subbuilder = 18;
 
-  // Directories in out/ to archive for target builds.
+  // Directories to archive to CAS for build_only target builds.
   repeated string output_directories = 19;
 }

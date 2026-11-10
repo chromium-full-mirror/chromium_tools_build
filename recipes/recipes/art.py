@@ -82,11 +82,6 @@ PROPERTIES = InputProperties
 
 
 def RunSteps(api: DEPS, props):
-  # Clear the content of legacy "art" cache to reclaim disk space.
-  art_cache = api.path.cache_dir / 'art'
-  if api.path.exists(art_cache):
-    api.file.rmcontents('clean legacy art cache', art_cache)
-
   # Builders that delegate compilation to a GCE subbuilder download all needed
   # files from CAS instead of maintaining a persistent checkout, so run them in
   # cleanup_dir (which Swarming wipes after each build).
@@ -413,16 +408,6 @@ def _run_steps(api: DEPS, props):
   build_top_dir = api.context.cwd
   art_tools = api.context.cwd.joinpath('art', 'tools')
 
-  env = dict(props.test_env)
-  env.update(
-    {
-      'ANDROID_BUILD_TOP': build_top_dir,
-      'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
-      + api.path.pathsep
-      + '%(PATH)s',
-    }
-  )
-
   if props.on_virtual_machine:
     qemu_path = ensure_tool(
       api=api,
@@ -452,40 +437,24 @@ def _run_steps(api: DEPS, props):
       api.path.join(sevenz_path, '7z'),
     )
 
+  path_dirs = [build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin')]
   if props.device:
-    path_dirs = [
-      # Add adb to the path.
-      build_top_dir.joinpath('prebuilts', 'runtime'),
-    ]
-    if props.on_virtual_machine:
-      path_dirs.extend([sevenz_path, openssh_path, qemu_path])
+    # Add adb to the path.
+    path_dirs.append(build_top_dir.joinpath('prebuilts', 'runtime'))
+  if props.on_virtual_machine:
+    path_dirs.extend([sevenz_path, openssh_path, qemu_path])
 
-    env.update(
-      {
-        'ADB': str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb')),
-        'PATH': api.path.pathsep.join(
-          [*(str(p) for p in path_dirs), '%(PATH)s']
-        ),
-      }
-    )
+  env = {
+    **props.test_env,
+    'ANDROID_BUILD_TOP': build_top_dir,
+    'PATH': api.path.pathsep.join([*(str(p) for p in path_dirs), '%(PATH)s']),
+  }
+  if props.device:
+    env['ADB'] = str(build_top_dir.joinpath('prebuilts', 'runtime', 'adb'))
     if props.product:
       env['ANDROID_PRODUCT_OUT'] = build_top_dir.joinpath(
         'out', 'target', 'product', props.product
       )
-
-  device_test_env = env.copy()
-  if props.device:
-    device_test_env.update(
-      {
-        'PATH': str(build_top_dir.joinpath('out', 'host', 'linux-x86', 'bin'))
-        + api.path.pathsep
-        +
-        # Add adb in the path.
-        str(build_top_dir.joinpath('prebuilts', 'runtime'))
-        + api.path.pathsep
-        + '%(PATH)s'
-      }
-    )
 
   commit = _get_art_commit(api, props.repo_root)
   if props.gce_subbuilder:
@@ -557,8 +526,8 @@ def _run_steps(api: DEPS, props):
   if props.build_only:
     return
 
-  if props.on_virtual_machine:
-    with api.context(env=env):
+  with api.context(env=env):
+    if props.on_virtual_machine:
       api.step(
         'create the virtual machine',
         [art_tools.joinpath('buildbot-vm.sh'), 'create'],
@@ -574,9 +543,8 @@ def _run_steps(api: DEPS, props):
         [art_tools.joinpath('buildbot-vm.sh'), 'boot'],
       )
 
-  with api.defer.context() as defer:
-    if props.device:
-      with api.context(env=device_test_env):
+    with api.defer.context() as defer:
+      if props.device:
         defer(
           api.step,
           'device pre-run cleanup',
@@ -589,14 +557,12 @@ def _run_steps(api: DEPS, props):
           [art_tools.joinpath('buildbot-setup-device.sh'), '--verbose'],
         )
 
-      with api.context(env=env):
         defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
 
-    def test_logging(api: DEPS, test_name):
-      # adb doesn't know about the VM and will hang.
-      if not props.device or props.on_virtual_machine:
-        return
-      with api.context(env=device_test_env):
+      def test_logging(api: DEPS, test_name):
+        # adb doesn't know about the VM and will hang.
+        if not props.device or props.on_virtual_machine:
+          return
         defer(
           api.step,
           test_name + ': adb logcat',
@@ -609,16 +575,15 @@ def _run_steps(api: DEPS, props):
         )
         defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
 
-    for step in props.test_steps:
-      with (
-        api.context(env=device_test_env | dict(step.env)),
-        _without_local_auth(api),
-      ):
-        defer(api.step, step.name, _wrap_test_cmd(api, step))
-      test_logging(api, step.name)
+      for step in props.test_steps:
+        with (
+          api.context(env=dict(step.env)),
+          _without_local_auth(api),
+        ):
+          defer(api.step, step.name, _wrap_test_cmd(api, step))
+        test_logging(api, step.name)
 
-    if props.device:
-      with api.context(env=device_test_env):
+      if props.device:
         defer(
           api.step,
           'tear down device',
@@ -631,8 +596,7 @@ def _run_steps(api: DEPS, props):
           [art_tools.joinpath('buildbot-cleanup-device.sh')],
         )
 
-    if props.on_virtual_machine:
-      with api.context(env=env):
+      if props.on_virtual_machine:
         defer(
           api.step,
           'shut down virtual machine',
@@ -1076,22 +1040,6 @@ def GenTests(api: TEST_DEPS):
     'checkout-incremental',  # repeated git checkout.
     api.buildbucket.ci_build(),
     api.path.exists(api.path.cache_dir.joinpath('src/.git')),
-    api.step_data(
-      'checkout.find super-project commit',
-      stdout=api.raw_io.output_text(random_commit_for_test),
-    ),
-    api.properties(build_only=True),
-  )
-
-  yield api.test(
-    'clean-legacy-art-cache',
-    api.path.exists(api.path.cache_dir.joinpath("art")),
-    api.step_data(
-      'resolve ART HEAD',
-      stdout=api.raw_io.output_text(
-        f'ref: refs/heads/main\tHEAD\n{art_revision}\tHEAD\n'
-      ),
-    ),
     api.step_data(
       'checkout.find super-project commit',
       stdout=api.raw_io.output_text(random_commit_for_test),
