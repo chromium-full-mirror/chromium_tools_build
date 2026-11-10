@@ -476,23 +476,33 @@ def _request_all_javascript_tests(test_runner, xfa):
 
 
 def _request_all_pixel_tests(
-  test_runner, skia, v8, xfa, fontations, fontations_allow_failure=False
+  test_runner,
+  skia,
+  v8,
+  xfa,
+  rust,
+  fontations,
+  fontations_allow_failure=False,
 ):
   test_runner.request_pixel_tests(_DefaultOption)
-  test_runner.request_pixel_tests(_OneshotOption)
 
-  # TODO(crbug.com/pdfium/994): Enable for Mac.
-  # TODO(crbug.com/pdfium/1955): Enable for Skia.
-  if (
-    test_runner.api.platform.is_linux or test_runner.api.platform.is_win
-  ) and not skia:
-    test_runner.request_pixel_tests(_ReverseByteOrderOption)
+  # Omit tests on _xfa_skia_rust builders that are redundant with _xfa_skia.
+  skip_redundant = rust and skia and xfa
+  if not skip_redundant:
+    test_runner.request_pixel_tests(_OneshotOption)
 
-  if v8:
-    test_runner.request_pixel_tests(_JavascriptDisabledOption)
+    # TODO(crbug.com/pdfium/994): Enable for Mac.
+    # TODO(crbug.com/pdfium/1955): Enable for Skia.
+    if (
+      test_runner.api.platform.is_linux or test_runner.api.platform.is_win
+    ) and not skia:
+      test_runner.request_pixel_tests(_ReverseByteOrderOption)
 
-    if xfa:
-      test_runner.request_pixel_tests(_XfaDisabledOption)
+    if v8:
+      test_runner.request_pixel_tests(_JavascriptDisabledOption)
+
+      if xfa:
+        test_runner.request_pixel_tests(_XfaDisabledOption)
 
   if fontations:
     test_runner.request_pixel_tests(
@@ -501,23 +511,33 @@ def _request_all_pixel_tests(
 
 
 def _request_all_corpus_tests(
-  test_runner, skia, v8, xfa, fontations, fontations_allow_failure=False
+  test_runner,
+  skia,
+  v8,
+  xfa,
+  rust,
+  fontations,
+  fontations_allow_failure=False,
 ):
   test_runner.request_corpus_tests(_DefaultOption)
-  test_runner.request_corpus_tests(_OneshotOption)
 
-  # TODO(crbug.com/pdfium/994): Enable for Mac.
-  # TODO(crbug.com/pdfium/1955): Enable for Skia.
-  if (
-    test_runner.api.platform.is_linux or test_runner.api.platform.is_win
-  ) and not skia:
-    test_runner.request_corpus_tests(_ReverseByteOrderOption)
+  # Omit tests on _xfa_skia_rust builders that are redundant with _xfa_skia.
+  skip_redundant = rust and skia and xfa
+  if not skip_redundant:
+    test_runner.request_corpus_tests(_OneshotOption)
 
-  if v8:
-    test_runner.request_corpus_tests(_JavascriptDisabledOption)
+    # TODO(crbug.com/pdfium/994): Enable for Mac.
+    # TODO(crbug.com/pdfium/1955): Enable for Skia.
+    if (
+      test_runner.api.platform.is_linux or test_runner.api.platform.is_win
+    ) and not skia:
+      test_runner.request_corpus_tests(_ReverseByteOrderOption)
 
-    if xfa:
-      test_runner.request_corpus_tests(_XfaDisabledOption)
+    if v8:
+      test_runner.request_corpus_tests(_JavascriptDisabledOption)
+
+      if xfa:
+        test_runner.request_corpus_tests(_XfaDisabledOption)
 
   if fontations:
     test_runner.request_corpus_tests(
@@ -604,12 +624,24 @@ def _run_tests(
 
     # run_pixel_tests.py:
     _request_all_pixel_tests(
-      test_runner, skia, v8, xfa, use_fontations, fontations_allow_failure
+      test_runner,
+      skia,
+      v8,
+      xfa,
+      rust,
+      use_fontations,
+      fontations_allow_failure,
     )
 
     # run_corpus_tests.py:
     _request_all_corpus_tests(
-      test_runner, skia, v8, xfa, use_fontations, fontations_allow_failure
+      test_runner,
+      skia,
+      v8,
+      xfa,
+      rust,
+      use_fontations,
+      fontations_allow_failure,
     )
 
   test_runner.run_tests()
@@ -2409,39 +2441,12 @@ def GenTests(api: TEST_DEPS):
             },
           },
           {
-            'output': 'pass',
-            'results': {
-              'exit_code': '0',
-              'name': 'corpus tests (oneshot rendering enabled) (skia)',
-              'state': 'COMPLETED',
-              'task_id': '1',
-            },
-          },
-          {
-            'output': 'pass',
-            'results': {
-              'exit_code': '0',
-              'name': 'corpus tests (javascript disabled) (skia)',
-              'state': 'COMPLETED',
-              'task_id': '2',
-            },
-          },
-          {
-            'output': 'pass',
-            'results': {
-              'exit_code': '0',
-              'name': 'corpus tests (xfa disabled) (skia)',
-              'state': 'COMPLETED',
-              'task_id': '3',
-            },
-          },
-          {
             'output': 'diff!',
             'results': {
               'exit_code': '1',
               'name': 'corpus tests (fontations) (skia)',
               'state': 'COMPLETED',
-              'task_id': '4',
+              'task_id': '1',
             },
           },
         ]
