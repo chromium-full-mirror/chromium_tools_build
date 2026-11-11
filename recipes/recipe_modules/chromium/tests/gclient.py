@@ -104,6 +104,11 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
   yield api.test(
+    'checkout_snap_runtime',
+    api.properties(apply_gclient_config='checkout_snap_runtime'),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
     'checkout_mesa',
     api.properties(apply_gclient_config='checkout_mesa'),
     api.post_process(post_process.DropExpectation),
