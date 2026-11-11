@@ -58,6 +58,15 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     """Returns the isolate target name for a test."""
     return test.isolate_target or test.target_name
 
+  def _is_ios_simulator_suite(self, test: Test, target_name: str) -> bool:
+    """Returns whether the test is an iOS simulator variant of target_name."""
+    args = getattr(test.spec, 'args', ())
+    return (
+      test.canonical_name.startswith(f'{target_name} ')
+      and '--platform' in args
+      and '--version' in args
+    )
+
   def get_filter_file_path(
     self,
     build_dir: Path,
@@ -66,11 +75,13 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
   ) -> Path | None:
     """Returns the path to the RTS filter file for a test."""
     target_name = self._get_isolate_target(test)
+    suffix = '_inverted' if inverted else ''
+    if self._is_ios_simulator_suite(test, target_name):
+      return self.filter_file_dir(build_dir) / f'{target_name}{suffix}.filter'
     # Derivative suites sharing a target/isolate with a parent suite should not
     # look for or associate filter files unless RTS filtering is enabled.
     if test.canonical_name != target_name and not test.enable_rts_filtering:
       return None
-    suffix = '_inverted' if inverted else ''
     return (
       self.filter_file_dir(build_dir) / f'{test.canonical_name}{suffix}.filter'
     )

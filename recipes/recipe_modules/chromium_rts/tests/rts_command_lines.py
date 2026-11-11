@@ -4,7 +4,10 @@
 
 from recipe_engine import post_process
 
-from RECIPE_MODULES.build.chromium_tests.steps import MockTestSpec
+from RECIPE_MODULES.build.chromium_tests.steps import (
+  MockTestSpec,
+  SwarmingIsolatedScriptTestSpec,
+)
 
 from dataclasses import dataclass
 
@@ -136,6 +139,35 @@ def RunSteps(api: DEPS):
     / 'gen'
     / 'rts'
     / 'pixel_interactive_ui_tests_inverted.filter'
+  )
+
+  ios_sim_test = SwarmingIsolatedScriptTestSpec.create(
+    name='ios_chrome_unittests iPad (A16) 27.0',
+    target_name='ios_chrome_unittests',
+    args=['--platform', 'iPad (A16)', '--version', '27.0'],
+    enable_rts_filtering=False,
+  ).get_test(api.chromium_tests)
+  assert api.chromium_rts.get_filter_file_path(
+    api.path.cleanup_dir, ios_sim_test
+  ) == (api.path.cleanup_dir / 'gen' / 'rts' / 'ios_chrome_unittests.filter')
+  assert api.chromium_rts.get_filter_file_path(
+    api.path.cleanup_dir, ios_sim_test, inverted=True
+  ) == (
+    api.path.cleanup_dir
+    / 'gen'
+    / 'rts'
+    / 'ios_chrome_unittests_inverted.filter'
+  )
+
+  non_ios_variant = SwarmingIsolatedScriptTestSpec.create(
+    name='webview_cts_tests instant_mode',
+    target_name='webview_cts_tests',
+    args=['--exclude-annotation', 'AppModeFull'],
+    enable_rts_filtering=False,
+  ).get_test(api.chromium_tests)
+  assert (
+    api.chromium_rts.get_filter_file_path(api.path.cleanup_dir, non_ios_variant)
+    is None
   )
 
   # Verify get_command_line_variants when target is not in command_lines

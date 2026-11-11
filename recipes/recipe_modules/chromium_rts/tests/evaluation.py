@@ -8,6 +8,7 @@ from recipe_engine import post_process
 
 from PB.go.chromium.org.luci.resultdb.proto.v1 import common as common_pb
 
+from RECIPE_MODULES.build.attr_utils import attrib, attrs, command_args
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.build.test_utils import util
 
@@ -46,6 +47,11 @@ class TEST_DEPS(RecipeTestApi):
   file: file.TEST_API
   path: path.TEST_API
   properties: properties.TEST_API
+
+
+@attrs()
+class _IosSimulatorMockTestSpec(steps.MockTestSpec):
+  args = attrib(command_args, default=())
 
 
 def RunSteps(api: DEPS):
@@ -91,6 +97,34 @@ def RunSteps(api: DEPS):
       enable_rts_filtering=False,
     ).get_test(api.chromium_tests)
     test_list.append(derivative_suite)
+
+  if api.properties.get('include_ios_simulator_suite', False):
+    ios_suite_name = f'{test_suite_name} iPad (A16) 27.0'
+    ios_suite = _IosSimulatorMockTestSpec.create(
+      ios_suite_name,
+      target_name=test_suite_name,
+      args=['--platform', 'iPad (A16)', '--version', '27.0'],
+      invocation_names=['invocations/inv-ios'],
+      enable_rts_filtering=False,
+    ).get_test(api.chromium_tests)
+    ios_suite.update_rdb_results(
+      'with patch',
+      util.RDBPerSuiteResults(
+        suite_name=ios_suite_name,
+        variant=common_pb.Variant(),
+        variant_hash='',
+        total_tests_ran=1,
+        unexpected_passing_tests=set(),
+        unexpected_failing_tests=set(),
+        unexpected_skipped_tests=set(),
+        invalid=False,
+        individual_unexpected_test_by_test_name={},
+        all_tests=[],
+        test_id_prefix='',
+        exists_unexpected_failing_result=False,
+      ),
+    )
+    test_list.append(ios_suite)
 
   if enable_rts_filtering:
     api.chromium_rts._overwritten_tests.add(test_suite_name)
@@ -880,5 +914,29 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.StepFailure, 'read rts_banned_suites.json'),
     api.post_process(post_process.DoesNotRun, 'Evaluate chromium-rts safety'),
     api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'evaluation_ios_simulator_suite',
+    api.chromium.try_build(
+      builder='ios-simulator', experiments=['chromium_rts.filter_file_analysis']
+    ),
+    api.properties(
+      test_suite_name='ios_chrome_unittests',
+      include_ios_simulator_suite=True,
+    ),
+    api.path.exists(
+      api.path.cleanup_dir / 'gen' / 'rts' / 'ios_chrome_unittests.filter'
+    ),
+    api.post_process(post_process.MustRun, 'Evaluate chromium-rts safety'),
+    api.post_process(
+      post_process.StepTextContains,
+      'Evaluate chromium-rts safety',
+      [
+        'Overall Test Recall: 100.00% (0/0 caught)',
+        'Total Inactive Tests Skipped by RTS: 4',
+      ],
+    ),
     api.post_process(post_process.DropExpectation),
   )
