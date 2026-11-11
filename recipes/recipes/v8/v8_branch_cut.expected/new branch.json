@@ -433,6 +433,7 @@
     ]
   },
   {
-    "name": "$result"
+    "name": "$result",
+    "summaryMarkdown": "New branch 10.0 detected. Uploaded CL to update main to version 10.1.0."
   }
 ]

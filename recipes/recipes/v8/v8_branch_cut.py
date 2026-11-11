@@ -6,6 +6,8 @@ from recipe_engine import post_process
 
 from dataclasses import dataclass
 
+from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.recipe_engine.result import RawResult
 from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
@@ -85,19 +87,29 @@ def RunSteps(api: DEPS):
     main_version_obj = api.v8.read_version_from_ref(source_dir, 'main', 'main')
     main_version = api.v8.version_from_text(str(main_version_obj))
 
-    if main_version == last_version:
-      with api.step.nest('New branch detected'):
-        next_main_version_obj = main_version_obj.with_incremented_minor()
-        api.v8.update_version_cl(
-          source_dir,
-          'main',
-          next_main_version_obj,
-          push_account=api.v8.V8_CI_AUTOROLL_BUILDER,
-          hashtag=HASHTAG,
-          use_cq=True,
-        )
-    else:
-      api.step('No new branch detected', [])
+    if main_version != last_version:
+      return RawResult(
+        status=common_pb.SUCCESS,
+        summary_markdown='No new branch detected.',
+      )
+
+    with api.step.nest('New branch detected'):
+      next_main_version_obj = main_version_obj.with_incremented_minor()
+      api.v8.update_version_cl(
+        source_dir,
+        'main',
+        next_main_version_obj,
+        push_account=api.v8.V8_CI_AUTOROLL_BUILDER,
+        hashtag=HASHTAG,
+        use_cq=True,
+      )
+    return RawResult(
+      status=common_pb.SUCCESS,
+      summary_markdown=(
+        f'New branch {api.v8.version_num2str(last_version)} detected. '
+        f'Uploaded CL to update main to version {next_main_version_obj}.'
+      ),
+    )
 
 
 def GenTests(api: TEST_DEPS):
@@ -113,6 +125,7 @@ def GenTests(api: TEST_DEPS):
       'last branches', 'branch-heads/10.2\nbranch-heads/10.1\nbranch-heads/10.0'
     )
     + api.v8.version_file(4, 'main', major=10, minor=3)
+    + api.post_process(post_process.SummaryMarkdown, 'No new branch detected.')
   )
 
   yield (
@@ -128,6 +141,10 @@ def GenTests(api: TEST_DEPS):
     + stdout(
       'New branch detected.git cl',
       'Issue number: 2 (https://review.source.com/2)',
+    )
+    + api.post_process(
+      post_process.SummaryMarkdown,
+      'New branch 10.0 detected. Uploaded CL to update main to version 10.1.0.',
     )
   )
 

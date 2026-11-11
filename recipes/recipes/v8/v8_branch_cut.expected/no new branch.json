@@ -211,10 +211,7 @@
     "name": "Check main version file"
   },
   {
-    "cmd": [],
-    "name": "No new branch detected"
-  },
-  {
-    "name": "$result"
+    "name": "$result",
+    "summaryMarkdown": "No new branch detected."
   }
 ]
