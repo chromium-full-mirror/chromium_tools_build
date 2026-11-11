@@ -2240,3 +2240,94 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
     api.expect_status('FAILURE'),
   )
+
+  yield api.test(
+    'weak_exoneration_retries_only_weakly_exonerated_tests',
+    api.platform('linux', 64),
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-builder': {
+          'gtest_tests': [
+            {
+              'test': 'base_unittests',
+              'swarming': {
+                'shards': 2,
+                'dimensions': {
+                  'os': 'Linux',
+                },
+              },
+            },
+          ],
+        },
+      },
+    ),
+    api.properties(
+      **{
+        '$build/test_utils': {
+          'should_exonerate_flaky_failures': True,
+        },
+      }
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'base_unittests',
+      'with patch',
+      failures=['BaseTest.One', 'BaseTest.Two'],
+      successes=['BaseTest.Three'],
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'base_unittests',
+      'retry shards with patch',
+      successes=['BaseTest.One'],
+    ),
+    api.override_step_data(
+      'query LUCI Analysis for stability.rpc call',
+      stdout=api.json.output(
+        api.luci_analysis.generate_stability_response(
+          [
+            api.luci_analysis.generate_stability_analysis(
+              test_id='ninja://base_unittests/BaseTest.One',
+              failure_rate_is_met=False,
+              flake_rate_is_met=True,
+              run_flaky_verdicts_1wd=1,
+              run_flaky_verdicts_12h=0,
+            ),
+            api.luci_analysis.generate_stability_analysis(
+              test_id='ninja://base_unittests/BaseTest.Two',
+              failure_rate_is_met=True,
+              flake_rate_is_met=True,
+              run_flaky_verdicts_1wd=1,
+              run_flaky_verdicts_12h=1,
+            ),
+          ]
+        )
+      ),
+    ),
+    api.post_check(
+      api.swarming.check_triggered_request,
+      'test_pre_run (retry shards with patch).[trigger] base_unittests '
+      '(retry shards with patch)',
+      lambda check, req: (
+        check('--gtest_filter=BaseTest.One' in req[0].command)
+        and check('GTEST_TOTAL_SHARDS' not in req[0].env_vars)
+      ),
+    ),
+    api.post_process(
+      post_process.StepTextContains,
+      'base_unittests (retry shards with patch)',
+      ['Ran only previously failing tests, instead of the entire shard.'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )

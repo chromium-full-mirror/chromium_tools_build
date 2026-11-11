@@ -1072,6 +1072,8 @@ class Test(AbstractTest):
       suffix == 'retry shards with patch' and self.retry_only_failed_tests
     ):
       valid_results, failures = self.with_patch_failures_including_retry()
+      if valid_results and not failures and suffix == 'retry shards with patch':
+        return self.weak_luci_analysis_flaky_failures
       # Invalid results should be treated as if every test failed.
       return failures if valid_results else None
 
@@ -2946,7 +2948,10 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     self._update_failure_on_exit(suffix, failure_on_exit)
 
     info_message_list = list(info_messages)
-    if suffix == 'retry shards with patch' and self.retry_only_failed_tests:
+    if (
+      suffix == 'retry shards with patch'
+      and not self._tasks[suffix].task_to_retry
+    ):
       info_message_list.append(
         'Ran only previously failing tests, instead of the entire shard.\n'
       )
