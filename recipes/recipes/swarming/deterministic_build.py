@@ -301,6 +301,11 @@ def RunSteps(api: DEPS):
     api.file.rmglob(
       'rm old .runtime_deps', default_build_dir, '**/*.runtime_deps'
     )
+  else:
+    # If a previous build failed or was canceled before MoveBuildDirectory,
+    # default_build_dir is left behind. Remove it so First build is always a
+    # clean clobber build.
+    api.file.rmtree('rmtree %s' % default_build_dir, default_build_dir)
 
   targets = recipe_config['targets']
 
@@ -462,6 +467,27 @@ def GenTests(api: TEST_DEPS):
     api.properties(configuration='Release'),
     api.step_data('First build', retcode=1),
     api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.MustRunRE, r'^rmtree .*[\\/]out[\\/][^.\\/]+$'
+    ),
+    api.post_process(post_process.DoesNotRun, 'rm old .runtime_deps'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'first_build_compile_fail_linux',
+    api.chromium.ci_build(
+      builder_group=builder_group, builder='Deterministic Linux'
+    ),
+    api.properties(buildername='Deterministic Linux', buildnumber=571),
+    api.platform(DETERMINISTIC_BUILDERS['Deterministic Linux']['platform'], 64),
+    api.properties(configuration='Release'),
+    api.step_data('First build', retcode=1),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.DoesNotRunRE, r'^rmtree .*[\\/]out[\\/][^.\\/]+$'
+    ),
+    api.post_process(post_process.MustRun, 'rm old .runtime_deps'),
     api.post_process(post_process.DropExpectation),
   )
 
