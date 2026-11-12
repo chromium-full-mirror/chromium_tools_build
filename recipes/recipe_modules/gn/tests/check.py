@@ -33,6 +33,7 @@ def RunSteps(api: DEPS):
   api.gn.check(
     build_dir,
     check_generated=True,
+    error_limit=-1,
     step_name='gn check --check-generated',
   )
   # raise_on_failure=False lets the recipe continue while the step is still
@@ -66,6 +67,7 @@ def GenTests(api: RecipeTestApi):
         'check',
         '[CACHE]/builder/src/out/Release',
         '--check-generated',
+        '--error-limit=-1',
       ],
     ),
     api.post_process(DropExpectation),

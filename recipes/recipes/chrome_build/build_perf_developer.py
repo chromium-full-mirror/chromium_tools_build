@@ -392,6 +392,7 @@ def _clean_builds(
       api.gn.check(
         build_dir,
         check_generated=True,
+        error_limit=-1,
         step_name='gn check --check-generated',
         raise_on_failure=False,
       )

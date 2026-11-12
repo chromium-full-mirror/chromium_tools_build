@@ -321,6 +321,7 @@ class GnApi(recipe_api.RecipeApi):
     self,
     build_dir,
     check_generated=False,
+    error_limit: int | None = None,
     step_name='gn check',
     **kwargs,
   ):
@@ -332,6 +333,8 @@ class GnApi(recipe_api.RecipeApi):
     Args:
       build_dir: Path to build output directory.
       check_generated: Boolean indicating whether to check generated headers.
+      error_limit: Maximum number of errors to print (-1 for no limit). If
+        None, uses GN's default (10).
       step_name: Optional recipe step name to give to the "gn check" command.
       kwargs: Other arguments passed to the underlying python step.
     """
@@ -339,6 +342,8 @@ class GnApi(recipe_api.RecipeApi):
       cmd = ['check', build_dir]
       if check_generated:
         cmd.append('--check-generated')
+      if error_limit is not None:
+        cmd.append(f'--error-limit={error_limit}')
       self._gn_cmd(step_name, cmd, **kwargs)
 
   def parse_gn_args(self, content):
