@@ -138,6 +138,8 @@ def _incremental_build_with_one_day_changes(
       source_dir, siso_build_dir, phase='siso_native'
     )
     suffix = ' with Siso in native mode at current revision (warmup)'
+    # Omit -batch=false on warmup builds so fast_local does not populate remote
+    # caches non-deterministically.
     raw_result = api.chromium_build_perf.build_with_siso(
       source_dir,
       siso_build_dir,
@@ -181,19 +183,23 @@ def _incremental_build_with_one_day_changes(
           ' with Siso in native mode with step-weights at base revision'
           ' (warmup)'
         ),
-        siso_args=[f'-weights_file={weights_file}'],
+        siso_args=[f"-weights_file={weights_file}"],
       )
 
     # Incremental build with remote caches at the current revision.
     api.chromium_build_perf.checkout(source_dir, default_build_dir, cur_rev)
 
     ## Siso
+    # Specify -batch=false to emulate interactive developer builds on bots where
+    # stdout is not a terminal. This implicitly enables fastlocal (and other
+    # optimizations) that affect the benchmark results.
     raw_result = api.chromium_build_perf.build_with_siso(
       source_dir,
       siso_build_dir,
       target,
       with_remote_cache=True,
       step_name_suffix=' with Siso in native mode',
+      siso_args=["-batch=false"],
     )
     _raise_raw_result_on_failure(api, raw_result)
 
@@ -204,7 +210,7 @@ def _incremental_build_with_one_day_changes(
         target,
         with_remote_cache=True,
         step_name_suffix=' with Siso in native mode with step-weights',
-        siso_args=[f'-weights_file={weights_file}'],
+        siso_args=["-batch=false", f"-weights_file={weights_file}"],
       )
 
 
@@ -307,14 +313,20 @@ def _incremental_builds_with_patch(
 
       if i == 0:
         # The warm up builds at base revision won't be included
-        # in perf metrics.
+        # in perf metrics. Omit -batch=false so fast_local does not populate
+        # remote caches non-deterministically.
         with_remote_cache = True
         step_name_suffix = ' at base revision (warmup)'
+        siso_args = []
       else:
         # It assumes that remote caches are not available
         # for incremental builds with local modifications.
+        # Specify -batch=false to emulate interactive developer builds on bots
+        # where stdout is not a terminal. This implicitly enables fastlocal
+        # (and other optimizations) that affect the benchmark results.
         with_remote_cache = False
         step_name_suffix = ''
+        siso_args = ["-batch=false"]
 
       # Siso
       siso_build_dir = build_dir_parent / 'siso'
@@ -324,6 +336,7 @@ def _incremental_builds_with_patch(
         target,
         with_remote_cache=with_remote_cache,
         step_name_suffix=' with Siso in native mode' + step_name_suffix,
+        siso_args=siso_args,
       )
       _raise_raw_result_on_failure(api, raw_result)
 
@@ -336,7 +349,7 @@ def _incremental_builds_with_patch(
           step_name_suffix=(
             ' with Siso in native mode with step-weights' + step_name_suffix
           ),
-          siso_args=[f'-weights_file={weights_file}'],
+          siso_args=[*siso_args, f"-weights_file={weights_file}"],
         )
 
 
@@ -350,7 +363,9 @@ def _clean_builds(
 ):
   """Steps to run clean builds."""
   with api.step.nest('Clean builds'):
-    # Siso builds.
+    # Siso builds. Specify -batch=false to emulate interactive developer builds
+    # on bots where stdout is not a terminal. This implicitly enables fastlocal
+    # (and other optimizations) that affect the benchmark results.
     phase = 'siso_native'
     step_name_suffix = ' with Siso in native mode'
     api.chromium_build_perf.recreate_build_dir(
@@ -362,6 +377,7 @@ def _clean_builds(
       target,
       with_remote_cache=False,
       step_name_suffix=step_name_suffix,
+      siso_args=["-batch=false"],
     )
     _raise_raw_result_on_failure(api, result)
 
@@ -374,6 +390,7 @@ def _clean_builds(
       target,
       with_remote_cache=True,
       step_name_suffix=step_name_suffix,
+      siso_args=["-batch=false"],
     )
     _raise_raw_result_on_failure(api, result)
 
@@ -406,7 +423,7 @@ def _clean_builds(
         target,
         with_remote_cache=True,
         step_name_suffix=step_name_suffix + ' with missing-deps check',
-        siso_args=['-missing_deps=error'],
+        siso_args=["-batch=false", "-missing_deps=error"],
       )
 
     if weights_file:
@@ -419,7 +436,7 @@ def _clean_builds(
         target,
         with_remote_cache=False,
         step_name_suffix=step_name_suffix + " with step-weights",
-        siso_args=[f"-weights_file={weights_file}"],
+        siso_args=["-batch=false", f"-weights_file={weights_file}"],
       )
 
       api.chromium_build_perf.recreate_build_dir(
@@ -431,7 +448,7 @@ def _clean_builds(
         target,
         with_remote_cache=True,
         step_name_suffix=step_name_suffix + " with step-weights",
-        siso_args=[f"-weights_file={weights_file}"],
+        siso_args=["-batch=false", f"-weights_file={weights_file}"],
       )
 
     api.file.rmtree(f"rmtree {build_dir}", build_dir)
@@ -542,27 +559,44 @@ def GenTests(api: TEST_DEPS):
     _buildbucket_search_results(),
     api.post_process(
       post_process.StepCommandContains,
+      "Clean builds.Build chrome without remote cache with Siso in native mode",
+      ["-batch=false"],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
       "Clean builds.Build chrome without remote cache with Siso in native mode "
       "with step-weights",
-      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+      [
+        "-batch=false",
+        "-weights_file=[CACHE]/siso_weights/weights_linux.json.gz",
+      ],
     ),
     api.post_process(
       post_process.StepCommandContains,
       "Clean builds.Build chrome with remote cache with Siso in native mode "
       "with step-weights",
-      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+      [
+        "-batch=false",
+        "-weights_file=[CACHE]/siso_weights/weights_linux.json.gz",
+      ],
     ),
     api.post_process(
       post_process.StepCommandContains,
       "Incremental build with 1-day of changes.Build chrome with remote cache "
       "with Siso in native mode with step-weights",
-      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+      [
+        "-batch=false",
+        "-weights_file=[CACHE]/siso_weights/weights_linux.json.gz",
+      ],
     ),
     api.post_process(
       post_process.StepCommandContains,
       "Incremental builds with patch.Build chrome without remote cache with "
       "Siso in native mode with step-weights",
-      ["-weights_file=[CACHE]/siso_weights/weights_linux.json.gz"],
+      [
+        "-batch=false",
+        "-weights_file=[CACHE]/siso_weights/weights_linux.json.gz",
+      ],
     ),
     api.post_process(post_process.DropExpectation),
   )
