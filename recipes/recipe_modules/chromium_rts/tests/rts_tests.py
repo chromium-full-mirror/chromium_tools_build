@@ -12,6 +12,7 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, chromium_rts, chromium_tests
+from RECIPE_MODULES.build.chromium_rts.api import RTS_VARIANT
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   file,
@@ -125,7 +126,7 @@ def RunSteps(api: DEPS):
     enable_rts_filtering=True,
   ).get_test(api.chromium_tests)
   api.chromium_rts.set_swarming_test_execution_info(
-    mock_test_filtered, command_line_variants
+    mock_test_filtered, command_line_variants, variant=RTS_VARIANT
   )
   step_messages = []
   api.chromium_rts.append_test_step_text(mock_test_filtered, step_messages)

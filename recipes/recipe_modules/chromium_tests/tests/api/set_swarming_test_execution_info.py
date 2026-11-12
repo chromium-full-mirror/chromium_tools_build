@@ -4,6 +4,8 @@
 
 from __future__ import annotations
 
+import copy
+
 from recipe_engine import post_process
 
 from RECIPE_MODULES.build import chromium_tests_builder_config as ctbc
@@ -106,6 +108,10 @@ def GenTests(api: TEST_DEPS):
       }
     },
   )
+  rts_targets_spec = copy.deepcopy(fake_targets_spec)
+  rts_targets_spec[1][fake_tester]['isolated_scripts'][0][
+    'enable_rts_filtering'
+  ] = True
   fake_swarm_hashes = {
     fake_test: 'eeeeeeeeeeeeeeeeeeeeeeeeeeeeee/size',
     webgl_fake_test: 'gggggggggggggggggggggggggg/size',
@@ -601,6 +607,23 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  def check_no_rts_was_used(check, steps):
+    # isolate_tests() does not apply the RTS command lines on builders.
+    tags = post_process.GetBuildProperties(steps).get(
+      '$recipe_engine/buildbucket/runtime-tags', {}
+    )
+    check('rts_was_used' not in tags)
+
+  def check_no_rts_command_line(check, steps):
+    # The tester does not run the tests with the RTS command lines.
+    check(
+      not any(
+        '--test-launcher-filter-file' in str(step)
+        for name, step in steps.items()
+        if name.endswith('[trigger] fake_test')
+      )
+    )
+
   yield api.test(
     'rts_active_skipping_builder',
     api.chromium_tests_builder_config.ci_build(
@@ -610,7 +633,7 @@ def GenTests(api: TEST_DEPS):
       experiments=['chromium_rts.filter_file_analysis'],
     ),
     api.properties(swarm_hashes=fake_swarm_hashes),
-    api.chromium_tests.read_targets_spec(*fake_targets_spec),
+    api.chromium_tests.read_targets_spec(*rts_targets_spec),
     api.path.exists(
       api.path.cache_dir
       / 'builder'
@@ -676,6 +699,7 @@ def GenTests(api: TEST_DEPS):
         fake_rts_complement_command_lines_digest,
       ],
     ),
+    api.post_check(check_no_rts_was_used),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -695,7 +719,7 @@ def GenTests(api: TEST_DEPS):
       },
       swarming_command_lines_cwd='out/Release_x64',
     ),
-    api.chromium_tests.read_targets_spec(*fake_targets_spec),
+    api.chromium_tests.read_targets_spec(*rts_targets_spec),
     api.step_data('read command lines', api.file.read_json(fake_command_lines)),
     api.step_data(
       'read rts command lines', api.file.read_json(fake_rts_command_lines)
@@ -710,5 +734,6 @@ def GenTests(api: TEST_DEPS):
       post_process.MustRun, 'download rts_complement command lines'
     ),
     api.post_process(post_process.MustRun, 'read rts_complement command lines'),
+    api.post_check(check_no_rts_command_line),
     api.post_process(post_process.DropExpectation),
   )

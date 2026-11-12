@@ -1097,6 +1097,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     expose_to_properties=False,
     builder_config=None,
     command_line_variants=None,
+    command_line_variant: str | None = None,
   ):
     """Sets the execution information for a list of swarming tests.
 
@@ -1117,6 +1118,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         Chromium checkout.
       * expose_to_properties: If we should expose the execution information as
         build properties.
+      * command_line_variant: The RTS command line variant to apply; if None,
+        base command lines are used.
 
     Returns:
       An instance of SwarmingExecutionInfo which describes how to execute these
@@ -1130,8 +1133,12 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
           test.raw_cmd = command_line
           test.relative_cwd = rel_cwd
 
+        # TODO: crbug.com/535256440 - Call
+        # chromium_rts.set_swarming_test_execution_info from
+        # chromium_orchestrator.test_patch() and rts_complement_runner.py
+        # instead.
         self.m.chromium_rts.set_swarming_test_execution_info(
-          test, command_line_variants
+          test, command_line_variants, variant=command_line_variant
         )
 
     execution_info = SwarmingExecutionInfo(
@@ -2325,6 +2332,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     swarming_command_lines_digest=None,
     swarming_command_lines_cwd=None,
     swarming_command_lines_variant_digests=None,
+    command_line_variant: str | None = None,
   ):
     """Download and set command lines for tests.
 
@@ -2340,6 +2348,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       swarming_command_lines_digest: If set, the digest we should download.
       swarming_command_lines_cwd: If set, the cwd for command lines.
       swarming_command_lines_variant_digests: If set, the variant digests to download.
+      command_line_variant: The RTS command line variant to apply; if None,
+        base command lines are used.
     """
     digest = swarming_command_lines_digest or self.m.properties.get(
       'swarming_command_lines_digest'
@@ -2367,6 +2377,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         expose_to_properties=builder_config.expose_trigger_properties,
         builder_config=builder_config,
         command_line_variants=command_line_variants,
+        command_line_variant=command_line_variant,
       )
 
   def archive_command_lines(self, command_lines, suffix=''):

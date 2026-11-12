@@ -18,6 +18,7 @@ from PB.go.chromium.org.luci.buildbucket.proto import (
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.recipe_engine import result as result_pb2
 from RECIPE_MODULES.build.attr_utils import attrib, attrs, mapping, sequence
+from RECIPE_MODULES.build.chromium_rts.api import RTS_VARIANT
 from RECIPE_MODULES.build.chromium_tests.api import (
   ALL_TEST_BINARIES_ISOLATE_NAME,
 )
@@ -112,6 +113,80 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
 
     return raw_result
 
+  def prepare_tests_from_compilator_output(
+    self,
+    builder_id,
+    builder_config,
+    comp_output: CompilatorOutputProps,
+    *,
+    command_line_variant: str | None = None,
+  ):
+    """Creates the tests to trigger from a compilator build's outputs."""
+    # TODO(crbug.com/330782554) - chromium_checkout.checkout_dir should be
+    # explicitly set as `None`, and api.path.checkout_dir should remain unset.
+    self.m.chromium_checkout.set_paths(
+      self.m.path.cleanup_dir, self.m.gclient.c.solutions[0].name
+    )
+    source_dir = self.m.chromium_checkout.source_dir
+    build_dir = self.m.chromium.default_build_dir(source_dir)
+    self.m.code_coverage.source_dir = source_dir
+    self.m.code_coverage.build_dir = build_dir
+    self.m.profiles.source_dir = source_dir
+
+    self.m.cas.download(
+      'download src-side deps',
+      comp_output.src_side_deps_digest,
+      source_dir,
+    )
+
+    targets_config = self.m.chromium_tests.create_targets_config(
+      builder_config,
+      comp_output.got_revisions,
+      source_dir,
+      build_dir,
+      targets_spec_dir=self.m.chromium_tests.get_targets_spec_dir(
+        source_dir, builder_config
+      ),
+      remote_tests_only=True,
+    )
+    # This is used to set build properties on swarming tasks
+    self.m.chromium.set_build_properties(comp_output.got_revisions)
+
+    # Now let's get all the tests ready with the swarming/skylab trigger info
+    # outputted by the compilator
+    tests = []
+    if comp_output.swarming_props:
+      variant_digests = comp_output.swarming_props.get(
+        'swarming_command_lines_variant_digests'
+      )
+      if variant_digests:
+        step_res = self.m.step.empty(
+          'record swarming command lines variant digests'
+        )
+        step_res.presentation.properties[
+          'swarming_command_lines_variant_digests'
+        ] = thaw(variant_digests)
+
+      tests = self.process_swarming_props(
+        source_dir,
+        build_dir,
+        comp_output.swarming_props,
+        builder_config,
+        targets_config,
+        command_line_variant=command_line_variant,
+      )
+    # Add any skylab tests
+    if comp_output.skylab_props:
+      tests.extend(
+        self.process_skylab_props(comp_output.skylab_props, targets_config)
+      )
+
+    self.m.chromium_tests.configure_swarming(
+      self.m.tryserver.is_tryserver, builder_group=builder_id.group
+    )
+
+    return targets_config, tests
+
   # TODO (kimstephanie): break up test_patch into separate methods for each
   # phase of the build
   def test_patch(self):
@@ -190,69 +265,16 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     if maybe_raw_result != None:  # noqa: E711
       return maybe_raw_result
 
-    # TODO(crbug.com/330782554) - chromium_checkout.checkout_dir should be
-    # explicitly set as `None`, and api.path.checkout_dir should remain unset.
-    self.m.chromium_checkout.set_paths(
-      self.m.path.cleanup_dir, self.m.gclient.c.solutions[0].name
+    targets_config, tests = self.prepare_tests_from_compilator_output(
+      builder_id,
+      builder_config,
+      comp_output,
+      command_line_variant=RTS_VARIANT,
     )
     checkout_dir = self.m.chromium_checkout.checkout_dir
     source_dir = self.m.chromium_checkout.source_dir
     build_dir = self.m.chromium.default_build_dir(source_dir)
-    self.m.code_coverage.source_dir = source_dir
-    self.m.code_coverage.build_dir = build_dir
-    self.m.profiles.source_dir = source_dir
-
-    self.m.cas.download(
-      'download src-side deps',
-      comp_output.src_side_deps_digest,
-      source_dir,
-    )
-
     affected_files = comp_output.affected_files
-    targets_config = self.m.chromium_tests.create_targets_config(
-      builder_config,
-      comp_output.got_revisions,
-      source_dir,
-      build_dir,
-      targets_spec_dir=self.m.chromium_tests.get_targets_spec_dir(
-        source_dir, builder_config
-      ),
-      remote_tests_only=True,
-    )
-    # This is used to set build properties on swarming tasks
-    self.m.chromium.set_build_properties(comp_output.got_revisions)
-
-    # Now let's get all the tests ready with the swarming/skylab trigger info
-    # outputed by the compilator
-    tests = []
-    if comp_output.swarming_props:
-      variant_digests = comp_output.swarming_props.get(
-        'swarming_command_lines_variant_digests'
-      )
-      if variant_digests:
-        step_res = self.m.step.empty(
-          'record swarming command lines variant digests'
-        )
-        step_res.presentation.properties[
-          'swarming_command_lines_variant_digests'
-        ] = thaw(variant_digests)
-
-      tests = self.process_swarming_props(
-        source_dir,
-        build_dir,
-        comp_output.swarming_props,
-        builder_config,
-        targets_config,
-      )
-    # Add any skylab tests
-    if comp_output.skylab_props:
-      tests.extend(
-        self.process_skylab_props(comp_output.skylab_props, targets_config)
-      )
-
-    self.m.chromium_tests.configure_swarming(
-      self.m.tryserver.is_tryserver, builder_group=builder_id.group
-    )
 
     # crbug/1346781
     # src/third_party/llvm-build/Release+Asserts/bin/llvm-profdata is needed
@@ -426,6 +448,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         builder_config,
         targets_config,
         tests=tests,
+        command_line_variant=RTS_VARIANT,
       )
     if comp_output.skylab_props:
       self.process_skylab_props(
@@ -853,6 +876,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
     builder_config,
     targets_config,
     tests=None,
+    *,
+    command_line_variant: str | None = None,
   ):
     """Read isolate hashes swarming_props content and download command lines
 
@@ -865,6 +890,8 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       targets_config (TargetsConfig): configuration for the tests' targets
       tests (list(Test)): Test objects to update with swarming info. If None,
         new Test objects will be created.
+      command_line_variant (str | None): The RTS command line variant to apply;
+        if None, base command lines are used.
     Returns:
       List of Test objects with swarming info
     """
@@ -899,6 +926,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       swarming_command_lines_digest=swarming_digest,
       swarming_command_lines_cwd=swarming_cwd,
       swarming_command_lines_variant_digests=variant_digests,
+      command_line_variant=command_line_variant,
     )
     return tests
 

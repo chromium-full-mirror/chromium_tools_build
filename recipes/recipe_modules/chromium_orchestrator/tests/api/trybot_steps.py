@@ -407,6 +407,80 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  base_cmd = ['./browser_tests']
+  rts_filter = '--test-launcher-filter-file=gen/rts/browser_tests.filter'
+  # Different from rts_filter so a stale with patch command line fails.
+  wo_rts_filter = '--test-launcher-filter-file=gen/rts/wo/browser_tests.filter'
+  yield api.test(
+    'without_patch_compilator_rts',
+    get_try_build(),
+    ctbc_properties(),
+    api.properties(
+      **{
+        '$build/chromium_orchestrator': InputProperties(
+          compilator='fake-compilator',
+          compilator_watcher_git_revision='e841fc',
+        ),
+      }
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-tester': {
+          'gtest_tests': [
+            {
+              'name': 'browser_tests',
+              'swarming': {'dimensions': {'os': 'Linux'}},
+              'enable_rts_filtering': True,
+            }
+          ],
+        },
+      },
+    ),
+    api.chromium_orchestrator.override_compilator_steps(include_rts_props=True),
+    api.chromium_orchestrator.override_compilator_steps(
+      with_patch=True, is_compile_phase=False
+    ),
+    api.chromium_orchestrator.override_compilator_steps(
+      with_patch=False, include_rts_props=True
+    ),
+    api.step_data(
+      'read command lines', api.file.read_json({'browser_tests': base_cmd})
+    ),
+    api.step_data(
+      'read rts command lines',
+      api.file.read_json({'browser_tests': base_cmd + [rts_filter]}),
+    ),
+    # The without patch run resets raw_cmd to the base command line first.
+    api.step_data(
+      'read command lines (2)', api.file.read_json({'browser_tests': base_cmd})
+    ),
+    api.step_data(
+      'read rts command lines (2)',
+      api.file.read_json({'browser_tests': base_cmd + [wo_rts_filter]}),
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', failures=['Test.One']
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'retry shards with patch', failures=['Test.One']
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'without patch', failures=['Test.One']
+    ),
+    api.post_check(
+      api.swarming.check_triggered_request,
+      'test_pre_run (with patch).[trigger] browser_tests (with patch)',
+      lambda check, req: check(rts_filter in req[0].command),
+    ),
+    api.post_check(
+      api.swarming.check_triggered_request,
+      'test_pre_run (without patch).[trigger] browser_tests (without patch)',
+      lambda check, req: check(wo_rts_filter in req[0].command),
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
   yield api.test(
     'without_patch_compilator_skylab',
     get_try_build(),

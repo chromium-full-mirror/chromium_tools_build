@@ -15,6 +15,10 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium_rts, chromium_tests
+from RECIPE_MODULES.build.chromium_rts.api import (
+  RTS_COMPLEMENT_VARIANT,
+  RTS_VARIANT,
+)
 from RECIPE_MODULES.recipe_engine import file, path, properties
 
 
@@ -39,20 +43,22 @@ def RunSteps(api: DEPS):
   assert not messages
 
   api.chromium_rts.set_swarming_test_execution_info(
-    test, {'rts': {'blink_web_tests': ['/bin/rts_cmd']}}
+    test, {'rts': {'blink_web_tests': ['/bin/rts_cmd']}}, variant=RTS_VARIANT
   )
   assert test.raw_cmd == ['/bin/rts_cmd']
   api.chromium_rts.append_test_step_text(test, messages)
   assert messages == [
     'Ran tests selected by Regression Test Selection (RTS).\n'
   ]
-  api.chromium_rts.set_swarming_test_execution_info(test, None)
+  api.chromium_rts.set_swarming_test_execution_info(
+    test, None, variant=RTS_VARIANT
+  )
 
   # Test non-allowlisted suite
   spec2 = MockTestSpec.create(name='other_tests', runs_on_swarming=True)
   test2 = spec2.get_test(api.chromium_tests)
   api.chromium_rts.set_swarming_test_execution_info(
-    test2, {'rts': {'other_tests': ['/bin/rts_cmd']}}
+    test2, {'rts': {'other_tests': ['/bin/rts_cmd']}}, variant=RTS_VARIANT
   )
   assert test2.raw_cmd != ['/bin/rts_cmd']
 
@@ -78,8 +84,12 @@ def RunSteps(api: DEPS):
       'interactive_ui_tests': ['/bin/interactive_ui_tests', '--filter=...']
     }
   }
-  api.chromium_rts.set_swarming_test_execution_info(parent_test, variants)
-  api.chromium_rts.set_swarming_test_execution_info(derivative_test, variants)
+  api.chromium_rts.set_swarming_test_execution_info(
+    parent_test, variants, variant=RTS_VARIANT
+  )
+  api.chromium_rts.set_swarming_test_execution_info(
+    derivative_test, variants, variant=RTS_VARIANT
+  )
 
   # Parent suite should have overwritten command and step text
   assert parent_test.raw_cmd == ['/bin/interactive_ui_tests', '--filter=...']
@@ -97,6 +107,17 @@ def RunSteps(api: DEPS):
   derivative_messages = []
   api.chromium_rts.append_test_step_text(derivative_test, derivative_messages)
   assert not derivative_messages
+
+  # Verify variant=None leaves raw_cmd untouched and clears overwritten state
+  test.raw_cmd = ['/bin/orig_cmd']
+  api.chromium_rts.set_swarming_test_execution_info(
+    test, {'rts': {'blink_web_tests': ['/bin/rts_cmd']}}, variant=None
+  )
+  assert test.raw_cmd == ['/bin/orig_cmd']
+  assert not api.chromium_rts.is_overwritten(test)
+  none_messages = []
+  api.chromium_rts.append_test_step_text(test, none_messages)
+  assert not none_messages
 
   # Verify get_filter_file_path for parent vs derivative suites
   assert api.chromium_rts.get_filter_file_path(
@@ -204,6 +225,16 @@ def RunSteps(api: DEPS):
     api.chromium_rts._get_isolate_target(test_with_explicit_isolate)
     == 'explicit_isolate'
   )
+
+  api.chromium_rts._overwritten_tests.clear()
+  api.chromium_rts.set_swarming_test_execution_info(
+    parent_test,
+    {RTS_COMPLEMENT_VARIANT: {'interactive_ui_tests': ['/bin/complement_cmd']}},
+    variant=RTS_COMPLEMENT_VARIANT,
+  )
+  assert parent_test.raw_cmd == ['/bin/complement_cmd']
+  assert api.chromium_rts.is_overwritten(parent_test)
+  assert not api.chromium_rts.is_overwritten(derivative_test)
 
 
 def GenTests(api: RecipeTestApi):

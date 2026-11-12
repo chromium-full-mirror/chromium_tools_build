@@ -5,14 +5,17 @@
 from __future__ import annotations
 
 import traceback
+from typing import TYPE_CHECKING
 
 from recipe_engine import recipe_api, step_data
 from recipe_engine.config_types import Path
 
-from RECIPE_MODULES.build.chromium_tests.steps import Test
+if TYPE_CHECKING:
+  from RECIPE_MODULES.build.chromium_tests.steps import Test
 
 from . import evaluation
 
+RTS_VARIANT = 'rts'
 RTS_COMPLEMENT_VARIANT = 'rts_complement'
 TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
 _RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
@@ -350,7 +353,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       build_dir, command_lines, tests, banned_suites
     )
     if rts_command_lines:
-      variants['rts'] = rts_command_lines
+      variants[RTS_VARIANT] = rts_command_lines
 
     rts_complement_command_lines = self._get_rts_command_lines(
       build_dir, command_lines, tests, banned_suites, inverted=True
@@ -388,15 +391,25 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
 
     return rts_command_lines
 
+  def is_overwritten(self, test: Test) -> bool:
+    """Returns whether the test's command line was overwritten by RTS."""
+    return test.name in self._overwritten_tests
+
   def set_swarming_test_execution_info(
     self,
     test: Test,
     command_line_variants: dict[str, dict[str, list[str]]] | None,
+    variant: str | None = None,
   ) -> None:
     """Sets RTS command line on the given test if available."""
+    if variant is None:
+      # chromium_tests just reset raw_cmd to the base command, so it's not RTS.
+      self._overwritten_tests.discard(test.name)
+      return
+    assert variant in (RTS_VARIANT, RTS_COMPLEMENT_VARIANT), variant
     if not test.enable_rts_filtering or self._rts_disabled:
       return
-    if not command_line_variants or 'rts' not in command_line_variants:
+    if not command_line_variants or variant not in command_line_variants:
       in_experiment = (
         TEST_RTS_MODEL_EXPERIMENT in self.m.buildbucket.build.input.experiments
       )
@@ -405,10 +418,10 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       return
 
     target = self._get_isolate_target(test)
-    rts_command_line = command_line_variants['rts'].get(target, [])
+    rts_command_line = command_line_variants[variant].get(target, [])
     if rts_command_line:
       test.raw_cmd = rts_command_line
-      if not self._overwritten_tests:
+      if not self._overwritten_tests and variant == RTS_VARIANT:
         self.m.buildbucket.add_tags_to_current_build(
           self.m.buildbucket.tags(rts_was_used='true')
         )
@@ -420,7 +433,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     messages: list[str],
   ) -> None:
     """Appends RTS info message if the test's command was overwritten by RTS."""
-    if not self._rts_disabled and test.name in self._overwritten_tests:
+    if not self._rts_disabled and self.is_overwritten(test):
       messages.append(
         'Ran tests selected by Regression Test Selection (RTS).\n'
       )
