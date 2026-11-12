@@ -10,6 +10,7 @@ SUITES = [
   'scripts/eslint_rules/tests/',
   'scripts/stylelint_rules/tests/',
   'scripts/build/tests/',
+  'scripts/ai_assistance/',
   'test/ai_evals/report/',
 ]
 
