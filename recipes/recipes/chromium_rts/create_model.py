@@ -113,7 +113,7 @@ def RunSteps(api: DEPS):
   )
 
   # Create the model.
-  checkout_dir = checkout_dir_fut.result()
+  checkout_dir, git_revision = checkout_dir_fut.result()
   model_dir = api.path.cleanup_dir / 'rts-chromium-model'
   api.step(
     'create-model',
@@ -156,6 +156,7 @@ def RunSteps(api: DEPS):
           pkg_dir,
           model_dir,
           should_update_ref,
+          git_revision,
         )
       )
   # Check success.
@@ -186,7 +187,12 @@ def archive_training_data(api: DEPS):
 
 
 def create_cipd_package(
-  api: DEPS, platform, exec_pkg_dir, model_dir, update_ref
+  api: DEPS,
+  platform,
+  exec_pkg_dir,
+  model_dir,
+  update_ref,
+  git_revision,
 ):
   with api.step.nest('Upload CIPD package - %s' % platform):
     # Copy the model files, such that create_cipd_package can be called for
@@ -215,10 +221,12 @@ def create_cipd_package(
       pkg,
       tags={
         'build': 'https://ci.chromium.org/b/%d' % api.buildbucket.build.id,
+        'git_revision': git_revision,
       },
     )
+
     # Skip the ref update if it is an experimental build.
-    if not api.runtime.is_experimental and update_ref:  # pragma: no branch
+    if not api.runtime.is_experimental and update_ref:
       api.cipd.set_ref(pin.package, version=pin.instance_id, refs=['latest'])
 
 
@@ -294,10 +302,13 @@ def pick_executable_version(api: DEPS) -> str:
 
 
 def checkout_chromium(api: DEPS):
-  """Checks out chromium/src and returns its path."""
+  """Checks out chromium/src and returns its path and git revision."""
   api.gclient.set_config('chromium_empty')
-  api.chromium_checkout.ensure_checkout()
-  return api.chromium_checkout.source_dir
+  update_result = api.chromium_checkout.ensure_checkout()
+  return (
+    api.chromium_checkout.source_dir,
+    update_result.properties['got_revision'],
+  )
 
 
 def _fetch_model_data(
@@ -432,6 +443,26 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test('basic') + linux_amd64
+
+  yield (
+    api.test('integration_tests_failed', status='FAILURE')
+    + linux_amd64
+    + api.step_data('integration_tests', retcode=1)
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.create chromium/rts/model/linux-amd64',
+      [
+        '-tag',
+        'git_revision:f27fede2220bcd326aee3e86ddfd4ebd0fe58cb9',
+      ],
+    )
+    + api.post_process(
+      post_process.DoesNotRunRE,
+      r'.*cipd set-ref.*',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
 
   yield (
     api.test('missing_git_revision', status='FAILURE')
