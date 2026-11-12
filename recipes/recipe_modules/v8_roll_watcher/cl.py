@@ -4,13 +4,9 @@
 
 from __future__ import annotations
 
-from .build import BBBuild
-
 from functools import cached_property
 
-from PB.go.chromium.org.luci.buildbucket.proto.builds_service import (
-  BuildPredicate,
-)
+CV_RUN_STATUS_FAILED = 66
 
 
 class GerritCL:
@@ -23,9 +19,6 @@ class GerritCL:
     self.number = cl_dict.pop('_number')
 
     self.__dict__.update(cl_dict)
-
-  def cq_blocking_builds(self):
-    return [build for build in self.builds if build.is_cq_build()]
 
   @property
   def last_patch(self):
@@ -48,16 +41,34 @@ class GerritCL:
     return (not subject) or (subject == self.subject)
 
   def has_blocking_failures(self):
-    return any(build.has_failed() for build in self.cq_blocking_builds())
+    return bool(self.failed_cv_run)
 
-  @property
-  def as_query_dict(self):
-    return dict(
-      host=self.host,
-      change=self.number,
-      patchset=self.last_patch_number,
-      project=self.project,
-    )
+  @cached_property
+  def failed_cv_run(self):
+    search_project = self.project.split('/')[1]
+    search_cl = (self.host, self.number)
+    cv_runs = self.api.change_verifier.search_runs(search_project, search_cl)
+
+    if not cv_runs:
+      self.api.step.empty('No CV runs found')
+      return None
+    last_cv_run = cv_runs[0]
+    if last_cv_run.mode not in ['FULL_RUN', 'DRY_RUN']:
+      self.api.step.empty(
+        f'Last CV run mode is unsupported: {last_cv_run.mode}.'
+      )
+      return None
+    if not last_cv_run.end_time.ToSeconds():
+      self.api.step.empty('Last CV run has not finished yet.')
+      return None
+    if last_cv_run.status != CV_RUN_STATUS_FAILED:
+      self.api.step.empty('Last CV run did not fail.')
+      return None
+    if last_cv_run.cls[0].patchset != self.last_patch_number:
+      self.api.step.empty('Last CV run was not for the latest patchset.')
+      return None
+    self.api.step.empty('Last CV run failed.')
+    return last_cv_run
 
   @property
   def full_path(self):
@@ -70,19 +81,6 @@ class GerritCL:
   @property
   def presentation_links(self):
     return {self.short_path: self.full_path}
-
-  @cached_property
-  def builds(self):
-    bb_builds = self.api.buildbucket.search(
-      BuildPredicate(
-        gerrit_changes=[self.as_query_dict],
-        include_experimental=True,
-      ),
-      limit=100,
-      fields=['tags,status'],
-      report_build=False,
-    )
-    return [BBBuild(b) for b in bb_builds]
 
   def set_tag(self, tag_name, step_name):
     self.api.gerrit.call_raw_api(

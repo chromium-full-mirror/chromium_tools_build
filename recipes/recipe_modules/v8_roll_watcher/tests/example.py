@@ -5,13 +5,6 @@
 from __future__ import annotations
 
 from google.protobuf import timestamp_pb2
-from PB.go.chromium.org.luci.buildbucket.proto.build import Build
-from PB.go.chromium.org.luci.buildbucket.proto.builder_common import BuilderID
-from PB.go.chromium.org.luci.buildbucket.proto.common import (
-  FAILURE,
-  SUCCESS,
-  StringPair,
-)
 from PB.go.chromium.org.luci.cv.api.v0 import run as run_pb
 from PB.go.chromium.org.luci.cv.api.v0 import service_runs as service_runs_pb
 from PB.go.chromium.org.luci.cv.api.v0 import tryjob as tryjob_pb
@@ -31,7 +24,6 @@ from RECIPE_MODULES.depot_tools import (
   git,
 )
 from RECIPE_MODULES.recipe_engine import (
-  buildbucket,
   change_verifier,
   context,
   file,
@@ -47,7 +39,6 @@ from RECIPE_MODULES.recipe_engine import (
 
 @dataclass
 class DEPS(RecipeScriptApi):
-  buildbucket: buildbucket.API
   change_verifier: change_verifier.API
   context: context.API
   depot_tools: depot_tools.API
@@ -66,7 +57,6 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
-  buildbucket: buildbucket.TEST_API
   file: file.TEST_API
   json: json.TEST_API
   properties: properties.TEST_API
@@ -90,7 +80,7 @@ def GenTests(api: TEST_DEPS):
   default_roller = {
     'name': 'roller',
     'subject': 'Update dependencies',
-    'review-host': 'review.googlesource.com',
+    'review-host': 'chromium-review.googlesource.com',
     'project': 'v8/v8',
     'account': 'autoroll@service-accounts.com',
   }
@@ -132,25 +122,6 @@ def GenTests(api: TEST_DEPS):
     return api.override_step_data(
       "Roller: '{}'.gerrit Find open CLs".format(roller['name']),
       api.json.output([cl_data]),
-    )
-
-  def find_fake_builds(roller, *builds):
-    return api.buildbucket.simulated_search_results(
-      list(builds),
-      step_name="Roller: '{}'.Checking CL 123.buildbucket.search".format(
-        roller['name']
-      ),
-    )
-
-  def build(build_id, status, builder_name=None, experimental=False):
-    exp_tag = StringPair(
-      key='cq_experimental', value='true' if experimental else 'false'
-    )
-    return Build(
-      id=build_id,
-      status=status,
-      builder=BuilderID(builder=builder_name),
-      tags=[exp_tag],
     )
 
   def find_fake_cv(roller, runs=None):
@@ -215,6 +186,7 @@ def GenTests(api: TEST_DEPS):
     'roller-with-stale-cls',
     roller(default_roller),
     find_fake_cls(default_roller),
+    find_fake_cv(default_roller),
     status='SUCCESS',
   )
 
@@ -222,10 +194,9 @@ def GenTests(api: TEST_DEPS):
     'roll-failing-in-cq-default',
     roller(default_roller),
     find_fake_cls(default_roller),
-    find_fake_builds(
+    find_fake_cv(
       default_roller,
-      build(1, SUCCESS),
-      build(2, FAILURE),
+      fake_cv_runs(cls=fake_cv_cls()),
     ),
     status='FAILURE',
   )
@@ -238,10 +209,9 @@ def GenTests(api: TEST_DEPS):
       failure_recovery=['just_pass'],
     ),
     find_fake_cls(default_roller),
-    find_fake_builds(
+    find_fake_cv(
       default_roller,
-      build(1, SUCCESS),
-      build(2, FAILURE),
+      fake_cv_runs(cls=fake_cv_cls()),
     ),
   )
 
@@ -249,11 +219,6 @@ def GenTests(api: TEST_DEPS):
     'test262_failure_recovery',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(
       test262_importer,
       fake_cv_runs(cls=fake_cv_cls(), tryjobs=fake_cv_tryjobs()),
@@ -276,11 +241,6 @@ def GenTests(api: TEST_DEPS):
     'test262_no_failures',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(
       test262_importer,
       fake_cv_runs(cls=fake_cv_cls(), tryjobs=fake_cv_tryjobs()),
@@ -298,11 +258,6 @@ def GenTests(api: TEST_DEPS):
     'test262_wrong_patchset',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(test262_importer, fake_cv_runs(cls=fake_cv_cls(patchset=2))),
     api.post_process(
       StepSuccess,
@@ -317,11 +272,6 @@ def GenTests(api: TEST_DEPS):
     'test262_wrong_status',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(test262_importer, fake_cv_runs(status=-1)),
     api.post_process(
       StepSuccess, "Roller: 'test262'.Checking CL 123.Last CV run did not fail."
@@ -334,11 +284,6 @@ def GenTests(api: TEST_DEPS):
     'test262_not_finished',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(test262_importer, fake_cv_runs(end_time=None)),
     api.post_process(
       StepSuccess,
@@ -352,11 +297,6 @@ def GenTests(api: TEST_DEPS):
     'test262_wrong_mode',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(test262_importer, fake_cv_runs(mode="UNSUPORTED")),
     api.post_process(
       StepSuccess,
@@ -371,11 +311,6 @@ def GenTests(api: TEST_DEPS):
     'test262_no_cv_runs',
     roller(test262_importer),
     find_fake_cls(test262_importer),
-    find_fake_builds(
-      test262_importer,
-      build(1, FAILURE),
-      build(2, FAILURE, builder_name='some_v8_builder'),
-    ),
     find_fake_cv(test262_importer),
     api.post_process(
       StepSuccess, "Roller: 'test262'.Checking CL 123.No CV runs found"

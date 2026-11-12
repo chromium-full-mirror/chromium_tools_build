@@ -6,35 +6,13 @@ from __future__ import annotations
 
 from . import commons
 
-CV_RUN_STATUS_FAILED = 66
 TRYJOB_STATUS_FAILED_PERMANENTLY = 3
 
 
 def find_unexpected_results_in_last_cv_attempt(api, cl, test_regex):
-  search_project = cl.project.split('/')[1]
-  search_cl = (cl.host, cl.number)
-  cv_runs = api.change_verifier.search_runs(search_project, search_cl)
-
-  if not cv_runs:
-    api.step.empty('No CV runs found')
-    return
-  last_cv_run = cv_runs[0]
-  if last_cv_run.mode not in ['FULL_RUN', 'DRY_RUN']:
-    api.step.empty(f'Last CV run mode is unsupported: {last_cv_run.mode}.')
-    return
-  if not last_cv_run.end_time.ToSeconds():
-    api.step.empty('Last CV run has not finished yet.')
-    return
-  if last_cv_run.status != CV_RUN_STATUS_FAILED:
-    api.step.empty('Last CV run did not fail.')
-    return
-  if last_cv_run.cls[0].patchset != cl.last_patch_number:
-    api.step.empty('Last CV run was not for the latest patchset.')
-    return
-  api.step.empty('Last CV run failed.')
   buid_ids = [
     tryjob.result.buildbucket.id
-    for tryjob in last_cv_run.tryjobs
+    for tryjob in cl.failed_cv_run.tryjobs
     if tryjob.result.status == TRYJOB_STATUS_FAILED_PERMANENTLY
   ]
   results = api.resultdb.query(

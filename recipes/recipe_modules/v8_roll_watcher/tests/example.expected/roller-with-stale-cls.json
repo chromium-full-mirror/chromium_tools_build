@@ -9,7 +9,7 @@
       "RECIPE_REPO[depot_tools]/gerrit_client.py",
       "changes",
       "--host",
-      "https://review.googlesource.com",
+      "https://chromium-review.googlesource.com",
       "--json_file",
       "/path/to/tmp/json",
       "--limit",
@@ -72,15 +72,23 @@
     "name": "Roller: 'roller'.Checking CL 123",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
-      "@@@STEP_LINK@v8/v8/+/123@https://review.googlesource.com/c/v8/v8/+/123@@@"
+      "@@@STEP_LINK@v8/v8/+/123@https://chromium-review.googlesource.com/c/v8/v8/+/123@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "Roller: 'roller'.Checking CL 123.luci-change-verifier.SearchRuns",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@2@@@"
     ]
   },
   {
     "cmd": [
-      "bb",
-      "batch",
-      "-host",
-      "cr-buildbucket.appspot.com"
+      "prpc",
+      "call",
+      "-format=json",
+      "luci-change-verifier.appspot.com",
+      "cv.v0.Runs.SearchRuns"
     ],
     "env_suffixes": {
       "DEPOT_TOOLS_UPDATE": [
@@ -91,48 +99,17 @@
       ]
     },
     "infra_step": true,
-    "name": "Roller: 'roller'.Checking CL 123.buildbucket.search",
-    "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"id,tags,status\"}, \"pageSize\": 100, \"predicate\": {\"gerritChanges\": [{\"change\": \"123\", \"host\": \"review.googlesource.com\", \"patchset\": \"1\", \"project\": \"v8/v8\"}], \"includeExperimental\": true}}}]}",
+    "name": "Roller: 'roller'.Checking CL 123.luci-change-verifier.SearchRuns.request page 1",
+    "stdin": "{\n  \"predicate\": {\n    \"gerrit_changes\": [\n      {\n        \"change\": \"123\",\n        \"host\": \"chromium-review.googlesource.com\"\n      }\n    ],\n    \"project\": \"v8\"\n  }\n}",
     "~followup_annotations": [
-      "@@@STEP_NEST_LEVEL@2@@@",
-      "@@@STEP_LOG_LINE@json.output@{@@@",
-      "@@@STEP_LOG_LINE@json.output@  \"responses\": [@@@",
-      "@@@STEP_LOG_LINE@json.output@    {@@@",
-      "@@@STEP_LOG_LINE@json.output@      \"searchBuilds\": {}@@@",
-      "@@@STEP_LOG_LINE@json.output@    }@@@",
-      "@@@STEP_LOG_LINE@json.output@  ]@@@",
-      "@@@STEP_LOG_LINE@json.output@}@@@",
-      "@@@STEP_LOG_END@json.output@@@",
-      "@@@STEP_LOG_LINE@request@{@@@",
-      "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
-      "@@@STEP_LOG_LINE@request@    {@@@",
-      "@@@STEP_LOG_LINE@request@      \"searchBuilds\": {@@@",
-      "@@@STEP_LOG_LINE@request@        \"mask\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"fields\": \"id,tags,status\"@@@",
-      "@@@STEP_LOG_LINE@request@        },@@@",
-      "@@@STEP_LOG_LINE@request@        \"pageSize\": 100,@@@",
-      "@@@STEP_LOG_LINE@request@        \"predicate\": {@@@",
-      "@@@STEP_LOG_LINE@request@          \"gerritChanges\": [@@@",
-      "@@@STEP_LOG_LINE@request@            {@@@",
-      "@@@STEP_LOG_LINE@request@              \"change\": \"123\",@@@",
-      "@@@STEP_LOG_LINE@request@              \"host\": \"review.googlesource.com\",@@@",
-      "@@@STEP_LOG_LINE@request@              \"patchset\": \"1\",@@@",
-      "@@@STEP_LOG_LINE@request@              \"project\": \"v8/v8\"@@@",
-      "@@@STEP_LOG_LINE@request@            }@@@",
-      "@@@STEP_LOG_LINE@request@          ],@@@",
-      "@@@STEP_LOG_LINE@request@          \"includeExperimental\": true@@@",
-      "@@@STEP_LOG_LINE@request@        }@@@",
-      "@@@STEP_LOG_LINE@request@      }@@@",
-      "@@@STEP_LOG_LINE@request@    }@@@",
-      "@@@STEP_LOG_LINE@request@  ]@@@",
-      "@@@STEP_LOG_LINE@request@}@@@",
-      "@@@STEP_LOG_END@request@@@",
-      "@@@STEP_LINK@rpc-explorer@https://cr-buildbucket.appspot.com/rpcexplorer/services/buildbucket.v2.Builds/SearchBuilds?request=%7B%22predicate%22%3A+%7B%22gerritChanges%22%3A+%5B%7B%22host%22%3A+%22review.googlesource.com%22%2C+%22project%22%3A+%22v8%2Fv8%22%2C+%22change%22%3A+%22123%22%2C+%22patchset%22%3A+%221%22%7D%5D%2C+%22includeExperimental%22%3A+true%7D%2C+%22pageSize%22%3A+100%2C+%22mask%22%3A+%7B%22fields%22%3A+%22id%2Ctags%2Cstatus%22%7D%7D@@@"
+      "@@@STEP_NEST_LEVEL@3@@@",
+      "@@@STEP_LOG_LINE@proto.output@{}@@@",
+      "@@@STEP_LOG_END@proto.output@@@"
     ]
   },
   {
     "cmd": [],
-    "name": "Roller: 'roller'.Checking CL 123.No CQ failures on this CL yet...",
+    "name": "Roller: 'roller'.Checking CL 123.No CV runs found",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
     ]

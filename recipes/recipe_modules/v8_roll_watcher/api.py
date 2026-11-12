@@ -34,8 +34,6 @@ def process_cl(api, roller, cl):
     parent_step.links.update(cl.presentation_links)
     if cl.has_blocking_failures():
       run_failure_recovery(api, roller, cl)
-    else:
-      api.step('No CQ failures on this CL yet...', [])
 
 
 def run_failure_recovery(api, roller, cl):
