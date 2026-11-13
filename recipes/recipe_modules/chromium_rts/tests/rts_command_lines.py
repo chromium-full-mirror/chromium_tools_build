@@ -235,6 +235,11 @@ def RunSteps(api: DEPS):
   assert parent_test.raw_cmd == ['/bin/complement_cmd']
   assert api.chromium_rts.is_overwritten(parent_test)
   assert not api.chromium_rts.is_overwritten(derivative_test)
+  complement_messages = []
+  api.chromium_rts.append_test_step_text(parent_test, complement_messages)
+  assert complement_messages == [
+    'Ran tests skipped by Regression Test Selection (RTS).\n'
+  ]
 
 
 def GenTests(api: RecipeTestApi):

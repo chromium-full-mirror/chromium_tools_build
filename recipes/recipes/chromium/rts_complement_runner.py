@@ -8,10 +8,9 @@ like chromium/orchestrator without the compile: instead of triggering a
 compilator build, it reads the CQ build (cq_build_id), resolves its with-patch
 SUCCESS compilator child build, and reads that compilator build's outputs.
 
-Only the suites RTS skipped tests of in the CQ build are selected, from its
+Only the suites RTS skipped tests of in the CQ build run, selected from its
 RTS evaluation output properties, with the 'rts_complement' command lines,
-which run the skipped tests. Running the tests and recording false acceptances
-are stubs.
+which run the skipped tests. Recording false acceptances is a stub.
 """
 
 from __future__ import annotations
@@ -19,6 +18,7 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 
+import attr
 from google.protobuf import json_format
 
 from recipe_engine import post_process
@@ -34,27 +34,54 @@ from PB.recipe_modules.build.chromium_orchestrator import (
 from PB.recipes.build.chromium.rts_complement_runner import InputProperties
 from RECIPE_MODULES.build import (
   chromium,
+  chromium_checkout,
   chromium_orchestrator,
   chromium_rts,
+  chromium_swarming,
   chromium_tests,
   chromium_tests_builder_config,
+  code_coverage,
+  test_utils,
 )
 from RECIPE_MODULES.build.chromium_rts.api import RTS_COMPLEMENT_VARIANT
 from RECIPE_MODULES.build.chromium_rts.evaluation import SuiteSafetyDetails
 from RECIPE_MODULES.build.chromium_tests import steps
 from RECIPE_MODULES.depot_tools import tryserver
-from RECIPE_MODULES.recipe_engine import buildbucket, file, properties, step
+from RECIPE_MODULES.recipe_engine import (
+  buildbucket,
+  file,
+  properties,
+  step,
+  swarming,
+)
 
 PROPERTIES = InputProperties
+
+# Lower than the CQ priority (30), so the complement tests don't delay CQ
+# tests. Retried shards run at COMPLEMENT_PRIORITY - 1 (69), because
+# SwarmingTest.SUFFIXES_TO_INCREASE_PRIORITY bumps 'retry shards with patch';
+# that's still far below CQ, keep it.
+COMPLEMENT_PRIORITY = 70
+COMPLEMENT_TAG = 'rts_run_type:complement'
+# Complement tasks queue behind CQ tasks at COMPLEMENT_PRIORITY, so the 1h
+# default expires them at peak. Suites that set their own swarming expiration
+# keep it. If both the tasks and their shard retry queue for close to 2h, the
+# runner hits its 4h execution timeout and ends in INFRA_FAILURE.
+COMPLEMENT_EXPIRATION_SECS = 2 * 60 * 60
 
 
 @dataclass
 class DEPS(RecipeScriptApi):
   buildbucket: buildbucket.API
   chromium: chromium.API
+  chromium_checkout: chromium_checkout.API
   chromium_orchestrator: chromium_orchestrator.API
   chromium_rts: chromium_rts.API
+  chromium_swarming: chromium_swarming.API
+  chromium_tests: chromium_tests.API
+  code_coverage: code_coverage.API
   step: step.API
+  test_utils: test_utils.API
   tryserver: tryserver.API
 
 
@@ -65,8 +92,10 @@ class TEST_DEPS(RecipeTestApi):
   chromium_orchestrator: chromium_orchestrator.TEST_API
   chromium_tests: chromium_tests.TEST_API
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
+  code_coverage: code_coverage.TEST_API
   file: file.TEST_API
   properties: properties.TEST_API
+  swarming: swarming.TEST_API
 
 
 def _select_complement_suites(
@@ -121,33 +150,63 @@ def _select_complement_suites(
 
 def _run_complement_suites(
   api: DEPS,
+  builder_config: chromium_tests_builder_config.BuilderConfig,
   suites: Sequence[steps.Test],
-) -> list[steps.Test]:
-  """Runs the complement tests and returns the failing suites (stub).
+) -> tuple[list[str], list[str]]:
+  """Runs the complement tests on Swarming.
+
+  Mirrors the test phase of chromium_orchestrator's test_patch(): failed and
+  invalid shards are retried if the CQ builder has retry_failed_shards,
+  without a without patch retry and without processing coverage.
+
+  Returns the suites without valid results (e.g. expired shards) and the
+  suites with valid results and failing tests.
 
   TODO(crbug.com/565109194): set the ResultDB base variant builder to the CQ
-  builder, lower chromium_swarming.default_priority below CQ, tag tasks with
-  rts_run_type:complement, and run `suites` with
-  test_utils.run_tests_with_patch() inside chromium_tests.wrap_chromium_tests()
-  (retrying failed shards and exonerating known flaky failures with LUCI
-  Analysis, without a without patch retry).
+  builder, so known flaky failures are exonerated against its history.
   """
-  api.step.empty(
-    'run complement tests (stub)',
-    step_text=f'Would run {len(suites)} complement test suites',
-  )
-  return []
+  # configure_swarming() in prepare_tests_from_compilator_output() sets the
+  # CQ priority, so this overrides it.
+  api.chromium_swarming.default_priority = COMPLEMENT_PRIORITY
+  api.chromium_swarming.default_expiration = COMPLEMENT_EXPIRATION_SECS
+  api.chromium_swarming.add_default_tag(COMPLEMENT_TAG)
+  # Optional dimensions (e.g. x86-64-e4 CPUs on win-rel) are for CQ builders.
+  for suite in suites:
+    suite.spec = attr.evolve(suite.spec, optional_dimensions={})
+  # Like test_patch(): the shard merge of coverage builders needs
+  # llvm-profdata (crbug/1346781). The runner bootstraps the CQ builder's
+  # $build/code_coverage, so the merge matches the instrumented binaries.
+  # Coverage data isn't processed.
+  if api.code_coverage.use_clang_coverage:
+    api.code_coverage.ensure_clang_coverage_tools()
+
+  checkout_dir = api.chromium_checkout.checkout_dir
+  source_dir = api.chromium_checkout.source_dir
+  build_dir = api.chromium.default_build_dir(source_dir)
+  with api.chromium_tests.wrap_chromium_tests(
+    checkout_dir, source_dir, build_dir, tests=suites
+  ):
+    invalid_suites, failing_suites = api.test_utils.run_tests_with_patch(
+      checkout_dir,
+      source_dir,
+      build_dir,
+      suites,
+      retry_failed_shards=builder_config.retry_failed_shards,
+    )
+  invalid = sorted({s.name for s in invalid_suites})
+  return invalid, [s.name for s in failing_suites if s.name not in invalid]
 
 
 def _record_false_acceptances(
   api: DEPS,
   cq_build: build_pb.Build,
-  failing_suites: Sequence[steps.Test],
+  failing_suites: list[str],
 ) -> None:
   """Records the skipped tests that fail, as data (stub).
 
   TODO(crbug.com/565109194): write the rts_complement output property with the
-  per-suite test counts and false acceptances instead of failing this build.
+  per-suite test counts and false acceptances. Don't fail this build on false
+  acceptances: rts_complement_trigger only treats SUCCESS runners as covered.
   """
   api.step.empty(
     'record false acceptances (stub)',
@@ -217,16 +276,40 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
     suites = _select_complement_suites(
       api, suites, cq_output.get('rts_suite_safety_details', {})
     )
-    failing_suites = _run_complement_suites(api, suites)
+
+    summary = (
+      f'CQ build {cq_build.id} ({cq_build.builder.builder}), compilator build '
+      f'{compilator_build.id}\n\n'
+    )
+    if not suites:
+      return result_pb.RawResult(
+        status=common_pb.SUCCESS,
+        summary_markdown=summary + 'No suites to run',
+      )
+
+    try:
+      invalid_suites, failing_suites = _run_complement_suites(
+        api, builder_config, suites
+      )
+    # Test failures are returned, not raised; this is for infra failures like
+    # failing to trigger or collect the tasks.
+    except api.step.StepFailure as e:
+      return result_pb.RawResult(
+        status=common_pb.INFRA_FAILURE,
+        summary_markdown=summary + f'Test phase failed: {e.reason}',
+      )
     _record_false_acceptances(api, cq_build, failing_suites)
 
-  return result_pb.RawResult(
-    status=common_pb.SUCCESS,
-    summary_markdown=(
-      f'CQ build {cq_build.id} ({cq_build.builder.builder}), compilator build '
-      f'{compilator_build.id}'
-    ),
-  )
+  names = ', '.join(s.name for s in suites)
+  summary += f'Ran the RTS skipped tests of {len(suites)} suites: {names}'
+  # rts_complement_trigger treats SUCCESS runners as covered, so a run where
+  # some suites have no results isn't SUCCESS.
+  if invalid_suites:
+    summary += '\n\nSuites without valid results: ' + ', '.join(invalid_suites)
+    return result_pb.RawResult(
+      status=common_pb.INFRA_FAILURE, summary_markdown=summary
+    )
+  return result_pb.RawResult(status=common_pb.SUCCESS, summary_markdown=summary)
 
 
 def GenTests(api: TEST_DEPS):
@@ -292,7 +375,12 @@ def GenTests(api: TEST_DEPS):
     def gtest(name, shards, enable_rts_filtering=True):
       return {
         'name': name,
-        'swarming': {'shards': shards},
+        'swarming': {
+          'dimensions': {'os': 'Linux', 'pool': 'luci.chromium.tests'},
+          # Like win-rel's browser_tests and interactive_ui_tests.
+          'optional_dimensions': {'30': {'cpu': 'x86-64-e4'}},
+          'shards': shards,
+        },
         'enable_rts_filtering': enable_rts_filtering,
       }
 
@@ -357,6 +445,21 @@ def GenTests(api: TEST_DEPS):
       step_name='find compilator build',
     ) + api.buildbucket.simulated_get(build, step_name='read compilator build')
 
+  browser_tests_trigger = (
+    'test_pre_run (with patch).[trigger] browser_tests (with patch)'
+  )
+
+  def check_complement_request(check, request):
+    check(request.priority == COMPLEMENT_PRIORITY)
+    check(COMPLEMENT_TAG in request.tags)
+    # No optional (e4) slice.
+    check(len(request) == 1)
+    check(request[0].expiration_secs == COMPLEMENT_EXPIRATION_SECS)
+    check(request[0].dimensions['pool'] == 'luci.chromium.tests')
+    check(
+      '--filter=gen/rts/browser_tests_inverted.filter' in request[0].command
+    )
+
   def full_build(cq_output=None):
     return (
       runner_build()
@@ -379,15 +482,110 @@ def GenTests(api: TEST_DEPS):
       '<br/>sync_integration_tests: skipped, not in the compilator tests',
     ),
     api.post_check(
-      post_process.StepTextEquals,
-      'run complement tests (stub)',
-      'Would run 1 complement test suites',
+      api.swarming.check_triggered_request,
+      browser_tests_trigger,
+      check_complement_request,
     ),
-    api.post_check(post_process.MustRun, 'record false acceptances (stub)'),
+    api.post_check(
+      api.swarming.check_triggered_request,
+      f'{browser_tests_trigger} (10)',
+      check_complement_request,
+    ),
+    api.post_check(post_process.DoesNotRun, f'{browser_tests_trigger} (11)'),
+    api.post_check(
+      post_process.DoesNotRun,
+      'test_pre_run (with patch).[trigger] content_unittests (with patch)',
+    ),
+    api.post_check(post_process.DoesNotRun, 'browser_tests (without patch)'),
+    api.post_check(
+      post_process.StepTextEquals,
+      'record false acceptances (stub)',
+      '0 failing suites for CQ build 1000',
+    ),
     api.post_check(
       post_process.SummaryMarkdown,
-      'CQ build 1000 (win-rel), compilator build 2000',
+      'CQ build 1000 (win-rel), compilator build 2000\n\n'
+      'Ran the RTS skipped tests of 1 suites: browser_tests',
     ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'failing_suite',
+    full_build(),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', failures=['Test.One']
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'retry shards with patch', failures=['Test.One']
+    ),
+    api.post_check(
+      post_process.StepTextEquals,
+      'record false acceptances (stub)',
+      '1 failing suites for CQ build 1000',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'invalid_suite',
+    full_build(),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', invalid=True
+    ),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'retry shards with patch', invalid=True
+    ),
+    api.post_check(
+      post_process.StepTextEquals,
+      'record false acceptances (stub)',
+      '0 failing suites for CQ build 1000',
+    ),
+    api.post_check(
+      post_process.SummaryMarkdownRE,
+      'Suites without valid results: browser_tests',
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'invalid_suite_valid_on_retry',
+    full_build(),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', invalid=True
+    ),
+    api.post_check(
+      post_process.MustRun, 'browser_tests (retry shards with patch)'
+    ),
+    api.post_check(
+      post_process.StepTextEquals,
+      'record false acceptances (stub)',
+      '0 failing suites for CQ build 1000',
+    ),
+    api.post_check(
+      post_process.SummaryMarkdown,
+      'CQ build 1000 (win-rel), compilator build 2000\n\n'
+      'Ran the RTS skipped tests of 1 suites: browser_tests',
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'clang_coverage',
+    full_build(),
+    api.code_coverage(use_clang_coverage=True),
+    api.post_check(post_process.MustRun, 'ensure clang coverage tools'),
+    api.post_check(post_process.DoesNotRun, 'process clang code coverage data'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'test_phase_failure',
+    full_build(),
+    api.step_data(browser_tests_trigger, retcode=1),
+    api.post_check(post_process.SummaryMarkdownRE, 'Test phase failed'),
+    api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -400,6 +598,10 @@ def GenTests(api: TEST_DEPS):
       'select complement suites',
       '<br/>browser_tests: skipped, not actively filtered in CQ'
       '<br/>interactive_ui_tests: skipped, not actively filtered in CQ',
+    ),
+    api.post_check(
+      post_process.SummaryMarkdown,
+      'CQ build 1000 (win-rel), compilator build 2000\n\nNo suites to run',
     ),
     api.post_process(post_process.DropExpectation),
   )

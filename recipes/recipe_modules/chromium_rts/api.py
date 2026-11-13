@@ -30,6 +30,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     self._evaluation_future = None
     self._banned_suites = None
     self._overwritten_tests: set[str] = set()
+    # Tests running the 'rts_complement' command line, i.e. the skipped tests.
+    self._complement_tests: set[str] = set()
     self._rts_disabled: bool = False
 
   def get_experiment_names(self) -> set[str]:
@@ -426,6 +428,8 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
           self.m.buildbucket.tags(rts_was_used='true')
         )
       self._overwritten_tests.add(test.name)
+      if variant == RTS_COMPLEMENT_VARIANT:
+        self._complement_tests.add(test.name)
 
   def append_test_step_text(
     self,
@@ -434,6 +438,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
   ) -> None:
     """Appends RTS info message if the test's command was overwritten by RTS."""
     if not self._rts_disabled and self.is_overwritten(test):
+      action = 'skipped' if test.name in self._complement_tests else 'selected'
       messages.append(
-        'Ran tests selected by Regression Test Selection (RTS).\n'
+        f'Ran tests {action} by Regression Test Selection (RTS).\n'
       )
