@@ -36,6 +36,13 @@ def RunSteps(api: DEPS):
     error_limit=-1,
     step_name='gn check --check-generated',
   )
+  api.gn.check(
+    build_dir,
+    check_generated=True,
+    label_patterns=['//base:base_unittests', '//chrome/test:browser_tests'],
+    with_transitive_deps=True,
+    step_name='gn check --check-generated --with-transitive-deps',
+  )
   # raise_on_failure=False lets the recipe continue while the step is still
   # reported as a failure.
   api.gn.check(
@@ -68,6 +75,19 @@ def GenTests(api: RecipeTestApi):
         '[CACHE]/builder/src/out/Release',
         '--check-generated',
         '--error-limit=-1',
+      ],
+    ),
+    api.post_process(
+      StepCommandContains,
+      'gn check --check-generated --with-transitive-deps',
+      [
+        'RECIPE_REPO[depot_tools]/gn.py',
+        'check',
+        '[CACHE]/builder/src/out/Release',
+        '//base:base_unittests',
+        '//chrome/test:browser_tests',
+        '--check-generated',
+        '--with-transitive-deps',
       ],
     ),
     api.post_process(DropExpectation),

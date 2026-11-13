@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import re
+from collections.abc import Sequence
 
 from recipe_engine import recipe_api
 
@@ -322,6 +323,8 @@ class GnApi(recipe_api.RecipeApi):
     build_dir,
     check_generated=False,
     error_limit: int | None = None,
+    label_patterns: Sequence[str] = (),
+    with_transitive_deps: bool = False,
     step_name='gn check',
     **kwargs,
   ):
@@ -335,16 +338,25 @@ class GnApi(recipe_api.RecipeApi):
       check_generated: Boolean indicating whether to check generated headers.
       error_limit: Maximum number of errors to print (-1 for no limit). If
         None, uses GN's default (10).
+      label_patterns: GN label patterns of the targets to check. If empty, all
+        targets are checked.
+      with_transitive_deps: Whether to also check the transitive deps of the
+        targets matching label_patterns.
       step_name: Optional recipe step name to give to the "gn check" command.
       kwargs: Other arguments passed to the underlying python step.
+
+    Returns:
+      The step result.
     """
     with self.m.context(cwd=build_dir):
-      cmd = ['check', build_dir]
+      cmd = ['check', build_dir, *label_patterns]
       if check_generated:
         cmd.append('--check-generated')
       if error_limit is not None:
         cmd.append(f'--error-limit={error_limit}')
-      self._gn_cmd(step_name, cmd, **kwargs)
+      if with_transitive_deps:
+        cmd.append('--with-transitive-deps')
+      return self._gn_cmd(step_name, cmd, **kwargs)
 
   def parse_gn_args(self, content):
     """Parses string content from arg.gn to a dictionary.
