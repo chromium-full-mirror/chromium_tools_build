@@ -18,8 +18,8 @@ from . import evaluation
 RTS_VARIANT = 'rts'
 RTS_COMPLEMENT_VARIANT = 'rts_complement'
 TEST_RTS_MODEL_EXPERIMENT = 'chromium_rts.filter_file_analysis'
-_RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
-_DEFAULT_TARGET_CHANGE_RECALL = 0.95
+RTS_MODEL_CIPD_PREFIX = 'chromium/rts/model/'
+DEFAULT_TARGET_CHANGE_RECALL = 0.95
 
 
 class ChromiumRtsApi(recipe_api.RecipeApi):
@@ -151,7 +151,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
         '-changed-files-path',
         self.m.raw_io.input_text('\n'.join(affected_files)),
         '-target-change-recall',
-        str(_DEFAULT_TARGET_CHANGE_RECALL),
+        str(DEFAULT_TARGET_CHANGE_RECALL),
         '-change-ref',
         'HEAD~',
         '-gen-inverse',
@@ -217,7 +217,7 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
     try:
       install_dir = self.m.path.cleanup_dir / 'rts-model'
       platform = self.m.cipd.platform
-      package_name = _RTS_MODEL_CIPD_PREFIX + platform
+      package_name = RTS_MODEL_CIPD_PREFIX + platform
       ensure_file = self.m.cipd.EnsureFile()
       ensure_file.add_package(package_name, 'latest')
       self.m.cipd.ensure(install_dir, ensure_file, name='install RTS model')

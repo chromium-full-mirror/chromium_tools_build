@@ -668,6 +668,52 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/rts-chromium-model/git-file-graph/config.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "read thresholds",
+    "~followup_annotations": [
+      "@@@STEP_LOG_LINE@config.json@{@@@",
+      "@@@STEP_LOG_LINE@config.json@  \"thresholds\": [@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.95\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"40\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.6\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.97\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"50\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.5\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.98\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"60\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.4\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.99\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"70\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.3\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"1.00\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"80\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.2\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    }@@@",
+      "@@@STEP_LOG_LINE@config.json@  ]@@@",
+      "@@@STEP_LOG_LINE@config.json@}@@@",
+      "@@@STEP_LOG_END@config.json@@@"
+    ]
+  },
+  {
+    "cmd": [
       "python3",
       "RECIPE[build::chromium_rts/create_model].resources/integration_tests.py",
       "--rts-exec",
@@ -678,6 +724,91 @@
       "[CACHE]/builder/src"
     ],
     "name": "integration_tests"
+  },
+  {
+    "cmd": [],
+    "name": "Evaluate model safety gate",
+    "~followup_annotations": [
+      "@@@STEP_TEXT@passed (candidate: 0.6000, prod: 0.6000)@@@",
+      "@@@SET_BUILD_PROPERTY@rts_model_scorecard@{\"change_recall\": 0.95, \"prod_savings\": 0.6, \"promoted_to_prod\": true, \"savings\": 0.6, \"target_change_recall\": 0.95, \"thresholds\": [{\"change_recall\": 0.95, \"savings\": 0.6}, {\"change_recall\": 0.97, \"savings\": 0.5}, {\"change_recall\": 0.98, \"savings\": 0.4}, {\"change_recall\": 0.99, \"savings\": 0.3}, {\"change_recall\": 1.0, \"savings\": 0.2}]}@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "cipd",
+      "ensure",
+      "-root",
+      "[CLEANUP]/rts-prod-model",
+      "-ensure-file",
+      "chromium/rts/model/linux-amd64 prod",
+      "-max-threads",
+      "0",
+      "-json-output",
+      "/path/to/tmp/json"
+    ],
+    "infra_step": true,
+    "name": "Evaluate model safety gate.fetch current prod model",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@json.output@{@@@",
+      "@@@STEP_LOG_LINE@json.output@  \"result\": {@@@",
+      "@@@STEP_LOG_LINE@json.output@    \"\": [@@@",
+      "@@@STEP_LOG_LINE@json.output@      {@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"instance_id\": \"resolved-instance_id-of-prod------------\",@@@",
+      "@@@STEP_LOG_LINE@json.output@        \"package\": \"chromium/rts/model/linux-amd64\"@@@",
+      "@@@STEP_LOG_LINE@json.output@      }@@@",
+      "@@@STEP_LOG_LINE@json.output@    ]@@@",
+      "@@@STEP_LOG_LINE@json.output@  }@@@",
+      "@@@STEP_LOG_LINE@json.output@}@@@",
+      "@@@STEP_LOG_END@json.output@@@"
+    ]
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
+      "--json-output",
+      "/path/to/tmp/json",
+      "copy",
+      "[CLEANUP]/rts-prod-model/git-file-graph/config.json",
+      "/path/to/tmp/"
+    ],
+    "infra_step": true,
+    "name": "Evaluate model safety gate.read prod thresholds",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@",
+      "@@@STEP_LOG_LINE@config.json@{@@@",
+      "@@@STEP_LOG_LINE@config.json@  \"thresholds\": [@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.95\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"40\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.6\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.97\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"50\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.5\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.98\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"60\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.4\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.99\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"70\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.3\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    },@@@",
+      "@@@STEP_LOG_LINE@config.json@    {@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"1.00\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"80\",@@@",
+      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.2\"@@@",
+      "@@@STEP_LOG_LINE@config.json@    }@@@",
+      "@@@STEP_LOG_LINE@config.json@  ]@@@",
+      "@@@STEP_LOG_LINE@config.json@}@@@",
+      "@@@STEP_LOG_END@config.json@@@"
+    ]
   },
   {
     "cmd": [],
@@ -764,6 +895,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -868,6 +1001,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -972,6 +1107,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1076,6 +1213,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1180,6 +1319,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1284,6 +1425,8 @@
       "40-chars-fake-of-the-package-instance_id",
       "-ref",
       "latest",
+      "-ref",
+      "prod",
       "-json-output",
       "/path/to/tmp/json"
     ],
@@ -1308,48 +1451,7 @@
     ]
   },
   {
-    "cmd": [
-      "vpython3",
-      "-u",
-      "RECIPE_MODULE[recipe_engine::file]/resources/fileutil.py",
-      "--json-output",
-      "/path/to/tmp/json",
-      "copy",
-      "[CLEANUP]/rts-chromium-model/git-file-graph/config.json",
-      "/path/to/tmp/"
-    ],
-    "infra_step": true,
-    "name": "read thresholds",
-    "~followup_annotations": [
-      "@@@STEP_LOG_LINE@config.json@{@@@",
-      "@@@STEP_LOG_LINE@config.json@  \"thresholds\": [@@@",
-      "@@@STEP_LOG_LINE@config.json@    {@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.97\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"50\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.5\"@@@",
-      "@@@STEP_LOG_LINE@config.json@    },@@@",
-      "@@@STEP_LOG_LINE@config.json@    {@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.98\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"60\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.4\"@@@",
-      "@@@STEP_LOG_LINE@config.json@    },@@@",
-      "@@@STEP_LOG_LINE@config.json@    {@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"0.99\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"70\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.3\"@@@",
-      "@@@STEP_LOG_LINE@config.json@    },@@@",
-      "@@@STEP_LOG_LINE@config.json@    {@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"changeRecall\": \"1.00\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"maxDistance\": \"80\",@@@",
-      "@@@STEP_LOG_LINE@config.json@      \"savings\": \"0.2\"@@@",
-      "@@@STEP_LOG_LINE@config.json@    }@@@",
-      "@@@STEP_LOG_LINE@config.json@  ]@@@",
-      "@@@STEP_LOG_LINE@config.json@}@@@",
-      "@@@STEP_LOG_END@config.json@@@"
-    ]
-  },
-  {
     "name": "$result",
-    "summaryMarkdown": "ChangeRecall | Savings | Max distance<br>0.9700 | 0.50 | 50.00<br>0.9800 | 0.40 | 60.00<br>0.9900 | 0.30 | 70.00<br>1.0000 | 0.20 | 80.00"
+    "summaryMarkdown": "ChangeRecall | Savings | Max distance<br>0.9500 | 0.60 | 40.00<br>0.9700 | 0.50 | 50.00<br>0.9800 | 0.40 | 60.00<br>0.9900 | 0.30 | 70.00<br>1.0000 | 0.20 | 80.00"
   }
 ]

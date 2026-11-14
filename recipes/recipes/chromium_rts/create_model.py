@@ -16,6 +16,10 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import chromium, chromium_checkout
+from RECIPE_MODULES.build.chromium_rts.api import (
+  DEFAULT_TARGET_CHANGE_RECALL,
+  RTS_MODEL_CIPD_PREFIX,
+)
 from RECIPE_MODULES.depot_tools import gclient, gsutil
 from RECIPE_MODULES.infra import zip as zip_module
 from RECIPE_MODULES.recipe_engine import (
@@ -68,7 +72,6 @@ class TEST_DEPS(RecipeTestApi):
   time: time.TEST_API
 
 
-MODEL_CIPD_PREFIX = 'chromium/rts/model/'
 RTS_EXEC_CIPD_PREFIX = 'chromium/rts/rts-chromium/'
 PLATFORMS = [
   'linux-amd64',
@@ -82,6 +85,8 @@ REJECTION_DATA_WINDOW = datetime.timedelta(weeks=12)
 TEST_DURATION_DATA_WINDOW = datetime.timedelta(weeks=1)
 # Processing 10% of 1w-worth test durations takes 7h on a 32-core bot.
 TEST_DURATION_DATA_PERCENTAGE = 1
+MIN_SAVINGS_FLOOR = 0.20
+MAX_SAVINGS_DROP = 0.03
 
 
 def RunSteps(api: DEPS):
@@ -136,13 +141,20 @@ def RunSteps(api: DEPS):
   # Upload the training data for inspection if we need to diagnose the model
   archive_training_data(api)
 
-  step_result = run_integration_tests(api, exec_path, model_dir, checkout_dir)
-  # Still create the cipd package so we can inspect it if the build failed
-  # but don't move the ref to latest so broken models don't end up in builds
-  should_update_ref = step_result.presentation.status == api.step.SUCCESS
+  candidate_cfg = read_model_config(api, 'read thresholds', model_dir)
 
-  # TODO(crbug.com/1172372): ensure the new model is not significantly worse
-  # than the current one.
+  step_result = run_integration_tests(api, exec_path, model_dir, checkout_dir)
+  integration_passed = step_result.presentation.status == api.step.SUCCESS
+  gate_passed = evaluate_safety_gate(api, candidate_cfg, integration_passed)
+
+  # Still create the cipd package so we can inspect it if the build failed,
+  # keep advancing latest when integration tests pass, and only promote prod
+  # when the scorecard safety gate also passes.
+  refs_to_update = []
+  if integration_passed:
+    refs_to_update.append('latest')
+    if gate_passed:
+      refs_to_update.append('prod')
 
   # Create CIPD packages.
   futures = []
@@ -155,7 +167,7 @@ def RunSteps(api: DEPS):
           platform,
           pkg_dir,
           model_dir,
-          should_update_ref,
+          refs_to_update,
           git_revision,
         )
       )
@@ -165,7 +177,7 @@ def RunSteps(api: DEPS):
 
   return result_pb2.RawResult(
     status=step_result.presentation.status,
-    summary_markdown=compose_build_summary(api, model_dir),
+    summary_markdown=compose_build_summary(candidate_cfg),
   )
 
 
@@ -191,7 +203,7 @@ def create_cipd_package(
   platform,
   exec_pkg_dir,
   model_dir,
-  update_ref,
+  refs,
   git_revision,
 ):
   with api.step.nest('Upload CIPD package - %s' % platform):
@@ -212,7 +224,7 @@ def create_cipd_package(
 
     # Upload to CIPD.
     pkg = api.cipd.PackageDefinition(
-      package_name=MODEL_CIPD_PREFIX + platform,
+      package_name=RTS_MODEL_CIPD_PREFIX + platform,
       package_root=pkg_dir,
     )
     pkg.add_dir(pkg_dir)
@@ -226,8 +238,8 @@ def create_cipd_package(
     )
 
     # Skip the ref update if it is an experimental build.
-    if not api.runtime.is_experimental and update_ref:
-      api.cipd.set_ref(pin.package, version=pin.instance_id, refs=['latest'])
+    if not api.runtime.is_experimental and refs:
+      api.cipd.set_ref(pin.package, version=pin.instance_id, refs=refs)
 
 
 def install_rts_executables(api: DEPS):
@@ -370,12 +382,17 @@ def _date_range_flags(date_range):
   ]
 
 
-def compose_build_summary(api: DEPS, model_dir):
-  cfg = api.file.read_json(
-    'read thresholds',
+def read_model_config(api: DEPS, step_name: str, model_dir):
+  return api.file.read_json(
+    step_name,
     model_dir.joinpath('git-file-graph', 'config.json'),
     test_data={
       'thresholds': [
+        {
+          'changeRecall': '0.95',
+          'savings': '0.6',
+          'maxDistance': '40',
+        },
         {
           'changeRecall': '0.97',
           'savings': '0.5',
@@ -400,6 +417,127 @@ def compose_build_summary(api: DEPS, model_dir):
     },
   )
 
+
+def get_savings_for_recall(
+  api: DEPS, cfg: dict, target_recall: float
+) -> tuple[float, float]:
+  """Returns (change_recall, savings) for the lowest recall >= target_recall."""
+  matching = [
+    th
+    for th in cfg.get('thresholds', [])
+    if float(th.get('changeRecall', 0)) >= target_recall
+  ]
+  if not matching:
+    raise api.step.StepFailure(
+      f'No threshold found for target change recall {target_recall}'
+    )
+  chosen = min(matching, key=lambda th: float(th.get('changeRecall', 0)))
+  return float(chosen.get('changeRecall', 0)), float(chosen.get('savings', 0))
+
+
+def _fetch_prod_savings(api: DEPS) -> float:
+  """Fetches the current prod model and returns its target-recall savings."""
+  prod_dir = api.path.cleanup_dir / 'rts-prod-model'
+  ensure_file = api.cipd.EnsureFile()
+  ensure_file.add_package(RTS_MODEL_CIPD_PREFIX + 'linux-amd64', 'prod')
+  try:
+    api.cipd.ensure(prod_dir, ensure_file, name='fetch current prod model')
+  except api.cipd.Error as e:
+    if 'no such ref' in str(e):
+      api.step.active_result.presentation.status = api.step.SUCCESS
+      api.step.active_result.presentation.step_text = (
+        'prod ref not found; skipping relative comparison'
+      )
+    else:
+      api.step.active_result.presentation.step_text = (
+        f'failed to fetch prod model: {e}'
+      )
+    raise
+  prod_cfg = read_model_config(api, 'read prod thresholds', prod_dir)
+  _, prod_savings = get_savings_for_recall(
+    api, prod_cfg, DEFAULT_TARGET_CHANGE_RECALL
+  )
+  return prod_savings
+
+
+def evaluate_safety_gate(
+  api: DEPS,
+  candidate_cfg: dict,
+  integration_passed: bool,
+) -> bool:
+  """Verifies candidate savings meet the global floor and prod tolerance."""
+  with api.step.nest('Evaluate model safety gate') as gate_step:
+    props = gate_step.properties
+    scorecard = {
+      'target_change_recall': DEFAULT_TARGET_CHANGE_RECALL,
+      'promoted_to_prod': False,
+    }
+    gate_passed = False
+    try:
+      try:
+        candidate_recall, candidate_savings = get_savings_for_recall(
+          api, candidate_cfg, DEFAULT_TARGET_CHANGE_RECALL
+        )
+      except api.step.StepFailure as e:
+        gate_step.step_text = str(e)
+        return False
+
+      scorecard['change_recall'] = round(candidate_recall, 4)
+      scorecard['savings'] = round(candidate_savings, 4)
+      scorecard['thresholds'] = [
+        {
+          'change_recall': round(float(th.get('changeRecall', 0)), 4),
+          'savings': round(float(th.get('savings', 0)), 4),
+        }
+        for th in candidate_cfg.get('thresholds', [])
+        if float(th.get('changeRecall', 0)) >= DEFAULT_TARGET_CHANGE_RECALL
+      ]
+
+      reasons = []
+      if candidate_savings < MIN_SAVINGS_FLOOR:
+        reasons.append(
+          f'candidate savings {candidate_savings:.4f} is below '
+          f'minimum floor {MIN_SAVINGS_FLOOR:.4f}'
+        )
+
+      try:
+        prod_savings = _fetch_prod_savings(api)
+      except (api.step.StepFailure, api.cipd.Error) as e:
+        if not (isinstance(e, api.cipd.Error) and 'no such ref' in str(e)):
+          gate_step.step_text = f'failed to evaluate prod baseline: {e}'
+          return False
+        passed_text = (
+          f'bootstrapping prod ref (savings: {candidate_savings:.4f})'
+        )
+      else:
+        scorecard['prod_savings'] = round(prod_savings, 4)
+        if round(prod_savings - candidate_savings, 4) > MAX_SAVINGS_DROP:
+          reasons.append(
+            f'candidate savings {candidate_savings:.4f} dropped more than '
+            f'{MAX_SAVINGS_DROP:.4f} from prod ({prod_savings:.4f})'
+          )
+        passed_text = (
+          f'passed (candidate: {candidate_savings:.4f}, '
+          f'prod: {prod_savings:.4f})'
+        )
+
+      if reasons:
+        gate_step.step_text = '; '.join(reasons)
+        return False
+
+      gate_passed = True
+      scorecard['promoted_to_prod'] = (
+        integration_passed and not api.runtime.is_experimental
+      )
+      gate_step.step_text = passed_text
+      return True
+    finally:
+      props['rts_model_scorecard'] = scorecard
+      if not gate_passed:
+        gate_step.set_worse_status(api.step.FAILURE)
+
+
+def compose_build_summary(cfg: dict):
   # Format of the file is GitBasedStrategyConfig in
   # https://source.chromium.org/chromium/infra/infra/+/main:go/src/infra/rts/cmd/rts-chromium/rts-chromium.proto
 
@@ -460,6 +598,302 @@ def GenTests(api: TEST_DEPS):
     + api.post_process(
       post_process.DoesNotRunRE,
       r'.*cipd set-ref.*',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  default_thresholds = [
+    {'change_recall': 0.95, 'savings': 0.6},
+    {'change_recall': 0.97, 'savings': 0.5},
+    {'change_recall': 0.98, 'savings': 0.4},
+    {'change_recall': 0.99, 'savings': 0.3},
+    {'change_recall': 1.0, 'savings': 0.2},
+  ]
+
+  yield (
+    api.test('experimental_build')
+    + linux_amd64
+    + api.runtime(is_experimental=True)
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'prod_savings': 0.6,
+        'promoted_to_prod': False,
+        'savings': 0.6,
+        'target_change_recall': 0.95,
+        'thresholds': default_thresholds,
+      },
+    )
+    + api.post_process(
+      post_process.MustRun,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.create chromium/rts/model/linux-amd64',
+    )
+    + api.post_process(
+      post_process.DoesNotRunRE,
+      r'.*cipd set-ref.*',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('prod_ref_not_found_bootstrap')
+    + linux_amd64
+    + api.step_data(
+      'Evaluate model safety gate.fetch current prod model',
+      api.cipd.example_error('no such ref'),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'promoted_to_prod': True,
+        'savings': 0.6,
+        'target_change_recall': 0.95,
+        'thresholds': default_thresholds,
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest', '-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('bootstrap_below_min_savings_floor')
+    + linux_amd64
+    + api.step_data(
+      'read thresholds',
+      api.file.read_json(
+        {
+          'thresholds': [
+            {
+              'changeRecall': '0.95',
+              'savings': '0.15',
+              'maxDistance': '21',
+            },
+          ]
+        }
+      ),
+    )
+    + api.step_data(
+      'Evaluate model safety gate.fetch current prod model',
+      api.cipd.example_error('no such ref'),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'promoted_to_prod': False,
+        'savings': 0.15,
+        'target_change_recall': 0.95,
+        'thresholds': [{'change_recall': 0.95, 'savings': 0.15}],
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest'],
+    )
+    + api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('below_min_savings_floor')
+    + linux_amd64
+    + api.step_data(
+      'read thresholds',
+      api.file.read_json(
+        {
+          'thresholds': [
+            {
+              'changeRecall': '0.95',
+              'savings': '0.15',
+              'maxDistance': '21',
+            },
+          ]
+        }
+      ),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'prod_savings': 0.6,
+        'promoted_to_prod': False,
+        'savings': 0.15,
+        'target_change_recall': 0.95,
+        'thresholds': [{'change_recall': 0.95, 'savings': 0.15}],
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest'],
+    )
+    + api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('exact_max_savings_drop_passes')
+    + linux_amd64
+    + api.step_data(
+      'read thresholds',
+      api.file.read_json(
+        {
+          'thresholds': [
+            {
+              'changeRecall': '0.95',
+              'savings': '0.57',
+              'maxDistance': '40',
+            },
+          ]
+        }
+      ),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'prod_savings': 0.6,
+        'promoted_to_prod': True,
+        'savings': 0.57,
+        'target_change_recall': 0.95,
+        'thresholds': [{'change_recall': 0.95, 'savings': 0.57}],
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest', '-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('savings_regression_from_prod')
+    + linux_amd64
+    + api.step_data(
+      'read thresholds',
+      api.file.read_json(
+        {
+          'thresholds': [
+            {
+              'changeRecall': '0.95',
+              'savings': '0.50',
+              'maxDistance': '40',
+            },
+          ]
+        }
+      ),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'prod_savings': 0.6,
+        'promoted_to_prod': False,
+        'savings': 0.5,
+        'target_change_recall': 0.95,
+        'thresholds': [{'change_recall': 0.95, 'savings': 0.5}],
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest'],
+    )
+    + api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('missing_recall_threshold')
+    + linux_amd64
+    + api.step_data('read thresholds', api.file.read_json({'thresholds': []}))
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'promoted_to_prod': False,
+        'target_change_recall': 0.95,
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest'],
+    )
+    + api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('prod_fetch_infra_error')
+    + linux_amd64
+    + api.step_data(
+      'Evaluate model safety gate.fetch current prod model',
+      api.cipd.example_error('transient rpc error'),
+    )
+    + api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_scorecard',
+      {
+        'change_recall': 0.95,
+        'promoted_to_prod': False,
+        'savings': 0.6,
+        'target_change_recall': 0.95,
+        'thresholds': default_thresholds,
+      },
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'latest'],
+    )
+    + api.post_process(
+      post_process.StepCommandDoesNotContain,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-ref', 'prod'],
     )
     + api.post_process(post_process.DropExpectation)
   )
