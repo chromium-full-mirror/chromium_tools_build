@@ -16,6 +16,7 @@ class FilterTestApi(recipe_test_api.RecipeTestApi):
     status: str,
     compile_targets: Collection[str],
     test_targets: Collection[str],
+    gn_labels: Collection[str] | None = None,
   ) -> recipe_test_api.StepTestData:
     """Overrides the analyze step for normal execution.
 
@@ -26,16 +27,14 @@ class FilterTestApi(recipe_test_api.RecipeTestApi):
       'Found dependency (all)',
       'No dependency',
     )
-    return self.override_step_data(
-      'analyze',
-      self.m.json.output(
-        {
-          'status': status,
-          'compile_targets': list(compile_targets),
-          'test_targets': list(test_targets),
-        }
-      ),
-    )
+    output = {
+      'status': status,
+      'compile_targets': list(compile_targets),
+      'test_targets': list(test_targets),
+    }
+    if gn_labels is not None:
+      output['gn_labels'] = list(gn_labels)
+    return self.override_step_data('analyze', self.m.json.output(output))
 
   def no_dependency(self) -> recipe_test_api.StepTestData:
     return self.analyze_output(
