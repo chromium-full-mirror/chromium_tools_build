@@ -67,9 +67,9 @@ GS_DIRECTORY = 'android-binary-size/commit_size_analysis/'
 
 # Number of the most recent analysis zips to keep in GS_DIRECTORY. Trybots read
 # LATEST at the start of their build and download the zip that it points to
-# after their with-patch build. Keeping the previously uploaded zip supports
-# trybots that take less time than one run of this recipe.
-_NUM_ZIPS_TO_KEEP = 2
+# after their with-patch build. Keeping 25 zips (~3 hours of generator runs)
+# ensures slow trybots can still download the zip they read at the start.
+_NUM_ZIPS_TO_KEEP = 25
 
 # Matches zip files named '{timestamp}_{revision}.zip'.
 _ZIP_URL_RE = re.compile(r'/(\d+)_[0-9a-f]+\.zip$')
@@ -225,8 +225,12 @@ def GenTests(api: TEST_DEPS):
             # Lexicographic order differs from timestamp order.
             _zip_url(999999999),
             _zip_url(1000000001),
-            _zip_url(1000000003),
-            _zip_url(1000000002),
+            *(
+              _zip_url(t)
+              for t in reversed(
+                range(1000000002, 1000000002 + _NUM_ZIPS_TO_KEEP)
+              )
+            ),
             'gs://{}/{}unexpected_name.zip'.format(
               constants.RESULTS_GS_BUCKET, GS_DIRECTORY
             ),
@@ -257,7 +261,9 @@ def GenTests(api: TEST_DEPS):
     api.step_data(
       'gsutil Listing zip files',
       stdout=api.raw_io.output_text(
-        '\n'.join(_zip_url(t) for t in range(1000000001, 1000000004))
+        '\n'.join(
+          _zip_url(t) for t in range(1000000001, 1000000002 + _NUM_ZIPS_TO_KEEP)
+        )
       ),
     ),
     api.step_data('gsutil Deleting obsolete zip files', retcode=1),
