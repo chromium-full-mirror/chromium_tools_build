@@ -2848,6 +2848,9 @@ class SwarmingTest(Test, AbstractSwarmingTest):
     if is_ci_only and self.api.m.tryserver.is_tryserver:
       tags['include_ci_only_tests'] = ['true']
 
+    if self.api.m.chromium_rts.is_rts_used(self):
+      tags['rts_was_used'] = ['true']
+
     if self.spec.server:
       task.server = self.spec.server
 

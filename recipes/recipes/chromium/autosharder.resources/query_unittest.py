@@ -104,6 +104,7 @@ class Suite:
     tasks: list[Task],
     normally_assigned_shard_count: int | None = None,
     experimental_shard_count: int | None = None,
+    rts_was_used: bool = False,
   ):
     self.name = name
     self.tasks = tasks
@@ -116,6 +117,8 @@ class Suite:
         )
       if experimental_shard_count:
         t.tags.append(f'experimental_shard_count:{experimental_shard_count}')
+      if rts_was_used:
+        t.tags.append('rts_was_used:true')
 
 
 class Build:
@@ -334,6 +337,17 @@ class QueryIntegrationTests(unittest.TestCase):
               ),
             ],
           ),
+          Suite(
+            name='rts-filtered-suite',
+            tasks=[
+              Task(
+                duration=10.0,
+                create_time=start_date + datetime.timedelta(0, 10),
+                start_time=start_date + datetime.timedelta(0, 20),
+              ),
+            ],
+            rts_was_used=True,
+          ),
         ],
       )
       for _ in range(min_sample_size)
@@ -490,6 +504,8 @@ class QueryIntegrationTests(unittest.TestCase):
 
     # Infrequently run builders don't get sharded
     self.assertIsNone(get_builder_row('infrequently-run-builder'))
+    # RTS-filtered tasks are ignored
+    self.assertIsNone(get_builder_row('foo-try-builder', 'rts-filtered-suite'))
 
   def testAvgBuildsPerHour(self):
     start_date = datetime.datetime(

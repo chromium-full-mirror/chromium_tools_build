@@ -12,6 +12,7 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import (
   chromium,
+  chromium_rts,
   chromium_swarming,
   chromium_tests,
   isolate,
@@ -39,6 +40,7 @@ class DEPS(RecipeScriptApi):
   bot_update: bot_update.API
   buildbucket: buildbucket.API
   chromium: chromium.API
+  chromium_rts: chromium_rts.API
   chromium_swarming: chromium_swarming.API
   chromium_tests: chromium_tests.API
   commit_position: commit_position.API
@@ -95,8 +97,15 @@ def RunSteps(api: DEPS):
     server=api.properties.get('server'),
     isolate_profile_data=api.properties.get('isolate_profile_data', False),
     dimensions=api.properties.get('dimensions', {'os': 'Linux'}),
+    enable_rts_filtering=api.properties.get('rts_used', False),
   )
   test = test_spec.get_test(api.chromium_tests)
+  if api.properties.get('rts_used'):
+    api.chromium_rts.set_swarming_test_execution_info(
+      test,
+      {'rts': {'base_unittests': ['/bin/base_unittests']}},
+      variant='rts',
+    )
 
   test_options = steps.TestOptions.create()
   test.test_options = test_options
@@ -294,6 +303,26 @@ def GenTests(api: TEST_DEPS):
       post_process.StepTextContains,
       'base_unittests',
       ['[test 1 &lt;img src=x onerror=alert(1)&gt;]'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'rts_used',
+    api.chromium.ci_build(
+      builder_group='test_group',
+      builder='test_buildername',
+    ),
+    api.properties(
+      rts_used=True,
+      swarm_hashes={
+        'base_unittests': 'ffffffffffffffffffffffffffffffffffffffff/111',
+      },
+    ),
+    api.post_process(
+      api.swarming.check_triggered_request,
+      'test_pre_run.[trigger] base_unittests',
+      lambda check, req: check('rts_was_used:true' in req.tags),
     ),
     api.post_process(post_process.DropExpectation),
   )

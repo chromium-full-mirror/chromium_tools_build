@@ -431,13 +431,17 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       if variant == RTS_COMPLEMENT_VARIANT:
         self._complement_tests.add(test.name)
 
+  def is_rts_used(self, test: Test) -> bool:
+    """Returns whether the test's command was overwritten by RTS."""
+    return not self._rts_disabled and self.is_overwritten(test)
+
   def append_test_step_text(
     self,
     test: Test,
     messages: list[str],
   ) -> None:
     """Appends RTS info message if the test's command was overwritten by RTS."""
-    if not self._rts_disabled and self.is_overwritten(test):
+    if self.is_rts_used(test):
       action = 'skipped' if test.name in self._complement_tests else 'selected'
       messages.append(
         f'Ran tests {action} by Regression Test Selection (RTS).\n'

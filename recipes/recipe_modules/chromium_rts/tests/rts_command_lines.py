@@ -41,11 +41,13 @@ def RunSteps(api: DEPS):
   messages = []
   api.chromium_rts.append_test_step_text(test, messages)
   assert not messages
+  assert not api.chromium_rts.is_rts_used(test)
 
   api.chromium_rts.set_swarming_test_execution_info(
     test, {'rts': {'blink_web_tests': ['/bin/rts_cmd']}}, variant=RTS_VARIANT
   )
   assert test.raw_cmd == ['/bin/rts_cmd']
+  assert api.chromium_rts.is_rts_used(test)
   api.chromium_rts.append_test_step_text(test, messages)
   assert messages == [
     'Ran tests selected by Regression Test Selection (RTS).\n'

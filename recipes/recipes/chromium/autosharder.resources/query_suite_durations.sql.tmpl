@@ -14,7 +14,6 @@ build_task_ids AS (
     b.start_time BETWEEN '{lookback_start_date}' AND '{lookback_end_date}'
     AND b.builder.bucket = 'try'
     AND JSON_VALUE(b.input.properties, '$.cq') = 'required'
-    AND JSON_QUERY(b.output.properties, '$.rts_was_used') IS NULL
     AND b.status = 'SUCCESS'
     AND b.builder.project = 'chromium'
     AND NOT EXISTS(SELECT 0 FROM b.tags t where t.key = 'cq_cl_owner' and t.value IN ({ignore_cl_owner}))
@@ -53,6 +52,8 @@ deduped_tasks AS (
     request.parent_task_id IS NOT NULL
     # Ignore all retry and flakiness step level runs
     AND EXISTS(SELECT 0 FROM UNNEST(request.tags) t WHERE t = 'test_phase:with patch')
+    # Ignore tasks filtered by RTS
+    AND NOT EXISTS(SELECT 0 FROM UNNEST(request.tags) t WHERE t = 'rts_was_used:true')
     # Ignore tasks deduped by swarming
     AND start_time > create_time
     AND DATE(end_time) BETWEEN
