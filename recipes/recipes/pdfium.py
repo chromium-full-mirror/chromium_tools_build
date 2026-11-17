@@ -121,6 +121,7 @@ _TEST_RUNNER_PY_TARGET = '//testing/tools:test_runner_py'
 
 # test_runner.py test types.
 _CORPUS_TEST_TYPE = 'corpus'
+_DRAWING_TEST_TYPE = 'drawing'
 _JAVASCRIPT_TEST_TYPE = 'javascript'
 _PIXEL_TEST_TYPE = 'pixel'
 
@@ -475,6 +476,16 @@ def _request_all_javascript_tests(test_runner, xfa):
     test_runner.request_javascript_tests(_XfaDisabledOption)
 
 
+def _request_all_drawing_tests(test_runner, v8, xfa):
+  test_runner.request_drawing_tests(_DefaultOption)
+
+  if v8:
+    test_runner.request_drawing_tests(_JavascriptDisabledOption)
+
+  if xfa:
+    test_runner.request_drawing_tests(_XfaDisabledOption)
+
+
 def _request_all_pixel_tests(
   test_runner,
   skia,
@@ -621,6 +632,9 @@ def _run_tests(
     # run_javascript_tests.py:
     if v8:
       _request_all_javascript_tests(test_runner, xfa)
+
+    # run_drawing_tests.py:
+    _request_all_drawing_tests(test_runner, v8, xfa)
 
     # run_pixel_tests.py:
     _request_all_pixel_tests(
@@ -1057,6 +1071,9 @@ class _TestRunner:
         test_suite_suffix=test_suite_suffix or None,
         allow_failure=allow_failure,
       )
+
+  def request_drawing_tests(self, option):
+    self._request_python_tests(_DRAWING_TEST_TYPE, option)
 
   def request_javascript_tests(self, option):
     self._request_python_tests(_JAVASCRIPT_TEST_TYPE, option)
@@ -2039,6 +2056,7 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.MustRun, 'unittests'),
     api.post_process(post_process.DoesNotRun, 'embeddertests'),
     api.post_process(post_process.DoesNotRun, 'javascript tests'),
+    api.post_process(post_process.DoesNotRun, 'drawing tests'),
     api.post_process(post_process.DoesNotRun, 'pixel tests'),
     api.post_process(post_process.DoesNotRun, 'corpus tests'),
     api.post_process(post_process.DropExpectation),
@@ -2071,6 +2089,7 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DoesNotRun, 'unittests'),
     api.post_process(post_process.DoesNotRun, 'embeddertests'),
     api.post_process(post_process.DoesNotRun, 'javascript tests'),
+    api.post_process(post_process.DoesNotRun, 'drawing tests'),
     api.post_process(post_process.DoesNotRun, 'pixel tests'),
     api.post_process(post_process.DoesNotRun, 'corpus tests'),
     api.post_process(post_process.DropExpectation),
@@ -2334,6 +2353,36 @@ def GenTests(api: TEST_DEPS):
     _gen_properties(api, xfa=True),
     _gen_ci_build(api, 'linux'),
     api.step_data('javascript tests (xfa disabled)', retcode=1),
+    api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+    'fail-drawing-tests',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api),
+    _gen_ci_build(api, 'linux'),
+    api.step_data('drawing tests', retcode=1),
+    api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+    'fail-drawing-tests-javascript-disabled',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api),
+    _gen_ci_build(api, 'linux'),
+    api.step_data('drawing tests (javascript disabled)', retcode=1),
+    api.expect_status('FAILURE'),
+  )
+
+  yield api.test(
+    'fail-drawing-tests-xfa-disabled',
+    api.platform('linux', 64),
+    api.builder_group.for_current('client.pdfium'),
+    _gen_properties(api, xfa=True),
+    _gen_ci_build(api, 'linux'),
+    api.step_data('drawing tests (xfa disabled)', retcode=1),
     api.expect_status('FAILURE'),
   )
 

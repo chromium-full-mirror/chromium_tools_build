@@ -1181,6 +1181,93 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux",
+      "-var",
+      "test_suite:drawing",
+      "-tag",
+      "step_name:drawing tests",
+      "--",
+      "vpython3",
+      "-u",
+      "testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false use_siso true v8 true xfa false xfa_runtime disabled"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux",
+      "-var",
+      "test_suite:drawing_javascript_disabled",
+      "-tag",
+      "step_name:drawing tests (javascript disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite javascript_disabled use_siso true v8 true xfa false xfa_runtime disabled",
+      "--disable-javascript"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (javascript disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
       "builder:linux",

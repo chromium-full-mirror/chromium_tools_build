@@ -538,6 +538,140 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_skia_rust",
+      "-var",
+      "test_suite:drawing__skia",
+      "-tag",
+      "step_name:drawing tests (skia)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_skia_rust_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_skia_rust_xfa_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true use_siso true v8 true xfa true xfa_runtime enabled",
+      "--use-renderer=skia"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_skia_rust",
+      "-var",
+      "test_suite:drawing_javascript_disabled_skia",
+      "-tag",
+      "step_name:drawing tests (javascript disabled) (skia)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_skia_rust_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_skia_rust_xfa_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime disabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite javascript_disabled use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-javascript",
+      "--use-renderer=skia"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (javascript disabled) (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_skia_rust",
+      "-var",
+      "test_suite:drawing_xfa_disabled_skia",
+      "-tag",
+      "step_name:drawing tests (xfa disabled) (skia)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_skia_rust_xfa_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_skia_rust_xfa_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2d72510e447ab60a9728aeea2362d8be2cbd7789",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gold_key",
+      "agg false brotli false debug true enable_rust true enable_rust_cxx true fontations true is_standalone true javascript_runtime enabled os linux partition_alloc true renderer skia rust_bmp true rust_jpeg true rust_png true skia true suite xfa_disabled use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa",
+      "--use-renderer=skia"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (xfa disabled) (skia)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
       "builder:linux_xfa_skia_rust",

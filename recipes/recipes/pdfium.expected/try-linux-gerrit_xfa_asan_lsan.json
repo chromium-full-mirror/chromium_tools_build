@@ -705,6 +705,158 @@
       "rdb",
       "stream",
       "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_asan_lsan",
+      "-var",
+      "test_suite:drawing",
+      "-tag",
+      "step_name:drawing tests",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_xfa_v8_asan",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2724d726eadb2dddb331878f06bb1a91586d8eef",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "asan true brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false use_raw_ptr_asan_unowned_impl true use_siso true v8 true xfa true xfa_runtime enabled"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "env": {
+      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_asan_lsan",
+      "-var",
+      "test_suite:drawing_javascript_disabled",
+      "-tag",
+      "step_name:drawing tests (javascript disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_xfa_v8_asan",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2724d726eadb2dddb331878f06bb1a91586d8eef",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "asan true brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled lsan true os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite javascript_disabled use_raw_ptr_asan_unowned_impl true use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-javascript"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "env": {
+      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (javascript disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
+      "ninja://testing/tools:run_drawing_tests/",
+      "-var",
+      "builder:linux_xfa_asan_lsan",
+      "-var",
+      "test_suite:drawing_xfa_disabled",
+      "-tag",
+      "step_name:drawing tests (xfa disabled)",
+      "--",
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_xfa_v8_asan",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_xfa_v8_asan/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2724d726eadb2dddb331878f06bb1a91586d8eef",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "asan true brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled lsan true os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite xfa_disabled use_raw_ptr_asan_unowned_impl true use_siso true v8 true xfa true xfa_runtime disabled",
+      "--disable-xfa"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "env": {
+      "ASAN_OPTIONS": "allocator_may_return_null=1 detect_leaks=1 symbolize=1 external_symbolizer_path=third_party/llvm-build/Release+Asserts/bin/llvm-symbolizer"
+    },
+    "luci_context": {
+      "realm": {
+        "name": "pdfium:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (xfa disabled)"
+  },
+  {
+    "cmd": [
+      "rdb",
+      "stream",
+      "-test-id-prefix",
       "ninja://testing/tools:run_pixel_tests/",
       "-var",
       "builder:linux_xfa_asan_lsan",

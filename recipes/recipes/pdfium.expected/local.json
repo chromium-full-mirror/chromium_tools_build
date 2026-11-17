@@ -566,6 +566,77 @@
     "cmd": [
       "vpython3",
       "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2724d726eadb2dddb331878f06bb1a91586d8eef",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime enabled os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false use_siso true v8 true xfa false xfa_runtime disabled"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
+      "[CACHE]/builder/pdfium/testing/tools/run_drawing_tests.py",
+      "--build-dir",
+      "out/debug_v8",
+      "--gold_output_dir",
+      "[CACHE]/builder/pdfium/out/debug_v8/gold_output",
+      "--run-skia-gold",
+      "--git-revision",
+      "2724d726eadb2dddb331878f06bb1a91586d8eef",
+      "--buildbucket-id",
+      "8945511751514863184",
+      "--gerrit-issue",
+      "123456",
+      "--gerrit-patchset",
+      "7",
+      "--gold_key",
+      "brotli false debug true enable_rust false enable_rust_cxx false fontations false is_standalone true javascript_runtime disabled os linux partition_alloc true rust_bmp false rust_jpeg false rust_png false skia false suite javascript_disabled use_siso true v8 true xfa false xfa_runtime disabled",
+      "--disable-javascript"
+    ],
+    "cwd": "[CACHE]/builder/pdfium",
+    "luci_context": {
+      "realm": {
+        "name": "project:try"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "drawing tests (javascript disabled)"
+  },
+  {
+    "cmd": [
+      "vpython3",
+      "-u",
       "[CACHE]/builder/pdfium/testing/tools/run_pixel_tests.py",
       "--build-dir",
       "out/debug_v8",
