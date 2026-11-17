@@ -1114,6 +1114,54 @@
   },
   {
     "cmd": [
+      "vpython3",
+      "RECIPE_MODULE[infra::codesearch]/resources/starlark_extractor.py",
+      "[CACHE]/builder/src",
+      "[CLEANUP]/tmp_tmp_3/starlark_metadata.json",
+      "--corpus",
+      "chromium.googlesource.com/chromium/src",
+      "--root",
+      "[CACHE]/builder/src"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "extract starlark metadata"
+  },
+  {
+    "cmd": [
+      "[START_DIR]/cipd_tool/infra/tools/kzip_builder/5e1e2bcac305958b27077ca136f35f0abae7cf38c9af678f7d220ed0cb51d4f8/kzip_builder",
+      "--output",
+      "[CLEANUP]/tmp_tmp_3/starlark_kzip.kzip",
+      "--root",
+      "[CACHE]/builder/src",
+      "[CLEANUP]/tmp_tmp_3/starlark_metadata.json"
+    ],
+    "luci_context": {
+      "realm": {
+        "name": "chromium:ci"
+      },
+      "resultdb": {
+        "current_invocation": {
+          "name": "invocations/build:8945511751514863184",
+          "update_token": "token"
+        },
+        "hostname": "rdbhost"
+      }
+    },
+    "name": "build starlark kzip"
+  },
+  {
+    "cmd": [
       "cipd",
       "ensure",
       "-root",
@@ -1160,9 +1208,10 @@
       "--encoding",
       "PROTO",
       "--output",
-      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_4",
       "[CLEANUP]/tmp_tmp_1",
-      "[CLEANUP]/tmp_tmp_2/python_kzip.kzip"
+      "[CLEANUP]/tmp_tmp_2/python_kzip.kzip",
+      "[CLEANUP]/tmp_tmp_3/starlark_kzip.kzip"
     ],
     "luci_context": {
       "realm": {
@@ -1187,7 +1236,7 @@
       "RECIPE_REPO[depot_tools]/gsutil.py",
       "----",
       "cp",
-      "[CLEANUP]/tmp_tmp_3",
+      "[CLEANUP]/tmp_tmp_4",
       "gs://chrome-internal-codesearch/prod/chrome_webview_170242_aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa+1531887759.kzip"
     ],
     "infra_step": true,

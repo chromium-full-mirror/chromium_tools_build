@@ -530,10 +530,60 @@ def RunSteps(api: DEPS, properties):
         )
         result.presentation.logs['exception'] = str(exc).splitlines()
 
+  # Run Starlark extractor on the same lightweight platform as Python.
+  starlark_kzip_path = None
+  if platform == 'webview':
+    try:
+      starlark_out_dir = api.path.mkdtemp()
+      starlark_extractor_script = api.codesearch.resource(
+        'starlark_extractor.py'
+      )
+
+      starlark_json_path = starlark_out_dir / 'starlark_metadata.json'
+      api.step(
+        'extract starlark metadata',
+        [
+          'vpython3',
+          starlark_extractor_script,
+          source_dir,
+          starlark_json_path,
+          '--corpus',
+          corpus,
+          '--root',
+          source_dir,
+        ],
+      )
+
+      exec_path = api.cipd.ensure_tool(
+        "infra/tools/kzip_builder/${platform}", "latest"
+      )
+      starlark_kzip_path = starlark_out_dir / 'starlark_kzip.kzip'
+      api.step(
+        'build starlark kzip',
+        [
+          exec_path,
+          '--output',
+          starlark_kzip_path,
+          '--root',
+          source_dir,
+          starlark_json_path,
+        ],
+      )
+    except api.step.StepFailure as exc:
+      starlark_kzip_path = None
+      if api.step.active_result:
+        result = api.step.active_result
+        result.presentation.step_text = (
+          'starlark kzip extraction failed, skipping'
+        )
+        result.presentation.logs['exception'] = str(exc).splitlines()
+
   # Merge the index packs when available.
   final_index_pack_path = initial_index_pack_path
   additional_kzips = [
-    kzip for kzip in (rust_index_pack_path, python_kzip_path) if kzip
+    kzip
+    for kzip in (rust_index_pack_path, python_kzip_path, starlark_kzip_path)
+    if kzip
   ]
   if additional_kzips:
     final_index_pack_path = api.codesearch.run_kzip_merge(
@@ -970,6 +1020,39 @@ def GenTests(api: TEST_DEPS):
       'python kzip extraction failed, skipping',
     ),
     api.post_process(DoesNotRun, 'build python kzip'),
+    api.post_process(MustRun, 'build starlark kzip'),
+    api.post_process(MustRun, 'merge kzips'),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'starlark_kzip_ignore_extract_fail',
+    api.platform('linux', 64),
+    props('webview'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-webview'),
+    api.step_data('extract starlark metadata', retcode=1),
+    api.post_process(
+      StepTextEquals,
+      'extract starlark metadata',
+      'starlark kzip extraction failed, skipping',
+    ),
+    api.post_process(DoesNotRun, 'build starlark kzip'),
+    api.post_process(MustRun, 'build python kzip'),
+    api.post_process(MustRun, 'merge kzips'),
+    api.post_process(StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'python_and_starlark_kzip_ignore_extract_fail',
+    api.platform('linux', 64),
+    props('webview'),
+    api.chromium.generic_build(builder='codesearch-gen-chromium-webview'),
+    api.step_data('extract python metadata', retcode=1),
+    api.step_data('extract starlark metadata', retcode=1),
+    api.post_process(DoesNotRun, 'build python kzip'),
+    api.post_process(DoesNotRun, 'build starlark kzip'),
     api.post_process(DoesNotRun, 'merge kzips'),
     api.post_process(
       StepCommandContains,
