@@ -155,6 +155,21 @@ def GenTests(api: TEST_DEPS):
       builder='linux-rel', experiments=['chromium_rts.filter_file_analysis']
     ),
     api.post_process(
+      post_process.StepCommandContains,
+      'install RTS model',
+      ['chromium/rts/model/linux-amd64 prod'],
+    ),
+    api.post_process(
+      post_process.StepTextContains,
+      'install RTS model',
+      ['instance_id: resolved-instance_id-of-prod------------'],
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'rts_model_version',
+      'resolved-instance_id-of-prod------------',
+    ),
+    api.post_process(
       post_process.MustRun, 'generate chromium-rts filter files'
     ),
     api.post_process(

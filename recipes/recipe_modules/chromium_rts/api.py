@@ -219,8 +219,17 @@ class ChromiumRtsApi(recipe_api.RecipeApi):
       platform = self.m.cipd.platform
       package_name = RTS_MODEL_CIPD_PREFIX + platform
       ensure_file = self.m.cipd.EnsureFile()
-      ensure_file.add_package(package_name, 'latest')
-      self.m.cipd.ensure(install_dir, ensure_file, name='install RTS model')
+      ensure_file.add_package(package_name, 'prod')
+      prod_model_pins = self.m.cipd.ensure(
+        install_dir, ensure_file, name='install RTS model'
+      )
+      instance_id = prod_model_pins[''][0].instance_id
+      self.m.step.active_result.presentation.step_text = (
+        f'instance_id: {instance_id}'
+      )
+      self.m.step.active_result.presentation.properties['rts_model_version'] = (
+        instance_id
+      )
       return install_dir
     except Exception as e:
       self._disable_rts_with_reason(
