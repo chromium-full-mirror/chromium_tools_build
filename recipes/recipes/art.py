@@ -466,18 +466,31 @@ def _run_steps(api: DEPS, props):
       gce_build = api.buildbucket.collect_build(
         gce_build_id,
         step_name='wait for GCE target build',
-        fields=['id', 'status', 'output.properties'],
-        raise_if_unsuccessful=True,
+        fields=['id', 'status', 'summary_markdown', 'output.properties'],
+        mirror_status=True,
         timeout=18000,  # 5 hours.
       )
-      api.milo.show_blamelist_for(
-        [
-          dict(p)
-          for p in gce_build.output.properties[
-            '$recipe_engine/milo/blamelist_pins'
+      if '$recipe_engine/milo/blamelist_pins' in gce_build.output.properties:
+        api.milo.show_blamelist_for(
+          [
+            dict(p)
+            for p in gce_build.output.properties[
+              '$recipe_engine/milo/blamelist_pins'
+            ]
           ]
-        ]
-      )
+        )
+      if gce_build.status != common_pb2.SUCCESS:
+        build_url = api.buildbucket.build_url(build_id=gce_build.id)
+        status_name = common_pb2.Status.Name(gce_build.status)
+        msg = (
+          f'GCE target subbuild [{gce_build.id}]({build_url}) '
+          f'ended with {status_name}'
+        )
+        if gce_build.summary_markdown:
+          msg += f':\n\n{gce_build.summary_markdown}'
+        if gce_build.status == common_pb2.FAILURE:
+          raise api.step.StepFailure(msg)
+        raise api.step.InfraFailure(msg)
       api.cas.download(
         'download target build from CAS',
         gce_build.output.properties['cas_digest'],
@@ -1066,34 +1079,43 @@ def GenTests(api: TEST_DEPS):
     check(req['gitilesCommit']['ref'] == ref)
     check(req['gitilesCommit']['id'] == commit_id)
 
-  def completed_subbuild(build_id=8922054662172514000):
+  def completed_subbuild(
+    build_id=8922054662172514000,
+    status='SUCCESS',
+    summary_markdown='',
+    include_blamelist=True,
+  ):
     build = api.buildbucket.ci_build_message(
       build_id=build_id,
-      status='SUCCESS',
+      status=status,
     )
-    build.output.properties['cas_digest'] = cas_digest
-    build.output.properties['$recipe_engine/milo/blamelist_pins'] = [
-      {
-        'host': 'googleplex-android.googlesource.com',
-        'project': 'platform/superproject/master',
-        'id': random_commit_for_test,
-      },
-      {
-        'host': 'googleplex-android.googlesource.com',
-        'project': 'platform/art',
-        'id': art_revision,
-      },
-      {
-        'host': 'googleplex-android.googlesource.com',
-        'project': 'platform/libcore',
-        'id': 'b' * 40,
-      },
-    ]
+    if summary_markdown:
+      build.summary_markdown = summary_markdown
+    if status == 'SUCCESS':
+      build.output.properties['cas_digest'] = cas_digest
+    if include_blamelist:
+      build.output.properties['$recipe_engine/milo/blamelist_pins'] = [
+        {
+          'host': 'googleplex-android.googlesource.com',
+          'project': 'platform/superproject/master',
+          'id': random_commit_for_test,
+        },
+        {
+          'host': 'googleplex-android.googlesource.com',
+          'project': 'platform/art',
+          'id': art_revision,
+        },
+        {
+          'host': 'googleplex-android.googlesource.com',
+          'project': 'platform/libcore',
+          'id': 'b' * 40,
+        },
+      ]
     return build
 
-  def collect_subbuild(build_id=8922054662172514000):
+  def collect_subbuild(build_id=8922054662172514000, **kwargs):
     return api.buildbucket.simulated_collect_output(
-      [completed_subbuild(build_id)],
+      [completed_subbuild(build_id, **kwargs)],
       step_name='build.wait for GCE target build',
     )
 
@@ -1124,6 +1146,67 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(),
     api.post_process(post_process.DoesNotRun, 'resolve ART HEAD'),
     api.post_process(_check_subbuild_request, 'refs/heads/main', art_revision),
+  )
+
+  yield api.test(
+    'target-gce-subbuild-failure',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
+    ),
+    subbuild_props(),
+    collect_subbuild(
+      status='FAILURE',
+      summary_markdown="Step('build target') (retcode: 1)",
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.StepFailure, 'build'),
+    api.post_process(
+      post_process.StepFailure, 'build.wait for GCE target build'
+    ),
+    api.post_process(post_process.MustRun, 'build.set blamelist pins'),
+    api.post_process(
+      post_process.DoesNotRun,
+      'build.download target build from CAS',
+      'test gtest',
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'GCE target subbuild [8922054662172514000]'
+      '(https://cr-buildbucket.appspot.com/build/8922054662172514000) '
+      "ended with FAILURE:\n\nStep('build target') (retcode: 1)",
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'target-gce-subbuild-infra-failure',
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
+    ),
+    subbuild_props(),
+    collect_subbuild(status='INFRA_FAILURE', include_blamelist=False),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.StepException, 'build'),
+    api.post_process(
+      post_process.StepException, 'build.wait for GCE target build'
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      'build.set blamelist pins',
+      'build.download target build from CAS',
+      'test gtest',
+    ),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      'GCE target subbuild [8922054662172514000]'
+      '(https://cr-buildbucket.appspot.com/build/8922054662172514000) '
+      'ended with INFRA_FAILURE',
+    ),
+    api.post_process(post_process.DropExpectation),
   )
 
   superproject_repo = (

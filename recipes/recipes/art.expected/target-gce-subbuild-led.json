@@ -275,7 +275,7 @@
       }
     },
     "name": "build.wait for GCE target build.get",
-    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"id,output.properties,status\", \"id\": \"8922054662172514000\"}}]}",
+    "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"id,output.properties,status,summaryMarkdown\", \"id\": \"8922054662172514000\"}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
       "@@@STEP_LOG_LINE@json.output@{@@@",
@@ -338,7 +338,7 @@
       "@@@STEP_LOG_LINE@request@  \"requests\": [@@@",
       "@@@STEP_LOG_LINE@request@    {@@@",
       "@@@STEP_LOG_LINE@request@      \"getBuild\": {@@@",
-      "@@@STEP_LOG_LINE@request@        \"fields\": \"id,output.properties,status\",@@@",
+      "@@@STEP_LOG_LINE@request@        \"fields\": \"id,output.properties,status,summaryMarkdown\",@@@",
       "@@@STEP_LOG_LINE@request@        \"id\": \"8922054662172514000\"@@@",
       "@@@STEP_LOG_LINE@request@      }@@@",
       "@@@STEP_LOG_LINE@request@    }@@@",
