@@ -7,6 +7,8 @@ from __future__ import annotations
 import contextlib
 import itertools
 import json
+import re
+import shlex
 from hashlib import md5
 from requests.models import PreparedRequest
 
@@ -57,6 +59,18 @@ FLAGFUZZ_BUG_DEFAULTS = {
 MAX_BUG_LINKS = 5
 REPRO_TIMEOUT_DEFAULT = 60
 REPRO_TOTAL_TIMEOUT_DEFAULT = 120
+
+# The only form of flags from the number fuzzer that is passed on to command
+# lines for reproducing a failure: --name or --name=value, with names and
+# values made of ASCII letters, digits, underscores and dashes. This rules out
+# everything else d8 accepts on its command line, e.g. code passed with -e,
+# paths of scripts to execute, and values that are paths (with / or \).
+SAFE_FUZZER_FLAG_RE = re.compile(r'--[a-zA-Z0-9_-]+(=[a-zA-Z0-9_-]+)?')
+
+# Names of flags, which are unsafe despite matching SAFE_FUZZER_FLAG_RE, as d8
+# executes code passed on the command line with them or lets code execute
+# system commands.
+UNSAFE_FUZZER_FLAGS = ('e', 'enable-os-system')
 
 # Exonerate builds with flaky crashes if all types are in this list.
 EXONERATED_CRASH_TYPES = [
@@ -1071,6 +1085,20 @@ TOOL_TO_TEST_SWARMING = freeze(
 )
 
 
+def _is_unsafe_fuzzer_flag(flag):
+  """Returns: True if a flag used by the number fuzzer doesn't match
+  SAFE_FUZZER_FLAG_RE or is one of UNSAFE_FUZZER_FLAGS.
+
+  The flags are read from the untrusted output of swarming tasks. Hence, only
+  an allowlisted form of flags is considered safe, and the names of unsafe
+  flags also match other spellings, e.g. with underscores or a value.
+  """
+  if not SAFE_FUZZER_FLAG_RE.fullmatch(flag):
+    return True
+  name = flag.lstrip('-').split('=')[0].replace('_', '-')
+  return name in UNSAFE_FUZZER_FLAGS
+
+
 class Failure:
   """Represents a test run leading to a failure (possibly re-run several times)."""
 
@@ -1167,6 +1195,15 @@ class Failure:
   def _format_swarming_dimensions(self, dims):
     return ['%s:%s' % (k, v) for k, v in dims.items()]
 
+  @property
+  def _has_unsafe_fuzzer_flags(self):
+    """Returns: True if this is a failure of the number fuzzer, which used
+    flags that are unsafe to pass on to command lines for reproducing it.
+    """
+    return self.framework_name == 'num_fuzzer' and any(
+      _is_unsafe_fuzzer_flag(flag) for flag in self.results[0]['variant_flags']
+    )
+
   def _flako_properties(self):
     test_config = self.api.v8_tests.test_configs[self.test.name]
 
@@ -1177,7 +1214,10 @@ class Failure:
     extra_args = [f'--framework={self.framework_name or "default"}']
     if self.framework_name == 'num_fuzzer':
       for flag in self.results[0]['variant_flags']:
-        extra_args += ['--extra-flags', flag]
+        # The test runner splits the value of each --extra-flags option like a
+        # shell. Quote the flag to pass it on unchanged, also if it contains
+        # e.g. spaces.
+        extra_args += ['--extra-flags', shlex.quote(flag)]
       variant = 'default'
     else:  # Standard test runner.
       # TODO(machenbach): The api should hide the details how to get the args.
@@ -1217,7 +1257,12 @@ class Failure:
     return properties
 
   def _local_repro_cmd_line(self):
-    """Returns the command line for reproducing the flake locally."""
+    """Returns the command line for reproducing the flake locally.
+
+    The command line is meant to be copied into a shell. As it contains data
+    from the untrusted output of swarming tasks (e.g. test name, variant and
+    flags), each argument is quoted for the shell.
+    """
     test_properties = self._flako_properties()
     base_cmd = [
       'tools/run-tests.py',
@@ -1231,12 +1276,17 @@ class Failure:
     base_cmd += test_properties['extra_args']
     base_cmd.append(test_properties['test_name'])
 
-    return ' '.join(base_cmd)
+    return shlex.join(str(arg) for arg in base_cmd)
 
   def _flako_cmd_line(self):
-    """Returns the command line for bisecting this failure with flako."""
+    """Returns the command line for bisecting this failure with flako.
+
+    The command line is meant to be copied into a shell. As it contains data
+    from the untrusted output of swarming tasks (e.g. test name, variant and
+    flags), each property is quoted for the shell.
+    """
     return 'bb add v8/try.triggered/v8_flako %s' % ' '.join(
-      '-p \'%s=%s\'' % (k, json.dumps(v, sort_keys=True))
+      '-p %s' % shlex.quote('%s=%s' % (k, json.dumps(v, sort_keys=True)))
       for k, v in self._flako_properties().items()
     )
 
@@ -1264,18 +1314,31 @@ class Failure:
       lines.extend(self.api.v8_tests.gn_args)
     lines.append('')
 
-    # Print the command line for flake bisect.
+    # Print the command lines for flake bisect and local reproduction.
     if (
       isinstance(self.test, V8SwarmingTest)
       and not self.api.tryserver.is_tryserver
     ):
-      lines.append('Trigger flake bisect on command line:')
-      lines.append(self._flako_cmd_line())
-      lines.append('')
+      if self._has_unsafe_fuzzer_flags:
+        # Reproducing a failure of the number fuzzer requires the flags it
+        # used for that particular test. Those are only known from the
+        # untrusted output of swarming tasks and quoting doesn't make it safe
+        # to run a test with unsafe flags.
+        lines.append(
+          'Command lines for flake bisect and local reproduction are not '
+          'available, as the flags of the number fuzzer are not limited to '
+          'plain --name or --name=value flags (e.g. they contain -e, a '
+          'script or a path), or contain --enable-os-system.'
+        )
+        lines.append('')
+      else:
+        lines.append('Trigger flake bisect on command line:')
+        lines.append(self._flako_cmd_line())
+        lines.append('')
 
-      lines.append('Local flake reproduction on command line:')
-      lines.append(self._local_repro_cmd_line())
-      lines.append('')
+        lines.append('Local flake reproduction on command line:')
+        lines.append(self._local_repro_cmd_line())
+        lines.append('')
 
     # Add results for each run of a command.
     for result in sorted(self.results, key=lambda r: int(r['run'])):

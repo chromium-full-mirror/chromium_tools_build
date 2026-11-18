@@ -30,6 +30,106 @@ logging.basicConfig()
 _log.setLevel(logging.INFO)
 
 
+# Lists of top tests in the output of a shard, mapped to the key by which they
+# are sorted when merging.
+TOP_TESTS_SORT_KEYS = {
+  'max_rss_tests': 'max_rss',
+  'max_vms_tests': 'max_vms',
+  'slowest_tests': 'duration',
+}
+
+# Lists of top tests that older versions of the test runner don't provide.
+OPTIONAL_TOP_TESTS = ('max_rss_tests', 'max_vms_tests')
+
+
+def _is_int(value):
+  return isinstance(value, int) and not isinstance(value, bool)
+
+
+def _is_number(value):
+  return _is_int(value) or isinstance(value, float)
+
+
+def _is_plain_str(value):
+  """Returns: True if value is a string without control characters, line
+  separators or other non-printable characters.
+  """
+  return isinstance(value, str) and value.isprintable()
+
+
+def _is_plain_str_list(value):
+  return isinstance(value, list) and all(_is_plain_str(v) for v in value)
+
+
+def _validate_result(result):
+  """Checks the structure of one test result in the output of a shard.
+
+  This restricts the fields, which the recipe shows in the log of a failure
+  above the command lines it suggests for reproducing the failure, and the
+  fields it uses to create those command lines.
+
+  Returns: A description of the first problem found or None if there is none.
+  """
+  if not isinstance(result, dict):
+    return ' is not a dict'
+  name = result.get('name')
+  if not _is_plain_str(name):
+    return '.name is not a plain string'
+  # The name is passed as an argument to the test runner, which must not
+  # interpret it as an option.
+  if not name or name.startswith('-'):
+    return '.name is empty or starts with a dash'
+  if not _is_plain_str(result.get('command')):
+    return '.command is not a plain string'
+  if not _is_plain_str_list(result.get('flags')):
+    return '.flags is not a list of plain strings'
+  # Optional fields. E.g. the number fuzzer has no variant, but lists the
+  # flags it used in variant_flags.
+  for key in ('framework_name', 'variant'):
+    value = result.get(key)
+    if value is not None and not _is_plain_str(value):
+      return '.%s is not a plain string' % key
+  variant_flags = result.get('variant_flags')
+  if variant_flags is not None and not _is_plain_str_list(variant_flags):
+    return '.variant_flags is not a list of plain strings'
+  for key in ('shard_count', 'shard_id'):
+    if key in result and not _is_int(result[key]):
+      return '.%s is not an int' % key
+  return None
+
+
+def validate_shard_json(json_data):
+  """Checks the structure of the JSON output of a single shard.
+
+  The output of a shard is untrusted. This checks the structure as required
+  for merging the output of all shards, and restricts the fields of test
+  results, which end up in the log of a failure.
+
+  Returns: A description of the first problem found or None if there is none.
+  """
+  if not isinstance(json_data, dict):
+    return 'output is not a dict'
+  results = json_data.get('results')
+  if not isinstance(results, list):
+    return 'results is not a list'
+  if not _is_int(json_data.get('test_total')):
+    return 'test_total is not an int'
+  for key, sort_key in TOP_TESTS_SORT_KEYS.items():
+    if key in OPTIONAL_TOP_TESTS and key not in json_data:
+      continue
+    tests = json_data.get(key)
+    if not isinstance(tests, list) or not all(
+      isinstance(test, dict) and _is_number(test.get(sort_key))
+      for test in tests
+    ):
+      return '%s is not a list of tests with a numeric %s' % (key, sort_key)
+  for i, result in enumerate(results):
+    problem = _validate_result(result)
+    if problem:
+      return 'results[%d]%s' % (i, problem)
+  return None
+
+
 class BadShards:
   def __init__(self):
     self.missing = set()
@@ -147,14 +247,23 @@ class TaskCollector:
       json_data = self.load_shard_json(
         output_dir, result['task_id'], 'output.json'
       )
-      if json_data:
-        # The happy case. We have results, also after sigterm.
-        aggregated_results.append(json_data)
-      else:
+      if json_data is None:
         # Unclear if this can happen. When the test-runner returns, it should
         # also add the json output.
         _log.error('shard %d did not produce output.json' % index)
         bad_shards.add_incomplete(index)
+        continue
+      error = validate_shard_json(json_data)
+      if error:
+        # Don't pass on malformed data from the untrusted shard output.
+        _log.error('shard %d produced malformed output.json: %s', index, error)
+        self.emit_warning(
+          'shard %d produced malformed output.json' % index, error
+        )
+        bad_shards.add_incomplete(index)
+        continue
+      # The happy case. We have results, also after sigterm.
+      aggregated_results.append(json_data)
 
     # If some shards are missing, make it known. Continue parsing anyway. Step
     # should be red anyway, since swarming.py return non-zero exit code in that

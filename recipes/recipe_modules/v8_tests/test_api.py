@@ -222,7 +222,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       }
     )
 
-  def one_failure(self):
+  def one_failure(self, name='suite-name/dir/test-name'):
     return self.m.json.output(
       {
         'results': [
@@ -239,7 +239,7 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
             'stderr': 'Some errput.',
             'crash_type': 'Some crash type.',
             'crash_state': 'Some crash state.',
-            'name': 'suite-name/dir/test-name',
+            'name': name,
             'command': 'd8 test.js',
             'target_name': 'd8',
             'exit_code': 1,
@@ -251,11 +251,17 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       }
     )
 
-  def flakes(self, count, num_fuzz=False, crash_type='Some crash type.'):
+  def flakes(
+    self,
+    count,
+    num_fuzz=False,
+    crash_type='Some crash type.',
+    num_fuzz_flags=('--flag1', '--flag2'),
+  ):
     if num_fuzz:
       framework_name = 'num_fuzzer'
       variant = None
-      variant_flags = ['--flag1', '--flag2']
+      variant_flags = list(num_fuzz_flags)
     else:
       framework_name = 'standard_runner'
       variant = 'stress'
@@ -306,8 +312,8 @@ class V8TestApi(recipe_test_api.RecipeTestApi):
       }
     )
 
-  def one_flake(self, num_fuzz=False):
-    return self.flakes(1, num_fuzz=num_fuzz)
+  def one_flake(self, num_fuzz=False, **kwargs):
+    return self.flakes(1, num_fuzz=num_fuzz, **kwargs)
 
   def infra_failure(self):
     return self.m.json.output(

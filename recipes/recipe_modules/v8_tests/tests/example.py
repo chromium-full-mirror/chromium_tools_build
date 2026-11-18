@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 import json
+import shlex
 
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
 from PB.go.chromium.org.luci.lucictx import sections as sections_pb2
@@ -13,6 +14,7 @@ from recipe_engine.post_process import (
   DoesNotRun,
   DropExpectation,
   LogContains,
+  LogDoesNotContain,
   StepFailure,
 )
 
@@ -66,6 +68,66 @@ def RunSteps(api: DEPS):
   result = api.v8_tests.runtests(source_dir, tests)
   status = common_pb.FAILURE if result.is_negative else common_pb.SUCCESS
   return result_pb2.RawResult(status=status)
+
+
+def _parse_repro_cmd_lines(check, steps, step_name, log_name):
+  """Parses the command lines suggested for reproducing a failure like a
+  shell.
+
+  Returns: The arguments passed to the V8 test runner for the local
+      reproduction and the dict of properties passed to flako.
+  """
+  lines = steps[step_name].logs[log_name].splitlines()
+
+  def parse_cmd_line(header):
+    return shlex.split(lines[lines.index(header) + 1])
+
+  local_cmd = parse_cmd_line('Local flake reproduction on command line:')
+  check(local_cmd[0] == 'tools/run-tests.py')
+
+  flako_cmd = parse_cmd_line('Trigger flake bisect on command line:')
+  check(flako_cmd[:3] == ['bb', 'add', 'v8/try.triggered/v8_flako'])
+  flags, properties = flako_cmd[3::2], flako_cmd[4::2]
+  check(len(flags) == len(properties))
+  check(all(flag == '-p' for flag in flags))
+  properties = dict(prop.split('=', 1) for prop in properties)
+  return local_cmd[1:], {k: json.loads(v) for k, v in properties.items()}
+
+
+def _check_repro_cmd_lines(check, steps, step_name, log_name, test_name):
+  """Checks that the command lines suggested for reproducing a failure pass
+  the test name as one literal argument when copied into a shell.
+  """
+  local_args, properties = _parse_repro_cmd_lines(
+    check, steps, step_name, log_name
+  )
+  check(all(arg.startswith('--') for arg in local_args[:-1]))
+  check(local_args[-1] == test_name)
+  check(properties['test_name'] == test_name)
+  check(properties['variant'] == 'default')
+
+
+def _extra_flags(args):
+  """Returns the flags that the V8 test runner passes on to a test, when
+  called with the given arguments. The test runner splits the value of each
+  --extra-flags option like a shell.
+  """
+  flags = []
+  for option, value in zip(args, args[1:]):
+    if option == '--extra-flags':
+      flags += shlex.split(value)
+  return flags
+
+
+def _check_num_fuzzer_flags(check, steps, step_name, log_name, flags):
+  """Checks that the command lines suggested for reproducing a failure of the
+  number fuzzer make the V8 test runner pass on the fuzzer's flags unchanged.
+  """
+  local_args, properties = _parse_repro_cmd_lines(
+    check, steps, step_name, log_name
+  )
+  check(_extra_flags(local_args) == flags)
+  check(_extra_flags(properties['extra_args']) == flags)
 
 
 def GenTests(api: TEST_DEPS):
@@ -181,6 +243,105 @@ def GenTests(api: TEST_DEPS):
     api.post_process(DropExpectation),
     status='SUCCESS',
   )
+
+  # Test results are read from the untrusted output of swarming tasks. The
+  # command lines suggested for reproducing a failure must not let such data
+  # break out into the shell.
+  malicious_name = 'suite-name/dir/test\'; echo pwned | sh #'
+  yield api.test(
+    'repro_cmd_lines_are_quoted',
+    api.buildbucket.ci_build(project='v8'),
+    api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+    api.step_data('Check', api.v8_tests.one_failure(name=malicious_name)),
+    api.post_process(
+      _check_repro_cmd_lines,
+      'Check',
+      'test\'; echo pwned | sh #',
+      malicious_name,
+    ),
+    api.post_process(DropExpectation),
+    status='FAILURE',
+  )
+
+  # The suggested command lines must make the V8 test runner pass on the
+  # flags used by the number fuzzer unchanged. This covers all forms of flags
+  # that are passed on: with and without a value, with underscores and with
+  # a negative number.
+  num_fuzz_flags = [
+    '--stress-gc=4',
+    '--no-enable-sse4_2',
+    '--cache=code',
+    '--fuzzer-random-seed=-2147483648',
+  ]
+  yield api.test(
+    'num_fuzzer_flags_in_repro_cmd_lines',
+    api.buildbucket.ci_build(project='v8'),
+    api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+    api.step_data(
+      'Check',
+      api.v8_tests.one_flake(num_fuzz=True, num_fuzz_flags=num_fuzz_flags),
+    ),
+    api.post_process(
+      _check_num_fuzzer_flags,
+      'Check (flakes)',
+      'test-name-0',
+      num_fuzz_flags,
+    ),
+    api.post_process(DropExpectation),
+    status='FAILURE',
+  )
+
+  # The flags used by the number fuzzer are read from the untrusted output of
+  # swarming tasks. Command lines are only suggested if all of them have the
+  # form --name or --name=value without special characters, and none of them
+  # lets code execute system commands. Everything else could e.g. make d8
+  # execute code passed on the command line or a script, or access a path.
+  for i, unsafe_flags in enumerate(
+    [
+      # Code passed on the command line.
+      ['--flag1', '-e', ' var __pv_0;'],
+      # Flags that are unsafe despite their form, also in other spellings.
+      ['--enable-os-system', '--flag1'],
+      ['--enable_os_system=true'],
+      ['--e'],
+      # Not the exact form of a flag.
+      [' --e'],
+      ['--flag1\n'],
+      ['-flag1'],
+      ['--flag1='],
+      ['--flag1=a b'],
+      ['--flag1=a\'b'],
+      # Scripts, which d8 executes.
+      ['--flag1', 'script.js'],
+      ['/tmp/script.js'],
+      # Values that are paths.
+      ['--snapshot-blob=/tmp/blob'],
+      ['--lcov=..\\lcov'],
+    ]
+  ):
+    yield api.test(
+      f'no_repro_cmd_lines_for_unsafe_num_fuzzer_flags_{i}',
+      api.buildbucket.ci_build(project='v8'),
+      api.properties(swarm_hashes=swarm_hashes, **parent_test_spec),
+      api.step_data(
+        'Check',
+        api.v8_tests.one_flake(num_fuzz=True, num_fuzz_flags=unsafe_flags),
+      ),
+      api.post_process(
+        LogContains,
+        'Check (flakes)',
+        'test-name-0',
+        ['not limited to plain --name or --name=value flags'],
+      ),
+      api.post_process(
+        LogDoesNotContain,
+        'Check (flakes)',
+        'test-name-0',
+        ['bb add', 'tools/run-tests.py', '--extra-flags'],
+      ),
+      api.post_process(DropExpectation),
+      status='FAILURE',
+    )
 
   intl_test_spec = json.dumps(
     {

