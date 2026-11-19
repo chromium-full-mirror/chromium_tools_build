@@ -239,6 +239,13 @@ def create_cipd_package(
 
     # Skip the ref update if it is an experimental build.
     if not api.runtime.is_experimental and refs:
+      if 'prod' in refs:
+        try:
+          api.cipd.set_ref(pin.package, version='prod', refs=['prev-prod'])
+        except api.cipd.Error as e:
+          if 'no such ref' not in str(e):
+            raise
+          api.step.active_result.presentation.status = api.step.SUCCESS
       api.cipd.set_ref(pin.package, version=pin.instance_id, refs=refs)
 
 
@@ -645,6 +652,11 @@ def GenTests(api: TEST_DEPS):
       'Evaluate model safety gate.fetch current prod model',
       api.cipd.example_error('no such ref'),
     )
+    + api.step_data(
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      api.cipd.example_error('no such ref'),
+    )
     + api.post_process(
       post_process.PropertyEquals,
       'rts_model_scorecard',
@@ -657,10 +669,31 @@ def GenTests(api: TEST_DEPS):
       },
     )
     + api.post_process(
-      post_process.StepCommandContains,
+      post_process.StepSuccess,
       'Create CIPD packages.Upload CIPD package - linux-amd64'
       '.cipd set-ref chromium/rts/model/linux-amd64',
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64 (2)',
       ['-ref', 'latest', '-ref', 'prod'],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    api.test('prev_prod_set_ref_infra_error', status='INFRA_FAILURE')
+    + linux_amd64
+    + api.step_data(
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64',
+      api.cipd.example_error('transient rpc error'),
+    )
+    + api.post_process(
+      post_process.DoesNotRun,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64 (2)',
     )
     + api.post_process(post_process.DropExpectation)
   )
@@ -789,6 +822,12 @@ def GenTests(api: TEST_DEPS):
       post_process.StepCommandContains,
       'Create CIPD packages.Upload CIPD package - linux-amd64'
       '.cipd set-ref chromium/rts/model/linux-amd64',
+      ['-version', 'prod', '-ref', 'prev-prod'],
+    )
+    + api.post_process(
+      post_process.StepCommandContains,
+      'Create CIPD packages.Upload CIPD package - linux-amd64'
+      '.cipd set-ref chromium/rts/model/linux-amd64 (2)',
       ['-ref', 'latest', '-ref', 'prod'],
     )
     + api.post_process(post_process.DropExpectation)
