@@ -5,7 +5,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping, Sequence
 from typing import Any  # noqa: F401
 import re
 
@@ -25,6 +25,8 @@ from PB.go.chromium.org.luci.resultdb.proto.v1 import resultdb  # noqa: F401
 # Instruction content is limited to 10KB
 # https://chromium.googlesource.com/infra/luci/recipes-py/+/b44da3c0/recipe_proto/go.chromium.org/luci/resultdb/proto/v1/instruction.proto#109
 _TARGET_INSTRUCTIONS_LIMIT = 10240
+
+_INVOCATION_ID_RE = re.compile(r'build-[0-9]+')
 
 
 class ReproInstructionsApi(recipe_api.RecipeApi):
@@ -333,6 +335,39 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
         return step_id
     return None
 
+  def _allowed_parent_dependencies(self) -> list[Mapping[str, Any]]:
+    parent_dependencies = self.m.properties.get('instruction_dependencies', [])
+    if not isinstance(parent_dependencies, Sequence) or isinstance(
+      parent_dependencies, (str, bytes)
+    ):
+      return []
+
+    build = self.m.buildbucket.build
+    ancestor_ids = set(build.ancestor_ids)
+    allowed_invocations = (
+      {f'build-{aid}' for aid in ancestor_ids} if ancestor_ids else None
+    )
+    if allowed_invocations is None:
+      bucket = build.builder.bucket
+      is_trusted_bucket = bucket in ('ci', 'official', 'cron') or (
+        bucket.startswith(('ci.', 'ci-', 'official.', 'official-'))
+      )
+      if build.input.gerrit_changes or not is_trusted_bucket:
+        return []
+
+    return [
+      dep
+      for dep in parent_dependencies
+      if isinstance(dep, Mapping)
+      and isinstance(dep.get('invocation_id'), str)
+      and isinstance(dep.get('instruction_id'), str)
+      and (
+        dep['invocation_id'] in allowed_invocations
+        if allowed_invocations is not None
+        else _INVOCATION_ID_RE.fullmatch(dep['invocation_id'])
+      )
+    ]
+
   def get_dependency(
     self,
     step_id_re: str,
@@ -347,15 +382,8 @@ class ReproInstructionsApi(recipe_api.RecipeApi):
     Args:
       step_id_re: Regex to run against step ids to validate the step
     """
-    parent_dependencies = self.m.properties.get('instruction_dependencies', [])
-
-    # If we have a parent build try for a step on that invocation
-    for dependency in reversed(parent_dependencies):
-      if (
-        'invocation_id' in dependency
-        and 'instruction_id' in dependency
-        and re.match(step_id_re, dependency['instruction_id'])
-      ):
+    for dependency in reversed(self._allowed_parent_dependencies()):
+      if re.match(step_id_re, dependency['instruction_id']):
         return instruction_pb.InstructionDependency(
           invocation_id=dependency['invocation_id'],
           instruction_id=dependency['instruction_id'],

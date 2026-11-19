@@ -149,3 +149,168 @@ def GenTests(api: TEST_DEPS):
     'rdb_disabled',
     api.post_process(post_process.DropExpectation),
   )
+  yield api.test(
+    'try_builder_rejects_untrusted_dependency',
+    api.buildbucket.try_build(builder='linux-rel'),
+    api.properties(
+      instruction_dependencies=[
+        {'invocation_id': 'build-999999', 'instruction_id': 'foo_step_id'}
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-999999'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'ancestor_ids_validates_parent',
+    api.buildbucket.try_build(builder='linux-rel', ancestor_ids=[111111]),
+    api.properties(
+      instruction_dependencies=[
+        {'invocation_id': 'build-111111', 'instruction_id': 'foo_step_id'},
+        {'invocation_id': 'build-999999', 'instruction_id': 'foo_step_id'},
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-111111'],
+    ),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-999999'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'ci_scheduler_tester_allows_valid_dependency',
+    api.buildbucket.ci_build(builder='linux-tester'),
+    api.properties(
+      instruction_dependencies=[
+        {'invocation_id': 'build-12341234', 'instruction_id': 'foo_step_id'}
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-12341234'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'try_beta_rejects_untrusted_dependency',
+    api.buildbucket.try_build(bucket='try-beta', builder='linux-rel'),
+    api.properties(
+      instruction_dependencies=[
+        {'invocation_id': 'build-999999', 'instruction_id': 'foo_step_id'}
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-999999'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'non_sequence_instruction_dependencies',
+    api.buildbucket.ci_build(builder='linux-tester'),
+    api.properties(instruction_dependencies='build-999999'),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-999999'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'malformed_instruction_dependencies',
+    api.buildbucket.ci_build(builder='linux-tester'),
+    api.properties(
+      instruction_dependencies=[
+        {
+          'invocation_id': 'invocations/build:999',
+          'instruction_id': 'foo_step_id',
+        },
+        {'invocation_id': 'build-123\n', 'instruction_id': 'foo_step_id'},
+        {'invocation_id': 'build-१२३', 'instruction_id': 'foo_step_id'},
+        {'invocation_id': 123, 'instruction_id': 'foo_step_id'},
+        'bad',
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['invocations/build:999'],
+    ),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-123\\n'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+  yield api.test(
+    'gerrit_changes_rejects_untrusted_dependency',
+    api.buildbucket.try_build(bucket='cq', builder='linux-rel'),
+    api.properties(
+      instruction_dependencies=[
+        {'invocation_id': 'build-999999', 'instruction_id': 'foo_step_id'}
+      ]
+    ),
+    api.resultdb.get_invocation_instructions(instructions=instructions),
+    api.post_process(
+      post_process.LogDoesNotContain,
+      'update invocation instructions',
+      'json.input',
+      ['build-999999'],
+    ),
+    api.post_process(
+      post_process.LogContains,
+      'update invocation instructions',
+      'json.input',
+      ['build-8945511751514863184'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
