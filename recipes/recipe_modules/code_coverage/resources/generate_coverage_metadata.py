@@ -893,7 +893,10 @@ def _generate_metadata(
 
   if diff_mapping is None:
     repository_util.AddGitRevisionsToCoverageFilesMetadata(
-      files_coverage, src_path, 'DEPS'
+      files_coverage,
+      src_path,
+      'DEPS',
+      cache_committed_files=is_fuzz_coverage,
     )
 
   minutes = (time.time() - start_time) / 60

@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import json
 import os
 import subprocess
 import sys
@@ -73,6 +74,22 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
       '//third_party/repo/file2.cc': ('file2hash', 12345),
     }
     self.assertDictEqual(expected_file_revisions, file_revisions)
+    cache_path = os.path.join(
+      tempfile.gettempdir(), '.cov-rev-cache', '123abc.files.json'
+    )
+    self.assertFalse(os.path.exists(cache_path))
+
+    # Enabling the cache creates the file.
+    self.assertDictEqual(
+      expected_file_revisions,
+      repository_util._GetFileRevisions(
+        '/src',
+        'DEPS',
+        ['//file1.cc', '//third_party/repo/file2.cc'],
+        cache_committed_files=True,
+      ),
+    )
+    self.assertTrue(os.path.isfile(cache_path))
 
   @mock.patch('repository_util.subprocess.Popen', autospec=True)
   @mock.patch('repository_util.subprocess.check_output', autospec=True)
@@ -204,6 +221,73 @@ class RepositoryUtilTest(fake_filesystem_unittest.TestCase):
       src_path, file_path, reference_commit
     )
     self.assertListEqual([2], actual_unmodified_lines)
+
+
+@mock.patch('repository_util.subprocess.check_output', autospec=True)
+class CommittedFilesCacheTest(fake_filesystem_unittest.TestCase):
+  CHECKOUTS = ['//', '//third_party/repo/']
+  EXPECTED = {
+    '//': {'//a.cc', '//dir/b.cc'},
+    '//third_party/repo/': {'//third_party/repo/c.cc'},
+  }
+
+  def setUp(self):
+    super().setUp()
+    self.setUpPyfakefs()
+    self.fs.create_dir('/src/third_party/repo')
+    self.cache_dir = os.path.join(tempfile.gettempdir(), '.cov-rev-cache')
+    self.cache_path = os.path.join(self.cache_dir, '123abc.files.json')
+
+  def list_files(self, mock_check_output):
+    """Lists files with fake `git ls-files`, returning (listing, git calls)."""
+    mock_check_output.reset_mock()
+    mock_check_output.side_effect = lambda cmd, cwd, text: {
+      '/src': 'a.cc\ndir/b.cc\n',
+      '/src/third_party/repo': 'c.cc\n',
+    }[os.path.normpath(cwd)]
+    all_files = repository_util._GetCommitedFilesForEachCheckout(
+      '/src',
+      self.CHECKOUTS,
+      cache_path=self.cache_path,
+    )
+    return all_files, mock_check_output.call_count
+
+  def test_no_cache_path(self, mock_check_output):
+    self.cache_path = None
+    self.assertEqual((self.EXPECTED, 2), self.list_files(mock_check_output))
+    self.assertFalse(os.path.exists(self.cache_dir))
+
+  def test_round_trip(self, mock_check_output):
+    self.assertEqual((self.EXPECTED, 2), self.list_files(mock_check_output))
+    self.assertEqual(['123abc.files.json'], os.listdir(self.cache_dir))
+    self.assertEqual((self.EXPECTED, 0), self.list_files(mock_check_output))
+
+  def test_absent_checkout_round_trips(self, mock_check_output):
+    self.fs.remove_object('/src/third_party/repo')
+    expected = {'//': self.EXPECTED['//']}
+    self.assertEqual((expected, 1), self.list_files(mock_check_output))
+    self.assertEqual((expected, 0), self.list_files(mock_check_output))
+
+  def test_unusable_cache_is_recomputed(self, mock_check_output):
+    for name, contents in [
+      ('truncated', '{"//": ["a.cc"'),
+      ('top-level list', json.dumps(['//', '//third_party/repo/'])),
+      ('missing checkout', json.dumps({'//': ['a.cc']})),
+    ]:
+      with self.subTest(name):
+        self.fs.create_file(self.cache_path, contents=contents)
+        self.assertEqual((self.EXPECTED, 2), self.list_files(mock_check_output))
+        # The recomputed listing replaced the bad cache.
+        self.assertEqual((self.EXPECTED, 0), self.list_files(mock_check_output))
+        self.fs.remove_object(self.cache_path)
+
+  @mock.patch('repository_util.json.dump', autospec=True)
+  def test_write_failure_returns_listing_and_cleans_up(
+    self, mock_json_dump, mock_check_output
+  ):
+    mock_json_dump.side_effect = OSError('disk full')
+    self.assertEqual((self.EXPECTED, 2), self.list_files(mock_check_output))
+    self.assertEqual([], os.listdir(self.cache_dir))
 
 
 @mock.patch('subprocess.check_output')

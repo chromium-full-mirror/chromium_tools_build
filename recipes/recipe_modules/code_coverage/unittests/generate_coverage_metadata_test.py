@@ -697,8 +697,7 @@ class GenerateCoverageMetadataTest(unittest.TestCase):
     mock_get_per_target_coverage_summary.return_value = {}
 
     component_mapping = {'dir1': 'Test>Component'}
-
-    compressed_data, _ = generator._generate_metadata(
+    kwargs = dict(
       src_path='/path/to/src',
       output_dir='/path/to/output_dir',
       profdata_path='/path/to/coverage.profdata',
@@ -708,6 +707,13 @@ class GenerateCoverageMetadataTest(unittest.TestCase):
       component_mapping=component_mapping,
       sources=[],
       exclusions='.*bad_file.*',
+    )
+
+    compressed_data, _ = generator._generate_metadata(**kwargs)
+
+    # Only fuzz coverage caches the committed files listing.
+    mock__GetFileRevisions.assert_called_once_with(
+      '/path/to/src', 'DEPS', ['//dir1/file1.cc'], cache_committed_files=False
     )
 
     expected_compressed_components = [
@@ -842,6 +848,12 @@ class GenerateCoverageMetadataTest(unittest.TestCase):
     ]
 
     self.assertListEqual(expected_compressed_files, compressed_data['files'])
+
+    mock__GetFileRevisions.reset_mock()
+    generator._generate_metadata(**kwargs, is_fuzz_coverage=True)
+    mock__GetFileRevisions.assert_called_once_with(
+      '/path/to/src', 'DEPS', ['//dir1/file1.cc'], cache_committed_files=True
+    )
 
   @mock.patch('psutil.cpu_count')
   @mock.patch('subprocess.check_output')

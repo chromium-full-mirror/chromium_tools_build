@@ -10,9 +10,11 @@ to get the last changed revision of files.
 from __future__ import annotations
 
 import collections
+import contextlib
 from collections.abc import MutableMapping
 from concurrent.futures import ThreadPoolExecutor
 import csv
+import json
 import logging
 import multiprocessing
 import os
@@ -306,32 +308,82 @@ class RevisionCache:
       )
 
 
-def _GetCommitedFilesForEachCheckout(root_dir, checkouts):
+def _GetCommitedFilesForEachCheckout(root_dir, checkouts, cache_path=None):
   """Returns source absolute paths to all committed files in each checkout.
+
+  If `cache_path` is given, the listing is read from it when it matches this
+  checkout, or else computed with `git ls-files` and written there. The path
+  must be unique to the root checkout's revision, which pins every DEPS
+  checkout. Like the revision cache, this assumes a pristine checkout.
 
   Args:
     root_dir (str): Absolute path to the directory of the root checkout.
     checkouts (list): A list of source absolute paths to checkout directories.
+    cache_path (str): Optional path to a JSON cache of the listing.
 
   Returns:
-    A dict mapping from a checkout (in source absolute path) to the list of
+    A dict mapping from a checkout (in source absolute path) to the set of
     committed files (in source absolute path).
   """
-  all_files = collections.defaultdict(set)
+  present_checkouts = []
   for checkout in checkouts:
-    assert checkout.startswith('//')
-    checkout_dir = os.path.join(root_dir, checkout[2:])
-    if not os.path.isdir(checkout_dir):
-      continue
-    git_output = subprocess.check_output(
-      [GIT, 'ls-files'], cwd=checkout_dir, text=True
-    )
-    for path in git_output.splitlines():
-      all_files[checkout].add(os.path.join(checkout, path))
-  return all_files
+    assert checkout.startswith('//') and checkout.endswith('/'), checkout
+    if os.path.isdir(os.path.join(root_dir, checkout[2:])):
+      present_checkouts.append(checkout)
+
+  paths_in_checkouts = None
+  if cache_path:
+    try:
+      with open(cache_path) as f:
+        cached = json.load(f)
+      if isinstance(cached, dict) and cached.keys() == set(present_checkouts):
+        paths_in_checkouts = cached
+      else:
+        logging.warning('Ignoring stale committed files cache %s', cache_path)
+    except FileNotFoundError:
+      pass
+    except (OSError, ValueError) as e:
+      logging.warning(
+        'Ignoring corrupt committed files cache %s: %s', cache_path, e
+      )
+
+  if paths_in_checkouts is None:
+    paths_in_checkouts = {
+      checkout: subprocess.check_output(
+        [GIT, 'ls-files'], cwd=os.path.join(root_dir, checkout[2:]), text=True
+      ).splitlines()
+      for checkout in present_checkouts
+    }
+    if cache_path:
+      tmp_path = None
+      try:
+        cache_dir = os.path.dirname(cache_path)
+        os.makedirs(cache_dir, exist_ok=True)
+        with tempfile.NamedTemporaryFile(
+          'w', dir=cache_dir, delete=False, suffix='.tmp'
+        ) as f:
+          tmp_path = f.name
+          json.dump(paths_in_checkouts, f, separators=(',', ':'))
+        os.replace(tmp_path, cache_path)
+      except OSError as e:
+        logging.warning(
+          'Failed to write committed files cache %s: %s', cache_path, e
+        )
+        if tmp_path:
+          with contextlib.suppress(OSError):
+            os.remove(tmp_path)
+
+  # Checkouts end in '/', so concatenation matches `os.path.join()` and is much
+  # cheaper across millions of paths.
+  return {
+    checkout: {checkout + path for path in paths}
+    for checkout, paths in paths_in_checkouts.items()
+  }
 
 
-def _GetFileRevisions(root_dir, deps_file_path, file_paths):
+def _GetFileRevisions(
+  root_dir, deps_file_path, file_paths, cache_committed_files=False
+):
   """Returns a dict mapping from the path to its git revision for given files.
 
   Args:
@@ -339,6 +391,9 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
     deps_file_path (str): Relative path to the DEPS file in the root checkout.
     file_paths (list): The list of source absolute file paths to retrieve git
       revisions for.
+    cache_committed_files (bool): Whether to cache the `git ls-files` listing
+      of each checkout across calls. Only worth it for callers that run many
+      times in the same checkout, such as fuzz coverage.
 
   Returns:
     A dict that maps from file source absolute paths to tuples of two elements:
@@ -355,8 +410,21 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   checkouts = _GetOrderedCheckoutDirOfDependenciesFromDEPS(deps_file_content)
   timer.End('_GetOrderedCheckoutDirOfDependenciesFromDEPS')
 
+  root_revision = subprocess.check_output(
+    [GIT, 'rev-parse', 'HEAD'], text=True, cwd=root_dir
+  ).strip()
+  cache_dir = os.path.join(tempfile.gettempdir(), '.cov-rev-cache')
+
+  committed_files_cache_path = None
+  if cache_committed_files:
+    committed_files_cache_path = os.path.join(
+      cache_dir, f'{root_revision}.files.json'
+    )
+
   timer.Start()
-  all_files = _GetCommitedFilesForEachCheckout(root_dir, checkouts)
+  all_files = _GetCommitedFilesForEachCheckout(
+    root_dir, checkouts, cache_path=committed_files_cache_path
+  )
   timer.End('_GetCommitedFilesForEachCheckout')
 
   timer.Start()
@@ -370,13 +438,7 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
   timer.End('Grouping files by checkout')
 
   timer.Start()
-  root_revision = subprocess.check_output(
-    [GIT, 'rev-parse', 'HEAD'], text=True, cwd=root_dir
-  ).strip()
-  cache_path = os.path.join(
-    tempfile.gettempdir(), '.cov-rev-cache', f'{root_revision}.csv'
-  )
-  cache = RevisionCache(cache_path)
+  cache = RevisionCache(os.path.join(cache_dir, f'{root_revision}.csv'))
   cache.TryLoad()
 
   # Phase 1: Batching
@@ -432,7 +494,7 @@ def _GetFileRevisions(root_dir, deps_file_path, file_paths):
 
 
 def AddGitRevisionsToCoverageFilesMetadata(
-  files_coverage_data, src_path, deps_file_path
+  files_coverage_data, src_path, deps_file_path, cache_committed_files=False
 ):
   """Add git revisions to a list File in coverage metadata format.
 
@@ -445,12 +507,18 @@ def AddGitRevisionsToCoverageFilesMetadata(
     src_path (str): Absolute path to the source root.
     deps_file_path (str): Relative path to the DEPS file that manages
       dependencies.
+    cache_committed_files (bool): See `_GetFileRevisions()`.
   """
   logging.info('Retrieving file git metadata...')
   start_time = time.time()
 
   all_files = [file_record['path'] for file_record in files_coverage_data]
-  file_git_metadata = _GetFileRevisions(src_path, deps_file_path, all_files)
+  file_git_metadata = _GetFileRevisions(
+    src_path,
+    deps_file_path,
+    all_files,
+    cache_committed_files=cache_committed_files,
+  )
   for file_record in files_coverage_data:
     git_metadata = file_git_metadata.get(file_record['path'])
     if not git_metadata:

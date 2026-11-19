@@ -431,6 +431,7 @@ def RunSteps(api: DEPS, properties):
 
         api.step('run all fuzzers', run_cmd)
 
+        successful_targets = []
         if properties.fuzz_engine != 'fuzzilli':
           # For libfuzzer or centipede, upload the succeeded targets in a
           # json file to GCS
@@ -448,16 +449,6 @@ def RunSteps(api: DEPS, properties):
           successful_targets = api.file.read_json(
             'read successful targets', targets_file
           )
-          for target in successful_targets:
-            target_profdata_path = profdata_dir / f'{target}.profdata'
-            api.code_coverage.get_chromium_fuzz_coverage(
-              source_dir,
-              build_dir,
-              target_profdata_path,
-              {target},
-              overall=False,
-              use_cache=True,
-            )
 
         llvm_profdata_path = api.profiles.llvm_profdata_exec
         api.step(
@@ -474,9 +465,22 @@ def RunSteps(api: DEPS, properties):
           ],
         )
 
+        # Process overall coverage first so its batched git log warms the
+        # revision cache for the per-target runs below.
         api.code_coverage.get_chromium_fuzz_coverage(
           source_dir, build_dir, total_profdata_path, targets, use_cache=True
         )
+
+        for target in successful_targets:
+          target_profdata_path = profdata_dir / f'{target}.profdata'
+          api.code_coverage.get_chromium_fuzz_coverage(
+            source_dir,
+            build_dir,
+            target_profdata_path,
+            {target},
+            overall=False,
+            use_cache=True,
+          )
       except api.step.StepFailure:
         api.step.empty('could not process fuzz coverage')
         raise
@@ -762,15 +766,17 @@ def GenTests(api: TEST_DEPS):
           'read successful targets',
           api.file.read_json(['target1', 'target2', 'target3']),
         )
-        test += api.post_process(
-          post_process.MustRun, 'process fuzz coverage (target1)'
+        # Per-target coverage runs after overall coverage, so an overall
+        # failure skips it.
+        per_target_check = (
+          post_process.DoesNotRun
+          if coverage_metadata_failure
+          else post_process.MustRun
         )
-        test += api.post_process(
-          post_process.MustRun, 'process fuzz coverage (target2)'
-        )
-        test += api.post_process(
-          post_process.MustRun, 'process fuzz coverage (target3)'
-        )
+        for target in ('target1', 'target2', 'target3'):
+          test += api.post_process(
+            per_target_check, f'process fuzz coverage ({target})'
+          )
       test += api.step_data(
         'process fuzz coverage (overall).generate coverage metadata',
         retcode=retcode,
