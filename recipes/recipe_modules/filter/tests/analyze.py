@@ -60,28 +60,17 @@ def RunSteps(api: DEPS):
   if build_dir is None:
     build_dir = source_dir / 'out/Release'
 
-  args = (
+  affected_test_targets, affected_compile_targets = api.filter.analyze(
     source_dir,
     build_dir,
     api.properties.get('affected_files', ['file1', 'file2']),
     api.properties.get('test_targets', ['test1', 'test2']),
     api.properties.get('compile_targets', ['compile1', 'compile2']),
+    builder_id=chromium_types.BuilderId.create_for_group(
+      'test_group', 'test_buildername'
+    ),
+    **kwargs,
   )
-  kwargs['builder_id'] = chromium_types.BuilderId.create_for_group(
-    'test_group', 'test_buildername'
-  )
-  if 'expected_gn_labels' in api.properties:
-    result = api.filter.analyze_targets(*args, **kwargs)
-    affected_test_targets = result.test_targets
-    affected_compile_targets = result.compile_targets
-    expected = api.properties['expected_gn_labels']
-    api.assertions.assertEqual(
-      result.gn_labels, None if expected is None else list(expected)
-    )
-  else:
-    affected_test_targets, affected_compile_targets = api.filter.analyze(
-      *args, **kwargs
-    )
 
   expected_affected_test_targets = api.properties.get(
     'expected_affected_test_targets'
@@ -145,22 +134,6 @@ def GenTests(api: TEST_DEPS):
       compile_targets=['compile1', 'compile2'],
       expected_affected_test_targets=['test1'],
       expected_affected_compile_targets=['test1', 'compile2'],
-      expected_gn_labels=None,
-    ),
-    api.post_process(post_process.DropExpectation),
-  )
-
-  yield api.test(
-    'found-dependency-with-compile-labels',
-    api.platform('linux', 64),
-    api.filter.analyze_output(
-      status='Found dependency',
-      test_targets=['test1'],
-      compile_targets=['compile2'],
-      gn_labels=['//:compile2', '//:test1'],
-    ),
-    api.properties(
-      expected_gn_labels=['//:compile2', '//:test1'],
     ),
     api.post_process(post_process.DropExpectation),
   )

@@ -5,7 +5,6 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Collection, Iterable, Mapping
-import dataclasses
 import functools
 import itertools
 import posixpath
@@ -42,20 +41,6 @@ def _noop_results_callback(
   test_targets: Iterable[str],
 ) -> None:
   pass
-
-
-@dataclasses.dataclass(frozen=True)
-class AnalyzeResult:
-  """The result of an analyze operation."""
-
-  # The provided test targets that are affected.
-  test_targets: Collection[str]
-  # All provided targets that are affected.
-  compile_targets: Collection[str]
-  # The GN labels of what to build ("gn_labels" from mb analyze): the labels of
-  # the compile targets and of the affected test targets. None if analyze did
-  # not run mb or mb did not output them (checkouts before it did).
-  gn_labels: Collection[str] | None = None
 
 
 class FilterApi(recipe_api.RecipeApi):
@@ -239,7 +224,7 @@ class FilterApi(recipe_api.RecipeApi):
     exclusions: Mapping[re.Pattern, str],
     ignores: Collection[re.Pattern],
     analyzer: _Analyzer,
-  ) -> AnalyzeResult:
+  ) -> tuple[Collection[str], Collection[str]]:
     for path in paths:
       if self._find_matching_pattern(path, ignores):
         continue
@@ -267,7 +252,7 @@ class FilterApi(recipe_api.RecipeApi):
           test_targets,
         )
 
-        return AnalyzeResult(test_targets, all_targets)
+        return test_targets, all_targets
 
     analyze_input = {
       'files': paths,
@@ -313,11 +298,7 @@ class FilterApi(recipe_api.RecipeApi):
 
       results_callback('analysis complete', compile_targets, test_targets)
 
-      return AnalyzeResult(
-        test_targets,
-        compile_targets,
-        step_result.json.output.get('gn_labels'),
-      )
+      return test_targets, compile_targets
 
     step_result.presentation.step_text = 'No compile necessary'
     step_result.presentation.properties['no_compile'] = sorted(
@@ -326,16 +307,9 @@ class FilterApi(recipe_api.RecipeApi):
 
     results_callback('analysis complete, found no dependencies', [], [])
 
-    return AnalyzeResult([], [])
+    return [], []
 
-  def analyze(self, *args, **kwargs) -> tuple[Collection[str], Collection[str]]:
-    """Like analyze_targets(), but returns (test_targets, compile_targets)."""
-    # TODO: crbug.com/586357908 - Migrate the existing callers to
-    # analyze_targets().
-    result = self.analyze_targets(*args, **kwargs)
-    return result.test_targets, result.compile_targets
-
-  def analyze_targets(
+  def analyze(
     self,
     source_dir: config_types.Path,
     build_dir: config_types.Path,
@@ -352,7 +326,7 @@ class FilterApi(recipe_api.RecipeApi):
     mb_config_path: config_types.Path | None = None,
     phase: str | None = None,
     results_callback: ResultsCallback | None = None,
-  ) -> AnalyzeResult:
+  ) -> tuple[Collection[str], Collection[str]]:
     """Runs "analyze" step to determine targets affected by the patch.
 
     The config file identified by |config_file_name| will be read to get
@@ -416,8 +390,9 @@ class FilterApi(recipe_api.RecipeApi):
         the analyze operation.
 
     Returns:
-      An AnalyzeResult with the affected test targets, the affected targets
-      to compile and the GN labels from mb analyze.
+      A 2-element tuple: * The collection of provided test targets that
+      are affected * The collection of all provided targets that are
+      affected
     """
     if additional_names is None:
       additional_names = ['chromium']
@@ -467,25 +442,27 @@ class FilterApi(recipe_api.RecipeApi):
     additional_compile_targets = list(additional_compile_targets or [])
     results_callback = results_callback or _noop_results_callback
 
-    result = self._determine_affected_targets(
-      results_callback,
-      paths,
-      test_targets,
-      additional_compile_targets,
-      exclusions,
-      ignores,
-      analyzer,
+    analyze_test_targets, analyze_compile_targets = (
+      self._determine_affected_targets(
+        results_callback,
+        paths,
+        test_targets,
+        additional_compile_targets,
+        exclusions,
+        ignores,
+        analyzer,
+      )
     )
 
     # Emit more detailed output useful for debugging.
     analyze_details = {
       'test targets': test_targets,
       'additional compile targets': additional_compile_targets,
-      'affected test targets': result.test_targets,
-      'affected compile targets': result.compile_targets,
+      'affected test targets': analyze_test_targets,
+      'affected compile targets': analyze_compile_targets,
     }
     details_json = self.m.json.dumps(analyze_details, indent=2, sort_keys=False)
     step_result = self.m.step.active_result
     step_result.presentation.logs['analyze_details'] = details_json.splitlines()
 
-    return result
+    return analyze_test_targets, analyze_compile_targets
