@@ -176,7 +176,7 @@ class RevisionCache:
     try:
       self._entries.clear()
       self._dirty = False
-      with open(self._path) as cache_path:
+      with open(self._path, newline='') as cache_path:
         reader = csv.reader(cache_path)
         for checkout_dir, path_in_checkout, revision, timestamp in reader:
           self._entries[checkout_dir, path_in_checkout] = (
@@ -193,7 +193,7 @@ class RevisionCache:
       if not self._dirty:
         return
       os.makedirs(os.path.dirname(self._path), exist_ok=True)
-      with open(self._path, 'w+') as cache_path:
+      with open(self._path, 'w+', newline='') as cache_path:
         writer = csv.writer(cache_path)
         for cache_key, (revision, timestamp) in self._entries.items():
           checkout_dir, path_in_checkout = cache_key
