@@ -616,9 +616,7 @@ def _run_tests(
   if _UNITTESTS_TARGET in test_targets:
     test_runner.request_unit_tests(fontations=False)
     if use_fontations:
-      test_runner.request_unit_tests(
-        fontations=True, allow_failure=fontations_allow_failure
-      )
+      test_runner.request_unit_tests(fontations=True)
 
   # pdfium_embeddertests:
   if _EMBEDDERTESTS_TARGET in test_targets:
@@ -1025,7 +1023,7 @@ class _TestRunner:
 
     return env
 
-  def request_unit_tests(self, fontations, allow_failure=False):
+  def request_unit_tests(self, fontations):
     test_name = 'unittests'
     args = []
     test_suite_suffix = ''
@@ -1040,7 +1038,6 @@ class _TestRunner:
       target=('', 'pdfium_unittests'),
       args=args,
       test_suite_suffix=test_suite_suffix or None,
-      allow_failure=allow_failure,
     )
 
   def request_embedder_tests(self, fontations, allow_failure=False):
@@ -2515,8 +2512,7 @@ def GenTests(api: TEST_DEPS):
     _gen_properties(api, xfa=True, rust=True, skia=True),
     _gen_ci_build(api, 'linux_xfa_skia_rust'),
     api.step_data('unittests (fontations)', retcode=1),
-    api.post_process(post_process.StepWarning, 'unittests (fontations)'),
-    api.post_process(post_process.StatusSuccess),
+    api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 

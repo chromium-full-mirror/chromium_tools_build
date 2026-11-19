@@ -263,15 +263,15 @@
       "  File \"RECIPE_REPO[recipe_engine]/recipe_engine/internal/property_invoker.py\", in _invoke_with_properties",
       "    return callable_obj(*props, **additional_args)",
       "           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 1426, in RunSteps",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 1423, in RunSteps",
       "    _run_tests(",
       "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 598, in _run_tests",
       "    test_runner = _TestRunner(",
       "                  ^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 944, in __init__",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 942, in __init__",
       "    self.embedder_test_renderers = _validate_renderers(",
       "                                   ^^^^^^^^^^^^^^^^^^^^",
-      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 919, in _validate_renderers",
+      "  File \"RECIPE_REPO[build]/recipes/recipes/pdfium.py\", line 917, in _validate_renderers",
       "    raise ValueError(f'Invalid {context_name} renderer: {\", \".join(invalid)}')",
       "ValueError: Invalid pdfium_embeddertests renderer: fake"
     ]
