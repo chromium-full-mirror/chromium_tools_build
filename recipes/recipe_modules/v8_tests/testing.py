@@ -166,10 +166,6 @@ TEST_CONFIGS = freeze(
       'tool': 'run-jetstream3',
       'isolated_target': 'jetstream3',
     },
-    'jsfunfuzz': {
-      'tool': 'jsfunfuzz',
-      'isolated_target': 'jsfunfuzz',
-    },
     'gcmole_v2': {
       'tool': 'run-gcmole-v2',
       'isolated_target': 'run-gcmole',
@@ -693,10 +689,6 @@ class V8GenericSwarmingTest(BaseTest):
     return self._command
 
   @property
-  def task_output_dir(self):
-    return None  # pragma: no cover
-
-  @property
   def uses_swarming(self):
     """Returns true if the test uses swarming."""
     return True
@@ -706,7 +698,6 @@ class V8GenericSwarmingTest(BaseTest):
     self.task = self.create_task(
       self.test,
       name=self.title,
-      task_output_dir=self.task_output_dir,
       raw_cmd=self.command or [],
       **kwargs,
     )
@@ -904,42 +895,6 @@ class V8CheckBytecodeBaseline(V8GenericSwarmingTest):
     ]
 
 
-class V8Fuzzer(V8GenericSwarmingTest):
-  def __init__(self, test_step_config, api, title='Generic test', command=None):
-    self.output_dir = api.path.mkdtemp('swarming_output')
-    self.archive = (
-      'fuzz-results-%s.tar.bz2' % (api.properties['parent_got_revision'])
-    )
-    super().__init__(
-      test_step_config,
-      api,
-      title='Fuzz',
-      command=[
-        'tools/jsfunfuzz/fuzz-harness.sh',
-        api.v8_tests.relative_path_to_d8,
-        '${ISOLATED_OUTDIR}/%s' % self.archive,
-      ],
-    )
-
-  @property
-  def task_output_dir(self):
-    return self.output_dir
-
-  def run(self, source_dir, test=None, **kwargs):
-    try:
-      super().run(test, **kwargs)
-    except self.api.step.StepFailure as e:
-      self.api.gsutil.upload(
-        self.output_dir.joinpath(
-          self.task.get_task_shard_output_dirs()[0], self.archive
-        ),
-        'chromium-v8',
-        self.api.path.join('fuzzer-archives', self.archive),
-      )
-      raise e
-    return TestResults.not_empty()
-
-
 class V8GCMoleV2(V8GenericSwarmingTest):
   @property
   def title(self):
@@ -1073,7 +1028,6 @@ TOOL_TO_TEST_SWARMING = freeze(
   {
     'check-bytecode-baseline': V8CheckBytecodeBaseline,
     'check-static-initializers': V8CheckInitializers,
-    'jsfunfuzz': V8Fuzzer,
     'run-gcmole-v2': V8GCMoleV2,
     'run-gcmole-v3': V8GCMoleV3,
     'run-num-fuzzer': V8SwarmingTest,

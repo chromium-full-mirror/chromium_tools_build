@@ -14,7 +14,6 @@ from RECIPE_MODULES.build import (
   isolate,
 )
 from RECIPE_MODULES.depot_tools import (
-  gsutil,
   tryserver,
 )
 from RECIPE_MODULES.recipe_engine import (
@@ -37,7 +36,6 @@ from RECIPE_MODULES.recipe_engine import (
 class DEPS(RecipeScriptApi):
   builder_group: builder_group.API
   chromium_swarming: chromium_swarming.API
-  gsutil: gsutil.API
   tryserver: tryserver.API
   isolate: isolate.API
   buildbucket: buildbucket.API

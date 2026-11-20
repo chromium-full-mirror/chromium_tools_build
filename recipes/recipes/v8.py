@@ -28,8 +28,6 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 from RECIPE_MODULES.build import (
   archive,
   chromium,
-  chromium_swarming,
-  test_utils,
   v8,
   v8_tests,
 )
@@ -55,7 +53,6 @@ class DEPS(RecipeScriptApi):
   archive: archive.API
   buildbucket: buildbucket.API
   chromium: chromium.API
-  chromium_swarming: chromium_swarming.API
   context: context.API
   gclient: gclient.API
   json: json_module.API
@@ -66,7 +63,6 @@ class DEPS(RecipeScriptApi):
   scheduler: scheduler.API
   step: step.API
   swarming: swarming.API
-  test_utils: test_utils.API
   time: time.API
   tryserver: tryserver.API
   url: url.API
@@ -77,14 +73,12 @@ class DEPS(RecipeScriptApi):
 @dataclass
 class TEST_DEPS(RecipeTestApi):
   buildbucket: buildbucket.TEST_API
-  chromium_swarming: chromium_swarming.TEST_API
   json: json_module.TEST_API
   path: path.TEST_API
   platform: platform.TEST_API
   properties: properties.TEST_API
   scheduler: scheduler.TEST_API
   step: step.TEST_API
-  test_utils: test_utils.TEST_API
   time: time.TEST_API
   v8: v8.TEST_API
   v8_tests: v8_tests.TEST_API
@@ -532,33 +526,6 @@ def GenTests(api: TEST_DEPS):
     )
     + api.override_step_data('Test262', api.v8_tests.one_flake(num_fuzz=True))
     + api.post_process(Filter('Test262 (flakes)'))
-  )
-
-  yield (
-    api.v8.test(
-      'client.v8',
-      'V8 Foobar',
-      'generic_swarming_task',
-      parent_buildername='V8 Foobar - builder',
-      parent_bot_config=linux_bot_config,
-      parent_test_spec='{"tests": [{"name": "jsfunfuzz"}]}',
-    )
-  )
-
-  step_test_data = api.chromium_swarming.canned_summary_output(
-    api.test_utils.canned_gtest_output(passing=False), failure=True
-  )
-  yield (
-    api.v8.test(
-      'client.v8',
-      'V8 Foobar',
-      'fuzz_archive',
-      parent_buildername='V8 Foobar - builder',
-      parent_bot_config=linux_bot_config,
-      parent_test_spec='{"tests": [{"name": "jsfunfuzz"}]}',
-      status='FAILURE',
-    )
-    + api.override_step_data('Fuzz on Ubuntu-16.04', step_test_data)
   )
 
   yield (
