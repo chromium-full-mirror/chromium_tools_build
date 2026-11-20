@@ -47,7 +47,6 @@ from RECIPE_MODULES.recipe_engine import (
   runtime,
   scheduler,
   step,
-  time,
   url,
 )
 from RECIPE_MODULES.infra import docker
@@ -84,7 +83,6 @@ class DEPS(RecipeScriptApi):
   runtime: runtime.API
   scheduler: scheduler.API
   step: step.API
-  time: time.API
   url: url.API
   siso: siso.API
   test_utils: test_utils.API

@@ -69,17 +69,9 @@ def GenTests(api: TEST_DEPS):
     ]
     return sum(checks, api.empty_test_data())
 
-  def test(
-    builder_group, builder_name, target_cpu, is_debug, gs_link, public_link
-  ):
+  def test(builder_group, builder_name):
     return (
       api.v8.test(builder_group, builder_name)
-      + api.step_data(
-        'Code coverage.read build config',
-        api.file.read_json(
-          {'DEBUG_defined': is_debug, 'target_cpu': target_cpu}
-        ),
-      )
       + api.post_process(
         post_process.StepEnvContains,
         'run tests',
@@ -114,6 +106,16 @@ def GenTests(api: TEST_DEPS):
         '-instr-profile=[CLEANUP]/profdata/total.profdata',
         '[CACHE]/builder/v8/out/build/d8',
       )
+    )
+
+  def uploaded(target_cpu, is_debug, gs_link, public_link):
+    return (
+      api.step_data(
+        'Code coverage.read build config',
+        api.file.read_json(
+          {'DEBUG_defined': is_debug, 'target_cpu': target_cpu}
+        ),
+      )
       + api.post_process(
         post_process.StepCommandContains,
         'Code coverage.gsutil coverage report',
@@ -137,18 +139,37 @@ def GenTests(api: TEST_DEPS):
   yield test(
     builder_group='client.v8',
     builder_name='V8 Foobar',
+  ) + uploaded(
     target_cpu='x64',
     is_debug=False,
     gs_link=f'{GS_URL}/ci/linux64_rel/{hsh}',
     public_link=f'{PUB_URL}/ci/linux64_rel/{hsh}/index.html',
   )
 
-  # Test a trybot with 32 bits and debug mode.
+  # Test a CI builder with 32 bits and debug mode.
   yield test(
-    builder_group='tryserver.v8',
-    builder_name='v8_foobar',
+    builder_group='client.v8',
+    builder_name='V8 Foobar - debug',
+  ) + uploaded(
     target_cpu='x86',
     is_debug=True,
-    gs_link=f'{GS_URL}/try/linux32_dbg/456789/12/1337000001',
-    public_link=f'{PUB_URL}/try/linux32_dbg/456789/12/1337000001/index.html',
+    gs_link=f'{GS_URL}/ci/linux32_dbg/{hsh}',
+    public_link=f'{PUB_URL}/ci/linux32_dbg/{hsh}/index.html',
+  )
+
+  # Test a trybot. Trybots don't upload reports.
+  yield (
+    test(
+      builder_group='tryserver.v8',
+      builder_name='v8_foobar',
+    )
+    + api.post_process(
+      post_process.DoesNotRun, 'Code coverage.gsutil coverage report'
+    )
+    + api.post_process(
+      post_process.StepTextEquals,
+      'Code coverage',
+      'Report upload is not supported on trybots.',
+    )
+    + api.post_process(post_process.DropExpectation)
   )

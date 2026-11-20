@@ -1112,11 +1112,18 @@ class V8Api(recipe_api.RecipeApi):
             report_dir = self.create_report(
               source_dir, build_dir, total_profile
             )
-            link = self.upload_report(build_dir, report_dir)
-            parent_presentation.links['report'] = link
-            self.recipe_result = RawResult(
-              status=common_pb.SUCCESS, summary_markdown=f'[Report]({link})'
-            )
+            if self.m.tryserver.is_tryserver:
+              # Trybots run untrusted code and must not write to the
+              # shared bucket used by CI.
+              parent_presentation.step_text = (
+                'Report upload is not supported on trybots.'
+              )
+            else:
+              link = self.upload_report(build_dir, report_dir)
+              parent_presentation.links['report'] = link
+              self.recipe_result = RawResult(
+                status=common_pb.SUCCESS, summary_markdown=f'[Report]({link})'
+              )
 
   def find_profiles(self, profile_path):
     """Returns a list of paths to all raw profiles."""
@@ -1176,25 +1183,19 @@ class V8Api(recipe_api.RecipeApi):
     return report_dir
 
   def upload_report(self, build_dir: Path, report_dir):
-    """Uploads the coverage-report directory structure to google storage."""
+    """Uploads the coverage-report directory structure to google storage.
+
+    Only supported on CI builders.
+    """
+    assert not self.m.tryserver.is_tryserver
     build_type = self.get_build_type(build_dir)
     type_suffix = 'rel' if build_type == 'release' else 'dbg'
-    if self.m.tryserver.is_tryserver:
-      dest = 'try/%s%d_%s/%d/%d/%d' % (
-        self.m.platform.name,
-        self.target_bits(build_dir),
-        type_suffix,
-        self.m.tryserver.gerrit_change_number,
-        self.m.tryserver.gerrit_patchset_number,
-        int(self.m.time.time()),
-      )
-    else:
-      dest = 'ci/%s%d_%s/%s' % (
-        self.m.platform.name,
-        self.target_bits(build_dir),
-        type_suffix,
-        self.revision,
-      )
+    dest = 'ci/%s%d_%s/%s' % (
+      self.m.platform.name,
+      self.target_bits(build_dir),
+      type_suffix,
+      self.revision,
+    )
 
     self.m.gsutil(
       [
