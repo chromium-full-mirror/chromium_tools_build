@@ -729,8 +729,8 @@ class ChromiumApi(recipe_api.RecipeApi):
       siso_output = ansi_color_regex.sub('', siso_output)
 
       # Compiler output for warnings will include a summary line:
-      # - Clang: 'X warning(s) generated.'
-      # - Rustc: 'X warning(s) emitted'
+      # - Clang: 'X warning(s) generated.' (with a period)
+      # - Rustc: 'X warning(s) emitted' (no period)
       end_match = re.search(r'warnings? (emitted|generated)', siso_output)
 
       # Regex matching a warning outputted by clang or rustc.
@@ -765,12 +765,10 @@ class ChromiumApi(recipe_api.RecipeApi):
       status = self.m.step.FAILURE
 
       # Extract the output for the first warning for convenient display.
-      # The relevant text blob in siso_output will start with 'build step:'
-      # or 'stdout:' and end with the summary line ('X warning(s) generated/emitted').
-      if end_match.group(1) == 'emitted':
-        target_re = r'stdout:'
-      else:
-        target_re = r'build step:'
+      # The relevant text blob in siso_output will start with 'build step:',
+      # 'stderr:', or 'stdout:' and end with the summary line
+      # 'X warning(s) generated/emitted'.
+      target_re = r'(stdout|stderr|build step):'
 
       # Find the _last_ instance of `target_re` preceding the warning text
       start_matches = list(
