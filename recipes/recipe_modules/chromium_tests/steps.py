@@ -382,6 +382,16 @@ class AbstractTest(abc.ABC):
 
   @property
   @abc.abstractmethod
+  def is_excluded_from_compile(self) -> bool:
+    """Whether the targets of the test must not be compiled.
+
+    Most disabled tests are still compiled (e.g. ci_only tests). A test that
+    its location_filters disable is not compiled.
+    """
+    raise NotImplementedError()  # pragma: no cover
+
+  @property
+  @abc.abstractmethod
   def canonical_name(self) -> str:
     """Canonical name of the test, no suffix attached."""
     raise NotImplementedError()  # pragma: no cover
@@ -920,6 +930,10 @@ class Test(AbstractTest):
     return False
 
   @property
+  def is_excluded_from_compile(self) -> bool:
+    return False
+
+  @property
   def option_flags(self) -> TestOptionFlags:
     return _DEFAULT_OPTION_FLAGS
 
@@ -1413,6 +1427,38 @@ class TestWrapper(
     )
 
 
+def _waterfall_builder_id(test: AbstractTest) -> str:
+  """Returns the ID (builder-group:builder) of the CI builder of a test."""
+  spec = test.spec
+  return f'{spec.waterfall_builder_group}:{spec.waterfall_buildername}'
+
+
+def _include_ci_footer_line(builder_id: str, test_name: str) -> str:
+  """Returns the CL footer line that enables a test on try builders."""
+  return f'{INCLUDE_CI_FOOTER}: {builder_id}|{test_name}'
+
+
+def _is_enabled_by_include_ci_footer(
+  chromium_tests_api, builder_id: str, test_name: str
+) -> bool:
+  """Returns whether the INCLUDE_CI_FOOTER CL footer enables a test.
+
+  Args:
+    * chromium_tests_api - The chromium_tests RecipeApi object.
+    * builder_id - The ID (builder-group:builder) of the CI builder that
+      defines the test.
+    * test_name - The canonical name of the test.
+  """
+  enabled_tests_by_builder = (
+    chromium_tests_api.get_footer_enabled_ci_only_tests()
+  )
+  for builder in ('*', builder_id):
+    tests_for_builder = enabled_tests_by_builder.get(builder, set())
+    if '*' in tests_for_builder or test_name in tests_for_builder:
+      return True
+  return False
+
+
 class CiOnlyTestSpec(TestWrapperSpec):
   """A spec for a test that is marked ci_only."""
 
@@ -1458,30 +1504,17 @@ class CiOnlyTest(TestWrapper):
     ):
       return False
 
-    enabled_tests_by_builder = self.api.get_footer_enabled_ci_only_tests()
-
-    def test_is_enabled_for_builder(builder):
-      tests_for_builder = enabled_tests_by_builder.get(builder, set())
-      return (
-        '*' in tests_for_builder or self.canonical_name in tests_for_builder
-      )
-
-    if test_is_enabled_for_builder('*'):
-      return False
-
-    if test_is_enabled_for_builder(self._builder_id):
-      return False
-
-    return True
+    return not _is_enabled_by_include_ci_footer(
+      self.api, self._builder_id, self.canonical_name
+    )
 
   @property
   def _builder_id(self) -> str:
-    spec = self._test.spec
-    return f'{spec.waterfall_builder_group}:{spec.waterfall_buildername}'
+    return _waterfall_builder_id(self._test)
 
   @property
   def _footer_to_enable(self) -> str:
-    return f'{INCLUDE_CI_FOOTER}: {self._builder_id}|{self.canonical_name}'
+    return _include_ci_footer_line(self._builder_id, self.canonical_name)
 
   @property
   def _disabled_message(self):
@@ -1529,6 +1562,118 @@ class SuccessReuseTest(TestWrapper):
     return (
       "This test is not being run because it has passed in the last 24 "
       "hours with the equivalent patchset"
+    )
+
+
+@attrs()
+class LocationFilteredTestSpec(TestWrapperSpec):
+  """A spec for a test that only runs on try if affected files match.
+
+  Attributes:
+    * location_filters - Regexps that must fully match a POSIX path
+      relative to src/ (the same semantics as the path_regexp of CQ
+      location filters). Some builders (e.g. angle, dawn) use paths that
+      are relative to a different directory.
+
+  The filters apply to the files that the CL changes directly:
+    * A submodule roll changes DEPS and the gitlink path (e.g.
+      third_party/foo). 'third_party/foo/.+' does not match the gitlink
+      path. Add 'DEPS' or 'third_party/foo' to the filters to run the test
+      for rolls.
+    * The filters also apply when analyze is skipped, e.g. when the CL
+      changes a test spec file. Add the spec files to the filters to run
+      the test for such CLs.
+  """
+
+  location_filters = attrib(sequence[str])
+
+  @classmethod
+  def create(cls, test_spec, location_filters):  # pylint: disable=arguments-differ
+    """Create a LocationFilteredTestSpec.
+
+    Arguments:
+      * test_spec - The spec of the wrapped test.
+      * location_filters - The regexps to match affected files against.
+    """
+    return super().create(test_spec, location_filters=tuple(location_filters))
+
+  @property
+  def test_wrapper_class(self):
+    """The test wrapper class associated with the spec."""
+    return LocationFilteredTest
+
+
+class LocationFilteredTest(TestWrapper):
+  """A test wrapper that skips the test on try if no affected file matches.
+
+  The test is always run on CI builders and in Mega CQ runs. If the files
+  affected by the CL are not known, the test is run (fail open).
+
+  A CL can use the INCLUDE_CI_FOOTER footer to run the test when no affected
+  file matches. The footer has the same format as for ci_only tests.
+  """
+
+  def __init__(self, spec, test, chromium_tests_api):
+    super().__init__(spec, test, chromium_tests_api)
+    # None means that the result is not yet known.
+    self._disabled = None if self._filters_apply() else False
+
+  def _filters_apply(self) -> bool:
+    """Returns whether the location filters can disable the test."""
+    if not self.api.m.tryserver.is_tryserver:
+      return False
+
+    if (
+      self.api.m.cv.active
+      and self.api.m.cv.run_mode in self.api.MEGA_CQ_MODE_NAMES
+    ):
+      return False
+
+    return not _is_enabled_by_include_ci_footer(
+      self.api, self._builder_id, self.canonical_name
+    )
+
+  @property
+  def _builder_id(self) -> str:
+    return _waterfall_builder_id(self._test)
+
+  @property
+  def _footer_to_enable(self) -> str:
+    return _include_ci_footer_line(self._builder_id, self.canonical_name)
+
+  @property
+  def is_excluded_from_compile(self) -> bool:
+    return bool(self._disabled_message) or self._test.is_excluded_from_compile
+
+  def _compute_disabled(self) -> bool | None:
+    """Returns whether the test is disabled, or None if not yet known."""
+    affected_files = self.api.affected_files_for_location_filters
+    if affected_files is None:
+      return None
+
+    patterns = [re.compile(p) for p in self._wrapper_spec.location_filters]
+    return not any(p.fullmatch(f) for f in affected_files for p in patterns)
+
+  @property
+  def _disabled_message(self) -> str:
+    # Computed lazily: the affected files are only known once the recipe
+    # has determined them, which happens after the tests are created. While
+    # they are unknown, the test is treated as enabled (fail open).
+    if self._disabled is None:
+      self._disabled = self._compute_disabled()
+    if not self._disabled:
+      return ''
+    # The step text is shown as HTML. The filters are in a list and the footer
+    # is in a code element, which makes the footer easy to copy.
+    filters = ''.join(
+      f'<li>{html.escape(f, quote=False)}</li>'
+      for f in self._wrapper_spec.location_filters
+    )
+    footer = html.escape(self._footer_to_enable, quote=False)
+    return (
+      'This test is not being run because no file affected by the CL'
+      f' matches its location_filters:<ul>{filters}</ul>'
+      f'Add the following CL footer to override: <code>{footer}</code>'
     )
 
 

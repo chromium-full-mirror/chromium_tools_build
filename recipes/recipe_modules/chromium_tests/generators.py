@@ -5,6 +5,7 @@
 from __future__ import annotations
 
 from collections.abc import Callable, Container, Iterable, Mapping
+import re
 import string
 import textwrap
 
@@ -97,6 +98,7 @@ class Generator:
       test_spec = self._handle_resultdb(raw_test_spec, test_spec)
       test_spec = self._handle_experimental(raw_test_spec, test_spec)
       test_spec = self._handle_ci_only(raw_test_spec, test_spec)
+      test_spec = self._handle_location_filters(raw_test_spec, test_spec)
       test_spec = self._handle_skip_test(test_spec, test_names_to_skip)
       yield test_spec
 
@@ -166,6 +168,42 @@ class Generator:
     if not raw_test_spec.get('ci_only'):
       return test_spec
     return steps.CiOnlyTestSpec.create(test_spec)
+
+  def _handle_location_filters(
+    self,
+    raw_test_spec: _RawTestSpec,
+    test_spec: steps.AbstractTestSpec,
+  ) -> steps.AbstractTestSpec:
+    """Handle the location_filters attribute of test specs.
+
+    Args:
+      * raw_spec - The source-side spec dictionary describing the test.
+      * test_spec - The TestSpec instance for the test.
+
+    Returns:
+      The test_spec object that should be used for the test. If the test
+      has no location filters, `test_spec` will be returned unchanged.
+      Otherwise, a spec will be returned that disables the test on try
+      builders when none of the files affected by the CL match the filters.
+      The Include-Ci-Only-Tests gerrit footer overrides the filters.
+    """
+    location_filters = raw_test_spec.get('location_filters')
+    if not location_filters:
+      return test_spec
+    for location_filter in location_filters:
+      try:
+        re.compile(location_filter)
+      except re.error as e:
+        m = self._chromium_tests_api.m
+        m.step.empty(
+          'test spec format error',
+          status=m.step.FAILURE,
+          step_text=(
+            f"invalid regexp '{location_filter}' in location_filters"
+            f" of test '{raw_test_spec.get('name')}': {e}"
+          ),
+        )
+    return steps.LocationFilteredTestSpec.create(test_spec, location_filters)
 
   def _handle_skip_test(
     self,

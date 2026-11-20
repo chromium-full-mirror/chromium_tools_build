@@ -125,6 +125,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     tests=None,
     include_override_deps=False,
     affected_files=None,
+    affected_files_total_count=None,
     skipping_coverage=None,
     include_swarming_props=True,
     include_skylab_props=False,
@@ -174,7 +175,14 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
 
           output_json_obj.update(
             {
-              'affected_files': {'first_100': affected_files, 'total_count': 3},
+              'affected_files': {
+                'first_100': affected_files,
+                'total_count': (
+                  len(affected_files)
+                  if affected_files_total_count is None
+                  else affected_files_total_count
+                ),
+              },
             }
           )
           if skipping_coverage is not None:
@@ -192,6 +200,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
     tests=None,
     include_override_deps=False,
     affected_files=None,
+    affected_files_total_count=None,
     skipping_coverage=None,
     empty_gitiles_commit=False,
     include_swarming_props=True,
@@ -206,6 +215,7 @@ class ChromiumOrchestratorApi(recipe_test_api.RecipeTestApi):
       tests=tests,
       include_override_deps=include_override_deps,
       affected_files=affected_files,
+      affected_files_total_count=affected_files_total_count,
       skipping_coverage=skipping_coverage,
       include_swarming_props=include_swarming_props,
       include_skylab_props=include_skylab_props,

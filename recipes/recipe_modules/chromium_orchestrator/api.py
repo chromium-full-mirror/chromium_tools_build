@@ -41,7 +41,10 @@ class CompilatorOutputProps:
     override_deps: Dict containing deps to override for without patch runs, if
       any. This is only populated for CLs where the patch root is different
       from the root, like v8 CLs.
-    affected_files: List containing paths (str) of files affected by the patch
+    affected_files: List containing paths (str) of files affected by the patch.
+      The compilator reports a maximum of 100 files.
+    affected_files_complete: Whether affected_files contains all files
+      affected by the patch.
     src_side_deps_digest: CAS digest hash (str) for downloading src-side deps
     skipping_coverage: Whether coverage is being skipped. The compilator
       determines this by checking the len of affected eligible files.
@@ -53,6 +56,7 @@ class CompilatorOutputProps:
   override_deps = attrib(mapping[str, str], default=None)
   got_revisions = attrib(mapping[str, str])
   affected_files = attrib(sequence[str], default=None)
+  affected_files_complete = attrib(bool, default=False)
   src_side_deps_digest = attrib(str, default=None)
   skipping_coverage = attrib(bool, default=None)
   build_dir = attrib(str, default=None)
@@ -138,6 +142,17 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       comp_output.src_side_deps_digest,
       source_dir,
     )
+
+    # Tests with location_filters need the complete list of affected files. If
+    # the list is truncated, the affected files stay unknown. Such a test then
+    # runs only if the compilator, which has the complete list, isolated it.
+    # Must happen before the tests are filtered by is_enabled.
+    # TODO: crbug.com/587347531 - Evaluate the filters also when the CL
+    # affects more than 100 files.
+    if comp_output.affected_files_complete:
+      self.m.chromium_tests.set_affected_files_for_location_filters(
+        comp_output.affected_files
+      )
 
     targets_config = self.m.chromium_tests.create_targets_config(
       builder_config,
@@ -839,9 +854,15 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
       src_side_deps_digest = output_props.get('src_side_deps_digest')
 
       affected_files = None
+      affected_files_complete = False
       if 'affected_files' in output_props:
+        affected_files_props = output_props['affected_files']
         affected_files = self.m.chromium_checkout.format_affected_file_paths(
-          output_props['affected_files']['first_100']
+          affected_files_props['first_100']
+        )
+        total_count = affected_files_props.get('total_count')
+        affected_files_complete = (
+          total_count is not None and total_count <= len(affected_files)
         )
 
       comp_output = CompilatorOutputProps(
@@ -850,6 +871,7 @@ class ChromiumOrchestratorApi(recipe_api.RecipeApi):
         override_deps=output_props.get('override_deps'),
         got_revisions=got_revisions,
         affected_files=affected_files,
+        affected_files_complete=affected_files_complete,
         src_side_deps_digest=src_side_deps_digest,
         skipping_coverage=output_props.get('skipping_coverage'),
         build_dir=output_props.get('build_dir'),

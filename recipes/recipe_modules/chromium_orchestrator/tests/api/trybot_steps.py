@@ -2571,3 +2571,113 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  def location_filters_test(name, *, test_is_isolated, **compilator_kwargs):
+    isolated_tests = ['browser_tests']
+    if test_is_isolated:
+      isolated_tests.append('filtered_tests')
+    swarming = {'dimensions': {'os': 'Linux'}}
+    return api.test(
+      name,
+      get_try_build(),
+      ctbc_properties(),
+      api.properties(
+        **{
+          '$build/chromium_orchestrator': InputProperties(
+            compilator='fake-compilator',
+            compilator_watcher_git_revision='e841fc',
+          ),
+        }
+      ),
+      api.chromium_orchestrator.override_compilator_build_proto_fetch(),
+      api.chromium_orchestrator.override_schedule_compilator_build(),
+      api.chromium_orchestrator.override_compilator_steps(
+        tests=isolated_tests, **compilator_kwargs
+      ),
+      api.chromium_orchestrator.override_compilator_steps(
+        is_compile_phase=False
+      ),
+      api.chromium_tests.read_targets_spec(
+        'fake-group',
+        {
+          'fake-tester': {
+            'gtest_tests': [
+              {'name': 'browser_tests', 'swarming': swarming},
+              {
+                'name': 'filtered_tests',
+                'location_filters': ['third_party/chromium-bidi/.+'],
+                'swarming': swarming,
+              },
+            ],
+          },
+        },
+      ),
+      api.post_process(post_process.MustRun, 'browser_tests (with patch)'),
+    )
+
+  # The compilator did not isolate the test and the orchestrator shows the
+  # reason.
+  yield (
+    location_filters_test(
+      'location_filters_no_match',
+      test_is_isolated=False,
+      affected_files=['src/chrome/test.cc'],
+    )
+    + api.post_process(
+      post_process.StepCommandEmpty, 'filtered_tests (with patch)'
+    )
+    + api.post_process(
+      post_process.StepTextContains,
+      'filtered_tests (with patch)',
+      [
+        'This test is not being run because no file affected by the CL'
+        ' matches its location_filters:'
+        '<ul><li>third_party/chromium-bidi/.+</li></ul>'
+        'Add the following CL footer to override: <code>'
+        'Include-Ci-Only-Tests: fake-group:fake-tester|filtered_tests</code>'
+      ],
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  yield (
+    location_filters_test(
+      'location_filters_match',
+      test_is_isolated=True,
+      affected_files=['src/third_party/chromium-bidi/BUILD.gn'],
+    )
+    + api.post_process(
+      post_process.MustRun,
+      'test_pre_run (with patch).[trigger] filtered_tests (with patch)',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  # The orchestrator receives a maximum of 100 affected files. The matching
+  # file is not in the truncated list, but the compilator isolated the test.
+  yield (
+    location_filters_test(
+      'location_filters_truncated_affected_files',
+      test_is_isolated=True,
+      affected_files=['src/chrome/test.cc'],
+      affected_files_total_count=101,
+    )
+    + api.post_process(
+      post_process.MustRun,
+      'test_pre_run (with patch).[trigger] filtered_tests (with patch)',
+    )
+    + api.post_process(post_process.DropExpectation)
+  )
+
+  # The affected files are unknown and the compilator did not isolate the
+  # test. The orchestrator has no step for the test.
+  yield (
+    location_filters_test(
+      'location_filters_truncated_affected_files_not_isolated',
+      test_is_isolated=False,
+      affected_files=['src/chrome/test.cc'],
+      affected_files_total_count=101,
+    )
+    + api.post_process(post_process.DoesNotRun, 'filtered_tests (with patch)')
+    + api.post_process(post_process.DropExpectation)
+  )

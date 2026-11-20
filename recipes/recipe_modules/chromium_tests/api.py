@@ -231,6 +231,26 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
     self._enabled_ci_only_tests_enabled_by_builder = None
 
+    # Files affected by the CL, used by tests with location_filters. None
+    # means the affected files are not known, in which case such tests run.
+    self._affected_files_for_location_filters: tuple[str, ...] | None = None
+
+  def set_affected_files_for_location_filters(
+    self, affected_files: Iterable[str]
+  ) -> None:
+    """Record the files affected by the CL for location-filtered tests.
+
+    Args:
+      affected_files: POSIX paths of the files affected by the CL. The paths
+        are relative to the directory that analyze uses (src/ by default).
+    """
+    self._affected_files_for_location_filters = tuple(affected_files)
+
+  @property
+  def affected_files_for_location_filters(self) -> tuple[str, ...] | None:
+    """The files affected by the CL or None if they have not been recorded."""
+    return self._affected_files_for_location_filters
+
   def initialize(self):
     # TODO: crbug.com/1421068 - Once parent relationship is propagated through
     # scheduler, this can be removed
@@ -340,6 +360,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
 
   def get_footer_enabled_ci_only_tests(self) -> Mapping[str, Collection[str]]:
     """Compute the ci_only tests that are enabled by a footer.
+
+    The same footer also enables tests that location_filters disable.
 
     Returns:
       A mapping with the string chromium builder ID (builder-group:builder) as
@@ -2949,6 +2971,20 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     if not self.m.tryserver.is_tryserver:
       return test_targets, compile_targets
 
+    # targets_config.compile_targets includes the targets of disabled tests.
+    # Remove the targets that only tests excluded from compile use, e.g. tests
+    # that their location_filters disable.
+    excluded_targets = set()
+    needed_targets = set(targets_config.compile_only_targets)
+    for t in tests:
+      if t.is_excluded_from_compile:
+        excluded_targets.update(t.compile_targets())
+      else:
+        needed_targets.update(t.compile_targets())
+    excluded_targets -= needed_targets
+    if excluded_targets:
+      compile_targets = sorted(set(compile_targets) - excluded_targets)
+
     additional_compile_targets = sorted(
       set(compile_targets) - set(test_targets)
     )
@@ -3146,6 +3182,10 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       affected_files = self.m.chromium_checkout.get_files_affected_by_patch(
         report_via_property=True, relative_to=files_relative_to
       )
+
+    # Must happen before determine_compilation_targets, which checks whether
+    # tests are enabled when computing the targets to pass to analyze.
+    self.set_affected_files_for_location_filters(affected_files)
 
     is_deps_only_change = affected_files == ["DEPS"] or submodule_analyze
 

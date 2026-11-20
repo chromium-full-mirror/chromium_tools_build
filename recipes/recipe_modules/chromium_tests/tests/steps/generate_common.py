@@ -25,7 +25,7 @@ from RECIPE_MODULES.build import (
   chromium_tests_builder_config,
 )
 from RECIPE_MODULES.depot_tools import tryserver
-from RECIPE_MODULES.recipe_engine import buildbucket, cv, json
+from RECIPE_MODULES.recipe_engine import buildbucket, cv, json, raw_io
 
 
 @dataclass
@@ -48,6 +48,7 @@ class TEST_DEPS(RecipeTestApi):
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   cv: cv.TEST_API
   json: json.TEST_API
+  raw_io: raw_io.TEST_API
 
 
 def RunSteps(api: DEPS):
@@ -486,5 +487,289 @@ def GenTests(api: TEST_DEPS):
       'fake-test (with patch)',
       [('This test is being run on Mega CQ runs')],
     ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  location_filters = [r'third_party/chromium-bidi/.+', r'content/.+\.cc']
+
+  def try_build_with_other_test(test_spec):
+    # The build stops before the tests if there are no targets to compile. The
+    # other test makes sure that the build shows the step of a disabled test.
+    return (
+      api.chromium.try_build(
+        builder_group='fake-try-group', builder='fake-try-builder'
+      )
+      + ctbc_api.properties(
+        ctbc_api.properties_assembler_for_try_builder()
+        .with_mirrored_builder(
+          builder_group='fake-group',
+          builder='fake-builder',
+        )
+        .assemble()
+      )
+      + api.chromium_tests.read_targets_spec(
+        'fake-group',
+        {
+          'fake-builder': {
+            'isolated_scripts': [test_spec, {'name': 'other-test'}],
+          },
+        },
+      )
+    )
+
+  def step_command_omits(check, steps, step_name, target):
+    check(target not in steps[step_name].cmd)
+
+  def step_has_command(check, steps, step_name):
+    check(steps[step_name].cmd)
+
+  yield api.test(
+    'location_filters-ci',
+    ci_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.post_process(post_process.MustRun, 'fake-test'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-no-match',
+    try_build_with_other_test(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('chrome/browser/flag-metadata.json'),
+    ),
+    api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+    api.post_process(
+      post_process.StepTextContains,
+      'fake-test (with patch)',
+      [
+        (
+          'This test is not being run because no file affected by the CL'
+          ' matches its location_filters:'
+          '<ul><li>third_party/chromium-bidi/.+</li>'
+          '<li>content/.+\\.cc</li></ul>'
+          'Add the following CL footer to override: <code>'
+          'Include-Ci-Only-Tests: fake-group:fake-builder|fake-test</code>'
+        )
+      ],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-match',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output(
+        'chrome/browser/flag-metadata.json\n'
+        'third_party/chromium-bidi/BUILD.gn\n'
+      ),
+    ),
+    api.post_process(post_process.MustRun, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-partial-match-is-not-a-match',
+    try_build_with_other_test(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    # Filters must fully match: content/foo.h does not match content/.+\.cc.
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('content/foo.h'),
+    ),
+    api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-mega-cq',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      },
+      tags=api.buildbucket.tags(
+        cq_equivalent_cl_group_key='12345', cq_attempt_key='67890'
+      ),
+    ),
+    api.cv(run_mode='CQ_MODE_MEGA_DRY_RUN'),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('chrome/browser/flag-metadata.json'),
+    ),
+    api.post_process(post_process.MustRun, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-and-ci_only-try-match',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'ci_only': True,
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('third_party/chromium-bidi/BUILD.gn'),
+    ),
+    # The location filter matches, but ci_only still disables the test.
+    api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+    api.post_process(
+      post_process.StepTextContains,
+      'fake-test (with patch)',
+      ["This test is not being run because it is marked 'ci_only'."],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-no-match-with-footer',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.step_data(
+      'parse description',
+      api.json.output(
+        {'Include-Ci-Only-Tests': ['fake-group:fake-builder|fake-test']}
+      ),
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('chrome/browser/flag-metadata.json'),
+    ),
+    # The step has a command, thus the test is run.
+    api.post_process(step_has_command, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-no-match-with-footer-for-other-test',
+    try_build_with_other_test(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.step_data(
+      'parse description',
+      api.json.output(
+        {'Include-Ci-Only-Tests': ['fake-group:fake-builder|other-test']}
+      ),
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('chrome/browser/flag-metadata.json'),
+    ),
+    api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  def analyze_input_omits(check, steps, target):
+    check(not any(target in str(arg) for arg in steps['analyze'].cmd))
+
+  # A disabled test is not passed to analyze, also not as a compile-only
+  # target.
+  yield api.test(
+    'location_filters-try-no-match-is-not-analyzed',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('chrome/browser/flag-metadata.json'),
+    ),
+    api.post_process(analyze_input_omits, 'fake-test'),
+    api.post_process(post_process.DoesNotRun, 'compile (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-try-match-is-analyzed',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('third_party/chromium-bidi/BUILD.gn'),
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'compile (with patch)', ['fake-test']
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  # The CL changes the test spec file, thus analyze is skipped and all targets
+  # are compiled. The location filters still apply.
+  yield api.test(
+    'location_filters-try-no-match-skipped-analyze',
+    try_build_with_other_test(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': location_filters,
+      }
+    ),
+    api.override_step_data(
+      'git diff to analyze patch',
+      api.raw_io.stream_output('testing/buildbot/fake-group.json'),
+    ),
+    api.post_process(
+      post_process.StepTextContains, 'analyze', ['skipping analyze']
+    ),
+    api.post_process(
+      post_process.StepCommandContains, 'compile (with patch)', ['other-test']
+    ),
+    api.post_process(step_command_omits, 'compile (with patch)', 'fake-test'),
+    api.post_process(post_process.StepCommandEmpty, 'fake-test (with patch)'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'location_filters-invalid-regexp',
+    try_build(
+      test_spec={
+        'name': 'fake-test',
+        'location_filters': ['third_party/(.+'],
+      }
+    ),
+    api.post_process(
+      post_process.StepTextContains,
+      'test spec format error',
+      [
+        "invalid regexp 'third_party/(.+' in location_filters"
+        " of test 'fake-test'"
+      ],
+    ),
+    api.expect_status('FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
