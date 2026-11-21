@@ -284,6 +284,7 @@ def convert_builder_config(obj, default_retry_failed_shards=True):
     is_compile_only=obj.is_compile_only,
     analyze_names=obj.analyze_names,
     additional_exclusions=obj.additional_exclusions or None,
+    disable_analyze=obj.disable_analyze,
     retry_failed_shards=(
       obj.retry_failed_shards
       if obj.HasField('retry_failed_shards')

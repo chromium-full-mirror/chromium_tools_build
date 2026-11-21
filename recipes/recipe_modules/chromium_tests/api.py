@@ -3016,6 +3016,8 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     skip_analysis_reasons.extend(
       self.m.chromium_bootstrap.skip_analysis_reasons
     )
+    if builder_config.disable_analyze:
+      skip_analysis_reasons.append('analyze is disabled in the builder config')
     skip_analysis_logs = {}
 
     affected_spec_files = self._get_affected_spec_files(

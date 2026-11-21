@@ -34,6 +34,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  chromium: chromium.TEST_API
   chromium_tests: chromium_tests.TEST_API
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   platform: platform.TEST_API
@@ -196,5 +197,42 @@ def GenTests(api: TEST_DEPS):
       },
     ),
     api.post_check(post_process.DoesNotRun, 'analyze'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'disable_analyze',
+    api.platform('linux', 64),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder(disable_analyze=True)
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+      )
+      .assemble()
+    ),
+    api.properties(affected_files=['test.cc']),
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-builder': {
+          'gtest_tests': [
+            {
+              'test': 'base_unittests',
+            }
+          ],
+        },
+      },
+    ),
+    api.post_check(lambda check, steps: check(steps['analyze'].cmd == [])),
+    api.post_check(
+      post_process.StepTextContains,
+      'analyze',
+      ['skipping analyze', 'analyze is disabled in the builder config'],
+    ),
     api.post_process(post_process.DropExpectation),
   )

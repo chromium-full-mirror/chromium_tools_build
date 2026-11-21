@@ -347,6 +347,7 @@ class _TryBuilderPropertiesAssembler:
     is_compile_only=False,
     analyze_names=None,
     additional_exclusions=None,
+    disable_analyze=False,
     retry_failed_shards=True,
     retry_without_patch=True,
     regression_test_selection=None,
@@ -360,6 +361,8 @@ class _TryBuilderPropertiesAssembler:
       builder_config_kwargs['analyze_names'] = list(analyze_names)
     if additional_exclusions:
       builder_config_kwargs['additional_exclusions'] = additional_exclusions
+    if disable_analyze:
+      builder_config_kwargs['disable_analyze'] = True
     if not retry_failed_shards:
       builder_config_kwargs['retry_failed_shards'] = False
     if not retry_without_patch:

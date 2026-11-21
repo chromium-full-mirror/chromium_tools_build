@@ -188,6 +188,8 @@ class BuilderConfig:
   # change to determine affected targets. The paths should be relative to
   # the root dir of the chromium/src checkout.
   additional_exclusions = attrib(sequence[str], default=())
+  # Whether to skip analyze and build/test all targets
+  disable_analyze = attrib(bool, default=False)
   # Whether or not failed shards of tests should be retried
   retry_failed_shards = attrib(bool, default=True)
   # Whether or not infra failed shards of tests should be retried
