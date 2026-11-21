@@ -13,3 +13,8 @@ message InputProperties {
   // The CQ orchestrator build whose RTS skipped tests are run.
   int64 cq_build_id = 1;
 }
+
+message OutputProperties {
+  // Suites whose RTS skipped tests failed (false acceptances).
+  repeated string failed_suites = 1;
+}

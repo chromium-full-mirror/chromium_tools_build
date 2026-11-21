@@ -93,6 +93,10 @@ class TestUtilsApi(recipe_api.RecipeApi):
       properties.min_failed_suites_to_skip_retry or 5
     )
 
+    # Builder name to use in LUCI Analysis stability queries instead of the
+    # test result's builder variant, e.g. the complemented CQ builder.
+    self.luci_analysis_builder: str | None = None
+
   def get_milo_test_results_url(self, test_name):
     """Returns a URL to the "Test Results" tab in Milo for the current build."""
     url = 'https://luci-milo.appspot.com/ui/inv/'
@@ -684,6 +688,18 @@ class TestUtilsApi(recipe_api.RecipeApi):
     test_info_for_zip = []
     for suite in tests_to_check:
       rdb_results = suite.get_rdb_results('with patch')
+      variant = (
+        {
+          'variant': {
+            'def': {
+              **getattr(rdb_results.variant, 'def'),
+              'builder': self.luci_analysis_builder,
+            }
+          }
+        }
+        if self.luci_analysis_builder
+        else {'variantHash': rdb_results.variant_hash}
+      )
       # The tests are saved as a set but we need consistent order for mock data
       for failing_test in sorted(rdb_results.unexpected_failing_tests):
         gitiles_commit = self.m.buildbucket.build.output.gitiles_commit
@@ -708,7 +724,7 @@ class TestUtilsApi(recipe_api.RecipeApi):
         test_variants_to_query.append(
           {
             'testId': failing_test.test_id,
-            'variantHash': rdb_results.variant_hash,
+            **variant,
             'sources': sources,
           }
         )

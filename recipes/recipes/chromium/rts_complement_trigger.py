@@ -5,7 +5,8 @@
 
 Finds the CQ builds of the allowlisted builders from the previous MTV calendar
 day that ran RTS-filtered tests and archived RTS complement command lines,
-skips CQ builds already covered by a passing runner build, queries
+skips CQ builds already covered by a completed (SUCCESS or FAILURE) runner
+build, queries
 Gerrit to prioritize submitted patchsets, and runs up to
 `MAX_CONCURRENT_BUILDS` runner builds at a time (retrying once on
 `INFRA_FAILURE`).
@@ -168,7 +169,7 @@ def _find_covered_cq_build_ids(
   cq_time_range: common_pb.TimeRange,
   search_limit: int,
 ) -> set[int]:
-  """Returns CQ build IDs already covered by a passing runner build."""
+  """Returns CQ build IDs already covered by a completed runner build."""
   # Runners are triggered after the CQ window ends, so only bound start_time.
   create_time = common_pb.TimeRange(start_time=cq_time_range.start_time)
   builder = dict(
@@ -178,13 +179,12 @@ def _find_covered_cq_build_ids(
   )
   runner_builds = api.buildbucket.search_with_multiple_predicates(
     [
+      # Runners fail (FAILURE) on false acceptances, so both SUCCESS and
+      # FAILURE mean the complement tests ran.
       builds_service_pb.BuildPredicate(
-        builder=builder,
-        # Runners report false acceptances as data (crbug.com/565109194) rather
-        # than failing, so only SUCCESS means the complement tests ran.
-        status=common_pb.SUCCESS,
-        create_time=create_time,
+        builder=builder, status=status, create_time=create_time
       )
+      for status in (common_pb.SUCCESS, common_pb.FAILURE)
     ],
     limit=search_limit,
     step_name='find covered CQ builds',
@@ -393,7 +393,12 @@ def _run_runner(
           cost=ResourceCost.zero(),
         )
         if result.status != common_pb.INFRA_FAILURE:
-          return result.id if result.status == common_pb.SUCCESS else None
+          # FAILURE means the runner found false acceptances.
+          return (
+            result.id
+            if result.status in (common_pb.SUCCESS, common_pb.FAILURE)
+            else None
+          )
       except api.step.StepFailure:
         pass
     return None
@@ -599,6 +604,15 @@ def GenTests(api: TEST_DEPS):
         )
       ],
       step_name='trigger win-rel (1).collect (attempt 1)',
+    ),
+    # A runner with false acceptances still counts as launched.
+    api.buildbucket.simulated_collect_output(
+      [
+        api.buildbucket.ci_build_message(
+          build_id=8922054662172514002, status='FAILURE'
+        )
+      ],
+      step_name='trigger mac-rel (4).collect (attempt 1)',
     ),
     api.post_check(
       post_process.StepTextEquals,

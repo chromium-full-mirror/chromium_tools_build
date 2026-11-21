@@ -10,7 +10,9 @@ SUCCESS compilator child build, and reads that compilator build's outputs.
 
 Only the suites RTS skipped tests of in the CQ build run, selected from its
 RTS evaluation output properties, with the 'rts_complement' command lines,
-which run the skipped tests. Recording false acceptances is a stub.
+which run the skipped tests. Skipped tests that fail are false acceptances of
+RTS: they fail this build (FAILURE) and their suites are published in the
+failed_suites output property.
 """
 
 from __future__ import annotations
@@ -27,11 +29,18 @@ from recipe_engine.recipe_test_api import RecipeTestApi
 
 from PB.go.chromium.org.luci.buildbucket.proto import build as build_pb
 from PB.go.chromium.org.luci.buildbucket.proto import common as common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import common as rdb_common_pb
+from PB.go.chromium.org.luci.resultdb.proto.v1 import (
+  test_result as test_result_pb,
+)
 from PB.recipe_engine import result as result_pb
 from PB.recipe_modules.build.chromium_orchestrator import (
   properties as orchestrator_pb,
 )
-from PB.recipes.build.chromium.rts_complement_runner import InputProperties
+from PB.recipes.build.chromium.rts_complement_runner import (
+  InputProperties,
+  OutputProperties,
+)
 from RECIPE_MODULES.build import (
   chromium,
   chromium_checkout,
@@ -50,7 +59,11 @@ from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   file,
+  json,
+  luci_analysis,
   properties,
+  raw_io,
+  resultdb,
   step,
   swarming,
 )
@@ -94,7 +107,11 @@ class TEST_DEPS(RecipeTestApi):
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   code_coverage: code_coverage.TEST_API
   file: file.TEST_API
+  json: json.TEST_API
+  luci_analysis: luci_analysis.TEST_API
   properties: properties.TEST_API
+  raw_io: raw_io.TEST_API
+  resultdb: resultdb.TEST_API
   swarming: swarming.TEST_API
 
 
@@ -159,11 +176,8 @@ def _run_complement_suites(
   invalid shards are retried if the CQ builder has retry_failed_shards,
   without a without patch retry and without processing coverage.
 
-  Returns the suites without valid results (e.g. expired shards) and the
-  suites with valid results and failing tests.
-
-  TODO(crbug.com/565109194): set the ResultDB base variant builder to the CQ
-  builder, so known flaky failures are exonerated against its history.
+  Returns the names of the suites without valid results (e.g. expired shards)
+  and of the suites with valid results and failing tests.
   """
   # configure_swarming() in prepare_tests_from_compilator_output() sets the
   # CQ priority, so this overrides it.
@@ -194,26 +208,7 @@ def _run_complement_suites(
       retry_failed_shards=builder_config.retry_failed_shards,
     )
   invalid = sorted({s.name for s in invalid_suites})
-  return invalid, [s.name for s in failing_suites if s.name not in invalid]
-
-
-def _record_false_acceptances(
-  api: DEPS,
-  cq_build: build_pb.Build,
-  failing_suites: list[str],
-) -> None:
-  """Records the skipped tests that fail, as data (stub).
-
-  TODO(crbug.com/565109194): write the rts_complement output property with the
-  per-suite test counts and false acceptances. Don't fail this build on false
-  acceptances: rts_complement_trigger only treats SUCCESS runners as covered.
-  """
-  api.step.empty(
-    'record false acceptances (stub)',
-    step_text=(
-      f'{len(failing_suites)} failing suites for CQ build {cq_build.id}'
-    ),
-  )
+  return invalid, sorted({s.name for s in failing_suites} - set(invalid))
 
 
 def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
@@ -230,12 +225,12 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
     # chromium_rts.filter_file_analysis experiment.
     cq_output = json_format.MessageToDict(cq_build.output.properties)
     rts_status = cq_output.get('rts_evaluation_status')
-    # rts_complement_trigger treats SUCCESS runners as covered. FAILURE, not
-    # INFRA_FAILURE, since a retry reads the same CQ build.
+    # FAILURE is reserved for false acceptances, which rts_complement_trigger
+    # treats as covered.
     # TODO(crbug.com/535256440): skip these CQ builds in the trigger.
     if rts_status != 'SUCCESS':
       return result_pb.RawResult(
-        status=common_pb.FAILURE,
+        status=common_pb.INFRA_FAILURE,
         summary_markdown=(
           f'CQ build {cq_build.id} has no RTS evaluation results '
           f'(rts_evaluation_status: {rts_status})'
@@ -255,6 +250,11 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
         'infra.resultdb',
       },
     )
+
+    # Queries the CQ builder's ResultDB variant for LUCI Analysis flake
+    # exonerations, while uploading this build's results under its own
+    # builder variant.
+    api.test_utils.luci_analysis_builder = cq_build.builder.builder
 
     builder_id, builder_config = api.chromium_orchestrator.configure_build()
 
@@ -288,7 +288,7 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
       )
 
     try:
-      invalid_suites, failing_suites = _run_complement_suites(
+      invalid_suites, failed_suites = _run_complement_suites(
         api, builder_config, suites
       )
     # Test failures are returned, not raised; this is for infra failures like
@@ -298,16 +298,29 @@ def RunSteps(api: DEPS, props: InputProperties) -> result_pb.RawResult:
         status=common_pb.INFRA_FAILURE,
         summary_markdown=summary + f'Test phase failed: {e.reason}',
       )
-    _record_false_acceptances(api, cq_build, failing_suites)
 
   names = ', '.join(s.name for s in suites)
   summary += f'Ran the RTS skipped tests of {len(suites)} suites: {names}'
-  # rts_complement_trigger treats SUCCESS runners as covered, so a run where
-  # some suites have no results isn't SUCCESS.
+  # rts_complement_trigger treats SUCCESS and FAILURE runners as covered, so a
+  # run where some suites have no results is an INFRA_FAILURE.
   if invalid_suites:
     summary += '\n\nSuites without valid results: ' + ', '.join(invalid_suites)
     return result_pb.RawResult(
       status=common_pb.INFRA_FAILURE, summary_markdown=summary
+    )
+  if failed_suites:
+    step = api.step.empty(
+      'record false acceptances', step_text=', '.join(failed_suites)
+    )
+    step.presentation.properties.update(
+      json_format.MessageToDict(
+        OutputProperties(failed_suites=failed_suites),
+        preserving_proto_field_name=True,
+      )
+    )
+    summary += '\n\nSuites with false acceptances: ' + ', '.join(failed_suites)
+    return result_pb.RawResult(
+      status=common_pb.FAILURE, summary_markdown=summary
     )
   return result_pb.RawResult(status=common_pb.SUCCESS, summary_markdown=summary)
 
@@ -459,6 +472,8 @@ def GenTests(api: TEST_DEPS):
     check(
       '--filter=gen/rts/browser_tests_inverted.filter' in request[0].command
     )
+    # Results are uploaded under rts-complement-runner's ResultDB variant.
+    check('builder:rts-complement-runner' in request[0].command)
 
   def full_build(cq_output=None):
     return (
@@ -497,11 +512,13 @@ def GenTests(api: TEST_DEPS):
       'test_pre_run (with patch).[trigger] content_unittests (with patch)',
     ),
     api.post_check(post_process.DoesNotRun, 'browser_tests (without patch)'),
+    # Only the variants with unexpected results (-u), like in CQ.
     api.post_check(
-      post_process.StepTextEquals,
-      'record false acceptances (stub)',
-      '0 failing suites for CQ build 1000',
+      post_process.StepCommandContains,
+      'collect tasks (with patch).browser_tests results',
+      ['-u'],
     ),
+    api.post_check(post_process.DoesNotRun, 'record false acceptances'),
     api.post_check(
       post_process.SummaryMarkdown,
       'CQ build 1000 (win-rel), compilator build 2000\n\n'
@@ -511,19 +528,104 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
-    'failing_suite',
+    'false_acceptance',
     full_build(),
     api.chromium_tests.gen_swarming_and_rdb_results(
-      'browser_tests', 'with patch', failures=['Test.One']
+      'browser_tests',
+      'with patch',
+      failures=['Test.One', 'Test.Flaky'],
+      successes=['Test.Two'],
+      expected_skips=['Test.DISABLED_Three'],
     ),
     api.chromium_tests.gen_swarming_and_rdb_results(
-      'browser_tests', 'retry shards with patch', failures=['Test.One']
+      'browser_tests',
+      'retry shards with patch',
+      failures=['Test.One', 'Test.Two'],
+      successes=['Test.Flaky'],
     ),
     api.post_check(
-      post_process.StepTextEquals,
-      'record false acceptances (stub)',
-      '1 failing suites for CQ build 1000',
+      post_process.PropertyEquals, 'failed_suites', ['browser_tests']
     ),
+    api.post_check(
+      post_process.SummaryMarkdownRE,
+      'Suites with false acceptances: browser_tests',
+    ),
+    api.expect_status('FAILURE'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  # A structured test ID, like the CQ builders' with the
+  # chromium_tests.resultdb_module experiment.
+  flaky_test_id = '://chrome/test\\:browser_tests!gtest::Test#Flaky'
+  flaky_result = test_result_pb.TestResult(
+    test_id=flaky_test_id,
+    tags=[{'key': 'test_name', 'value': 'Test.Flaky'}],
+    status=test_result_pb.FAIL,
+    # Uploaded under rts-complement-runner's ResultDB variant.
+    variant=rdb_common_pb.Variant(
+      **{
+        'def': {
+          'builder': 'rts-complement-runner',
+          'os': 'Linux',
+          'test_suite': 'browser_tests',
+        }
+      }
+    ),
+  )
+
+  def check_stability_query(check, steps):
+    stdin = steps['query LUCI Analysis for stability.rpc call'].stdin
+    (variant,) = api.json.loads(stdin)['testVariants']
+    check(variant['testId'] == flaky_test_id)
+    # Queried under the CQ builder's ResultDB variant.
+    check(
+      variant['variant']
+      == {
+        'def': {
+          'builder': 'win-rel',
+          'os': 'Linux',
+          'test_suite': 'browser_tests',
+        }
+      }
+    )
+    check('variantHash' not in variant)
+
+  yield api.test(
+    'known_flaky_failure',
+    full_build(),
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', failures=['Test.Flaky']
+    ),
+    # Replaces the helper's ninja:// results.
+    api.override_step_data(
+      'collect tasks (with patch).browser_tests results',
+      stdout=api.raw_io.output_text(
+        api.resultdb.serialize(
+          {'inv': api.resultdb.Invocation(test_results=[flaky_result])}
+        )
+      ),
+    ),
+    api.override_step_data(
+      'query LUCI Analysis for stability.rpc call',
+      stdout=api.json.output(
+        api.luci_analysis.generate_stability_response(
+          [
+            api.luci_analysis.generate_stability_analysis(
+              test_id=flaky_test_id,
+              flake_rate_is_met=True,
+              run_flaky_verdicts_12h=1,
+            )
+          ]
+        )
+      ),
+    ),
+    api.post_check(check_stability_query),
+    # Exonerated, so it's not retried and isn't a false acceptance.
+    api.post_check(
+      post_process.DoesNotRun, 'browser_tests (retry shards with patch)'
+    ),
+    api.post_check(post_process.DoesNotRun, 'record false acceptances'),
+    api.expect_status('SUCCESS'),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -535,11 +637,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.chromium_tests.gen_swarming_and_rdb_results(
       'browser_tests', 'retry shards with patch', invalid=True
-    ),
-    api.post_check(
-      post_process.StepTextEquals,
-      'record false acceptances (stub)',
-      '0 failing suites for CQ build 1000',
     ),
     api.post_check(
       post_process.SummaryMarkdownRE,
@@ -557,11 +654,6 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_check(
       post_process.MustRun, 'browser_tests (retry shards with patch)'
-    ),
-    api.post_check(
-      post_process.StepTextEquals,
-      'record false acceptances (stub)',
-      '0 failing suites for CQ build 1000',
     ),
     api.post_check(
       post_process.SummaryMarkdown,
@@ -583,7 +675,15 @@ def GenTests(api: TEST_DEPS):
   yield api.test(
     'test_phase_failure',
     full_build(),
-    api.step_data(browser_tests_trigger, retcode=1),
+    # The first run has valid results, then triggering the shard retry fails.
+    api.chromium_tests.gen_swarming_and_rdb_results(
+      'browser_tests', 'with patch', failures=['Test.One']
+    ),
+    api.step_data(
+      'test_pre_run (retry shards with patch).[trigger] browser_tests '
+      '(retry shards with patch)',
+      retcode=1,
+    ),
     api.post_check(post_process.SummaryMarkdownRE, 'Test phase failed'),
     api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
@@ -603,6 +703,7 @@ def GenTests(api: TEST_DEPS):
       post_process.SummaryMarkdown,
       'CQ build 1000 (win-rel), compilator build 2000\n\nNo suites to run',
     ),
+    api.post_check(post_process.DoesNotRun, 'record false acceptances'),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -615,7 +716,7 @@ def GenTests(api: TEST_DEPS):
       'CQ build 1000 has no RTS evaluation results '
       '(rts_evaluation_status: ERROR)',
     ),
-    api.expect_status('FAILURE'),
+    api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 
@@ -630,7 +731,7 @@ def GenTests(api: TEST_DEPS):
       'CQ build 1000 has no RTS evaluation results '
       '(rts_evaluation_status: None)',
     ),
-    api.expect_status('FAILURE'),
+    api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.DropExpectation),
   )
 
