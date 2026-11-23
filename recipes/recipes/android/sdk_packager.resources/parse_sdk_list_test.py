@@ -89,6 +89,63 @@ class PackageLineReTest(unittest.TestCase):
     self.assertEqual('37.1.11', m.group(3))
     self.assertIsNone(m.group(4))
 
+  def testValidWithChannelPrefix(self):
+    line = _format_package_line(
+      'emulators/latest',
+      'canary 37.1.9',
+      'Android Emulator (Preview) (latest)',
+    )
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulators/latest', m.group(1))
+    self.assertEqual('37.1.9', m.group(2))
+    self.assertIsNone(m.group(3))
+    self.assertEqual('Android Emulator (Preview) (latest)', m.group(4).strip())
+
+  def testValidWithChannelPrefixAndCount(self):
+    for line, name, ver, desc in (
+      (
+        _format_package_line(
+          'emulator', 'canary 37.4.1 (+2)', 'Android Emulator'
+        ),
+        'emulator',
+        '37.4.1',
+        'Android Emulator',
+      ),
+      (
+        _format_package_line(
+          'emulator', 'beta 37.3.9 (+1)', 'Android Emulator'
+        ),
+        'emulator',
+        '37.3.9',
+        'Android Emulator',
+      ),
+    ):
+      m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
+      self.assertTrue(m)
+      self.assertEqual(name, m.group(1))
+      self.assertEqual(ver, m.group(2))
+      self.assertIsNone(m.group(3))
+      self.assertEqual(desc, m.group(4).strip())
+
+  def testValidWithArrowAndChannelPrefix(self):
+    line = '  emulator  31.2.10  ->  canary 37.4.1 (+2)  Android Emulator'
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('31.2.10', m.group(2))
+    self.assertEqual('37.4.1', m.group(3))
+    self.assertEqual('Android Emulator', m.group(4).strip())
+
+  def testValidWithChannelPrefixWithoutDescription(self):
+    line = '  emulator  canary 37.4.1'
+    m = parse_sdk_list.PACKAGE_LINE_RE.match(line)
+    self.assertTrue(m)
+    self.assertEqual('emulator', m.group(1))
+    self.assertEqual('37.4.1', m.group(2))
+    self.assertIsNone(m.group(3))
+    self.assertIsNone(m.group(4))
+
 
 class ParseSdkListTest(unittest.TestCase):
   def testSingleAvailablePackage(self):
@@ -334,6 +391,46 @@ class ParseSdkListTest(unittest.TestCase):
       self.assertEqual(615, len(result['available']))
       self.assertEqual('emulator', result['installed'][2]['name'])
       self.assertEqual('31.2.10', result['installed'][2]['version'])
+
+  def testChannelPrefixedAvailablePackages(self):
+    raw = '\n'.join(
+      [
+        'Available packages:',
+        _format_package_line(
+          'emulator', 'canary 37.4.1 (+2)', 'Android Emulator'
+        ),
+        _format_package_line(
+          'emulator', 'beta 37.3.9 (+1)', 'Android Emulator'
+        ),
+        _format_package_line(
+          'emulators/latest',
+          'canary 37.1.9',
+          'Android Emulator (Preview) (latest)',
+        ),
+      ]
+    )
+    result = parse_sdk_list.ParseSdkList(raw)
+    expected = {
+      'available': [
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.4.1',
+        },
+        {
+          'name': 'emulator',
+          'description': 'Android Emulator',
+          'version': '37.3.9',
+        },
+        {
+          'name': 'emulators/latest',
+          'description': 'Android Emulator (Preview) (latest)',
+          'version': '37.1.9',
+        },
+      ],
+      'installed': [],
+    }
+    self.assertEqual(expected, result)
 
 
 if __name__ == '__main__':

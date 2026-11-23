@@ -34,8 +34,10 @@ import os
 import re
 import sys
 
+_CHANNEL_PREFIX = r'(?:(?:stable|beta|dev|canary)\s+)?'
 PACKAGE_LINE_RE = re.compile(
-  r'^\s*(\S+)\s+(\S+)(?:\s*\(\+\d+\))?(?:\s*->\s*(\S+)(?:\s*\(\+\d+\))?)?(?:\s+(.*))?$'
+  rf'^\s*(\S+)\s+{_CHANNEL_PREFIX}(\S+)(?:\s*\(\+\d+\))?'
+  rf'(?:\s*->\s*{_CHANNEL_PREFIX}(\S+)(?:\s*\(\+\d+\))?)?(?:\s+(.*))?$'
 )
 PACKAGES_HEADER_RE = re.compile(r'^([a-z]+) packages:\s*$', flags=re.IGNORECASE)
 SEPARATOR_RE = re.compile(r'^[\s-]+$')
