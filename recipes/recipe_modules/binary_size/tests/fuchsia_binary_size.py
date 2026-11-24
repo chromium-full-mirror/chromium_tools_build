@@ -14,6 +14,7 @@ from recipe_engine.recipe_api import RecipeScriptApi
 from recipe_engine.recipe_test_api import RecipeTestApi
 
 from RECIPE_MODULES.build import binary_size, filter as filter_module
+from RECIPE_MODULES.depot_tools import tryserver
 from RECIPE_MODULES.recipe_engine import (
   file,
   json,
@@ -32,6 +33,7 @@ class DEPS(RecipeScriptApi):
   platform: platform.API
   properties: properties.API
   time: time.API
+  tryserver: tryserver.API
 
 
 @dataclass
@@ -41,6 +43,7 @@ class TEST_DEPS(RecipeTestApi):
   filter: filter_module.TEST_API
   json: json.TEST_API
   time: time.TEST_API
+  tryserver: tryserver.TEST_API
 
 
 def RunSteps(api: DEPS):
@@ -76,6 +79,36 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DoesNotRunRE, r'.*compile'),
     api.post_process(post_process.DropExpectation),
   )
+
+  for config_name, pattern, excluded_path in (
+    ('chromium', 'tools/mb/mb.py', 'tools/mb/mb.py'),
+    ('fuchsia', 'build/fuchsia/.*py', 'build/fuchsia/gcs_download.py'),
+  ):
+    yield api.test(
+      f'runs_on_{config_name}_analyze_exclusion',
+      api.binary_size.build(),
+      api.override_step_data(
+        'read filter exclusion spec',
+        api.file.read_json({config_name: {'exclusions': [pattern]}}),
+      ),
+      api.tryserver.get_files_affected_by_patch([excluded_path]),
+      api.post_check(
+        post_process.StepTextContains,
+        'analyze',
+        ['Analyze disabled: matched exclusion'],
+      ),
+      api.post_check(
+        post_process.LogContains,
+        'analyze',
+        'excluded_files',
+        [
+          f"{excluded_path} (regex = '{pattern}'), "
+          'exclusion source: analyze config file'
+        ],
+      ),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
+      api.post_process(post_process.DropExpectation),
+    )
 
   yield api.test(
     'compile_failure',

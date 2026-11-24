@@ -165,6 +165,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       analysis_warning_statuses={
         constants.FUCHSIA_ROLLER_WARNING: 'Ignore roller errors for Fuchsia.'
       },
+      analyze_names=('chromium', 'fuchsia'),
     )
 
   def compare_size(
