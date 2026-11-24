@@ -29,7 +29,12 @@ from RECIPE_MODULES.build import (
   gn,
   profiles,
 )
-from RECIPE_MODULES.depot_tools import depot_tools, gsutil, tryserver
+from RECIPE_MODULES.depot_tools import (
+  bot_update,
+  depot_tools,
+  gsutil,
+  tryserver,
+)
 from RECIPE_MODULES.recipe_engine import (
   buildbucket,
   context,
@@ -72,6 +77,7 @@ class DEPS(RecipeScriptApi):
 
 @dataclass
 class TEST_DEPS(RecipeTestApi):
+  bot_update: bot_update.TEST_API
   chromium_tests_builder_config: chromium_tests_builder_config.TEST_API
   file: file.TEST_API
   filter: filter_module.TEST_API
@@ -219,6 +225,18 @@ def RunSteps(api: DEPS, properties):
     api.chromium.c.clobber_before_runhooks and not api.tryserver.is_tryserver
   )
   update_result = api.chromium_checkout.ensure_checkout(set_output_commit=True)
+  if (
+    not properties.collect_fuzz_coverage
+    and not api.tryserver.is_tryserver
+    and not (
+      update_result.properties.get('got_revision_cp')
+      or update_result.properties.get('got_src_revision_cp')
+    )
+  ):
+    raise api.step.InfraFailure(
+      'Missing got_revision_cp from bot_update; cannot upload ClusterFuzz '
+      'archive without a verified commit position.'
+    )
   checkout_dir = update_result.checkout_dir
   source_dir = update_result.source_root.path
   api.profiles.source_dir = source_dir
@@ -1824,4 +1842,40 @@ def GenTests(api: TEST_DEPS):
       upload_bucket='bucket',
     ),
     api.expect_exception('AssertionError'),
+  )
+
+  yield api.test(
+    'missing_commit_position_ci',
+    api.chromium_tests_builder_config.ci_build(
+      builder_group='chromium.fuzz',
+      builder='some-ci-bot',
+      revision='a' * 40,
+      builder_db=ctbc.BuilderDatabase.create(
+        {
+          'chromium.fuzz': {
+            'some-ci-bot': ctbc.BuilderSpec.create(
+              chromium_config='chromium',
+              gclient_config='chromium',
+            ),
+          },
+        }
+      ),
+    ),
+    api.platform.name('linux'),
+    api.properties(
+      upload_bucket='bucket',
+      archive_path='linux-release/libfuzzer-linux-release',
+    ),
+    api.step_data(
+      'bot_update',
+      api.bot_update.output_json(
+        first_sln='src',
+        revisions={'src': 'a' * 40},
+        got_revision_mapping={'got_revision': 'src'},
+        commit_positions=False,
+      ),
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_check(post_process.DoesNotRun, 'compile'),
+    api.post_process(post_process.DropExpectation),
   )

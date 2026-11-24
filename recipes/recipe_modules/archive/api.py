@@ -381,12 +381,29 @@ class ArchiveApi(recipe_api.RecipeApi):
       commit_position = self._get_commit_position(
         update_properties, primary_project
       )
-      cp_ref, cp_number = self.m.commit_position.parse(commit_position)
-      sortkey_path = self._get_comparable_upload_path_for_sort_key(
-        cp_ref, cp_number
-      )
-      gs_metadata[GS_COMMIT_POSITION_NUMBER_KEY] = cp_number
-      if commit_position:
+      if not commit_position:
+        if self.m.tryserver.is_tryserver:
+          # Trybots skip the GCS upload below and delete the local zip
+          # immediately, so they do not need a verified commit position for the
+          # archive name.
+          sortkey_path = 'try'
+        else:
+          cp_key = (
+            f'got_{primary_project}_revision_cp'
+            if primary_project
+            else 'got_revision_cp'
+          )
+          raise self.m.step.InfraFailure(
+            f'Missing commit position ({cp_key}) in update_properties; '
+            'cannot name ClusterFuzz archive without a verified commit '
+            'position.'
+          )
+      else:
+        cp_ref, cp_number = self.m.commit_position.parse(commit_position)
+        sortkey_path = self._get_comparable_upload_path_for_sort_key(
+          cp_ref, cp_number
+        )
+        gs_metadata[GS_COMMIT_POSITION_NUMBER_KEY] = cp_number
         gs_metadata[GS_COMMIT_POSITION_KEY] = commit_position
     build_git_commit = self._get_git_commit(update_properties, primary_project)
     staging_dir = self.m.path.cleanup_dir / 'cs'

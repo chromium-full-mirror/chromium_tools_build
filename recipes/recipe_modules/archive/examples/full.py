@@ -222,6 +222,34 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  yield api.test(
+    'cf_archiving_missing_commit_position_ci',
+    api.platform('linux', 64),
+    api.properties(
+      update_properties={'got_revision': TEST_HASH_MAIN},
+    ),
+    api.expect_status('INFRA_FAILURE'),
+    api.post_process(post_process.DoesNotRun, 'zipping'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'cf_archiving_missing_commit_position_try',
+    api.platform('linux', 64),
+    api.buildbucket.try_build(project='chromium', builder='linux-rel'),
+    api.properties(
+      update_properties={'got_revision': TEST_HASH_MAIN},
+    ),
+    api.override_step_data('filter archive_root', api.json.output(['chrome'])),
+    api.post_process(
+      post_process.StepCommandContains,
+      'zipping',
+      ['--archive-name', 'archive-try'],
+    ),
+    api.post_process(post_process.DoesNotRun, 'gsutil upload'),
+    api.post_process(post_process.DropExpectation),
+  )
+
   # Overwrite the build config and ensure it is used in the GS archive name.
   def check_gs_url_equals(check, steps, expected):
     check('gsutil upload' in steps)
