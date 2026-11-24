@@ -146,6 +146,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
       diff_func=self._create_diffs_android,
       analysis_func=self.android_size_analysis,
       analysis_warning_statuses={},
+      analyze_names=('chromium', 'android'),
       **kwargs,
     )
 
@@ -178,6 +179,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
     analysis_func,
     analysis_warning_statuses,
     try_gs_analysis=False,
+    analyze_names=None,
   ):
     """Determines the increase in size caused by the patch under test.
 
@@ -219,6 +221,9 @@ class BinarySizeApi(recipe_api.RecipeApi):
       try_gs_analysis: bool, whether to try to use previously computed size
         results from tip of tree to skip building without patch. Ignored when
         the use_tot_analysis property is false.
+      analyze_names: Optional sequence of top-level keys in the analyze config
+        file (in addition to 'base', e.g. 'chromium', 'android') to pass to
+        filter.analyze(). If None, filter.analyze() defaults to ['chromium'].
     """
     assert self.m.tryserver.is_tryserver
 
@@ -336,6 +341,7 @@ class BinarySizeApi(recipe_api.RecipeApi):
         affected_files,
         self._analyze_targets,
         None,
+        additional_names=analyze_names,
         additional_exclusions=additional_exclusions,
       )
       if not affected_test_targets:

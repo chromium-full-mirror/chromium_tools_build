@@ -100,6 +100,36 @@ def GenTests(api: TEST_DEPS):
     api.post_process(post_process.DropExpectation),
   )
 
+  for config_name, excluded_path in (
+    ('chromium', 'tools/mb/mb.py'),
+    ('android', 'chrome/android/profiles/newest.txt'),
+  ):
+    yield api.test(
+      f'runs_on_{config_name}_analyze_exclusion',
+      api.binary_size.build(override_commit_log=True),
+      api.override_step_data(
+        'read filter exclusion spec',
+        api.file.read_json({config_name: {'exclusions': [excluded_path]}}),
+      ),
+      api.tryserver.get_files_affected_by_patch([excluded_path]),
+      api.post_check(
+        post_process.StepTextContains,
+        'analyze',
+        ['Analyze disabled: matched exclusion'],
+      ),
+      api.post_check(
+        post_process.LogContains,
+        'analyze',
+        'excluded_files',
+        [
+          f"{excluded_path} (regex = '{excluded_path}'), "
+          'exclusion source: analyze config file'
+        ],
+      ),
+      api.post_process(post_process.MustRun, 'compile (with patch)'),
+      api.post_process(post_process.DropExpectation),
+    )
+
   yield api.test(
     'compile_failure',
     api.binary_size.build(override_commit_log=True),
