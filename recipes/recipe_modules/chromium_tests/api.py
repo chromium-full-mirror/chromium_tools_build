@@ -878,6 +878,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
       mb_recursive_lookup=mb_recursive_lookup,
       mb_write_ide_json=mb_write_ide_json,
       include_utr_instruction=include_utr_instruction,
+      gn_check_generated=builder_config.gn_check_generated,
     )
 
     if raw_result.status != common_pb.SUCCESS:
@@ -1566,6 +1567,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
     mb_recursive_lookup=False,
     mb_write_ide_json=False,
     include_utr_instruction=False,
+    gn_check_generated=False,
   ):
     with self.m.chromium.guard_compile(build_dir, suffix=name_suffix):
       _mb_gen = None
@@ -1615,6 +1617,7 @@ class ChromiumTestsApi(recipe_api.RecipeApi):
         name='compile%s' % name_suffix,
         include_utr_instruction=include_utr_instruction,
         builder_id=builder_id,
+        gn_check_generated=gn_check_generated,
       )
       if include_utr_instruction:
         self.m.repro_instructions.update_invocation_instructions()

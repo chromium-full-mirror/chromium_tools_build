@@ -140,6 +140,7 @@ class _PropertiesAssembler:
       'skylab_upload_location': self._get_skylab_upload_location(builder_spec),
       'clusterfuzz_archive': self._get_clusterfuzz_archive(builder_spec),
       'perf_isolate_upload': builder_spec.perf_isolate_upload,
+      'gn_check_generated': builder_spec.gn_check_generated,
     }
 
     return properties_pb.BuilderSpec(

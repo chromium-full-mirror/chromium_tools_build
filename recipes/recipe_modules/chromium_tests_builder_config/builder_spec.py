@@ -100,6 +100,11 @@ class BuilderSpec:
         'use_test_trigger_cas can only be True for test-only builders'
       )
 
+    if self.gn_check_generated:
+      assert self.execution_mode == COMPILE_AND_TEST, (
+        'gn_check_generated can only be True for builders that compile'
+      )
+
   # The execution mode of the builder
   # COMPILE_AND_TEST - Compile targets and optionally run tests and/or trigger
   #     a tester
@@ -112,6 +117,10 @@ class BuilderSpec:
   # If True, the tester will skip checkout and download a test trigger CAS
   # archive containing the necessary specs and scripts instead.
   use_test_trigger_cas = attrib(bool, default=False)
+
+  # If True, "gn check --check-generated" runs after compile and fails the
+  # compile on violations.
+  gn_check_generated = attrib(bool, default=False)
 
   # An optional group of the bot's parent builder - if parent_buildername is
   # provided and parent_builder_group is not, the parent's builder_group is the

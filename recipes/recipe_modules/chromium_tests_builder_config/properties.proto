@@ -9,7 +9,7 @@ import "go.chromium.org/luci/buildbucket/proto/builder_common.proto";
 
 // The details configuring execution for a single builder
 //
-// Next ID: 22
+// Next ID: 23
 message BuilderSpec {
   // Required, the builder group that the builder is a part of
   //
@@ -201,6 +201,10 @@ message BuilderSpec {
   // If true, the tester will skip checkout and download a test trigger CAS
   // isolate.
   bool use_test_trigger_cas = 21;
+
+  // If true, "gn check --check-generated" runs after compile and fails the
+  // compile on violations. Try builders get it from the builders they mirror.
+  bool gn_check_generated = 22;
 }
 
 // A database of builder specs that can be used during a build

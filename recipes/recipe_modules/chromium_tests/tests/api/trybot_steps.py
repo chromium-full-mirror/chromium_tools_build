@@ -2803,3 +2803,62 @@ def GenTests(api: RecipeTestApi):
     ),
     api.post_process(post_process.DropExpectation),
   )
+
+  yield api.test(
+    'gn_check_generated_analyze_targets',
+    api.chromium.try_build(
+      builder_group='fake-try-group',
+      builder='fake-try-builder',
+    ),
+    ctbc_api.properties(
+      ctbc_api.properties_assembler_for_try_builder()
+      .with_mirrored_builder(
+        builder_group='fake-group',
+        builder='fake-builder',
+        builder_spec=ctbc.BuilderSpec.create(
+          gclient_config='chromium',
+          chromium_config='chromium',
+          gn_check_generated=True,
+        ),
+      )
+      .assemble()
+    ),
+    api.chromium_tests.read_targets_spec(
+      'fake-group',
+      {
+        'fake-builder': {
+          'gtest_tests': [
+            {
+              'test': 'base_unittests',
+            }
+          ],
+        },
+      },
+    ),
+    api.filter.analyze_output(
+      status='Found dependency',
+      test_targets=['base_unittests'],
+      compile_targets=['base:base_unittests_bundle'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'compile (with patch)',
+      ['base:base_unittests_bundle', 'base_unittests'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'check generated headers after compile (with patch)',
+      ['check'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'check generated headers after compile (with patch)',
+      ['--check-generated', '--error-limit=-1'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      'check generated headers after compile (with patch)',
+      ['base:base_unittests_bundle', 'base_unittests'],
+    ),
+    api.post_process(post_process.DropExpectation),
+  )

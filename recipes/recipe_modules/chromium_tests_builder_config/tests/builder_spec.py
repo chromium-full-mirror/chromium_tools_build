@@ -135,6 +135,15 @@ def RunSteps(api: DEPS):
       use_test_trigger_cas=True,
     )
   api.assertions.assertEqual(str(caught.exception), message)
+  # gn_check_generated validations *********************************************
+  message = 'gn_check_generated can only be True for builders that compile'
+  with api.assertions.assertRaises(AssertionError) as caught:
+    builder_spec.BuilderSpec.create(
+      execution_mode=builder_spec.TEST,
+      parent_buildername='parent',
+      gn_check_generated=True,
+    )
+  api.assertions.assertEqual(str(caught.exception), message)
 
 
 def GenTests(api: RecipeTestApi):

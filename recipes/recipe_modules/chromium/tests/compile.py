@@ -70,6 +70,7 @@ def RunSteps(api: DEPS):
     targets=api.properties.get('targets'),
     extra_ninja_args=api.properties.get('extra_ninja_args'),
     ninja_path=api.properties.get('ninja_path'),
+    gn_check_generated=api.properties.get('gn_check_generated', False),
   )
 
 
@@ -490,6 +491,67 @@ def GenTests(api: TEST_DEPS):
     api.expect_status('INFRA_FAILURE'),
     api.post_process(
       post_process.TagEquals, 'compile', 'luci-bisection.is_bisectable', 'true'
+    ),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  gn_check_step = 'check generated headers after compile'
+
+  yield api.test(
+    'gn_check_generated',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.properties(
+      gn_check_generated=True,
+      targets=['base_unittests', 'chrome/test:browser_tests'],
+    ),
+    api.post_process(
+      post_process.StepCommandContains, gn_check_step, ['check']
+    ),
+    api.post_process(
+      post_process.StepCommandContains,
+      gn_check_step,
+      [
+        '--check-generated',
+        '--error-limit=-1',
+        '[CACHE]/builder/src/out/Release',
+        'base_unittests',
+        'chrome/test:browser_tests',
+      ],
+    ),
+    api.post_process(post_process.StatusSuccess),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'gn_check_generated_failure',
+    api.chromium.generic_build(builder_group='test_group'),
+    api.properties(gn_check_generated=True),
+    api.chromium.change_char_size_limit(350),
+    api.chromium.change_line_limit(100),
+    api.step_data(
+      gn_check_step,
+      stdout=api.raw_io.output_text(
+        textwrap.dedent("""\
+          ERROR at //gen/foo/foo.cc:5:11: Include not allowed.
+          #include "bar/bar.mojom.h"
+                   ^--------------
+        """)
+      ),
+      retcode=1,
+    ),
+    api.post_process(post_process.StepFailure, gn_check_step),
+    api.expect_status('FAILURE'),
+    api.post_process(
+      post_process.SummaryMarkdown,
+      '#### Step _check generated headers after compile_ failed. '
+      'Error logs are shown below:\n'
+      + textwrap.dedent("""\
+          ```
+          ERROR at //gen/foo/foo.cc:5:11: Include not allowed.
+          #include "bar/bar.mojom.h"
+                   ^--------------
+          ```
+          #### [How to fix missing deps](https://chromium.googlesource.com/chromium/src/+/HEAD/docs/build/gn_missing_dependencies.md)"""),
     ),
     api.post_process(post_process.DropExpectation),
   )

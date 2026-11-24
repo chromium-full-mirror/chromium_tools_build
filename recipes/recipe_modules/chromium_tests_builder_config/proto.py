@@ -158,6 +158,7 @@ def _convert_builder_spec(obj, builder_id_by_bb_builder_id):
     skylab_gs_bucket=obj.skylab_upload_location.gs_bucket or None,
     skylab_gs_extra=obj.skylab_upload_location.gs_extra or None,
     use_test_trigger_cas=obj.use_test_trigger_cas,
+    gn_check_generated=obj.gn_check_generated,
     **kwargs,
   )
 

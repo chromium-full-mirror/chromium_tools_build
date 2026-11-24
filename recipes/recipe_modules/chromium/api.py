@@ -45,6 +45,11 @@ _CR_COMPILE_GUARD_CONTENTS = textwrap.dedent("""\
 # TODO: b/315393741 - Remove this logic after Siso migration.
 _LAST_BUILD_SYSTEM = 'LAST_BUILD_SYSTEM.txt'
 
+_GN_MISSING_DEPS_DOC = (
+  'https://chromium.googlesource.com/chromium/src/+/HEAD/'
+  'docs/build/gn_missing_dependencies.md'
+)
+
 
 class ChromiumApi(recipe_api.RecipeApi):
   # Tag used to indicate a step can be used for bisect.
@@ -903,6 +908,7 @@ class ChromiumApi(recipe_api.RecipeApi):
     siso_args: list[str] | None = None,
     skip_log_upload: bool = False,
     resource_usage_output_file: Path | None = None,
+    gn_check_generated: bool = False,
     **kwargs,
   ):
     """Return a compile.py invocation.
@@ -924,6 +930,9 @@ class ChromiumApi(recipe_api.RecipeApi):
       skip_log_upload: If True, skip uploading ninja logs.
       resource_usage_output_file: Path to the file which will hold stats related
                                   to resource usage while compiling
+      gn_check_generated: If True, run "gn check --check-generated" on the
+        compiled targets after a successful compile and fail the compile on
+        violations.
 
     Returns:
       A RawResult object with the compile step's status and failure message
@@ -1010,7 +1019,60 @@ class ChromiumApi(recipe_api.RecipeApi):
         status=common_pb.FAILURE, summary_markdown=failure_summary
       )
 
+    if gn_check_generated:
+      failure_summary = self._gn_check_generated(
+        source_dir, build_dir, targets, builder_id, name or 'compile'
+      )
+      if failure_summary:
+        return result_pb2.RawResult(
+          status=common_pb.FAILURE, summary_markdown=failure_summary
+        )
+
     return result_pb2.RawResult(status=common_pb.SUCCESS)
+
+  def _gn_check_generated(
+    self, source_dir, build_dir, targets, builder_id, compile_step_name
+  ):
+    """Runs "gn check --check-generated" on the compiled targets.
+
+    GN checks every generated file it finds in the build dir, and the build dir
+    may keep stale generated files of targets this build did not compile. So
+    "mb check" maps the compiled targets to GN labels, and only those and their
+    transitive deps are checked.
+
+    Args:
+      source_dir: The path to the top-level repo.
+      build_dir: The path to the directory containing built outputs.
+      targets: The ninja targets that were compiled.
+      builder_id: BuilderId for the compile being run.
+      compile_step_name: Name of the compile step, used in the step name.
+
+    Returns:
+      A markdown failure summary if the check failed, otherwise None.
+    """
+    step_name = 'check generated headers after %s' % compile_step_name
+    # TODO: crbug.com/587221153 - Move the target-to-label mapping out of mb.py,
+    # into the recipe or "gn check" itself, and drop "mb check".
+    mb_args = list(self._mb_isolate_map_file_args(source_dir))
+    # Show every violation, so a CL can fix them all in one round.
+    mb_args += ['--check-generated', '--error-limit=-1', build_dir]
+    mb_args += targets
+    try:
+      self.run_mb_cmd(
+        step_name,
+        'check',
+        source_dir,
+        builder_id,
+        additional_args=mb_args,
+        stdout=self.m.raw_io.output_text(name='gn output', add_output_log=True),
+      )
+    except self.m.step.StepFailure as ex:
+      return self._format_failures(
+        ex.result.stdout or '',
+        step_name,
+        footer='[How to fix missing deps](%s)' % _GN_MISSING_DEPS_DOC,
+      )
+    return None
 
   @_with_chromium_layout
   def runtest(
