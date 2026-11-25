@@ -295,7 +295,6 @@ def _cmake_build(
   dawn_node=False,
   build_as_other=False,
   enable_readers_and_writers=True,
-  build_fuzzers=False,
   targets=None,
 ):
   if targets is None:
@@ -309,7 +308,6 @@ def _cmake_build(
       dawn_node,
       build_as_other,
       enable_readers_and_writers,
-      build_fuzzers,
       targets,
     )
 
@@ -322,7 +320,6 @@ def _do_cmake_build(
   dawn_node: bool,
   build_as_other: bool,
   enable_readers_and_writers: bool,
-  build_fuzzers: bool,
   targets: list,
 ):
   build_env_vars = {}
@@ -362,11 +359,6 @@ def _do_cmake_build(
     '-DDAWN_USE_WAYLAND=0',
   ]
   if fixed_args.clang:
-    cmake_args.extend(
-      [
-        f'-DTINT_BUILD_FUZZERS={cmake_bool_arg(build_fuzzers)}',
-      ]
-    )
     if api.platform.is_linux:
       cmake_args.extend(
         [
@@ -483,15 +475,11 @@ def RunSteps(api: DEPS, properties):
         build_dxc=not api.platform.is_mac,
       )
 
-      # Only build and test fuzzers on Linux
-      build_fuzzers = api.platform.is_linux
-
       build_path = _cmake_build(
         'default targets',
         api,
         source_dir,
         cmake_fixed_args,
-        build_fuzzers=build_fuzzers,
       )
       rel_build_path = str(api.path.relpath(build_path, source_dir)).replace(
         '\\', '/'
@@ -503,7 +491,6 @@ def RunSteps(api: DEPS, properties):
         source_dir,
         cmake_fixed_args,
         dawn_node=True,
-        build_fuzzers=build_fuzzers,
         targets=['dawn.node'],
       )
 
@@ -513,19 +500,6 @@ def RunSteps(api: DEPS, properties):
         # See crbug.com/346814503.
         tint_unittests_cmd.append('--gtest_filter=-*DeathTest.*')
       api.step('Run tint_unittests', tint_unittests_cmd)
-
-      if build_fuzzers:
-        with api.context(cwd=source_dir):
-          api.step(
-            'Check WGSL fuzzer',
-            ['./tools/run', 'fuzz', 'check', '-build', rel_build_path],
-            wrapper=shell_wrapper,
-          )
-          api.step(
-            'Check IR fuzzer',
-            ['./tools/run', 'fuzz', 'check', '-ir', '-build', rel_build_path],
-            wrapper=shell_wrapper,
-          )
 
       with api.context(cwd=source_dir):
         tint_exe = (
@@ -571,7 +545,6 @@ def RunSteps(api: DEPS, properties):
           source_dir,
           cmake_fixed_args,
           build_as_other=True,
-          build_fuzzers=build_fuzzers,
           targets=['tint_cmd_tint_cmd'],
         )
 
@@ -581,7 +554,6 @@ def RunSteps(api: DEPS, properties):
         source_dir,
         cmake_fixed_args,
         enable_readers_and_writers=False,
-        build_fuzzers=False,  # Cannot build fuzzers without readers/writers enabled
         targets=['tint_api'],
       )
 

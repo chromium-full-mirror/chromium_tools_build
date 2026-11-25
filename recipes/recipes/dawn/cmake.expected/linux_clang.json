@@ -550,7 +550,6 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DDAWN_USE_WAYLAND=0",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
@@ -660,7 +659,6 @@
       "-DDAWN_BUILD_NODE_BINDINGS=1",
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DDAWN_USE_WAYLAND=0",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
@@ -775,83 +773,6 @@
   },
   {
     "cmd": [
-      "./tools/run",
-      "fuzz",
-      "check",
-      "-build",
-      "cmake-build"
-    ],
-    "cwd": "[CACHE]/uncached/dawn",
-    "env": {
-      "ANDROID_HOME": "[CACHE]/android_sdk",
-      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
-      "JAVA_HOME": "[CACHE]/java"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/clang/bin",
-        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools",
-        "[CACHE]/java/bin",
-        "[CACHE]/gradle/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check WGSL fuzzer"
-  },
-  {
-    "cmd": [
-      "./tools/run",
-      "fuzz",
-      "check",
-      "-ir",
-      "-build",
-      "cmake-build"
-    ],
-    "cwd": "[CACHE]/uncached/dawn",
-    "env": {
-      "ANDROID_HOME": "[CACHE]/android_sdk",
-      "GRADLE_USER_HOME": "[CLEANUP]/gradle_home",
-      "JAVA_HOME": "[CACHE]/java"
-    },
-    "env_prefixes": {
-      "PATH": [
-        "[CACHE]/builder/clang/bin",
-        "[CACHE]/uncached/dawn/tools/golang/linux-amd64/bin",
-        "[CACHE]/uncached/dawn/tools/golang/bin",
-        "[CACHE]/uncached/dawn/third_party/depot_tools",
-        "[CACHE]/java/bin",
-        "[CACHE]/gradle/bin"
-      ]
-    },
-    "luci_context": {
-      "realm": {
-        "name": "dawn:ci"
-      },
-      "resultdb": {
-        "current_invocation": {
-          "name": "invocations/build:8945511751514863184",
-          "update_token": "token"
-        },
-        "hostname": "rdbhost"
-      }
-    },
-    "name": "Check IR fuzzer"
-  },
-  {
-    "cmd": [
       "python3",
       "./src/tint/cmd/bench/generate_benchmark_inputs.py",
       "wgsl",
@@ -958,7 +879,6 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=1",
       "-DDAWN_USE_WAYLAND=0",
-      "-DTINT_BUILD_FUZZERS=1",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
@@ -1068,7 +988,6 @@
       "-DDAWN_BUILD_NODE_BINDINGS=0",
       "-DTINT_BUILD_AS_OTHER_OS=0",
       "-DDAWN_USE_WAYLAND=0",
-      "-DTINT_BUILD_FUZZERS=0",
       "-DCMAKE_C_COMPILER=clang",
       "-DCMAKE_CXX_COMPILER=clang++",
       "-DCMAKE_SYSROOT=[CACHE]/uncached/dawn/build/linux/debian_bullseye_amd64-sysroot"
