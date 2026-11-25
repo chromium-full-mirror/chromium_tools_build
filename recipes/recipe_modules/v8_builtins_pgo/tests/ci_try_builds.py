@@ -46,6 +46,7 @@ def GenTests(api: TEST_DEPS):
     must_run_builders,
     do_not_run_builders,
     profiling_pool,
+    cas_instance,
     additional=None,
   ):
     return api.test(
@@ -83,6 +84,11 @@ def GenTests(api: TEST_DEPS):
         do_not_run_builders,
       ),
       api.post_process(
+        post.StepCommandContains,
+        f'merge isolate with benchmark.{compilator_label} x64.download',
+        ['-cas-instance', cas_instance],
+      ),
+      api.post_process(
         post.StepCommandRE,
         (
           f'trigger profilers.{compilator_label} x64.'
@@ -103,22 +109,46 @@ def GenTests(api: TEST_DEPS):
       api.post_process(post.DropExpectation),
     )
 
+  chromium_cas = 'projects/chromium-swarm/instances/default_instance'
+  chrome_cas = 'projects/chrome-swarming/instances/default_instance'
+
+  # The same compilator names exist in the try buckets of the public and the
+  # internal project. They are told apart by the project of the request.
+  public_ci_compilator = [
+    '"builder": "V8 Linux64 PGO instrumentation - builder"',
+    '"project": "v8"',
+    '"bucket": "ci"',
+  ]
+  internal_try_compilator = [
+    '"builder": "v8_linux64_pgo_compile_rel"',
+    '"project": "v8-internal"',
+    '"bucket": "try"',
+  ]
+  no_try_compilator = ['v8_linux64_pgo_compile_rel']
+  # The internal trybot does not trigger compilators in the public project.
+  no_public_compilator = [
+    '"builder": "V8 Linux64 PGO instrumentation - builder"',
+    '"project": "v8"',
+  ]
+
   yield test(
     'ci',
-    api.buildbucket.ci_build(bucket='ci', revision='c0ffee15'),
+    api.buildbucket.ci_build(project='v8', bucket='ci', revision='c0ffee15'),
     compilator_label='c0ffee15',
-    must_run_builders=['V8 Linux64 PGO instrumentation - builder'],
-    do_not_run_builders=['v8_linux64_pgo_compile_rel'],
+    must_run_builders=public_ci_compilator,
+    do_not_run_builders=no_try_compilator,
     profiling_pool='chromium.tests',
+    cas_instance=chromium_cas,
   )
 
   yield test(
     'ci_restricted',
-    api.buildbucket.ci_build(bucket='ci', revision='c0ffee15'),
+    api.buildbucket.ci_build(project='v8', bucket='ci', revision='c0ffee15'),
     compilator_label='c0ffee15',
-    must_run_builders=['V8 Linux64 PGO instrumentation - builder'],
-    do_not_run_builders=['v8_linux64_pgo_compile_rel'],
+    must_run_builders=public_ci_compilator,
+    do_not_run_builders=no_try_compilator,
     profiling_pool='chromium.tests',
+    cas_instance=chromium_cas,
     additional=[
       api.properties(swarming_service_account='restricted@account.com'),
       api.post_process(
@@ -141,26 +171,52 @@ def GenTests(api: TEST_DEPS):
     ],
   )
 
+  # A build with a commit in the internal highly-privileged bucket takes the
+  # CI path: It uses the public CI compilators, profiles in the internal pool
+  # and does not upload or tag anything.
+  yield test(
+    'internal_ci_hp',
+    api.buildbucket.ci_build(
+      project='v8-internal', bucket='ci-hp', revision='c0ffee15'
+    ),
+    compilator_label='c0ffee15',
+    must_run_builders=public_ci_compilator,
+    do_not_run_builders=no_try_compilator,
+    profiling_pool='chrome.tests',
+    cas_instance=chromium_cas,
+  )
+
+  # The internal trybot uses the compilator in the internal project.
   yield test(
     'try',
     api.buildbucket.try_build(
-      bucket='try', project='v8/v8', change_number=42, patch_set=3
+      project='v8-internal',
+      bucket='try',
+      git_repo='https://chromium.googlesource.com/v8/v8',
+      change_number=42,
+      patch_set=3,
     ),
     compilator_label='crrev.com/c/42/3',
-    must_run_builders=['v8_linux64_pgo_compile_rel'],
-    do_not_run_builders=['V8 Linux64 PGO instrumentation - builder'],
+    must_run_builders=internal_try_compilator,
+    do_not_run_builders=no_public_compilator,
     profiling_pool='chrome.tests',
+    cas_instance=chrome_cas,
   )
 
   yield test(
     'v8perf_try',
     api.buildbucket.try_build(
-      bucket='try', project='v8/v8-perf', change_number=42, patch_set=3
+      project='v8-internal',
+      bucket='try',
+      git_repo='https://chrome-internal.googlesource.com/v8/v8-perf',
+      change_number=42,
+      patch_set=3,
     ),
     compilator_label='8c8afc65',
-    must_run_builders=['v8_linux64_pgo_compile_rel'],
-    do_not_run_builders=['V8 Linux64 PGO instrumentation - builder'],
+    must_run_builders=internal_try_compilator,
+    do_not_run_builders=no_public_compilator,
     profiling_pool='chrome.tests',
+    cas_instance=chrome_cas,
     additional=[
       pgo_api.mock_git_tags([('8c8afc650f556e3e', 'refs/heads/lkgr')]),
     ],

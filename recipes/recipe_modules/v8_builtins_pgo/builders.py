@@ -54,31 +54,47 @@ PROFILE_PATTERN = (
   r'((block,\w+(,\d+){2}\n)*(builtin_hash,\w+,\-?\d+\n)+)+'
 )
 
-COMPILATOR_CAS_INSTANCE = 'projects/chromium-swarm/instances/default_instance'
+# The CAS instances the compilators upload their build output to. They belong
+# to the swarming servers of the public and the internal projects.
+CHROMIUM_CAS_INSTANCE = 'projects/chromium-swarm/instances/default_instance'
+CHROME_CAS_INSTANCE = 'projects/chrome-swarming/instances/default_instance'
 
+V8_CI_COMPILATORS = {
+  'x86': 'V8 Linux PGO instrumentation - builder',
+  'x64': 'V8 Linux64 PGO instrumentation - builder',
+  'x86-rl': 'V8 Win32 PGO instrumentation - builder',
+  'x64-rl': 'V8 Win64 PGO instrumentation - builder',
+}
+
+# Maps the PGO builder, identified by its LUCI project and bucket, to the
+# compilators it triggers and to the swarming pool that runs the profiling
+# tasks. Builders in the internal project profile in the internal test pool.
+# They use the public CI compilators or compilators in the internal project.
 COMPILATORS = [
   {
-    'triggered_by': {'ci', 'ci-hp'},
+    'triggered_by': {('v8', 'ci'), ('v8', 'ci-hp')},
     'project': 'v8',
     'bucket': 'ci',
-    'compilators': {
-      'x86': 'V8 Linux PGO instrumentation - builder',
-      'x64': 'V8 Linux64 PGO instrumentation - builder',
-      'x86-rl': 'V8 Win32 PGO instrumentation - builder',
-      'x64-rl': 'V8 Win64 PGO instrumentation - builder',
-    },
+    'compilators': V8_CI_COMPILATORS,
+    'cas_instance': CHROMIUM_CAS_INSTANCE,
     'profiling_pool': 'chromium.tests',
   },
   {
-    'triggered_by': {'try'},
+    'triggered_by': {('v8-internal', 'ci-hp')},
     'project': 'v8',
+    'bucket': 'ci',
+    'compilators': V8_CI_COMPILATORS,
+    'cas_instance': CHROMIUM_CAS_INSTANCE,
+    'profiling_pool': 'chrome.tests',
+  },
+  {
+    'triggered_by': {('v8-internal', 'try')},
+    'project': 'v8-internal',
     'bucket': 'try',
     'compilators': {
-      'x86': 'v8_linux_pgo_compile_rel',
       'x64': 'v8_linux64_pgo_compile_rel',
-      'x86-rl': 'v8_win_pgo_compile_rel',
-      'x64-rl': 'v8_win64_pgo_compile_rel',
     },
+    'cas_instance': CHROME_CAS_INSTANCE,
     'profiling_pool': 'chrome.tests',
   },
 ]
@@ -119,9 +135,13 @@ class BaseProfileBuilder(ABC):
 
   @cached_property
   def compilators(self):
-    triggered_by = self.api.buildbucket.build.builder.bucket
+    builder = self.api.buildbucket.build.builder
+    triggered_by = (builder.project, builder.bucket)
     bucket_compilators = next(
-      c for c in COMPILATORS if triggered_by in c['triggered_by']
+      (c for c in COMPILATORS if triggered_by in c['triggered_by']), None
+    )
+    assert bucket_compilators, (
+      f'No compilators configured for {builder.project}/{builder.bucket}'
     )
 
     compilator_ids = self.selected_compilator_ids
@@ -130,6 +150,7 @@ class BaseProfileBuilder(ABC):
         'project': bucket_compilators['project'],
         'bucket': bucket_compilators['bucket'],
         'builder': name,
+        'cas_instance': bucket_compilators['cas_instance'],
         'profiling_pool': bucket_compilators['profiling_pool'],
       }
       for platform, name in bucket_compilators['compilators'].items()
@@ -227,7 +248,8 @@ class BaseProfileBuilder(ABC):
       with self.exception_capture(tracker), self.api.step.nest(tracker.name):
         cas_work_dir = self.api.path.mkdtemp()
 
-        with self.api.cas.with_instance(COMPILATOR_CAS_INSTANCE):
+        cas_instance = self.compilators[tracker.track]['cas_instance']
+        with self.api.cas.with_instance(cas_instance):
           self.api.cas.download(
             'download', tracker.original_cas_digest, cas_work_dir
           )

@@ -55,7 +55,7 @@ def RunSteps(api: DEPS, compilators, swarming_service_account):
 def GenTests(api: TEST_DEPS):
   yield api.test(
     'default',
-    api.buildbucket.ci_build(bucket='ci-hp', revision=None),
+    api.buildbucket.ci_build(project='v8', bucket='ci-hp', revision=None),
     api.properties(compilators=[]),
     api.override_step_data(
       'init trackers for candidate versions.git ls-remote',

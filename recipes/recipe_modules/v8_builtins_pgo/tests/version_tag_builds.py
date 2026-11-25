@@ -13,6 +13,7 @@ from recipe_engine.post_process import (
   LogContains,
   MustRun,
   StepCommandContains,
+  StepCommandRE,
 )
 
 from dataclasses import dataclass
@@ -70,10 +71,10 @@ def GenTests(api: TEST_DEPS):
   all_tracks = {'x86', 'x64', 'x86-rl', 'x64-rl'}
   pgo_api = api.v8_builtins_pgo
 
-  def test(name, *args, **kwargs):
+  def test(name, *args, project='v8', **kwargs):
     return api.test(
       name,
-      api.buildbucket.ci_build(bucket='ci-hp', revision=None),
+      api.buildbucket.ci_build(project=project, bucket='ci-hp', revision=None),
       *args,
       **kwargs,
     )
@@ -108,6 +109,48 @@ def GenTests(api: TEST_DEPS):
     'basic',
     *pgo_api.mock_compilation(['1.1.2.0', '1.1.1.4'], all_tracks),
     *pgo_api.mock_profiles(['1.1.2.0', '1.1.1.4'], all_tracks),
+  )
+
+  # The builder in the internal project triggers the public CI compilators,
+  # but runs the profiling tasks in the internal test pool.
+  yield main_scenario(
+    'internal',
+    *pgo_api.mock_compilation(['1.1.2.0', '1.1.1.4'], all_tracks),
+    *pgo_api.mock_profiles(['1.1.2.0', '1.1.1.4'], all_tracks),
+    api.post_process(
+      LogContains,
+      'trigger compilators.1.1.2.0 x64.trigger compilator',
+      'request',
+      [
+        '"builder": "V8 Linux64 PGO instrumentation - builder"',
+        '"project": "v8"',
+        '"bucket": "ci"',
+      ],
+    ),
+    api.post_process(
+      StepCommandRE,
+      (
+        'trigger profilers.1.1.2.0 x64.'
+        '[trigger] pgo profile 1.1.2.0 x64 on Ubuntu 31.41'
+      ),
+      [
+        r'.*/swarming',
+        'spawn-tasks',
+        '-server',
+        'https://example.swarmingserver.appspot.com',
+        '-json-input',
+        r'.*{"key": "pool", "value": "chrome.tests"}.*',
+        '-json-output',
+        '/path/to/tmp/json',
+      ],
+    ),
+    api.post_process(
+      MustRun,
+      'upload to gs.gsutil upload metadata 1.1.2.0',
+      'assign pgo tags.gerrit create_gerrit_tag (v8/v8 1.1.2-pgo)',
+    ),
+    api.post_process(DropExpectation),
+    project='v8-internal',
   )
 
   yield test(

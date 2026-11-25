@@ -37,3 +37,14 @@ def GenTests(api: TEST_DEPS):
     api.expect_exception('AssertionError'),
     api.post_process(DropExpectation),
   )
+
+  # Builders are identified by project and bucket. A known bucket name in an
+  # unknown project must not silently fall back to another project's setup.
+  yield api.test(
+    'unsupported-project',
+    api.buildbucket.ci_build(
+      project='unsupported-project', bucket='ci', revision='c0ffee15'
+    ),
+    api.expect_exception('AssertionError'),
+    api.post_process(DropExpectation),
+  )
