@@ -468,6 +468,10 @@
     "name": "sync target"
   },
   {
+    "cmd": [],
+    "name": "test gtest"
+  },
+  {
     "cmd": [
       "rdb",
       "stream",
@@ -514,7 +518,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest"
+    "name": "test gtest.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -558,7 +565,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: adb logcat"
+    "name": "test gtest.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -598,7 +608,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: crashes"
+    "name": "test gtest.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -640,7 +653,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: adb clear log"
+    "name": "test gtest.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test optimizing"
   },
   {
     "cmd": [
@@ -692,7 +712,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing"
+    "name": "test optimizing.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -736,7 +759,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing: adb logcat"
+    "name": "test optimizing.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -776,7 +802,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing: crashes"
+    "name": "test optimizing.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -818,7 +847,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing: adb clear log"
+    "name": "test optimizing.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test optimizing all-isa-features"
   },
   {
     "cmd": [
@@ -872,7 +908,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing all-isa-features"
+    "name": "test optimizing all-isa-features.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -916,7 +955,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing all-isa-features: adb logcat"
+    "name": "test optimizing all-isa-features.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -956,7 +998,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing all-isa-features: crashes"
+    "name": "test optimizing all-isa-features.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -998,7 +1043,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test optimizing all-isa-features: adb clear log"
+    "name": "test optimizing all-isa-features.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test debuggable"
   },
   {
     "cmd": [
@@ -1051,7 +1103,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test debuggable"
+    "name": "test debuggable.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1095,7 +1150,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test debuggable: adb logcat"
+    "name": "test debuggable.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1135,7 +1193,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test debuggable: crashes"
+    "name": "test debuggable.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1177,7 +1238,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test debuggable: adb clear log"
+    "name": "test debuggable.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test jit debuggable"
   },
   {
     "cmd": [
@@ -1230,7 +1298,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit debuggable"
+    "name": "test jit debuggable.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1274,7 +1345,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit debuggable: adb logcat"
+    "name": "test jit debuggable.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1314,7 +1388,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit debuggable: crashes"
+    "name": "test jit debuggable.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1356,7 +1433,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit debuggable: adb clear log"
+    "name": "test jit debuggable.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test interpreter"
   },
   {
     "cmd": [
@@ -1408,7 +1492,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test interpreter"
+    "name": "test interpreter.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1452,7 +1539,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test interpreter: adb logcat"
+    "name": "test interpreter.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1492,7 +1582,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test interpreter: crashes"
+    "name": "test interpreter.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1534,7 +1627,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test interpreter: adb clear log"
+    "name": "test interpreter.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test baseline"
   },
   {
     "cmd": [
@@ -1586,7 +1686,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test baseline"
+    "name": "test baseline.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1630,7 +1733,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test baseline: adb logcat"
+    "name": "test baseline.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1670,7 +1776,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test baseline: crashes"
+    "name": "test baseline.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1712,7 +1821,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test baseline: adb clear log"
+    "name": "test baseline.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test jit"
   },
   {
     "cmd": [
@@ -1764,7 +1880,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit"
+    "name": "test jit.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1808,7 +1927,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit: adb logcat"
+    "name": "test jit.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1848,7 +1970,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit: crashes"
+    "name": "test jit.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1890,7 +2015,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit: adb clear log"
+    "name": "test jit.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test jit-on-first-use"
   },
   {
     "cmd": [
@@ -1942,7 +2074,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit-on-first-use"
+    "name": "test jit-on-first-use.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -1986,7 +2121,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit-on-first-use: adb logcat"
+    "name": "test jit-on-first-use.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2026,7 +2164,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit-on-first-use: crashes"
+    "name": "test jit-on-first-use.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2068,7 +2209,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test jit-on-first-use: adb clear log"
+    "name": "test jit-on-first-use.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test speed-profile"
   },
   {
     "cmd": [
@@ -2120,7 +2268,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test speed-profile"
+    "name": "test speed-profile.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2164,7 +2315,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test speed-profile: adb logcat"
+    "name": "test speed-profile.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2204,7 +2358,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test speed-profile: crashes"
+    "name": "test speed-profile.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2246,7 +2403,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test speed-profile: adb clear log"
+    "name": "test speed-profile.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test libcore"
   },
   {
     "cmd": [
@@ -2297,7 +2461,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libcore"
+    "name": "test libcore.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2341,7 +2508,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libcore: adb logcat"
+    "name": "test libcore.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2381,7 +2551,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libcore: crashes"
+    "name": "test libcore.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2423,7 +2596,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libcore: adb clear log"
+    "name": "test libcore.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test libjdwp jit"
   },
   {
     "cmd": [
@@ -2474,7 +2654,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp jit"
+    "name": "test libjdwp jit.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2518,7 +2701,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp jit: adb logcat"
+    "name": "test libjdwp jit.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2558,7 +2744,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp jit: crashes"
+    "name": "test libjdwp jit.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2600,7 +2789,14 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp jit: adb clear log"
+    "name": "test libjdwp jit.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
+  },
+  {
+    "cmd": [],
+    "name": "test libjdwp interpreter"
   },
   {
     "cmd": [
@@ -2652,7 +2848,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp interpreter"
+    "name": "test libjdwp interpreter.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2696,7 +2895,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp interpreter: adb logcat"
+    "name": "test libjdwp interpreter.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2736,7 +2938,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp interpreter: crashes"
+    "name": "test libjdwp interpreter.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -2778,7 +2983,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test libjdwp interpreter: adb clear log"
+    "name": "test libjdwp interpreter.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [

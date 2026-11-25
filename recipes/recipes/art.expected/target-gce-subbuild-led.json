@@ -602,6 +602,10 @@
     "name": "sync target"
   },
   {
+    "cmd": [],
+    "name": "test gtest"
+  },
+  {
     "cmd": [
       "rdb",
       "stream",
@@ -633,7 +637,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest"
+    "name": "test gtest.run",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -662,7 +669,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: adb logcat"
+    "name": "test gtest.adb logcat",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -687,7 +697,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: crashes"
+    "name": "test gtest.crashes",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [
@@ -714,7 +727,10 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "test gtest: adb clear log"
+    "name": "test gtest.adb clear log",
+    "~followup_annotations": [
+      "@@@STEP_NEST_LEVEL@1@@@"
+    ]
   },
   {
     "cmd": [

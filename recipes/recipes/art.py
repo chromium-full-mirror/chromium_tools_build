@@ -572,29 +572,36 @@ def _run_steps(api: DEPS, props):
 
         defer(api.step, 'sync target', [art_tools.joinpath('buildbot-sync.sh')])
 
-      def test_logging(api: DEPS, test_name):
-        # adb doesn't know about the VM and will hang.
-        if not props.device or props.on_virtual_machine:
-          return
-        defer(
-          api.step,
-          test_name + ': adb logcat',
-          ['adb', 'logcat', '-d', '-v', 'threadtime'],
-        )
-        defer(
-          api.step,
-          test_name + ': crashes',
-          [art_tools.joinpath('buildbot-symbolize-crashes.sh')],
-        )
-        defer(api.step, test_name + ': adb clear log', ['adb', 'logcat', '-c'])
+      # adb doesn't know about the VM and will hang.
+      collect_device_logs = bool(props.device and not props.on_virtual_machine)
 
       for step in props.test_steps:
         with (
-          api.context(env=dict(step.env)),
-          _without_local_auth(api),
+          api.step.nest(step.name)
+          if collect_device_logs
+          else contextlib.nullcontext()
         ):
-          defer(api.step, step.name, _wrap_test_cmd(api, step))
-        test_logging(api, step.name)
+          with (
+            api.context(env=dict(step.env)),
+            _without_local_auth(api),
+          ):
+            defer(
+              api.step,
+              'run' if collect_device_logs else step.name,
+              _wrap_test_cmd(api, step),
+            )
+          if collect_device_logs:
+            defer(
+              api.step,
+              'adb logcat',
+              ['adb', 'logcat', '-d', '-v', 'threadtime'],
+            )
+            defer(
+              api.step,
+              'crashes',
+              [art_tools.joinpath('buildbot-symbolize-crashes.sh')],
+            )
+            defer(api.step, 'adb clear log', ['adb', 'logcat', '-c'])
 
       if props.device:
         defer(
@@ -965,6 +972,48 @@ def GenTests(api: TEST_DEPS):
         'out/host/linux-x86/etc',
       ],
     ),
+  )
+
+  yield api.test(
+    'target-test-step-failure',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='target.arm.64',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
+    api.step_data('test gtest.run', retcode=1),
+    api.expect_status('FAILURE'),
+    api.properties(
+      device='target.arm.64',
+      product='armv8',
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': ['art/tools/run-gtests.sh'],
+        },
+        {
+          'name': 'test optimizing',
+          'cmd': ['./art/test/testrunner/testrunner.py', '--optimizing'],
+        },
+      ],
+    ),
+    api.post_process(post_process.StepFailure, 'test gtest'),
+    api.post_process(post_process.StepFailure, 'test gtest.run'),
+    api.post_process(
+      post_process.MustRun,
+      'test gtest.adb logcat',
+      'test gtest.crashes',
+      'test gtest.adb clear log',
+      'test optimizing.run',
+      'test optimizing.adb logcat',
+      'tear down device',
+      'device post-run cleanup',
+    ),
+    api.post_process(post_process.StepSuccess, 'test optimizing'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
