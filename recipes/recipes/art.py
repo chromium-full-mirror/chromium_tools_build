@@ -236,20 +236,20 @@ def _wrap_test_cmd(api: DEPS, step):
   return cmd
 
 
-def _archive_target_build(
+def _archive_build(
   api: DEPS,
   build_top_dir,
-  output_directories=None,
+  output_directories,
 ):
-  # The target build contains device-absolute symlinks (e.g. pointing to
-  # /apex/...) which do not exist on the host and cause `cas archive` to fail
-  # when trying to materialize targets outside the exec root. Pack all symlinks
+  # Builds can contain symlinks whose targets resolve outside the exec root
+  # (such as device-absolute /apex/... symlinks in target chroots), which cause
+  # `cas archive` to fail when materializing symlink targets. Pack all symlinks
   # into a small tar archive and pass only regular files to `cas archive` so
   # build artifacts are deduplicated in CAS without modifying symlinks on disk.
-  dirs = list(output_directories) if output_directories else ['out']
+  dirs = list(output_directories)
   symlinks_tar = build_top_dir.joinpath('out', 'symlinks.tar')
   api.step(
-    'pack target build symlinks',
+    'pack build symlinks',
     [
       'bash',
       '-c',
@@ -260,13 +260,13 @@ def _archive_target_build(
     + dirs,
   )
   files = api.step(
-    'list target build files',
+    'list build files',
     ['find', '-H', *dirs, '-type', 'f'],
     stdout=api.raw_io.output_text(),
   ).stdout.splitlines()
   cas_paths = {symlinks_tar} | {build_top_dir.joinpath(p) for p in files}
   digest = api.cas.archive(
-    'archive target build to CAS',
+    'archive build to CAS',
     build_top_dir,
     *sorted(cas_paths),
   )
@@ -374,7 +374,7 @@ def _get_gce_subbuild(api: DEPS, props, commit):
         'exe',
         'infra.buildbucket.agent.output.resolved_data',
       ],
-      step_name='search existing GCE target build',
+      step_name='search existing GCE subbuild',
     )
     if is_reusable(b)
   ]
@@ -399,7 +399,7 @@ def _get_gce_subbuild(api: DEPS, props, commit):
           led_inherit_parent=True,
         )
       ],
-      step_name='schedule GCE target subbuild',
+      step_name='schedule GCE subbuild',
     )[0].id
   )
 
@@ -465,7 +465,7 @@ def _run_steps(api: DEPS, props):
       gce_build_id = _get_gce_subbuild(api, props, commit)
       gce_build = api.buildbucket.collect_build(
         gce_build_id,
-        step_name='wait for GCE target build',
+        step_name='wait for GCE subbuild',
         fields=['id', 'status', 'summary_markdown', 'output.properties'],
         mirror_status=True,
         timeout=18000,  # 5 hours.
@@ -483,8 +483,7 @@ def _run_steps(api: DEPS, props):
         build_url = api.buildbucket.build_url(build_id=gce_build.id)
         status_name = common_pb2.Status.Name(gce_build.status)
         msg = (
-          f'GCE target subbuild [{gce_build.id}]({build_url}) '
-          f'ended with {status_name}'
+          f'GCE subbuild [{gce_build.id}]({build_url}) ended with {status_name}'
         )
         if gce_build.summary_markdown:
           msg += f':\n\n{gce_build.summary_markdown}'
@@ -492,12 +491,12 @@ def _run_steps(api: DEPS, props):
           raise api.step.StepFailure(msg)
         raise api.step.InfraFailure(msg)
       api.cas.download(
-        'download target build from CAS',
+        'download build from CAS',
         gce_build.output.properties['cas_digest'],
         build_top_dir,
       )
       api.step(
-        'extract target build symlinks',
+        'extract build symlinks',
         [
           'tar',
           '-C',
@@ -522,19 +521,19 @@ def _run_steps(api: DEPS, props):
             '--installclean',
           ],
         )
-
-      if props.build_only:
-        _archive_target_build(
-          api,
-          build_top_dir,
-          props.output_directories,
-        )
     else:
       with api.context(env=env):
         api.step(
           'build',
           [art_tools.joinpath('buildbot-build.sh'), '--host', '--installclean'],
         )
+
+    if props.build_only and props.output_directories:
+      _archive_build(
+        api,
+        build_top_dir,
+        props.output_directories,
+      )
 
   if props.build_only:
     return
@@ -950,7 +949,7 @@ def GenTests(api: TEST_DEPS):
       stdout=api.raw_io.output_text(random_commit_for_test),
     ),
     api.step_data(
-      'list target build files',
+      'list build files',
       stdout=api.raw_io.output_text(
         'out/target/product/armv8/system/bin/dalvikvm\n'
         'out/host/linux-x86/bin/adb\n'
@@ -972,6 +971,43 @@ def GenTests(api: TEST_DEPS):
         'out/host/linux-x86/etc',
       ],
     ),
+  )
+
+  yield api.test(
+    'host-build_only',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='host.x86.build_only',
+    ),
+    api.step_data(
+      'checkout.find super-project commit',
+      stdout=api.raw_io.output_text(random_commit_for_test),
+    ),
+    api.step_data(
+      'list build files',
+      stdout=api.raw_io.output_text(
+        'out/host/linux-x86/bin/dalvikvm64\n'
+        'out/host/linux-x86/nativetest64/art_runtime_tests/art_runtime_tests\n'
+      ),
+    ),
+    api.properties(
+      build_only=True,
+      output_directories=[
+        'out/host/linux-x86/bin',
+        'out/host/linux-x86/nativetest64',
+        'art',
+      ],
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'build',
+      'pack build symlinks',
+      'list build files',
+      'archive build to CAS',
+      'export cas_digest',
+    ),
+    api.post_process(post_process.DoesNotRun, 'build target'),
+    api.post_process(post_process.DropExpectation),
   )
 
   yield api.test(
@@ -1120,9 +1156,7 @@ def GenTests(api: TEST_DEPS):
 
   def _check_subbuild_request(check, steps, ref, commit_id):
     """Checks the subbuild is pinned to a commit and won't recurse."""
-    req = json.loads(
-      steps['build.schedule GCE target subbuild'].logs['request']
-    )
+    req = json.loads(steps['build.schedule GCE subbuild'].logs['request'])
     req = req['requests'][0]['scheduleBuild']
     check(req['properties'] == {'gce_subbuilder': ''})
     check(req['gitilesCommit']['ref'] == ref)
@@ -1165,7 +1199,7 @@ def GenTests(api: TEST_DEPS):
   def collect_subbuild(build_id=8922054662172514000, **kwargs):
     return api.buildbucket.simulated_collect_output(
       [completed_subbuild(build_id, **kwargs)],
-      step_name='build.wait for GCE target build',
+      step_name='build.wait for GCE subbuild',
     )
 
   def subbuild_props(**kwargs):
@@ -1198,6 +1232,50 @@ def GenTests(api: TEST_DEPS):
   )
 
   yield api.test(
+    'host-gce-subbuild',
+    api.buildbucket.ci_build(
+      project='art',
+      builder='host.x86.64',
+      git_repo=art_repo,
+      revision=art_revision,
+    ),
+    api.properties(
+      gce_subbuilder='host.x86.build_only',
+      test_steps=[
+        {
+          'name': 'test gtest',
+          'cmd': ['./art/test.py', '--host', '--gtest', '--64'],
+        },
+      ],
+    ),
+    collect_subbuild(),
+    api.post_process(
+      post_process.MustRun,
+      'create work dir',
+      'build.search existing GCE subbuild',
+      'build.schedule GCE subbuild',
+      'build.wait for GCE subbuild',
+      'build.set blamelist pins',
+      'build.download build from CAS',
+      'build.extract build symlinks',
+      'test gtest',
+    ),
+    api.post_process(
+      post_process.DoesNotRun,
+      'resolve ART HEAD',
+      'checkout',
+      'symlink out dir',
+      'build target',
+      'device pre-run cleanup',
+      'setup device',
+      'sync target',
+      'tear down device',
+    ),
+    api.post_process(_check_subbuild_request, 'refs/heads/main', art_revision),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
     'target-gce-subbuild-failure',
     api.buildbucket.ci_build(
       project='art',
@@ -1211,18 +1289,16 @@ def GenTests(api: TEST_DEPS):
     ),
     api.expect_status('FAILURE'),
     api.post_process(post_process.StepFailure, 'build'),
-    api.post_process(
-      post_process.StepFailure, 'build.wait for GCE target build'
-    ),
+    api.post_process(post_process.StepFailure, 'build.wait for GCE subbuild'),
     api.post_process(post_process.MustRun, 'build.set blamelist pins'),
     api.post_process(
       post_process.DoesNotRun,
-      'build.download target build from CAS',
+      'build.download build from CAS',
       'test gtest',
     ),
     api.post_process(
       post_process.SummaryMarkdown,
-      'GCE target subbuild [8922054662172514000]'
+      'GCE subbuild [8922054662172514000]'
       '(https://cr-buildbucket.appspot.com/build/8922054662172514000) '
       "ended with FAILURE:\n\nStep('build target') (retcode: 1)",
     ),
@@ -1240,18 +1316,16 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(status='INFRA_FAILURE', include_blamelist=False),
     api.expect_status('INFRA_FAILURE'),
     api.post_process(post_process.StepException, 'build'),
-    api.post_process(
-      post_process.StepException, 'build.wait for GCE target build'
-    ),
+    api.post_process(post_process.StepException, 'build.wait for GCE subbuild'),
     api.post_process(
       post_process.DoesNotRun,
       'build.set blamelist pins',
-      'build.download target build from CAS',
+      'build.download build from CAS',
       'test gtest',
     ),
     api.post_process(
       post_process.SummaryMarkdown,
-      'GCE target subbuild [8922054662172514000]'
+      'GCE subbuild [8922054662172514000]'
       '(https://cr-buildbucket.appspot.com/build/8922054662172514000) '
       'ended with INFRA_FAILURE',
     ),
@@ -1315,14 +1389,14 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(),
     api.post_process(
       post_process.MustRun,
-      'build.wait for GCE target build',
-      'build.download target build from CAS',
-      'build.extract target build symlinks',
+      'build.wait for GCE subbuild',
+      'build.download build from CAS',
+      'build.extract build symlinks',
     ),
     api.post_process(
       post_process.DoesNotRun,
       'build target',
-      'archive target build to CAS',
+      'archive build to CAS',
       'export cas_digest',
       'test gtest',
     ),
@@ -1390,15 +1464,11 @@ def GenTests(api: TEST_DEPS):
           'recipe_v2',
         ),
       ],
-      step_name='build.search existing GCE target build',
+      step_name='build.search existing GCE subbuild',
     ),
     collect_subbuild(8922054662172514004),
-    api.post_process(
-      post_process.DoesNotRun, 'build.schedule GCE target subbuild'
-    ),
-    api.post_process(
-      post_process.MustRun, 'build.download target build from CAS'
-    ),
+    api.post_process(post_process.DoesNotRun, 'build.schedule GCE subbuild'),
+    api.post_process(post_process.MustRun, 'build.download build from CAS'),
     api.post_process(post_process.DropExpectation),
   )
 

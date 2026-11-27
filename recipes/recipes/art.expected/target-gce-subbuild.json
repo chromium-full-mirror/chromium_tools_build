@@ -51,7 +51,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.search existing GCE target build",
+    "name": "build.search existing GCE subbuild",
     "stdin": "{\"requests\": [{\"searchBuilds\": {\"mask\": {\"fields\": \"exe,id,infra.buildbucket.agent.output.resolvedData,status,tags\"}, \"pageSize\": 5, \"predicate\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}]}}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -113,7 +113,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.schedule GCE target subbuild",
+    "name": "build.schedule GCE subbuild",
     "stdin": "{\"requests\": [{\"scheduleBuild\": {\"builder\": {\"bucket\": \"ci\", \"builder\": \"target.arm.build_only.64\", \"project\": \"art\"}, \"experimental\": \"NO\", \"experiments\": {\"luci.buildbucket.parent_tracking\": false}, \"fields\": \"builder,createTime,createdBy,critical,endTime,id,infra,input,number,output,startTime,status,updateTime\", \"gitilesCommit\": {\"host\": \"googleplex-android.googlesource.com\", \"id\": \"2d2b87e5f9c872902d8508f6377470a4a6fa87e1\", \"project\": \"platform/art\", \"ref\": \"refs/heads/main\"}, \"priority\": 30, \"properties\": {\"gce_subbuilder\": \"\"}, \"requestId\": \"8945511751514863184-00000000-0000-0000-0000-000000001337\", \"tags\": [{\"key\": \"buildset\", \"value\": \"commit/gitiles/googleplex-android.googlesource.com/platform/art/+/2d2b87e5f9c872902d8508f6377470a4a6fa87e1\"}, {\"key\": \"parent_buildbucket_id\", \"value\": \"8945511751514863184\"}, {\"key\": \"user_agent\", \"value\": \"recipe\"}]}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@",
@@ -206,7 +206,7 @@
   },
   {
     "cmd": [],
-    "name": "build.wait for GCE target build",
+    "name": "build.wait for GCE subbuild",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -235,7 +235,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.wait for GCE target build.wait",
+    "name": "build.wait for GCE subbuild.wait",
     "timeout": 18000,
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@"
@@ -262,7 +262,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.wait for GCE target build.get",
+    "name": "build.wait for GCE subbuild.get",
     "stdin": "{\"requests\": [{\"getBuild\": {\"fields\": \"id,output.properties,status,summaryMarkdown\", \"id\": \"8922054662172514000\"}}]}",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@2@@@",
@@ -482,7 +482,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.download target build from CAS",
+    "name": "build.download build from CAS",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]
@@ -508,7 +508,7 @@
         "hostname": "rdbhost"
       }
     },
-    "name": "build.extract target build symlinks",
+    "name": "build.extract build symlinks",
     "~followup_annotations": [
       "@@@STEP_NEST_LEVEL@1@@@"
     ]

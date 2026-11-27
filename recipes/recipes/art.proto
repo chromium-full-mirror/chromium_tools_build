@@ -39,11 +39,11 @@ message InputProperties {
   map<string, string> test_env = 17;
 
   // Optional build_only subbuilder that compiles on behalf of this build
-  // (e.g. "target.arm.build_only"). The subbuild is always pinned to a
-  // commit (ART HEAD if the build has none), and this property is cleared in
-  // the subbuild request to prevent recursion.
+  // (e.g. "target.arm.build_only" or "host.x86.build_only"). The subbuild is
+  // always pinned to a commit (ART HEAD if the build has none), and this
+  // property is cleared in the subbuild request to prevent recursion.
   string gce_subbuilder = 18;
 
-  // Directories to archive to CAS for build_only target builds.
+  // Directories to archive to CAS for build_only builds.
   repeated string output_directories = 19;
 }
