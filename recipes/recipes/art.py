@@ -12,6 +12,7 @@ from PB.recipes.build.art import InputProperties
 
 import contextlib
 from dataclasses import dataclass
+import hashlib
 import json
 from urllib.parse import urlparse
 
@@ -299,6 +300,11 @@ def _get_art_commit(api: DEPS, repo_root):
   )
 
 
+def _get_art_recipe_hash():
+  with open(__file__, 'rb') as f:
+    return hashlib.sha256(f.read()).hexdigest()[:16]
+
+
 def _get_recipe_version(build):
   resolved = build.infra.buildbucket.agent.output.resolved_data
   if 'kitchen-checkout' in resolved and resolved['kitchen-checkout'].cipd.specs:
@@ -306,7 +312,7 @@ def _get_recipe_version(build):
   return build.exe.cipd_version
 
 
-def _get_gce_subbuild(api: DEPS, props, commit):
+def _run_gce_subbuild(api: DEPS, props, commit):
   build_input = api.buildbucket.build.input
   tags = [
     common_pb2.StringPair(
@@ -335,24 +341,18 @@ def _get_gce_subbuild(api: DEPS, props, commit):
   # match a try build tagged with the same commit plus a patch), so require
   # the relevant tags to match exactly.
   wanted_tags = {(t.key, t.value) for t in tags}
-  recipe_version = _get_recipe_version(api.buildbucket.build)
+  art_recipe_hash = _get_art_recipe_hash()
 
   def is_reusable(build):
-    return (
-      build.status
-      in (
-        common_pb2.SUCCESS,
-        common_pb2.SCHEDULED,
-        common_pb2.STARTED,
-      )
-      and wanted_tags
-      == {
-        (t.key, t.value)
-        for t in build.tags
-        if t.key in ('buildset', 'recipe_cas')
-      }
-      and _get_recipe_version(build) == recipe_version
-    )
+    return build.status in (
+      common_pb2.SUCCESS,
+      common_pb2.SCHEDULED,
+      common_pb2.STARTED,
+    ) and wanted_tags == {
+      (t.key, t.value)
+      for t in build.tags
+      if t.key in ('buildset', 'recipe_cas')
+    }
 
   existing = [
     b
@@ -366,42 +366,53 @@ def _get_gce_subbuild(api: DEPS, props, commit):
         tags=tags,
         include_experimental=build_input.experimental,
       ),
-      limit=5,
-      fields=[
-        'id',
-        'status',
-        'tags',
-        'exe',
-        'infra.buildbucket.agent.output.resolved_data',
-      ],
+      limit=10,
+      fields=['id', 'status', 'tags'],
       step_name='search existing GCE subbuild',
     )
     if is_reusable(b)
   ]
-  return (
-    existing[0].id
-    if existing
-    else api.buildbucket.schedule(
-      [
-        api.buildbucket.schedule_request(
-          builder=props.gce_subbuilder,
-          gitiles_commit=commit,
-          exe_cipd_version=recipe_version,
-          # Clear the property to prevent infinite recursion if the subbuilder
-          # also has gce_subbuilder set.
-          properties={'gce_subbuilder': ''},
-          tags=tags,
-          # All desired buildset tags are already in `tags`; avoid inheriting
-          # extra parent buildset tags that would break the exact-match check in
-          # is_reusable() above.
-          inherit_buildsets=False,
-          as_shadow_if_parent_is_led=True,
-          led_inherit_parent=True,
-        )
-      ],
-      step_name='schedule GCE subbuild',
-    )[0].id
-  )
+
+  def collect(build_id):
+    return api.buildbucket.collect_build(
+      build_id,
+      step_name='wait for GCE subbuild',
+      fields=['id', 'status', 'summary_markdown', 'output.properties'],
+      mirror_status=True,
+      timeout=18000,  # 5 hours.
+    )
+
+  # Check oldest candidates first (SearchBuilds returns newest-first) so
+  # completed or farthest-along builds are reused before newer duplicates.
+  for b in reversed(existing):
+    gce_build = collect(b.id)
+    if (
+      'art_recipe_hash' in gce_build.output.properties
+      and gce_build.output.properties['art_recipe_hash'] == art_recipe_hash
+    ):
+      return gce_build
+
+  build_id = api.buildbucket.schedule(
+    [
+      api.buildbucket.schedule_request(
+        builder=props.gce_subbuilder,
+        gitiles_commit=commit,
+        exe_cipd_version=_get_recipe_version(api.buildbucket.build),
+        # Clear the property to prevent infinite recursion if the subbuilder
+        # also has gce_subbuilder set.
+        properties={'gce_subbuilder': ''},
+        tags=tags,
+        # All desired buildset tags are already in `tags`; avoid inheriting
+        # extra parent buildset tags that would break the exact-match check in
+        # is_reusable() above.
+        inherit_buildsets=False,
+        as_shadow_if_parent_is_led=True,
+        led_inherit_parent=True,
+      )
+    ],
+    step_name='schedule GCE subbuild',
+  )[0].id
+  return collect(build_id)
 
 
 def _run_steps(api: DEPS, props):
@@ -462,14 +473,7 @@ def _run_steps(api: DEPS, props):
     # build, and the parent builder downloads the build outputs and test scripts
     # from CAS.
     with api.step.nest('build'):
-      gce_build_id = _get_gce_subbuild(api, props, commit)
-      gce_build = api.buildbucket.collect_build(
-        gce_build_id,
-        step_name='wait for GCE subbuild',
-        fields=['id', 'status', 'summary_markdown', 'output.properties'],
-        mirror_status=True,
-        timeout=18000,  # 5 hours.
-      )
+      gce_build = _run_gce_subbuild(api, props, commit)
       if '$recipe_engine/milo/blamelist_pins' in gce_build.output.properties:
         api.milo.show_blamelist_for(
           [
@@ -506,6 +510,11 @@ def _run_steps(api: DEPS, props):
         ],
       )
   else:
+    if props.build_only and props.output_directories:
+      export_step = api.step.empty('export art_recipe_hash')
+      export_step.presentation.properties['art_recipe_hash'] = (
+        _get_art_recipe_hash()
+      )
     checkout(
       api, props.manifest_branch or 'master-art', props.repo_root, commit
     )
@@ -1000,11 +1009,17 @@ def GenTests(api: TEST_DEPS):
     ),
     api.post_process(
       post_process.MustRun,
+      'export art_recipe_hash',
       'build',
       'pack build symlinks',
       'list build files',
       'archive build to CAS',
       'export cas_digest',
+    ),
+    api.post_process(
+      post_process.PropertyEquals,
+      'art_recipe_hash',
+      _get_art_recipe_hash(),
     ),
     api.post_process(post_process.DoesNotRun, 'build target'),
     api.post_process(post_process.DropExpectation),
@@ -1154,19 +1169,26 @@ def GenTests(api: TEST_DEPS):
     'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855/0'
   )
 
-  def _check_subbuild_request(check, steps, ref, commit_id):
+  expected_art_recipe_hash = _get_art_recipe_hash()
+
+  def _check_subbuild_request(
+    check, steps, ref, commit_id, exe_cipd_version=None
+  ):
     """Checks the subbuild is pinned to a commit and won't recurse."""
     req = json.loads(steps['build.schedule GCE subbuild'].logs['request'])
     req = req['requests'][0]['scheduleBuild']
     check(req['properties'] == {'gce_subbuilder': ''})
     check(req['gitilesCommit']['ref'] == ref)
     check(req['gitilesCommit']['id'] == commit_id)
+    if exe_cipd_version is not None:
+      check(req['exe']['cipdVersion'] == exe_cipd_version)
 
   def completed_subbuild(
     build_id=8922054662172514000,
     status='SUCCESS',
     summary_markdown='',
     include_blamelist=True,
+    art_recipe_hash=expected_art_recipe_hash,
   ):
     build = api.buildbucket.ci_build_message(
       build_id=build_id,
@@ -1174,6 +1196,8 @@ def GenTests(api: TEST_DEPS):
     )
     if summary_markdown:
       build.summary_markdown = summary_markdown
+    if art_recipe_hash is not None:
+      build.output.properties['art_recipe_hash'] = art_recipe_hash
     if status == 'SUCCESS':
       build.output.properties['cas_digest'] = cas_digest
     if include_blamelist:
@@ -1196,10 +1220,14 @@ def GenTests(api: TEST_DEPS):
       ]
     return build
 
-  def collect_subbuild(build_id=8922054662172514000, **kwargs):
+  def collect_subbuild(
+    build_id=8922054662172514000,
+    step_name='build.wait for GCE subbuild',
+    **kwargs,
+  ):
     return api.buildbucket.simulated_collect_output(
       [completed_subbuild(build_id, **kwargs)],
-      step_name='build.wait for GCE subbuild',
+      step_name=step_name,
     )
 
   def subbuild_props(**kwargs):
@@ -1411,15 +1439,10 @@ def GenTests(api: TEST_DEPS):
 
   yield api.test(
     'subbuild-reuse-exact-match',
-    api.buildbucket.build(
-      _with_recipe_version(
-        api.buildbucket.ci_build_message(
-          project='art',
-          git_repo=art_repo,
-          revision=art_revision,
-        ),
-        'recipe_v2',
-      )
+    api.buildbucket.ci_build(
+      project='art',
+      git_repo=art_repo,
+      revision=art_revision,
     ),
     subbuild_props(),
     api.buildbucket.simulated_search_results(
@@ -1442,26 +1465,20 @@ def GenTests(api: TEST_DEPS):
           status=common_pb2.FAILURE,
           tags=[commit_buildset],
         ),
-        # Exact tag match, but older recipe version: must not be reused.
-        _with_recipe_version(
-          build_pb2.Build(
-            id=8922054662172514003,
-            status=common_pb2.SUCCESS,
-            tags=[commit_buildset],
-          ),
-          'recipe_v1',
+        # Newer SCHEDULED build: checked after older builds.
+        build_pb2.Build(
+          id=8922054662172514003,
+          status=common_pb2.SCHEDULED,
+          tags=[commit_buildset],
         ),
-        # Exact match (tags and recipe version): reused.
-        _with_recipe_version(
-          build_pb2.Build(
-            id=8922054662172514004,
-            status=common_pb2.STARTED,
-            tags=[
-              commit_buildset,
-              common_pb2.StringPair(key='user_agent', value='recipe'),
-            ],
-          ),
-          'recipe_v2',
+        # Oldest reusable build: checked first and reused.
+        build_pb2.Build(
+          id=8922054662172514004,
+          status=common_pb2.SUCCESS,
+          tags=[
+            commit_buildset,
+            common_pb2.StringPair(key='user_agent', value='recipe'),
+          ],
         ),
       ],
       step_name='build.search existing GCE subbuild',
@@ -1469,6 +1486,52 @@ def GenTests(api: TEST_DEPS):
     collect_subbuild(8922054662172514004),
     api.post_process(post_process.DoesNotRun, 'build.schedule GCE subbuild'),
     api.post_process(post_process.MustRun, 'build.download build from CAS'),
+    api.post_process(post_process.DropExpectation),
+  )
+
+  yield api.test(
+    'subbuild-reuse-hash-mismatch',
+    api.buildbucket.build(
+      _with_recipe_version(
+        api.buildbucket.ci_build_message(
+          project='art',
+          git_repo=art_repo,
+          revision=art_revision,
+        ),
+        'recipe_v2',
+      )
+    ),
+    subbuild_props(),
+    api.buildbucket.simulated_search_results(
+      [
+        # Existing build whose art_recipe_hash does not match: skipped after
+        # collection, falling back to scheduling a pinned subbuild.
+        build_pb2.Build(
+          id=8922054662172514005,
+          status=common_pb2.SCHEDULED,
+          tags=[commit_buildset],
+        ),
+      ],
+      step_name='build.search existing GCE subbuild',
+    ),
+    collect_subbuild(8922054662172514005, art_recipe_hash='old_hash'),
+    collect_subbuild(
+      8922054662172514000,
+      step_name='build.wait for GCE subbuild (2)',
+    ),
+    api.post_process(
+      post_process.MustRun,
+      'build.wait for GCE subbuild',
+      'build.schedule GCE subbuild',
+      'build.wait for GCE subbuild (2)',
+      'build.download build from CAS',
+    ),
+    api.post_process(
+      _check_subbuild_request,
+      'refs/heads/main',
+      art_revision,
+      exe_cipd_version='recipe_v2',
+    ),
     api.post_process(post_process.DropExpectation),
   )
 

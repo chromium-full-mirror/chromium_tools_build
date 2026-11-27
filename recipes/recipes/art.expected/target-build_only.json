@@ -1,6 +1,13 @@
 [
   {
     "cmd": [],
+    "name": "export art_recipe_hash",
+    "~followup_annotations": [
+      "@@@SET_BUILD_PROPERTY@art_recipe_hash@\"b7aa04a86ecd745f\"@@@"
+    ]
+  },
+  {
+    "cmd": [],
     "name": "checkout"
   },
   {
